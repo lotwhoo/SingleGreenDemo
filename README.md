@@ -133,3 +133,4 @@ iPhone 叠加效果不等同于真实眼镜 OST 光学效果。
 
 - [完整架构、质量与模块化升级报告](./docs/PROJECT_ARCHITECTURE_AND_UPGRADE_REPORT.md)
 - [流式文本与 LLMKit 模块化升级指南](./docs/STREAMING_MODULES_UPGRADE_GUIDE.md)
+- [Codex Agent 协作与升级工作流](./docs/AGENT_WORKFLOW.md)
