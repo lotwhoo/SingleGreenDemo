@@ -1,0 +1,424 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A00000000000000000000060 /* VoiceChatCore in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000062 /* VoiceChatCore */; };
+		A00000000000000000000064 /* VoiceChatDomain in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000066 /* VoiceChatDomain */; };
+		A00000000000000000000067 /* LLMKit in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000069 /* LLMKit */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A00000000000000000000020 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A00000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A00000000000000000000010;
+			remoteInfo = SingleGreenDemo;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		A00000000000000000000006 /* SingleGreenDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SingleGreenDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A00000000000000000000007 /* SingleGreenDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SingleGreenDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		A00000000000000000000004 /* SingleGreenDemo */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SingleGreenDemo;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000005 /* SingleGreenDemoTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SingleGreenDemoTests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A00000000000000000000013 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000000000000000000060 /* VoiceChatCore in Frameworks */,
+				A00000000000000000000064 /* VoiceChatDomain in Frameworks */,
+				A00000000000000000000067 /* LLMKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000017 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A00000000000000000000002 = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000004 /* SingleGreenDemo */,
+				A00000000000000000000005 /* SingleGreenDemoTests */,
+				A00000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A00000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000006 /* SingleGreenDemo.app */,
+				A00000000000000000000007 /* SingleGreenDemoTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A00000000000000000000010 /* SingleGreenDemo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000030 /* Build configuration list for PBXNativeTarget "SingleGreenDemo" */;
+			buildPhases = (
+				A00000000000000000000012 /* Sources */,
+				A00000000000000000000013 /* Frameworks */,
+				A00000000000000000000014 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A00000000000000000000004 /* SingleGreenDemo */,
+			);
+			name = SingleGreenDemo;
+			packageProductDependencies = (
+				A00000000000000000000062 /* VoiceChatCore */,
+				A00000000000000000000066 /* VoiceChatDomain */,
+				A00000000000000000000069 /* LLMKit */,
+			);
+			productName = SingleGreenDemo;
+			productReference = A00000000000000000000006 /* SingleGreenDemo.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A00000000000000000000011 /* SingleGreenDemoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000031 /* Build configuration list for PBXNativeTarget "SingleGreenDemoTests" */;
+			buildPhases = (
+				A00000000000000000000016 /* Sources */,
+				A00000000000000000000017 /* Frameworks */,
+				A00000000000000000000018 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A00000000000000000000021 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A00000000000000000000005 /* SingleGreenDemoTests */,
+			);
+			name = SingleGreenDemoTests;
+			productName = SingleGreenDemoTests;
+			productReference = A00000000000000000000007 /* SingleGreenDemoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A00000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2650;
+				LastUpgradeCheck = 2650;
+				TargetAttributes = {
+					A00000000000000000000010 = {
+						CreatedOnToolsVersion = 26.5;
+					};
+					A00000000000000000000011 = {
+						CreatedOnToolsVersion = 26.5;
+						TestTargetID = A00000000000000000000010;
+					};
+				};
+			};
+			buildConfigurationList = A00000000000000000000032 /* Build configuration list for PBXProject "SingleGreenDemo" */;
+			developmentRegion = zh_Hans;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+				zh_Hans,
+			);
+			mainGroup = A00000000000000000000002;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = A00000000000000000000003 /* Products */;
+			packageReferences = (
+				A00000000000000000000061 /* XCLocalSwiftPackageReference "Packages/VoiceChatCore" */,
+				A00000000000000000000065 /* XCLocalSwiftPackageReference "Packages/VoiceChatDomain" */,
+				A00000000000000000000068 /* XCLocalSwiftPackageReference "Packages/LLMKit" */,
+			);
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A00000000000000000000010 /* SingleGreenDemo */,
+				A00000000000000000000011 /* SingleGreenDemoTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A00000000000000000000014 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000018 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A00000000000000000000012 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000016 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A00000000000000000000021 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A00000000000000000000010 /* SingleGreenDemo */;
+			targetProxy = A00000000000000000000020 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		A00000000000000000000040 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A00000000000000000000041 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		A00000000000000000000042 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = JZK35JTQH6;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "单绿显示实验室";
+				INFOPLIST_KEY_NSCameraUsageDescription = "用于显示后置摄像头画面并模拟单绿眼镜的环境透视效果。";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "用于采集语音并与 AI 助手对话。";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.SingleGreenDemo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A00000000000000000000043 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = JZK35JTQH6;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "单绿显示实验室";
+				INFOPLIST_KEY_NSCameraUsageDescription = "用于显示后置摄像头画面并模拟单绿眼镜的环境透视效果。";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "用于采集语音并与 AI 助手对话。";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.SingleGreenDemo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		A00000000000000000000044 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = JZK35JTQH6;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.SingleGreenDemoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SingleGreenDemo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SingleGreenDemo";
+			};
+			name = Debug;
+		};
+		A00000000000000000000045 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = JZK35JTQH6;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.SingleGreenDemoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SingleGreenDemo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SingleGreenDemo";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A00000000000000000000030 /* Build configuration list for PBXNativeTarget "SingleGreenDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000000000000000000042 /* Debug */,
+				A00000000000000000000043 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A00000000000000000000031 /* Build configuration list for PBXNativeTarget "SingleGreenDemoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000000000000000000044 /* Debug */,
+				A00000000000000000000045 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A00000000000000000000032 /* Build configuration list for PBXProject "SingleGreenDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000000000000000000040 /* Debug */,
+				A00000000000000000000041 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		A00000000000000000000061 /* XCLocalSwiftPackageReference "Packages/VoiceChatCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/VoiceChatCore;
+		};
+		A00000000000000000000065 /* XCLocalSwiftPackageReference "Packages/VoiceChatDomain" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/VoiceChatDomain;
+		};
+		A00000000000000000000068 /* XCLocalSwiftPackageReference "Packages/LLMKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/LLMKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A00000000000000000000062 /* VoiceChatCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000061 /* XCLocalSwiftPackageReference "Packages/VoiceChatCore" */;
+			productName = VoiceChatCore;
+		};
+		A00000000000000000000066 /* VoiceChatDomain */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000065 /* XCLocalSwiftPackageReference "Packages/VoiceChatDomain" */;
+			productName = VoiceChatDomain;
+		};
+		A00000000000000000000069 /* LLMKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000068 /* XCLocalSwiftPackageReference "Packages/LLMKit" */;
+			productName = LLMKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = A00000000000000000000001 /* Project object */;
+}

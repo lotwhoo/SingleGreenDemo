@@ -1,0 +1,14 @@
+.DS_Store
+DerivedData/
+DerivedDataDevice/
+.build/
+Pods/
+build/
+*.xcresult
+*.ipa
+.swiftpm/
+*.xcuserstate
+xcuserdata/
+SingleGreenDemo.xcodeproj/project.xcworkspace/
+SingleGreenDemo/Configuration/Volcengine.plist
+.env
