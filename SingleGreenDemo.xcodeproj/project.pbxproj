@@ -10,6 +10,7 @@
 		A00000000000000000000060 /* VoiceChatCore in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000062 /* VoiceChatCore */; };
 		A00000000000000000000064 /* VoiceChatDomain in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000066 /* VoiceChatDomain */; };
 		A00000000000000000000067 /* LLMKit in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000069 /* LLMKit */; };
+		A00000000000000000000070 /* StreamingTextKit in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000072 /* StreamingTextKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +49,7 @@
 				A00000000000000000000060 /* VoiceChatCore in Frameworks */,
 				A00000000000000000000064 /* VoiceChatDomain in Frameworks */,
 				A00000000000000000000067 /* LLMKit in Frameworks */,
+				A00000000000000000000070 /* StreamingTextKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -102,6 +104,7 @@
 				A00000000000000000000062 /* VoiceChatCore */,
 				A00000000000000000000066 /* VoiceChatDomain */,
 				A00000000000000000000069 /* LLMKit */,
+				A00000000000000000000072 /* StreamingTextKit */,
 			);
 			productName = SingleGreenDemo;
 			productReference = A00000000000000000000006 /* SingleGreenDemo.app */;
@@ -163,6 +166,7 @@
 				A00000000000000000000061 /* XCLocalSwiftPackageReference "Packages/VoiceChatCore" */,
 				A00000000000000000000065 /* XCLocalSwiftPackageReference "Packages/VoiceChatDomain" */,
 				A00000000000000000000068 /* XCLocalSwiftPackageReference "Packages/LLMKit" */,
+				A00000000000000000000071 /* XCLocalSwiftPackageReference "Packages/StreamingTextKit" */,
 			);
 			projectDirPath = "";
 			projectRoot = "";
@@ -400,6 +404,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/LLMKit;
 		};
+		A00000000000000000000071 /* XCLocalSwiftPackageReference "Packages/StreamingTextKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/StreamingTextKit;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -417,6 +425,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A00000000000000000000068 /* XCLocalSwiftPackageReference "Packages/LLMKit" */;
 			productName = LLMKit;
+		};
+		A00000000000000000000072 /* StreamingTextKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000071 /* XCLocalSwiftPackageReference "Packages/StreamingTextKit" */;
+			productName = StreamingTextKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

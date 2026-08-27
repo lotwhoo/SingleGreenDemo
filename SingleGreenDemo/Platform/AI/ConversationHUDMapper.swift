@@ -7,11 +7,12 @@ enum VoiceConversationState: String, Equatable, Sendable {
     case recognizing
     case thinking
     case searching
+    case streaming
     case completed
     case failed
 
     var allowsPrimaryAction: Bool {
-        self == .idle || self == .failed || self == .completed || self == .listening || self == .thinking || self == .searching
+        self == .idle || self == .failed || self == .completed || self == .listening || self == .thinking || self == .searching || self == .streaming
     }
 
     var displayName: String {
@@ -22,6 +23,7 @@ enum VoiceConversationState: String, Equatable, Sendable {
         case .recognizing: "正在整理问题"
         case .thinking: "AI 正在思考"
         case .searching: "AI 正在联网搜索"
+        case .streaming: "AI 正在回答"
         case .completed: "AI 回答完成"
         case .failed: "AI 对话失败"
         }
@@ -35,6 +37,7 @@ enum VoiceConversationState: String, Equatable, Sendable {
         case .recognizing: "text.viewfinder"
         case .thinking: "ellipsis.bubble"
         case .searching: "globe"
+        case .streaming: "text.bubble"
         case .completed: "checkmark.bubble"
         case .failed: "exclamationmark.triangle"
         }
@@ -52,26 +55,40 @@ enum ConversationHUDMapper {
     ) -> HUDScene {
         let userText = transcript.isEmpty ? "点击开始，说出你的问题" : "你：\(transcript)"
         let assistantText: String
-        if let error, !error.isEmpty {
+        let interruptionFooter: String?
+        if !assistantReply.isEmpty {
+            assistantText = assistantReply
+            interruptionFooter = state == .failed ? "回答中断，请重试" : nil
+        } else if let error, !error.isEmpty {
             assistantText = error
-        } else if !assistantReply.isEmpty {
-            assistantText = "AI：\(assistantReply)"
+            interruptionFooter = nil
         } else if state == .searching {
             assistantText = "AI 正在联网搜索…"
+            interruptionFooter = nil
         } else if state == .thinking {
             assistantText = "AI 正在思考…"
+            interruptionFooter = nil
         } else {
             assistantText = "AI 回答会显示在这里"
+            interruptionFooter = nil
         }
 
         var elements = [
-            HUDElement(id: "state_symbol", frame: NormalizedRect(x: 0.44, y: 0.06, width: 0.12, height: 0.10), content: .symbol(state.systemImage)),
-            HUDElement(id: "state_title", frame: NormalizedRect(x: 0.15, y: 0.18, width: 0.70, height: 0.10), content: .text(state.displayName, .title)),
-            HUDElement(id: "user_transcript", frame: NormalizedRect(x: 0.10, y: 0.32, width: 0.80, height: 0.20), content: .text(userText, .detail)),
-            HUDElement(id: "assistant_reply", frame: NormalizedRect(x: 0.10, y: 0.56, width: 0.80, height: 0.28), content: .text(assistantText, .detail))
+            HUDElement(id: "state_symbol", frame: NormalizedRect(x: 0.08, y: 0.05, width: 0.08, height: 0.08), content: .symbol(state.systemImage)),
+            HUDElement(id: "state_title", frame: NormalizedRect(x: 0.19, y: 0.04, width: 0.73, height: 0.10), content: .text(state.displayName, .title)),
+            HUDElement(id: "user_transcript", frame: NormalizedRect(x: 0.08, y: 0.20, width: 0.84, height: 0.10), content: .text(userText, .detail)),
+            HUDElement(
+                id: "assistant_reply",
+                frame: NormalizedRect(x: 0.08, y: 0.35, width: 0.84, height: 0.61),
+                content: .flowingText(
+                    assistantText,
+                    isStreaming: state == .streaming,
+                    footer: interruptionFooter
+                )
+            )
         ]
         if state == .listening {
-            elements.append(HUDElement(id: "audio_level", frame: NormalizedRect(x: 0.25, y: 0.88, width: 0.50, height: 0.04), content: .progress(Double(audioLevel))))
+            elements.append(HUDElement(id: "audio_level", frame: NormalizedRect(x: 0.25, y: 0.32, width: 0.50, height: 0.02), content: .progress(Double(audioLevel))))
         }
 
         return HUDScene(

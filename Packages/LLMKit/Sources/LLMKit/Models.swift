@@ -104,10 +104,57 @@ public struct LLMSSEChunk: Codable, Sendable {
     public struct Choice: Codable, Sendable {
         public struct Delta: Codable, Sendable {
             public var content: String?
+            public var toolCalls: [ToolCallDelta]?
+
+            enum CodingKeys: String, CodingKey {
+                case content
+                case toolCalls = "tool_calls"
+            }
         }
+
+        public struct ToolCallDelta: Codable, Sendable, Equatable {
+            public struct FunctionDelta: Codable, Sendable, Equatable {
+                public var name: String?
+                public var arguments: String?
+            }
+
+            public var index: Int
+            public var id: String?
+            public var type: String?
+            public var function: FunctionDelta?
+        }
+
+        public var index: Int?
         public var delta: Delta?
+        public var finishReason: String?
+
+        enum CodingKeys: String, CodingKey {
+            case index, delta
+            case finishReason = "finish_reason"
+        }
     }
     public var choices: [Choice]
+}
+
+/// Chat Completions SSE 输出。正文和工具片段按到达顺序发布，最后发布拼装后的完整消息。
+public enum LLMStreamingEvent: Sendable, Equatable {
+    case contentDelta(String)
+    case toolCallDelta(index: Int, id: String?, type: String?, functionName: String?, arguments: String?)
+    case completed(LLMMessage)
+}
+
+public enum LLMStreamingError: Error, LocalizedError, Sendable, Equatable {
+    case incompleteToolCall(index: Int)
+    case incompleteStream
+
+    public var errorDescription: String? {
+        switch self {
+        case .incompleteToolCall(let index):
+            return "流式工具调用 \(index) 不完整"
+        case .incompleteStream:
+            return "流式响应在结束信号前中断"
+        }
+    }
 }
 
 // MARK: - 错误

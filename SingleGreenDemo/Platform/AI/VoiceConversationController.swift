@@ -1,4 +1,5 @@
 import Foundation
+import StreamingTextKit
 import VoiceChatDomain
 
 /// AI 对话用例编排。只依赖可替换的端口，不直接创建 ASR、LLM、权限或时钟实现。
@@ -15,8 +16,12 @@ final class VoiceConversationController: ObservableObject {
     private var asrSession: (any SpeechRecognitionSession)?
     private var asrEventsTask: Task<Void, Never>?
     private var replyTask: Task<Void, Never>?
+    private var typingTask: Task<Void, Never>?
     private var vadTask: Task<Void, Never>?
     private var replyGeneration = 0
+    private var typewriterBuffer: TypewriterTextBuffer
+    private var displayedReply = ""
+    private var upstreamCompletedReply: (id: UUID, generation: Int)?
     private var didHandleFinal = false
     private var lastSoundTime: Date
     private let silenceThreshold: Float
@@ -40,6 +45,7 @@ final class VoiceConversationController: ObservableObject {
         self.silenceThreshold = silenceThreshold
         self.silenceTimeout = silenceTimeout
         self.lastSoundTime = dependencies.now()
+        self.typewriterBuffer = TypewriterTextBuffer(policy: dependencies.streamingTextPolicy)
         scene = ConversationHUDMapper.makeScene(
             revision: 0,
             state: .idle,
@@ -58,7 +64,8 @@ final class VoiceConversationController: ObservableObject {
     }
 
     var assistantReply: String {
-        conversation.messages.last(where: { !$0.isUser && $0.status == .completed })?.text ?? ""
+        if !displayedReply.isEmpty { return displayedReply }
+        return conversation.messages.last(where: { !$0.isUser && $0.status == .completed })?.text ?? ""
     }
 
     var state: VoiceConversationState {
@@ -72,6 +79,7 @@ final class VoiceConversationController: ObservableObject {
             switch conversation.replyState {
             case .requesting: return .thinking
             case .searching: return .searching
+            case .streaming: return .streaming
             case .completed: return .completed
             case .failed: return .failed
             case .idle, .cancelled:
@@ -86,14 +94,14 @@ final class VoiceConversationController: ObservableObject {
         case .listening: "结束说话"
         case .connecting: "连接语音识别"
         case .recognizing: "整理识别结果"
-        case .thinking, .searching: "打断并开始新对话"
+        case .thinking, .searching, .streaming: "打断并开始新对话"
         }
     }
 
     var primaryActionSystemImage: String {
         switch state {
         case .listening: "stop.fill"
-        case .connecting, .recognizing, .thinking, .searching: "ellipsis"
+        case .connecting, .recognizing, .thinking, .searching, .streaming: "ellipsis"
         case .completed: "checkmark.circle.fill"
         default: "waveform"
         }
@@ -104,7 +112,7 @@ final class VoiceConversationController: ObservableObject {
 
     func toggleConversation() async {
         switch state {
-        case .idle, .failed, .completed, .thinking, .searching:
+        case .idle, .failed, .completed, .thinking, .searching, .streaming:
             await startListening()
         case .listening:
             await stopRecognition()
@@ -120,6 +128,9 @@ final class VoiceConversationController: ObservableObject {
         agent = nil
         agentConfiguration = nil
         conversation = ConversationState()
+        typewriterBuffer.reset()
+        displayedReply = ""
+        upstreamCompletedReply = nil
         liveText = ""
         audioLevel = 0
         lastError = nil
@@ -276,6 +287,9 @@ final class VoiceConversationController: ObservableObject {
         replyGeneration += 1
         let generation = replyGeneration
         let replyID = conversation.beginReply()
+        typewriterBuffer.reset()
+        displayedReply = ""
+        upstreamCompletedReply = nil
         lastError = nil
         refreshScene()
 
@@ -293,24 +307,53 @@ final class VoiceConversationController: ObservableObject {
         guard let agent else { return }
 
         do {
-            let answer = try await agent.send(userText) { [self] toolName in
-                guard toolName == "web_search" else { return }
-                await markReplySearching(id: replyID, generation: generation)
+            let events = await agent.stream(userText)
+            var didReceiveCompletionEvent = false
+            for try await event in events {
+                try Task.checkCancellation()
+                guard generation == replyGeneration else { return }
+                switch event {
+                case .toolCall(let toolName):
+                    guard toolName == "web_search" else { continue }
+                    markReplySearching(id: replyID, generation: generation)
+
+                case .contentDelta(let delta):
+                    receiveReplyDelta(delta, id: replyID, generation: generation)
+
+                case .completed(let answer):
+                    try receiveReplyCompletion(answer, id: replyID, generation: generation)
+                    didReceiveCompletionEvent = true
+                }
             }
-            try Task.checkCancellation()
             guard generation == replyGeneration else { return }
-            let normalized = answer.trimmed
-            guard !normalized.isEmpty else { throw ConversationControllerError.emptyReply }
-            _ = conversation.completeReply(id: replyID, text: normalized)
-            lastError = nil
+            if !didReceiveCompletionEvent {
+                throw ConversationControllerError.incompleteStream
+            }
             replyTask = nil
-            refreshScene()
         } catch is CancellationError {
             return
         } catch {
             guard generation == replyGeneration else { return }
-            let message = "AI 回复失败：\(error.localizedDescription)"
-            _ = conversation.failReply(id: replyID, message: message)
+            typingTask?.cancel()
+            typingTask = nil
+            upstreamCompletedReply = nil
+            let mustDiscardPartial = (error as? ConversationAgentStreamError)?.shouldDiscardPartial == true
+            let hasPartialReply = !mustDiscardPartial && !typewriterBuffer.targetText.trimmed.isEmpty
+            if mustDiscardPartial || !hasPartialReply {
+                typewriterBuffer.reset()
+                displayedReply = ""
+            } else {
+                _ = typewriterBuffer.flush()
+                displayedReply = typewriterBuffer.visibleText
+            }
+            let message = hasPartialReply
+                ? "回答中断，请重试：\(error.localizedDescription)"
+                : "AI 回复失败：\(error.localizedDescription)"
+            _ = conversation.failReply(
+                id: replyID,
+                message: message,
+                preservingPartial: hasPartialReply
+            )
             lastError = message
             replyTask = nil
             refreshScene()
@@ -329,9 +372,80 @@ final class VoiceConversationController: ObservableObject {
         refreshScene()
     }
 
+    private func receiveReplyDelta(_ delta: String, id: UUID, generation: Int) {
+        guard generation == replyGeneration, !delta.isEmpty,
+              conversation.appendReplyDelta(id: id, delta: delta) else { return }
+        typewriterBuffer.append(delta)
+        startTyping(id: id, generation: generation)
+    }
+
+    private func receiveReplyCompletion(_ answer: String, id: UUID, generation: Int) throws {
+        guard generation == replyGeneration, conversation.activeReplyID == id else { return }
+        guard !answer.trimmed.isEmpty else { throw ConversationControllerError.emptyReply }
+
+        let accumulated = conversation.messages.first(where: { $0.id == id })?.text ?? ""
+        if accumulated != answer {
+            guard let suffix = StreamingTextReconciler.suffix(in: answer, after: accumulated) else {
+                throw ConversationControllerError.inconsistentStream
+            }
+            receiveReplyDelta(suffix, id: id, generation: generation)
+        }
+        upstreamCompletedReply = (id, generation)
+        startTyping(id: id, generation: generation)
+    }
+
+    private func startTyping(id: UUID, generation: Int) {
+        guard typingTask == nil else { return }
+        typingTask = Task { [weak self] in
+            await self?.runTyping(id: id, generation: generation)
+        }
+    }
+
+    private func runTyping(id: UUID, generation: Int) async {
+        while !Task.isCancelled {
+            guard generation == replyGeneration, conversation.activeReplyID == id else { return }
+
+            let changed: Bool
+            if dependencies.reduceMotion() {
+                changed = typewriterBuffer.flush()
+            } else {
+                changed = typewriterBuffer.advance(maxCharacters: typewriterBuffer.suggestedBatchSize())
+            }
+            if changed {
+                displayedReply = typewriterBuffer.visibleText
+                refreshScene()
+            }
+
+            if typewriterBuffer.isCaughtUp,
+               upstreamCompletedReply?.id == id,
+               upstreamCompletedReply?.generation == generation {
+                guard conversation.completeReply(id: id) else { return }
+                upstreamCompletedReply = nil
+                typingTask = nil
+                lastError = nil
+                refreshScene()
+                return
+            }
+
+            do {
+                try await dependencies.sleep(.milliseconds(
+                    dependencies.streamingTextPolicy.tickIntervalMilliseconds
+                ))
+            } catch {
+                return
+            }
+        }
+    }
+
     private func invalidatePendingReply() async {
         replyGeneration += 1
         _ = conversation.cancelActiveReply()
+        upstreamCompletedReply = nil
+        typewriterBuffer.reset()
+        displayedReply = ""
+        let activeTypingTask = typingTask
+        typingTask = nil
+        activeTypingTask?.cancel()
         let task = replyTask
         replyTask = nil
         task?.cancel()
@@ -385,8 +499,14 @@ final class VoiceConversationController: ObservableObject {
 
 private enum ConversationControllerError: LocalizedError {
     case emptyReply
+    case incompleteStream
+    case inconsistentStream
 
     var errorDescription: String? {
-        "模型返回了空回答"
+        switch self {
+        case .emptyReply: "模型返回了空回答"
+        case .incompleteStream: "模型流未正常完成"
+        case .inconsistentStream: "模型流的增量与完整回答不一致"
+        }
     }
 }

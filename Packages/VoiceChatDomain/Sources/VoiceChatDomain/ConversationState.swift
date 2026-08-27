@@ -19,6 +19,7 @@ public enum ReplyState: Sendable, Equatable {
     case idle
     case requesting(UUID)
     case searching(UUID)
+    case streaming(UUID)
     case completed(UUID)
     case failed(UUID, String)
     case cancelled(UUID)
@@ -63,7 +64,7 @@ public struct ConversationState: Sendable, Equatable {
         self.inputState = inputState
         self.replyState = replyState
         switch replyState {
-        case .requesting(let id), .searching(let id):
+        case .requesting(let id), .searching(let id), .streaming(let id):
             self.activeReplyID = id
         case .idle, .completed, .failed, .cancelled:
             self.activeReplyID = nil
@@ -90,6 +91,32 @@ public struct ConversationState: Sendable, Equatable {
         replyState = .searching(id)
     }
 
+    /// 将真实网络增量累加到指定 pending 回复。旧 replyID 不能污染新会话。
+    @discardableResult
+    public mutating func appendReplyDelta(id: UUID, delta: String) -> Bool {
+        guard activeReplyID == id, !delta.isEmpty,
+              let index = messages.firstIndex(where: { $0.id == id && !$0.isUser && $0.status == .pending }) else {
+            return false
+        }
+        messages[index].text += delta
+        replyState = .streaming(id)
+        return true
+    }
+
+    /// 在不覆盖已累计正文的前提下完成当前回复。
+    @discardableResult
+    public mutating func completeReply(id: UUID) -> Bool {
+        guard activeReplyID == id,
+              let index = messages.firstIndex(where: { $0.id == id }),
+              !messages[index].text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return false
+        }
+        messages[index].status = .completed
+        activeReplyID = nil
+        replyState = .completed(id)
+        return true
+    }
+
     @discardableResult
     public mutating func completeReply(id: UUID, text: String) -> Bool {
         guard activeReplyID == id,
@@ -102,9 +129,19 @@ public struct ConversationState: Sendable, Equatable {
     }
 
     @discardableResult
-    public mutating func failReply(id: UUID, message: String) -> Bool {
+    public mutating func failReply(
+        id: UUID,
+        message: String,
+        preservingPartial: Bool = true
+    ) -> Bool {
         guard activeReplyID == id else { return false }
-        messages.removeAll { $0.id == id }
+        if let index = messages.firstIndex(where: { $0.id == id }),
+           preservingPartial,
+           !messages[index].text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            messages[index].status = .failed
+        } else {
+            messages.removeAll { $0.id == id }
+        }
         activeReplyID = nil
         replyState = .failed(id, message)
         return true

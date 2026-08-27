@@ -70,9 +70,43 @@ public actor LLMChatClient {
                                               maxTokens: Int? = nil) -> AsyncThrowingStream<String, Error> {
         AsyncThrowingStream { continuation in
             let task = Task {
-                let body = LLMChatRequest(model: config.model, messages: messages,
-                                          temperature: temperature, maxTokens: maxTokens,
-                                          stream: true)
+                do {
+                    for try await event in completeMessageStreaming(
+                        messages: messages,
+                        temperature: temperature,
+                        maxTokens: maxTokens
+                    ) {
+                        if case .contentDelta(let delta) = event {
+                            continuation.yield(delta)
+                        }
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
+
+    /// 流式返回正文、Function Calling 片段和最终完整消息。
+    /// 工具调用按 `index` 聚合，参数字符串保留原始到达顺序。
+    public nonisolated func completeMessageStreaming(
+        messages: [LLMMessage],
+        temperature: Double? = nil,
+        maxTokens: Int? = nil,
+        tools: [LLMTool]? = nil
+    ) -> AsyncThrowingStream<LLMStreamingEvent, Error> {
+        AsyncThrowingStream { continuation in
+            let task = Task {
+                let body = LLMChatRequest(
+                    model: config.model,
+                    messages: messages,
+                    temperature: temperature,
+                    maxTokens: maxTokens,
+                    stream: true,
+                    tools: tools
+                )
                 var attempt = 0
                 var emitted = false
 
@@ -87,22 +121,56 @@ public actor LLMChatClient {
                             throw LLMAPIError(statusCode: http.statusCode, message: "HTTP \(http.statusCode)")
                         }
 
+                        var accumulator = StreamingMessageAccumulator()
+                        var targetChoiceIndex: Int?
+                        var targetFinished = false
+                        var reachedDone = false
                         for try await line in bytes.lines {
                             try Task.checkCancellation()
                             guard line.hasPrefix("data:") else { continue }
                             let payload = line.dropFirst(5).trimmingCharacters(in: .whitespaces)
-                            if payload == "[DONE]" { break }
-                            guard let data = payload.data(using: .utf8),
-                                  let chunk = try? JSONDecoder().decode(LLMSSEChunk.self, from: data),
-                                  let delta = chunk.choices.first?.delta?.content,
-                                  !delta.isEmpty else { continue }
-                            emitted = true
-                            continuation.yield(delta)
+                            if payload == "[DONE]" {
+                                reachedDone = true
+                                break
+                            }
+                            guard let data = payload.data(using: .utf8) else { continue }
+                            let chunk = try JSONDecoder().decode(LLMSSEChunk.self, from: data)
+                            if targetChoiceIndex == nil, let firstChoice = chunk.choices.first {
+                                targetChoiceIndex = firstChoice.index ?? 0
+                            }
+                            for choice in chunk.choices where (choice.index ?? 0) == targetChoiceIndex {
+                                if let delta = choice.delta {
+                                    if let content = delta.content, !content.isEmpty {
+                                        emitted = true
+                                        accumulator.content += content
+                                        continuation.yield(.contentDelta(content))
+                                    }
+                                    for toolDelta in delta.toolCalls ?? [] {
+                                        emitted = true
+                                        accumulator.append(toolDelta)
+                                        continuation.yield(.toolCallDelta(
+                                            index: toolDelta.index,
+                                            id: toolDelta.id,
+                                            type: toolDelta.type,
+                                            functionName: toolDelta.function?.name,
+                                            arguments: toolDelta.function?.arguments
+                                        ))
+                                    }
+                                }
+                                if choice.finishReason != nil {
+                                    targetFinished = true
+                                }
+                            }
+                            if targetFinished { break }
                         }
+                        try Task.checkCancellation()
+                        guard targetFinished || reachedDone else {
+                            throw LLMStreamingError.incompleteStream
+                        }
+                        continuation.yield(.completed(try accumulator.message()))
                         continuation.finish()
                         return
                     } catch {
-                        // 已产出内容或不可重试 → 直接失败
                         guard !emitted, attempt < config.retryConfig.maxRetries,
                               config.retryConfig.isRetryable(error) else {
                             continuation.finish(throwing: error)
@@ -159,5 +227,44 @@ public actor LLMChatClient {
                 try await Task.sleep(for: .seconds(config.retryConfig.delay(forAttempt: attempt - 1)))
             }
         }
+    }
+}
+
+private struct StreamingMessageAccumulator {
+    struct PartialToolCall {
+        var id = ""
+        var type: String?
+        var name = ""
+        var arguments = ""
+    }
+
+    var content = ""
+    var toolCalls: [Int: PartialToolCall] = [:]
+
+    mutating func append(_ delta: LLMSSEChunk.Choice.ToolCallDelta) {
+        var value = toolCalls[delta.index, default: PartialToolCall()]
+        if let id = delta.id { value.id += id }
+        if let type = delta.type { value.type = type }
+        if let name = delta.function?.name { value.name += name }
+        if let arguments = delta.function?.arguments { value.arguments += arguments }
+        toolCalls[delta.index] = value
+    }
+
+    func message() throws -> LLMMessage {
+        let completedTools = try toolCalls.keys.sorted().map { index -> LLMToolCall in
+            guard let value = toolCalls[index], !value.id.isEmpty, !value.name.isEmpty else {
+                throw LLMStreamingError.incompleteToolCall(index: index)
+            }
+            return LLMToolCall(
+                id: value.id,
+                type: value.type,
+                function: .init(name: value.name, arguments: value.arguments)
+            )
+        }
+        return LLMMessage(
+            role: .assistant,
+            content: content.isEmpty ? nil : content,
+            toolCalls: completedTools.isEmpty ? nil : completedTools
+        )
     }
 }

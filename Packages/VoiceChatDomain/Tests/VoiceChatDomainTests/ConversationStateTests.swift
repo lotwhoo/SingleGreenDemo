@@ -5,13 +5,16 @@ final class ConversationStateTests: XCTestCase {
     func testInitializerRestoresActiveReplyIdentity() {
         let requestingID = UUID()
         let searchingID = UUID()
+        let streamingID = UUID()
 
         let requesting = ConversationState(replyState: .requesting(requestingID))
         let searching = ConversationState(replyState: .searching(searchingID))
+        let streaming = ConversationState(replyState: .streaming(streamingID))
         let completed = ConversationState(replyState: .completed(UUID()))
 
         XCTAssertEqual(requesting.activeReplyID, requestingID)
         XCTAssertEqual(searching.activeReplyID, searchingID)
+        XCTAssertEqual(streaming.activeReplyID, streamingID)
         XCTAssertNil(completed.activeReplyID)
     }
 
@@ -115,5 +118,71 @@ final class ConversationStateTests: XCTestCase {
         XCTAssertNil(state.cancelActiveReply())
         XCTAssertEqual(state.messages, [message])
         XCTAssertEqual(state.replyState, .idle)
+    }
+
+    func testReplyDeltasAccumulateInOrderAndRejectStaleID() {
+        let id = UUID()
+        var state = ConversationState()
+        state.beginReply(id: id)
+
+        XCTAssertTrue(state.appendReplyDelta(id: id, delta: "你"))
+        XCTAssertTrue(state.appendReplyDelta(id: id, delta: "好"))
+        XCTAssertFalse(state.appendReplyDelta(id: UUID(), delta: "旧"))
+        XCTAssertEqual(state.messages.first?.text, "你好")
+        XCTAssertEqual(state.replyState, .streaming(id))
+        XCTAssertTrue(state.completeReply(id: id))
+        XCTAssertEqual(state.messages.first?.status, .completed)
+    }
+
+    func testFailurePreservesPartialReplyButEmptyFailureRemovesPlaceholder() {
+        let partialID = UUID()
+        var partial = ConversationState()
+        partial.beginReply(id: partialID)
+        partial.appendReplyDelta(id: partialID, delta: "部分回答")
+
+        XCTAssertTrue(partial.failReply(id: partialID, message: "中断"))
+        XCTAssertEqual(partial.messages.first?.text, "部分回答")
+        XCTAssertEqual(partial.messages.first?.status, .failed)
+        XCTAssertEqual(partial.replyState, .failed(partialID, "中断"))
+
+        let emptyID = UUID()
+        var empty = ConversationState()
+        empty.beginReply(id: emptyID)
+        XCTAssertTrue(empty.failReply(id: emptyID, message: "失败"))
+        XCTAssertTrue(empty.messages.isEmpty)
+
+        let whitespaceID = UUID()
+        var whitespace = ConversationState()
+        whitespace.beginReply(id: whitespaceID)
+        whitespace.appendReplyDelta(id: whitespaceID, delta: "  \n")
+        XCTAssertTrue(whitespace.failReply(id: whitespaceID, message: "无有效内容"))
+        XCTAssertTrue(whitespace.messages.isEmpty)
+    }
+
+    func testCancellingStreamingReplyRemovesPartialAndRejectsLaterDelta() {
+        let id = UUID()
+        var state = ConversationState()
+        state.beginReply(id: id)
+        XCTAssertTrue(state.appendReplyDelta(id: id, delta: "部分"))
+
+        XCTAssertEqual(state.cancelActiveReply(), id)
+        XCTAssertTrue(state.messages.isEmpty)
+        XCTAssertEqual(state.replyState, .cancelled(id))
+        XCTAssertFalse(state.appendReplyDelta(id: id, delta: "迟到"))
+    }
+
+    func testFailureCanExplicitlyDiscardUntrustedPartialReply() {
+        let id = UUID()
+        var state = ConversationState()
+        state.beginReply(id: id)
+        state.appendReplyDelta(id: id, delta: "不可信正文")
+
+        XCTAssertTrue(state.failReply(
+            id: id,
+            message: "mixed content and tool call",
+            preservingPartial: false
+        ))
+        XCTAssertTrue(state.messages.isEmpty)
+        XCTAssertEqual(state.replyState, .failed(id, "mixed content and tool call"))
     }
 }

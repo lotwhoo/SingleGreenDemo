@@ -45,7 +45,7 @@ struct HUDOverlayView: View {
             )
         }
         .allowsHitTesting(false)
-        .accessibilityHidden(true)
+        .accessibilityHidden(scene.sceneID != "ai_conversation")
     }
 
     @ViewBuilder
@@ -57,6 +57,14 @@ struct HUDOverlayView: View {
                 .minimumScaleFactor(0.62)
                 .lineLimit(style == .detail ? 2 : 1)
                 .multilineTextAlignment(.center)
+
+        case let .flowingText(value, isStreaming, footer):
+            HUDFlowingTextView(
+                text: value,
+                isStreaming: isStreaming,
+                footer: footer,
+                font: .system(size: 17 * profile.textScale, weight: .medium, design: .rounded)
+            )
 
         case let .symbol(name):
             Image(systemName: name)

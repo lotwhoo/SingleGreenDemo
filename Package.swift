@@ -15,7 +15,6 @@ let package = Package(
             exclude: [
                 "App",
                 "Assets.xcassets",
-                "Configuration",
                 "Experiences/AIConversation",
                 "Platform/AI",
                 "Platform/Environment",

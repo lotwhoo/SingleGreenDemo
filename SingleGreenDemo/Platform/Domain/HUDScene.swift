@@ -15,6 +15,7 @@ enum HUDTextStyle: Equatable, Sendable {
 
 enum HUDElementContent: Equatable, Sendable {
     case text(String, HUDTextStyle)
+    case flowingText(String, isStreaming: Bool, footer: String?)
     case symbol(String)
     case progress(Double)
 }

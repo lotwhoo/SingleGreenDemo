@@ -129,6 +129,30 @@ final class SingleGreenCoreTests: XCTestCase {
         XCTAssertEqual(runtime.lastEventDescription, "background_update")
     }
 
+    func testRuntimeNewestSnapshotKeepsCompleteCumulativeStreamingPrefix() async {
+        let session = StreamingExperience(kind: .navigation)
+        let runtime = ExperienceRuntime(sessions: [session])
+        var cumulative = ""
+
+        for revision in 1...100 {
+            cumulative += "字"
+            session.emit(
+                revision: revision,
+                eventDescription: "delta_\(revision)",
+                flowingText: cumulative
+            )
+        }
+        await waitUntil { runtime.scene.revision == 100 }
+
+        guard let element = runtime.scene.elements.first,
+              case .flowingText(let text, let isStreaming, _) = element.content else {
+            return XCTFail("最新快照应包含累计流式文本")
+        }
+        XCTAssertEqual(text, String(repeating: "字", count: 100))
+        XCTAssertTrue(isStreaming)
+        XCTAssertEqual(runtime.lastEventDescription, "delta_100")
+    }
+
     func testOldAsyncEventCannotPublishAfterExperienceSwitch() async {
         let oldSession = SuspendedExperience(kind: .navigation)
         let destination = StreamingExperience(kind: .caption)
@@ -233,12 +257,18 @@ private final class StreamingExperience: ExperienceSession {
     func handle(_ event: DemoEvent) async {}
     func reset() async {}
 
-    func emit(revision: Int, eventDescription: String) {
+    func emit(revision: Int, eventDescription: String, flowingText: String? = nil) {
         scene = HUDScene(
             sceneID: "stream_\(kind.rawValue)",
             revision: revision,
             presentation: .focused,
-            elements: []
+            elements: flowingText.map {
+                [HUDElement(
+                    id: "streaming_answer",
+                    frame: NormalizedRect(x: 0, y: 0, width: 1, height: 1),
+                    content: .flowingText($0, isStreaming: true, footer: nil)
+                )]
+            } ?? []
         )
         primaryActionTitle = "流式动作 \(revision)"
         continuation.yield(ExperienceSnapshot(

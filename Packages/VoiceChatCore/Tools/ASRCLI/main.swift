@@ -47,7 +47,7 @@ struct ASRCLI {
             let bochaKey = try resolveBochaKey()
             let client = LLMChatClient(config: LLMChatClient.Config(apiKey: dsKey))
             let searcher = BochaSearchClient(config: BochaSearchClient.Config(apiKey: bochaKey))
-            let agent = LLMAgent(client: client, executor: searcher,
+            let agent = LLMAgent(transport: client, executor: searcher,
                                  config: .init(systemPrompt: "你是语音助手，用简洁中文回答。"))
             print("提问: \(question)")
             let answer = try await agent.send(question) { toolName in

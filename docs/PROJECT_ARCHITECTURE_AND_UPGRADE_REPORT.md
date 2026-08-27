@@ -10,16 +10,16 @@
 
 ## 1. 执行摘要
 
-本项目已经从单页演示程序演进为一个小型、可扩展的单绿 HUD Experience 平台。平台负责相机环境预览、显示参数、统一交互事件、Experience 生命周期和 HUD 渲染；AI 对话以独立 Experience 接入，并沿用 AiiOSStudy 的 Domain、Core、LLMKit 三层实现 ASR → LLM Agent → 联网搜索。
+本项目已经从单页演示程序演进为一个小型、可扩展的单绿 HUD Experience 平台。平台负责相机环境预览、显示参数、统一交互事件、Experience 生命周期和 HUD 渲染；AI 对话以独立 Experience 接入，并通过 VoiceChatDomain、VoiceChatCore、LLMKit 与 StreamingTextKit 实现 ASR → LLM Agent → 联网搜索 → 字素安全流式显示。
 
-当前架构评分为 **9.4 / 10**。最强的部分是单向依赖、Runtime 单一输出源、AI 端口适配器、可控异步依赖、关键路径测试，以及仓库内自包含的 VoiceChat Packages。主要限制是真实 API 闭环尚未自动化、Swift 6 严格并发尚未完全开启、CI 尚未建立，以及外部开源分发前仍需补充许可证信息。
+当前架构评分为 **9.5 / 10**。最强的部分是单向依赖、Runtime 单一输出源、AI Ports/Adapters、独立流式文本模块、LLM 语义传输端口、可控异步依赖和关键路径测试。主要限制是真实 API 闭环尚未自动化、Swift 6 严格并发尚未完全开启、CI 尚未建立，以及外部开源分发前仍需补充许可证信息。
 
 | 维度 | 评分 | 结论 |
 | --- | ---: | --- |
 | 简洁性 | 9.2 | 当前规模没有引入不必要的架构框架，核心路径清楚 |
-| 模块化 | 9.4 | Experience、Runtime、Renderer、AI Ports/Adapters 边界明确 |
-| 可测试性 | 9.3 | 116 项测试，关键 AI/Runtime 文件覆盖率超过 90% |
-| 可扩展性 | 9.1 | 新 Experience 和新供应商都可通过协议接入 |
+| 模块化 | 9.6 | 流式文本、LLM Transport、Ports、Adapters 均有独立边界 |
+| 可测试性 | 9.4 | 156 项测试，算法下沉到 Package 后可独立验证 |
+| 可扩展性 | 9.4 | 新 Experience、打字策略和 LLM Transport 均可通过稳定接口接入 |
 | 可移植性 | 9.3 | 依赖已纳入仓库；克隆后不再要求外部 sibling 目录 |
 | 生产就绪度 | 7.3 | 仍缺真实 API E2E、CI、服务端短期凭证和完整观测体系 |
 
@@ -69,6 +69,7 @@ flowchart TD
     Domain[VoiceChatDomain]
     ASR[VoiceChatCore]
     Agent[LLMKit]
+    Streaming[StreamingTextKit]
     Services[豆包 ASR / DeepSeek / 博查]
 
     App --> UI
@@ -84,6 +85,7 @@ flowchart TD
     AIExp --> Controller
     Controller --> Domain
     Controller --> Ports
+    Controller --> Streaming
     Ports --> ASR
     Ports --> Agent
     ASR --> Services
@@ -145,6 +147,8 @@ Runtime 对激活和普通事件共用 `commandGeneration`：
 
 AI Controller 对回答使用独立 reply generation 和回复 UUID。重置、打断或新会话会取消旧任务；旧回复、旧失败和重复 finished 事件不能污染新会话。
 
+LLM 网络累计文本与 HUD 可见文本分开管理：`ConversationState` 按 reply UUID 立即累加真实 SSE delta，`StreamingTextKit.TypewriterTextBuffer` 再以 Swift `Character` 边界和默认 33ms tick 平滑追平。节奏由 `TypewriterPolicy` 注入，Unicode 完成对齐与滚动判定也是无 UI 副作用的模块算法。Controller 只编排状态和 tick；所有网络事件与打字 tick 同时校验 UUID 与 generation。
+
 ### 4.4 AI 对话链路
 
 ```text
@@ -158,7 +162,9 @@ Runtime tap
 → LLMKit.LLMAgent
 → 可选 web_search 工具
 → BochaSearchClient
-→ 最终回答
+→ 最终回答 SSE delta
+→ ConversationState pending 累加
+→ StreamingTextKit 字素安全展示
 → ConversationHUDMapper
 → ExperienceSnapshot
 → Runtime
@@ -174,8 +180,13 @@ idle
 → recognizing
 → thinking
 → searching（可选）
+→ streaming
 → completed / failed
 ```
+
+`LLMChatClient.completeMessageStreaming` 同时解析 `content` 与按 index 分片的 `tool_calls`。`LLMAgent` 仅依赖 `LLMChatTransport`，供应商 HTTP/SSE、本地模型或网关可以独立替换。`sendStreaming` 把单轮用户请求视为事务：最终无工具轮才提交助手上下文；失败或取消不得提交。
+
+AI 回答布局使用专用 `flowingText` 元素，高度为 safeRect 的 61%，保持固定字号和左对齐。`HUDFlowingTextView` 通过尾部 anchor 自动上翻；Reduce Motion 下不执行逐字或滚动动画。流式中的文本对 VoiceOver 隐藏，完成后以整体文本提供读取，避免逐 token 播报。
 
 ## 5. 模块职责与稳定接口
 
@@ -189,9 +200,10 @@ idle
 | `Platform/Profiles/` | 视口、颜色、字体和强度配置 | `DisplayProfile` | 体验内容 |
 | `Platform/Environment/` | 相机权限和 Session 生命周期 | `CameraSessionController` | HUD 或 AI 业务 |
 | `Platform/AI/` | AI 用例、端口、生产适配器、配置 | ASR/Agent ports | App 页面布局 |
+| `StreamingTextKit` | 打字节奏、字素缓冲、Unicode 对齐、自动尾随策略 | `TypewriterPolicy`、`TypewriterTextBuffer`、`StreamingTextReconciler` | 会话状态、SwiftUI 样式、网络 |
 | `VoiceChatDomain` | 消息和回复生命周期 | `ConversationState` | 音频、网络、UI |
 | `VoiceChatCore` | 音频、ASR WebSocket 和协议帧 | `ASRSession` | LLM 和 HUD |
-| `LLMKit` | Chat Completions、上下文、工具循环、搜索 | `LLMAgent` | 麦克风和 App 生命周期 |
+| `LLMKit` | Chat Completions、SSE、上下文事务、工具循环、搜索 | `LLMChatTransport`、`LLMAgent` | 麦克风、HUD 和 App 生命周期 |
 
 ## 6. 配置与安全
 
@@ -223,12 +235,15 @@ idle
 
 | 测试层 | 数量 | 结果 |
 | --- | ---: | --- |
-| App-hosted XCTest | 22 | 通过 |
-| 平台 Core SwiftPM | 14 | 通过 |
-| VoiceChatDomain | 10 | 通过 |
+| App-hosted XCTest | 36 | 通过 |
+| 平台 Core SwiftPM | 15 | 通过 |
+| VoiceChatDomain | 14 | 通过 |
 | VoiceChatCore | 25 | 通过 |
-| LLMKit | 45 | 通过 |
-| 合计 | **116** | **0 失败** |
+| LLMKit | 59 | 通过 |
+| StreamingTextKit | 7 | 通过 |
+| 合计 | **156** | **0 失败** |
+
+构建证据：签名 App-hosted XCTest 通过；arm64 + x86_64 Simulator build 通过；Apple Development 签名的 iphoneos arm64 build 通过。用户已确认本轮重构前后的真机功能表现符合预期。
 
 覆盖率：
 
@@ -251,7 +266,9 @@ idle
 - 搜索状态、配置快照、回复取消和上下文清理。
 - 注入时钟驱动的免按 VAD，无真实等待。
 - Domain 回复 UUID 隔离、失败回滚和旧回复防覆盖。
-- ASR 帧、gzip、LLM 编码、SSE、重试、工具调用和博查响应。
+- pending delta 累加、部分失败保留、完成时机和 Reset 迟到事件隔离。
+- StreamingTextKit 字素边界、combining scalar、自适应追平、可注入策略、Unicode 对齐和自动跟随。
+- ASR 帧、gzip、LLM 编码、SSE 正文/工具分片、流式工具轮、重试、工具调用和博查响应。
 
 ### 7.3 尚未覆盖
 
@@ -302,12 +319,20 @@ final class ExampleExperience: ExperienceSession {
 
 ### 8.3 替换 LLM 或搜索供应商
 
-- 新实现遵守 `ConversationAgent`。
-- 工具调用状态必须通过 `onToolCall` 上报。
-- 上下文、工具循环和失败回滚放在 Agent 层，不进入 UI。
-- 供应商配置应形成不可变快照，避免请求过程中读取变化的设置。
+- 只替换 LLM 网络/模型时，实现 `LLMChatTransport`，继续复用 `LLMAgent` 的上下文事务和工具循环。
+- 替换整个 Agent 编排时，实现 App 层 `ConversationAgent`。
+- 搜索或新工具实现 `LLMToolExecutor`，不将工具业务写入 Transport。
+- 供应商配置形成不可变快照，在 `ConversationLiveAdapters.swift` 完成生产装配。
 
-### 8.4 新增显示硬件 Profile
+### 8.4 调整或复用打字效果
+
+- 默认使用 `TypewriterPolicy.standard`，保持当前 33ms 节奏和约 15 tick 追平。
+- 新产品通过构建新 `TypewriterPolicy` 调整节奏，不 fork buffer 代码。
+- 复用 `StreamingTextReconciler` 处理 SSE 最终文本，不按 Character 索引拼接后缀。
+- SwiftUI 样式可替换，但自动滚动判定继续复用 `StreamingTextAutoFollowPolicy`。
+- 完整接口和升级检查表见 `docs/STREAMING_MODULES_UPGRADE_GUIDE.md`。
+
+### 8.5 新增显示硬件 Profile
 
 - 新建不可变 `DisplayProfile`，使用归一化 viewport 和 safe area。
 - 保持 Renderer 与物理设备无关。

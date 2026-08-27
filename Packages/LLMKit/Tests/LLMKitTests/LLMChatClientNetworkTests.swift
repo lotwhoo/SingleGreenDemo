@@ -180,4 +180,178 @@ final class LLMChatClientNetworkTests: XCTestCase {
             XCTFail("错误类型不对: \(error)")
         }
     }
+
+    func testMessageStreamingAssemblesContentAndToolCallFragments() async throws {
+        MockURLProtocol.requestHandler = { _ in
+            let sse = """
+            data: {"choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"id":"call_1","type":"function","function":{"name":"web_search","arguments":"{\\"query\\":\\""}}]}}]}
+
+            data: {"choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"北京天气\\"}"}}]},"finish_reason":"tool_calls"}]}
+
+            data: [DONE]
+
+            """
+            return (self.httpResponse(200), Data(sse.utf8))
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
+        let client = LLMChatClient(config: .init(apiKey: "sk-test"), session: makeSession())
+        var events: [LLMStreamingEvent] = []
+        for try await event in client.completeMessageStreaming(
+            messages: [.init(role: .user, content: "搜索")],
+            tools: [LLMTool(function: .init(name: "web_search", description: "搜索", parameters: [:]))]
+        ) {
+            events.append(event)
+        }
+
+        XCTAssertEqual(events.count, 3)
+        guard case .completed(let message) = events.last else {
+            return XCTFail("应发布完整消息")
+        }
+        XCTAssertNil(message.content)
+        XCTAssertEqual(message.toolCalls?.first?.id, "call_1")
+        XCTAssertEqual(message.toolCalls?.first?.function.name, "web_search")
+        XCTAssertEqual(message.toolCalls?.first?.function.arguments, #"{"query":"北京天气"}"#)
+    }
+
+    func testMessageStreamingPublishesContentFragmentsAndCompletedMessage() async throws {
+        MockURLProtocol.requestHandler = { _ in
+            let sse = """
+            data: {"choices":[{"index":0,"delta":{"content":"你好"}}]}
+
+            data: {"choices":[{"index":0,"delta":{"content":"👋"},"finish_reason":"stop"}]}
+
+            data: [DONE]
+
+            """
+            return (self.httpResponse(200), Data(sse.utf8))
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
+        let client = LLMChatClient(config: .init(apiKey: "sk-test"), session: makeSession())
+        var events: [LLMStreamingEvent] = []
+        for try await event in client.completeMessageStreaming(
+            messages: [.init(role: .user, content: "hi")]
+        ) {
+            events.append(event)
+        }
+
+        XCTAssertEqual(events, [
+            .contentDelta("你好"),
+            .contentDelta("👋"),
+            .completed(.init(role: .assistant, content: "你好👋"))
+        ])
+    }
+
+    func testMessageStreamingRejectsIncompleteToolCall() async {
+        MockURLProtocol.requestHandler = { _ in
+            let sse = """
+            data: {"choices":[{"index":0,"delta":{"tool_calls":[{"index":2,"function":{"arguments":"{}"}}]},"finish_reason":"tool_calls"}]}
+
+            data: [DONE]
+
+            """
+            return (self.httpResponse(200), Data(sse.utf8))
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
+        let client = LLMChatClient(config: .init(apiKey: "sk-test"), session: makeSession())
+        do {
+            for try await _ in client.completeMessageStreaming(
+                messages: [.init(role: .user, content: "搜索")]
+            ) {}
+            XCTFail("不完整工具调用应失败")
+        } catch let error as LLMStreamingError {
+            XCTAssertEqual(error, .incompleteToolCall(index: 2))
+        } catch {
+            XCTFail("错误类型不对: \(error)")
+        }
+    }
+
+    func testMessageStreamingUsesOnlyFirstObservedChoice() async throws {
+        MockURLProtocol.requestHandler = { _ in
+            let sse = """
+            data: {"choices":[{"index":1,"delta":{"content":"目标"}},{"index":0,"delta":{"content":"其他"}}]}
+
+            data: {"choices":[{"index":0,"delta":{"content":"干扰"},"finish_reason":"stop"},{"index":1,"delta":{"content":"回答"},"finish_reason":"stop"}]}
+
+            """
+            return (self.httpResponse(200), Data(sse.utf8))
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
+        let client = LLMChatClient(config: .init(apiKey: "sk-test"), session: makeSession())
+        var events: [LLMStreamingEvent] = []
+        for try await event in client.completeMessageStreaming(messages: [.init(role: .user, content: "hi")]) {
+            events.append(event)
+        }
+
+        XCTAssertEqual(events, [
+            .contentDelta("目标"),
+            .contentDelta("回答"),
+            .completed(.init(role: .assistant, content: "目标回答"))
+        ])
+    }
+
+    func testMessageStreamingAcceptsTargetFinishReasonWithoutDone() async throws {
+        MockURLProtocol.requestHandler = { _ in
+            let sse = """
+            data: {"choices":[{"index":0,"delta":{"content":"完成"},"finish_reason":"stop"}]}
+
+            """
+            return (self.httpResponse(200), Data(sse.utf8))
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
+        let client = LLMChatClient(config: .init(apiKey: "sk-test"), session: makeSession())
+        var events: [LLMStreamingEvent] = []
+        for try await event in client.completeMessageStreaming(messages: [.init(role: .user, content: "hi")]) {
+            events.append(event)
+        }
+        XCTAssertEqual(events.last, .completed(.init(role: .assistant, content: "完成")))
+    }
+
+    func testMessageStreamingRejectsContentThenConnectionCloseWithoutTerminator() async {
+        MockURLProtocol.requestHandler = { _ in
+            let sse = """
+            data: {"choices":[{"index":0,"delta":{"content":"未完成"}}]}
+
+            """
+            return (self.httpResponse(200), Data(sse.utf8))
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
+        let client = LLMChatClient(config: .init(apiKey: "sk-test"), session: makeSession())
+        do {
+            for try await _ in client.completeMessageStreaming(messages: [.init(role: .user, content: "hi")]) {}
+            XCTFail("没有结束信号应失败")
+        } catch let error as LLMStreamingError {
+            XCTAssertEqual(error, .incompleteStream)
+        } catch {
+            XCTFail("错误类型不对: \(error)")
+        }
+    }
+
+    func testMessageStreamingIgnoresNonTargetFinishReason() async {
+        MockURLProtocol.requestHandler = { _ in
+            let sse = """
+            data: {"choices":[{"index":1,"delta":{"content":"目标"}},{"index":0,"delta":{"content":"其他"}}]}
+
+            data: {"choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+
+            """
+            return (self.httpResponse(200), Data(sse.utf8))
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
+        let client = LLMChatClient(config: .init(apiKey: "sk-test"), session: makeSession())
+        do {
+            for try await _ in client.completeMessageStreaming(messages: [.init(role: .user, content: "hi")]) {}
+            XCTFail("非目标 choice 的 finish_reason 不得完成请求")
+        } catch let error as LLMStreamingError {
+            XCTAssertEqual(error, .incompleteStream)
+        } catch {
+            XCTFail("错误类型不对: \(error)")
+        }
+    }
 }

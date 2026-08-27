@@ -113,7 +113,6 @@ final class RetryNetworkTests: XCTestCase {
         config.protocolClasses = [MockURLProtocol.self]
         MockURLProtocol.requestCount = 0
         MockURLProtocol.requestHandler = { _ in
-            let count = MockURLProtocol.requestCount
             MockURLProtocol.requestCount += 1
             return (HTTPURLResponse(url: URL(string: "https://x/v1/chat/completions")!,
                                     statusCode: 400, httpVersion: nil, headerFields: nil)!,
