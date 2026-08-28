@@ -1,20 +1,27 @@
+import SingleGreenGlassesKit
 import SwiftUI
 import UIKit
 
 struct ControlPanelView: View {
     @EnvironmentObject private var runtime: ExperienceRuntime
     @EnvironmentObject private var profileStore: DisplayProfileStore
-    @EnvironmentObject private var conversationController: VoiceConversationController
     @Binding var debugMode: Bool
 
     var body: some View {
         VStack(spacing: 14) {
             experienceMenu
-            if runtime.selectedKind == .conversation {
-                conversationControls
-            } else {
-                primaryAction
-                gestureControls
+            if let controlState = runtime.controlState {
+                VStack(spacing: 12) {
+                    experienceStatus(controlState)
+                    if let action = primaryAction {
+                        actionButton(action, minimumHeight: 54)
+                    }
+                }
+            } else if let action = primaryAction {
+                actionButton(action, minimumHeight: 52)
+            }
+            if !secondaryActions.isEmpty {
+                secondaryActionControls
             }
             displayControls
         }
@@ -34,18 +41,21 @@ struct ControlPanelView: View {
                 selection: Binding(
                     get: { runtime.selectedKind },
                     set: { kind in
-                        Task { await runtime.activate(kind) }
+                        let expectedKind = runtime.selectedKind
+                        Task {
+                            await runtime.activate(kind, expectedKind: expectedKind)
+                        }
                     }
                 )
             ) {
-                ForEach(runtime.availableKinds) { kind in
-                    Label(kind.displayName, systemImage: kind.systemImage)
-                        .tag(kind)
+                ForEach(runtime.availableDescriptors) { descriptor in
+                    Label(descriptor.displayName, systemImage: descriptor.systemImageName)
+                        .tag(descriptor.kind)
                 }
             }
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: runtime.selectedKind.systemImage)
+                Image(systemName: runtime.selectedDescriptor.systemImageName)
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(profileStore.activeProfile.tintColor)
                     .frame(width: 34, height: 34)
@@ -55,9 +65,9 @@ struct ControlPanelView: View {
                     )
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(runtime.selectedKind.displayName)
+                    Text(runtime.selectedDescriptor.displayName)
                         .font(.headline)
-                    Text(runtime.selectedKind == .conversation ? "豆包 ASR → DeepSeek Agent → 博查搜索" : "体验场景 · 本地样例")
+                    Text(runtime.selectedDescriptor.detail)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -76,17 +86,17 @@ struct ControlPanelView: View {
         .buttonStyle(.plain)
     }
 
-    private var conversationControls: some View {
+    private func experienceStatus(_ controlState: ExperienceControlState) -> some View {
         VStack(spacing: 12) {
             HStack(spacing: 9) {
                 Circle()
-                    .fill(conversationController.state == .failed ? .red : profileStore.activeProfile.tintColor)
+                    .fill(controlState.errorMessage == nil ? profileStore.activeProfile.tintColor : .red)
                     .frame(width: 8, height: 8)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(conversationController.state.displayName)
+                    Text(controlState.statusTitle)
                         .font(.subheadline.weight(.semibold))
-                    Text(conversationStatusDetail)
+                    Text(controlState.statusDetail)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
@@ -96,7 +106,7 @@ struct ControlPanelView: View {
             }
             .padding(.horizontal, 12)
 
-            if let error = conversationController.lastError {
+            if let error = controlState.errorMessage {
                 HStack(alignment: .top, spacing: 10) {
                     Text(error)
                         .font(.caption2.monospaced())
@@ -119,37 +129,23 @@ struct ControlPanelView: View {
                 .background(.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
 
-            Button {
-                Task { await runtime.handle(.tap) }
-            } label: {
-                Label(
-                    runtime.primaryActionTitle,
-                    systemImage: conversationController.primaryActionSystemImage
-                )
-                .font(.headline)
-                .frame(maxWidth: .infinity, minHeight: 54)
-            }
-            .buttonStyle(.plain)
-            .glassEffect(
-                .regular
-                    .tint(profileStore.activeProfile.tintColor.opacity(0.82))
-                    .interactive(),
-                in: RoundedRectangle(cornerRadius: 18, style: .continuous)
-            )
-            .disabled(!conversationController.allowsPrimaryAction)
-            .opacity(conversationController.allowsPrimaryAction ? 1 : 0.68)
         }
     }
 
-    private var primaryAction: some View {
+    private func actionButton(
+        _ action: ResolvedExperienceAction,
+        minimumHeight: CGFloat
+    ) -> some View {
         Button {
+            let expectedKind = runtime.selectedKind
+            let actionID = action.id
             Task {
-                await runtime.handle(runtime.selectedKind == .notification ? .triggerAlert : .tap)
+                await runtime.performAction(id: actionID, expectedKind: expectedKind)
             }
         } label: {
-            Label(runtime.primaryActionTitle, systemImage: primaryActionSystemImage)
+                Label(action.title, systemImage: action.systemImageName)
                 .font(.headline)
-                .frame(maxWidth: .infinity, minHeight: 52)
+                .frame(maxWidth: .infinity, minHeight: minimumHeight)
         }
         .buttonStyle(.plain)
         .glassEffect(
@@ -158,34 +154,60 @@ struct ControlPanelView: View {
                 .interactive(),
             in: RoundedRectangle(cornerRadius: 18, style: .continuous)
         )
+        .disabled(!action.isEnabled)
+        .opacity(action.isEnabled ? 1 : 0.68)
+        .accessibilityLabel(action.accessibilityLabel)
     }
 
-    private var gestureControls: some View {
-        HStack(spacing: 10) {
-            gestureButton(title: "上滑", systemImage: "arrow.up", event: .swipeUp)
-            gestureButton(title: "点击", systemImage: "hand.tap", event: .tap)
-            gestureButton(title: "下滑", systemImage: "arrow.down", event: .swipeDown)
+    private var secondaryActionControls: some View {
+        ViewThatFits(in: .horizontal) {
+            secondaryActionGrid(
+                columnCount: SecondaryActionGridPolicy.preferredColumnCount(
+                    actionCount: secondaryActions.count
+                )
+            )
+            secondaryActionGrid(columnCount: min(2, secondaryActions.count))
+            secondaryActionGrid(columnCount: 1)
         }
     }
 
-    private func gestureButton(
-        title: String,
-        systemImage: String,
-        event: DemoEvent
-    ) -> some View {
+    private func secondaryActionGrid(columnCount: Int) -> some View {
+        let rows = SecondaryActionGridPolicy.rows(
+            secondaryActions,
+            columnCount: columnCount
+        )
+        return VStack(spacing: 10) {
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                HStack(spacing: 10) {
+                    ForEach(row) { action in
+                        secondaryActionButton(action)
+                            .frame(minWidth: SecondaryActionGridPolicy.minimumButtonWidth)
+                    }
+                }
+            }
+        }
+    }
+
+    private func secondaryActionButton(_ action: ResolvedExperienceAction) -> some View {
         Button {
-            Task { await runtime.handle(event) }
+            let expectedKind = runtime.selectedKind
+            let actionID = action.id
+            Task {
+                await runtime.performAction(id: actionID, expectedKind: expectedKind)
+            }
         } label: {
             VStack(spacing: 5) {
-                Image(systemName: systemImage)
+                Image(systemName: action.systemImageName)
                     .font(.system(size: 17, weight: .semibold))
-                Text(title)
+                Text(action.title)
                     .font(.caption.weight(.medium))
             }
             .frame(maxWidth: .infinity, minHeight: 52)
         }
         .buttonStyle(.bordered)
         .buttonBorderShape(.roundedRectangle(radius: 16))
+        .disabled(!action.isEnabled)
+        .accessibilityLabel(action.accessibilityLabel)
     }
 
     private var displayControls: some View {
@@ -204,6 +226,29 @@ struct ControlPanelView: View {
                     .labelsHidden()
             }
 
+            if debugMode {
+                Picker(
+                    "显示配置",
+                    selection: Binding(
+                        get: { profileStore.activeProfileID },
+                        set: { profileID in
+                            do {
+                                try profileStore.selectProfile(id: profileID)
+                            } catch {
+                                assertionFailure("Catalog picker returned an unknown display profile: \(error)")
+                            }
+                        }
+                    )
+                ) {
+                    ForEach(profileStore.catalog.profiles, id: \.id) { profile in
+                        Text(profile.displayName)
+                            .tag(profile.id)
+                    }
+                }
+                .pickerStyle(.menu)
+                .accessibilityIdentifier("display_profile_picker")
+            }
+
             HStack(spacing: 10) {
                 Image(systemName: "sun.min")
                     .foregroundStyle(.secondary)
@@ -219,7 +264,8 @@ struct ControlPanelView: View {
 
             if debugMode {
                 Button(role: .destructive) {
-                    Task { await runtime.handle(.reset) }
+                    let expectedKind = runtime.selectedKind
+                    Task { await runtime.handle(.reset, expectedKind: expectedKind) }
                 } label: {
                     Label("重置当前体验", systemImage: "arrow.counterclockwise")
                         .font(.caption.weight(.medium))
@@ -230,26 +276,30 @@ struct ControlPanelView: View {
         .padding(.horizontal, 2)
     }
 
-    private var conversationStatusDetail: String {
-        if let error = conversationController.lastError {
-            return error
-        }
-        if !conversationController.transcript.isEmpty {
-            if !conversationController.assistantReply.isEmpty {
-                return conversationController.assistantReply
-            }
-            return conversationController.transcript
-        }
-        return "语音识别 → 多轮 Agent → 按需联网搜索"
+    private var primaryAction: ResolvedExperienceAction? {
+        runtime.activeActions.first { $0.placement == .primary }
     }
 
-    private var primaryActionSystemImage: String {
-        switch runtime.selectedKind {
-        case .conversation: "waveform"
-        case .systemStatus: "arrow.clockwise"
-        case .navigation: "location.fill"
-        case .notification: "bell.badge.fill"
-        case .caption: "text.bubble.fill"
+    private var secondaryActions: [ResolvedExperienceAction] {
+        runtime.activeActions.filter { $0.placement == .secondary }
+    }
+}
+
+enum SecondaryActionGridPolicy {
+    static let maximumColumnCount = 3
+    static let minimumButtonWidth: CGFloat = 84
+
+    static func preferredColumnCount(actionCount: Int) -> Int {
+        min(max(actionCount, 1), maximumColumnCount)
+    }
+
+    static func rows<Element>(
+        _ elements: [Element],
+        columnCount: Int
+    ) -> [[Element]] {
+        let safeColumnCount = max(columnCount, 1)
+        return stride(from: 0, to: elements.count, by: safeColumnCount).map { start in
+            Array(elements[start..<min(start + safeColumnCount, elements.count)])
         }
     }
 }

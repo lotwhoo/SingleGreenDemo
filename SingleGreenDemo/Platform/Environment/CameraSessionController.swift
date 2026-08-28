@@ -130,6 +130,9 @@ private enum CameraSessionPreparationResult: Sendable {
     case unavailable
 }
 
+/// AVCaptureSession is render-read by the preview layer while every mutation, configuration,
+/// start, and stop operation is confined to `queue`; AVFoundation does not express this model as
+/// Sendable, so this is the single App-level unchecked framework boundary.
 private final class CameraSessionPipeline: @unchecked Sendable {
     let session = AVCaptureSession()
 

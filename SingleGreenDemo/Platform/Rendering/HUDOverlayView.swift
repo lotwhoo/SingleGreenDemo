@@ -1,3 +1,4 @@
+import SingleGreenGlassesKit
 import SwiftUI
 
 struct HUDOverlayView: View {

@@ -8,9 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		A00000000000000000000060 /* VoiceChatCore in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000062 /* VoiceChatCore */; };
-		A00000000000000000000064 /* VoiceChatDomain in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000066 /* VoiceChatDomain */; };
 		A00000000000000000000067 /* LLMKit in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000069 /* LLMKit */; };
 		A00000000000000000000070 /* StreamingTextKit in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000072 /* StreamingTextKit */; };
+		A00000000000000000000073 /* SingleGreenGlassesKit in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000075 /* SingleGreenGlassesKit */; };
+		A00000000000000000000076 /* SingleGreenGlassesKit in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000075 /* SingleGreenGlassesKit */; };
+		A00000000000000000000077 /* VoiceChatDomain in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000066 /* VoiceChatDomain */; };
+		A00000000000000000000078 /* WebRTCVoiceActivityDetection in Frameworks */ = {isa = PBXBuildFile; productRef = A0000000000000000000007A /* WebRTCVoiceActivityDetection */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,9 +50,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				A00000000000000000000060 /* VoiceChatCore in Frameworks */,
-				A00000000000000000000064 /* VoiceChatDomain in Frameworks */,
 				A00000000000000000000067 /* LLMKit in Frameworks */,
 				A00000000000000000000070 /* StreamingTextKit in Frameworks */,
+				A00000000000000000000073 /* SingleGreenGlassesKit in Frameworks */,
+				A00000000000000000000078 /* WebRTCVoiceActivityDetection in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -57,6 +61,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A00000000000000000000076 /* SingleGreenGlassesKit in Frameworks */,
+				A00000000000000000000077 /* VoiceChatDomain in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -102,9 +108,10 @@
 			name = SingleGreenDemo;
 			packageProductDependencies = (
 				A00000000000000000000062 /* VoiceChatCore */,
-				A00000000000000000000066 /* VoiceChatDomain */,
 				A00000000000000000000069 /* LLMKit */,
 				A00000000000000000000072 /* StreamingTextKit */,
+				A00000000000000000000075 /* SingleGreenGlassesKit */,
+				A0000000000000000000007A /* WebRTCVoiceActivityDetection */,
 			);
 			productName = SingleGreenDemo;
 			productReference = A00000000000000000000006 /* SingleGreenDemo.app */;
@@ -127,6 +134,10 @@
 				A00000000000000000000005 /* SingleGreenDemoTests */,
 			);
 			name = SingleGreenDemoTests;
+			packageProductDependencies = (
+				A00000000000000000000075 /* SingleGreenGlassesKit */,
+				A00000000000000000000066 /* VoiceChatDomain */,
+			);
 			productName = SingleGreenDemoTests;
 			productReference = A00000000000000000000007 /* SingleGreenDemoTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -167,6 +178,8 @@
 				A00000000000000000000065 /* XCLocalSwiftPackageReference "Packages/VoiceChatDomain" */,
 				A00000000000000000000068 /* XCLocalSwiftPackageReference "Packages/LLMKit" */,
 				A00000000000000000000071 /* XCLocalSwiftPackageReference "Packages/StreamingTextKit" */,
+				A00000000000000000000074 /* XCLocalSwiftPackageReference "Packages/SingleGreenGlassesKit" */,
+				A00000000000000000000079 /* XCLocalSwiftPackageReference "Packages/VoiceActivityDetectionKit" */,
 			);
 			projectDirPath = "";
 			projectRoot = "";
@@ -278,8 +291,9 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_STRICT_CONCURRENCY = minimal;
-				SWIFT_VERSION = 5.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -309,8 +323,9 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_STRICT_CONCURRENCY = minimal;
-				SWIFT_VERSION = 5.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
@@ -330,8 +345,9 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.local.SingleGreenDemoTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_STRICT_CONCURRENCY = minimal;
-				SWIFT_VERSION = 5.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SingleGreenDemo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SingleGreenDemo";
 			};
@@ -352,8 +368,9 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.local.SingleGreenDemoTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_STRICT_CONCURRENCY = minimal;
-				SWIFT_VERSION = 5.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SingleGreenDemo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SingleGreenDemo";
 			};
@@ -408,6 +425,14 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/StreamingTextKit;
 		};
+		A00000000000000000000074 /* XCLocalSwiftPackageReference "Packages/SingleGreenGlassesKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/SingleGreenGlassesKit;
+		};
+		A00000000000000000000079 /* XCLocalSwiftPackageReference "Packages/VoiceActivityDetectionKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/VoiceActivityDetectionKit;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -430,6 +455,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A00000000000000000000071 /* XCLocalSwiftPackageReference "Packages/StreamingTextKit" */;
 			productName = StreamingTextKit;
+		};
+		A00000000000000000000075 /* SingleGreenGlassesKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000074 /* XCLocalSwiftPackageReference "Packages/SingleGreenGlassesKit" */;
+			productName = SingleGreenGlassesKit;
+		};
+		A0000000000000000000007A /* WebRTCVoiceActivityDetection */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000079 /* XCLocalSwiftPackageReference "Packages/VoiceActivityDetectionKit" */;
+			productName = WebRTCVoiceActivityDetection;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

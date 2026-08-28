@@ -1,3 +1,4 @@
+import SingleGreenGlassesKit
 import SwiftUI
 
 struct AppShellView: View {
@@ -55,8 +56,8 @@ struct AppShellView: View {
 
     private var diagnostics: some View {
         HStack(spacing: 7) {
-            Image(systemName: runtime.selectedKind.systemImage)
-            Text(runtime.selectedKind.displayName)
+            Image(systemName: runtime.selectedDescriptor.systemImageName)
+            Text(runtime.selectedDescriptor.displayName)
             Text("·")
             Text(runtime.lastEventDescription)
                 .lineLimit(1)
@@ -89,6 +90,9 @@ private struct PreviewPane: View {
 
     var body: some View {
         GeometryReader { proxy in
+            let projection = HUDPreviewProjection(profile: profileStore.activeProfile)
+            let surfaceSize = projection.surfaceSize(in: proxy.size)
+
             ZStack {
                 CameraEnvironmentView()
 
@@ -99,9 +103,9 @@ private struct PreviewPane: View {
                         intensity: profileStore.intensity,
                         showsSafeArea: debugMode
                     )
-                    .frame(height: proxy.size.height * 0.62)
-                    .frame(maxHeight: .infinity, alignment: .top)
-                    .padding(.top, proxy.safeAreaInsets.top + 42)
+                    .frame(width: surfaceSize.width, height: surfaceSize.height)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: projection.alignment)
+                    .offset(y: projection.verticalOffset(in: proxy.size))
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

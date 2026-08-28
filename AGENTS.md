@@ -19,18 +19,23 @@
 Maintain this dependency direction:
 
 ```text
-SingleGreenDemo composition root
-    -> Conversation ports
+SingleGreenDemo simulator composition root
+    -> SingleGreenGlassesKit
+        -> Experience contracts, runtime, domain models, and built-in experiences
+        -> Conversation ports and VoiceConversationController
+        -> VoiceChatDomain
+        -> StreamingTextKit
     -> Conversation live adapters
         -> VoiceChatCore
         -> LLMKit -> LLMChatTransport -> provider client
-    -> VoiceChatDomain
-    -> StreamingTextKit
     -> SwiftUI HUD rendering
 ```
 
+- `SingleGreenGlassesKit` owns device-independent glasses behavior and must not import SwiftUI, UIKit, AVFoundation, provider SDKs, settings persistence, or camera code.
+- `SingleGreenDemo` is a simulator/debug host. It owns camera preview, control surfaces, settings, live adapters, and composition only.
+- Simulator controls consume generic `ExperienceControlState`; they must not read a concrete experience controller directly.
 - `VoiceConversationController` owns orchestration, state transitions, cancellation, generation checks, and display scheduling.
-- `ConversationPorts.swift` owns stable App-level ASR and Agent contracts.
+- `ConversationPorts.swift` owns stable glasses-core ASR and Agent contracts.
 - `ConversationLiveAdapters.swift` owns production bridges to VoiceChatCore and LLMKit.
 - `VoiceChatDomain` owns conversation and reply lifecycle semantics.
 - `LLMKit` owns provider-neutral chat, SSE parsing contracts, tool rounds, and context transactions.
@@ -68,7 +73,7 @@ Do not move provider-specific code into the Controller, duplicate StreamingTextK
 Run the narrowest affected suite first, then all suites relevant to the changed boundary.
 
 ```bash
-swift test
+cd Packages/SingleGreenGlassesKit && swift test
 cd Packages/VoiceChatDomain && swift test
 cd Packages/VoiceChatCore && swift test
 cd Packages/LLMKit && swift test
