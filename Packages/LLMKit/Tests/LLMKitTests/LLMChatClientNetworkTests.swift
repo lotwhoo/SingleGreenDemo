@@ -214,6 +214,31 @@ final class LLMChatClientNetworkTests: XCTestCase {
         XCTAssertEqual(message.toolCalls?.first?.function.arguments, #"{"query":"北京天气"}"#)
     }
 
+    func testMessageStreamingAssemblesInterleavedToolCallsByIndex() async throws {
+        MockURLProtocol.requestHandler = { _ in
+            let sse = #"""
+            data: {"choices":[{"index":0,"delta":{"tool_calls":[{"index":1,"id":"call_1","type":"function","function":{"name":"second","arguments":"{\"value\":\""}},{"index":0,"id":"call_0","type":"function","function":{"name":"first","arguments":"{\"value\":\""}}]}}]}
+
+            data: {"choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"zero\"}"}},{"index":1,"function":{"arguments":"one\"}"}}]},"finish_reason":"tool_calls"}]}
+
+            data: [DONE]
+
+            """#
+            return (self.httpResponse(200), Data(sse.utf8))
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
+        let client = LLMChatClient(config: .init(apiKey: "sk-test"), session: makeSession())
+        var completedMessage: LLMMessage?
+        for try await event in client.completeMessageStreaming(messages: [.init(role: .user, content: "run")]) {
+            if case .completed(let message) = event { completedMessage = message }
+        }
+
+        let calls = try XCTUnwrap(completedMessage?.toolCalls)
+        XCTAssertEqual(calls.map(\.id), ["call_0", "call_1"])
+        XCTAssertEqual(calls.map(\.function.arguments), [#"{"value":"zero"}"#, #"{"value":"one"}"#])
+    }
+
     func testMessageStreamingPublishesContentFragmentsAndCompletedMessage() async throws {
         MockURLProtocol.requestHandler = { _ in
             let sse = """
@@ -263,6 +288,52 @@ final class LLMChatClientNetworkTests: XCTestCase {
             XCTFail("不完整工具调用应失败")
         } catch let error as LLMStreamingError {
             XCTAssertEqual(error, .incompleteToolCall(index: 2))
+        } catch {
+            XCTFail("错误类型不对: \(error)")
+        }
+    }
+
+    func testMessageStreamingRejectsWhitespaceOnlyToolCallArguments() async {
+        MockURLProtocol.requestHandler = { _ in
+            let sse = #"""
+            data: {"choices":[{"index":0,"delta":{"tool_calls":[{"index":3,"id":"call_3","type":"function","function":{"name":"web_search","arguments":"  \n\t"}}]},"finish_reason":"tool_calls"}]}
+
+            data: [DONE]
+
+            """#
+            return (self.httpResponse(200), Data(sse.utf8))
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
+        let client = LLMChatClient(config: .init(apiKey: "sk-test"), session: makeSession())
+        do {
+            for try await _ in client.completeMessageStreaming(messages: [.init(role: .user, content: "搜索")]) {}
+            XCTFail("空白工具参数应失败")
+        } catch let error as LLMStreamingError {
+            XCTAssertEqual(error, .incompleteToolCall(index: 3))
+        } catch {
+            XCTFail("错误类型不对: \(error)")
+        }
+    }
+
+    func testMessageStreamingRejectsTruncatedToolCallArgumentsAfterAssembly() async {
+        MockURLProtocol.requestHandler = { _ in
+            let sse = #"""
+            data: {"choices":[{"index":0,"delta":{"tool_calls":[{"index":4,"id":"call_4","type":"function","function":{"name":"web_search","arguments":"{\"query\":\"北京"}}]},"finish_reason":"tool_calls"}]}
+
+            data: [DONE]
+
+            """#
+            return (self.httpResponse(200), Data(sse.utf8))
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
+        let client = LLMChatClient(config: .init(apiKey: "sk-test"), session: makeSession())
+        do {
+            for try await _ in client.completeMessageStreaming(messages: [.init(role: .user, content: "搜索")]) {}
+            XCTFail("截断工具参数应失败")
+        } catch let error as LLMStreamingError {
+            XCTAssertEqual(error, .malformedToolCallArguments(index: 4))
         } catch {
             XCTFail("错误类型不对: \(error)")
         }

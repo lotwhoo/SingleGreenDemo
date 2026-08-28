@@ -108,15 +108,15 @@ final class RetryNetworkTests: XCTestCase {
         XCTAssertEqual(MockURLProtocol.requestCount, 2, "应恰好重试一次")
     }
 
-    func testNoRetryOnClientError() async {
+    func testHTTP401BeforeContentDoesNotRetry() async {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [MockURLProtocol.self]
         MockURLProtocol.requestCount = 0
         MockURLProtocol.requestHandler = { _ in
             MockURLProtocol.requestCount += 1
             return (HTTPURLResponse(url: URL(string: "https://x/v1/chat/completions")!,
-                                    statusCode: 400, httpVersion: nil, headerFields: nil)!,
-                    Data(#"{"error":{"message":"bad"}}"#.utf8))
+                                    statusCode: 401, httpVersion: nil, headerFields: nil)!,
+                    Data(#"{"error":{"message":"unauthorized"}}"#.utf8))
         }
         defer { MockURLProtocol.requestHandler = nil }
 
@@ -127,10 +127,10 @@ final class RetryNetworkTests: XCTestCase {
             _ = try await client.complete(messages: [.init(role: .user, content: "hi")])
             XCTFail("应抛出错误")
         } catch let error as LLMAPIError {
-            XCTAssertEqual(error.statusCode, 400)
+            XCTAssertEqual(error.statusCode, 401)
         } catch {
             XCTFail("错误类型不对")
         }
-        XCTAssertEqual(MockURLProtocol.requestCount, 1, "客户端错误不应重试")
+        XCTAssertEqual(MockURLProtocol.requestCount, 1, "401 before content must not retry")
     }
 }

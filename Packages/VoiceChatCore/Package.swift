@@ -11,15 +11,23 @@ let package = Package(
         .library(name: "VoiceChatCore", targets: ["VoiceChatCore"])
     ],
     dependencies: [
-        .package(path: "../LLMKit")
+        .package(path: "../LLMKit"),
+        .package(path: "../VoiceActivityDetectionKit")
     ],
     targets: [
-        .target(name: "VoiceChatCore"),
-        .testTarget(name: "VoiceChatCoreTests", dependencies: ["VoiceChatCore"]),
+        .target(
+            name: "VoiceChatCore",
+            dependencies: ["VoiceActivityDetectionKit"]
+        ),
+        .testTarget(
+            name: "VoiceChatCoreTests",
+            dependencies: ["VoiceChatCore", "VoiceActivityDetectionKit"]
+        ),
         .executableTarget(
             name: "ASRCLI",
             dependencies: ["VoiceChatCore", "LLMKit"],
             path: "Tools/ASRCLI"
         )
-    ]
+    ],
+    swiftLanguageModes: [.v6]
 )

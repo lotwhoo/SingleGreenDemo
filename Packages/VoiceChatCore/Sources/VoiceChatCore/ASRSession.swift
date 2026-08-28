@@ -11,9 +11,9 @@ import os
 /// let eventsTask = Task {
 ///     for await event in session.events {
 ///         switch event {
-///         case .transcript(let text):  print("实时转写: \(text)")
+///         case .transcript(let text):  print("收到转写更新（\(text.count) 字符）")
 ///         case .state(.finished):      print("识别完成")
-///         case .state(.failed(let m)): print("失败: \(m)")
+///         case .state(.failed):        print("识别失败")
 ///         default: break
 ///         }
 ///     }
@@ -25,6 +25,10 @@ import os
 /// 支持两种输入模式：
 /// - 麦克风模式：`start()` 自动录音（iOS）
 /// - 手动喂流模式：`startStream()` + `pushAudio(_:)` 推送 PCM 包
+///
+/// The synchronous control method names are retained. Failure payloads now use `ASRFailure`, an
+/// intentional local-package API migration. Internal state is lock protected, while complete
+/// asynchronous lifecycle operations are serialized so their client calls cannot overlap.
 public final class ASRSession: @unchecked Sendable {
 
     // MARK: - 配置
@@ -72,7 +76,7 @@ public final class ASRSession: @unchecked Sendable {
         case recording     // 录音/流式中
         case finalizing    // 已停止，等待最终结果
         case finished      // 完成（收到最终结果）
-        case failed(String)
+        case failed(ASRFailure)
     }
 
     public enum Event: Sendable {
@@ -80,7 +84,7 @@ public final class ASRSession: @unchecked Sendable {
         case transcript(String)   // 实时增量转写
         case utterance(String)    // 定型句
         case level(Float)         // 录音电平 0~1
-        case error(String)
+        case error(ASRFailure)
     }
 
     public enum SessionError: Error, LocalizedError, Equatable {
@@ -97,21 +101,17 @@ public final class ASRSession: @unchecked Sendable {
 
     // MARK: - 内部状态
 
-    private let config: Config
-    private let client: ASRClient
+    private let client: any ASRSessionClient
     private let audio: AudioCapture?
-    private var eventsCont: AsyncStream<Event>.Continuation?
-    private var clientEventsTask: Task<Void, Never>?
-
-    private let stateLock = NSLock()
-    private var _state: State = .idle
+    private let storage: ASRSessionStorage
+    private let lifecycleGate = AsyncLifecycleGate()
+    private let clientEventsTask: Task<Void, Never>
 
     /// 事件流（可在任意线程订阅）。
     public let events: AsyncStream<Event>
 
-    public init(config: Config) {
-        self.config = config
-        self.client = ASRClient(config: ASRClient.Config(
+    public convenience init(config: Config) {
+        let client = ASRClient(config: ASRClient.Config(
             apiKey: config.apiKey,
             resourceID: config.resourceID,
             host: config.host,
@@ -124,127 +124,354 @@ public final class ASRSession: @unchecked Sendable {
             timeoutInterval: config.timeoutInterval
         ))
         #if os(iOS)
-        self.audio = AudioCapture()
+        self.init(client: client, audio: AudioCapture())
         #else
-        self.audio = nil
+        self.init(client: client, audio: nil)
         #endif
-        let (stream, cont) = AsyncStream<Event>.makeStream()
-        self.events = stream
-        self.eventsCont = cont
+    }
 
-        self.clientEventsTask = Task { [weak self] in
-            guard let self else { return }
-            for await event in self.client.events {
-                self.handleClientEvent(event)
+    init(
+        client: any ASRSessionClient,
+        audio: AudioCapture? = nil,
+        beforeHandlingClientEvent: @escaping @Sendable (ASRClient.Event) async -> Void = { _ in }
+    ) {
+        let (stream, continuation) = AsyncStream<Event>.makeStream()
+        let storage = ASRSessionStorage(continuation: continuation)
+        let clientEvents = client.events
+
+        self.client = client
+        self.audio = audio
+        self.storage = storage
+        self.events = stream
+        self.clientEventsTask = Task { [weak storage] in
+            for await event in clientEvents {
+                guard let storage,
+                      let generation = storage.generationForClientEvent(event) else { continue }
+                await beforeHandlingClientEvent(event)
+                storage.handleClientEvent(event, generation: generation)
             }
         }
     }
 
     deinit {
-        clientEventsTask?.cancel()
-        eventsCont?.finish()
+        clientEventsTask.cancel()
+        storage.finishEvents()
     }
 
     // MARK: - 对外接口
 
     /// 当前状态（线程安全）。
     public var state: State {
-        stateLock.lock(); defer { stateLock.unlock() }
-        return _state
+        storage.state
     }
 
     /// 麦克风模式：建连 + 开始录音（自动 200ms 切包推送）。仅 iOS。
     public func start() async throws {
-        guard state == .idle else { throw SessionError.busy }
-        setState(.starting)
-        do {
-            try await client.start()
-            try audio?.start { [weak self] chunk in
-                guard let self else { return }
-                Task { await self.client.pushAudio(chunk) }
-            } levelHandler: { [weak self] level in
-                self?.emit(.level(level))
+        guard let generation = storage.beginStarting() else { throw SessionError.busy }
+        try await lifecycleGate.withLock { [self] in
+            guard storage.isStarting(generation: generation) else { return }
+            do {
+                try await client.start()
+                guard storage.isStarting(generation: generation) else { return }
+                try audio?.start { [weak self] chunk in
+                    self?.pushAudio(chunk, generation: generation)
+                } levelHandler: { [weak storage] level in
+                    storage?.emit(.level(level), generation: generation)
+                }
+                guard storage.transitionToRecording(generation: generation) else {
+                    audio?.stop(flushRemainder: false)
+                    return
+                }
+            } catch {
+                let failure = ASRFailure.transport(error)
+                storage.failStarting(failure, generation: generation)
+                throw failure
             }
-            setState(.recording)
-        } catch {
-            setState(.failed(error.localizedDescription))
-            throw error
         }
     }
 
     /// 手动喂流模式：只建连，音频由调用方通过 `pushAudio(_:)` 提供。
     public func startStream() async throws {
-        guard state == .idle else { throw SessionError.busy }
-        setState(.starting)
-        do {
-            try await client.start()
-            setState(.recording)
-        } catch {
-            setState(.failed(error.localizedDescription))
-            throw error
+        guard let generation = storage.beginStarting() else { throw SessionError.busy }
+        try await lifecycleGate.withLock { [self] in
+            guard storage.isStarting(generation: generation) else { return }
+            do {
+                try await client.start()
+                storage.transitionToRecording(generation: generation)
+            } catch {
+                let failure = ASRFailure.transport(error)
+                storage.failStarting(failure, generation: generation)
+                throw failure
+            }
         }
     }
 
     /// 推送 PCM 音频包（16kHz/16bit/单声道，任意大小，内部自动 200ms 切包）。手动模式用。
     public func pushAudio(_ data: Data) {
-        Task { await client.pushAudio(data) }
+        guard let generation = storage.generationForAudioPush else { return }
+        pushAudio(data, generation: generation)
+    }
+
+    private func pushAudio(_ data: Data, generation: UInt64) {
+        let client = client
+        let lifecycleGate = lifecycleGate
+        let storage = storage
+        Task {
+            await lifecycleGate.withLock {
+                guard storage.canPushAudio(generation: generation) else { return }
+                await client.pushAudio(data)
+            }
+        }
     }
 
     /// 结束本次识别：停止录音（iOS）、发送末尾帧，等待最终结果（`finished` 事件）。
     public func finish() async {
-        let current = state
-        guard current == .recording || current == .starting else { return }
-        setState(.finalizing)
-        audio?.stop()
-        await client.finish()
+        guard let generation = storage.beginFinalizing() else { return }
+        await lifecycleGate.withLock { [self] in
+            guard storage.isFinalizing(generation: generation) else { return }
+            audio?.stop()
+            await client.finish()
+        }
     }
 
     /// 硬取消：丢弃本次识别并断开连接，回到 `idle`。
     public func cancel() async {
-        audio?.stop(flushRemainder: false)
-        await client.cancel()
-        setState(.idle)
+        let cancellationGeneration = storage.beginCancellingCurrentGeneration()
+        await lifecycleGate.withLock { [self] in
+            audio?.stop(flushRemainder: false)
+            await client.cancel()
+        }
+        storage.completeCancellation(generation: cancellationGeneration)
+    }
+}
+
+protocol ASRSessionClient: Sendable {
+    /// Lifecycle markers delimit event generations: a successful start emits connecting/streaming,
+    /// and cancel emits idle before returning so buffered events cannot cross into a restarted session.
+    var events: AsyncStream<ASRClient.Event> { get }
+    func start() async throws
+    func pushAudio(_ data: Data) async
+    func finish() async
+    func cancel() async
+}
+
+extension ASRClient: ASRSessionClient {}
+
+private actor AsyncLifecycleGate {
+    private var isLocked = false
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+
+    func withLock<Result: Sendable>(
+        _ operation: @Sendable () async throws -> Result
+    ) async rethrows -> Result {
+        await acquire()
+        defer { release() }
+        return try await operation()
     }
 
-    // MARK: - 内部
+    private func acquire() async {
+        guard isLocked else {
+            isLocked = true
+            return
+        }
+        await withCheckedContinuation { continuation in
+            waiters.append(continuation)
+        }
+    }
 
-    private func handleClientEvent(_ event: ASRClient.Event) {
+    private func release() {
+        guard !waiters.isEmpty else {
+            isLocked = false
+            return
+        }
+        waiters.removeFirst().resume()
+    }
+}
+
+private final class ASRSessionStorage: Sendable {
+    private struct Values: Sendable {
+        var state: ASRSession.State = .idle
+        var generation: UInt64 = 0
+        var activeGeneration: UInt64?
+        var clientEventGeneration: UInt64?
+        var awaitsClientIdleBarrier = false
+        var cancellationGeneration: UInt64?
+        var eventsFinished = false
+    }
+
+    private let values = OSAllocatedUnfairLock(initialState: Values())
+    private let continuation: AsyncStream<ASRSession.Event>.Continuation
+
+    init(continuation: AsyncStream<ASRSession.Event>.Continuation) {
+        self.continuation = continuation
+    }
+
+    var state: ASRSession.State {
+        values.withLock { $0.state }
+    }
+
+    var generationForAudioPush: UInt64? {
+        values.withLock { values in
+            guard values.state == .recording else { return nil }
+            return values.activeGeneration
+        }
+    }
+
+    func beginStarting() -> UInt64? {
+        values.withLock { values -> UInt64? in
+            guard values.state == .idle,
+                  values.cancellationGeneration == nil else { return nil }
+            values.generation &+= 1
+            values.activeGeneration = values.generation
+            values.state = .starting
+            if !values.eventsFinished { continuation.yield(.state(.starting)) }
+            return values.generation
+        }
+    }
+
+    func isStarting(generation: UInt64) -> Bool {
+        values.withLock {
+            $0.activeGeneration == generation && $0.state == .starting
+        }
+    }
+
+    @discardableResult
+    func transitionToRecording(generation: UInt64) -> Bool {
+        values.withLock { values in
+            guard values.activeGeneration == generation,
+                  values.state == .starting else { return false }
+            values.state = .recording
+            if !values.eventsFinished { continuation.yield(.state(.recording)) }
+            return true
+        }
+    }
+
+    func failStarting(_ failure: ASRFailure, generation: UInt64) {
+        values.withLock { values in
+            guard values.activeGeneration == generation,
+                  values.state == .starting else { return }
+            values.state = .failed(failure)
+            values.activeGeneration = nil
+            if !values.eventsFinished { continuation.yield(.state(.failed(failure))) }
+        }
+    }
+
+    func beginFinalizing() -> UInt64? {
+        values.withLock { values -> UInt64? in
+            guard let generation = values.activeGeneration,
+                  values.state == .recording || values.state == .starting else { return nil }
+            values.state = .finalizing
+            if !values.eventsFinished { continuation.yield(.state(.finalizing)) }
+            return generation
+        }
+    }
+
+    func isFinalizing(generation: UInt64) -> Bool {
+        values.withLock {
+            $0.activeGeneration == generation && $0.state == .finalizing
+        }
+    }
+
+    func canPushAudio(generation: UInt64) -> Bool {
+        values.withLock {
+            $0.activeGeneration == generation && $0.state == .recording
+        }
+    }
+
+    func beginCancellingCurrentGeneration() -> UInt64 {
+        values.withLock { values -> UInt64 in
+            values.generation &+= 1
+            values.activeGeneration = nil
+            values.clientEventGeneration = nil
+            values.awaitsClientIdleBarrier = true
+            values.cancellationGeneration = values.generation
+            values.state = .idle
+            if !values.eventsFinished { continuation.yield(.state(.idle)) }
+            return values.generation
+        }
+    }
+
+    func completeCancellation(generation: UInt64) {
+        values.withLock { values in
+            guard values.cancellationGeneration == generation else { return }
+            values.cancellationGeneration = nil
+        }
+    }
+
+    func emit(_ event: ASRSession.Event, generation: UInt64) {
+        values.withLock { values in
+            guard values.activeGeneration == generation else { return }
+            switch values.state {
+            case .starting, .recording, .finalizing:
+                if !values.eventsFinished { continuation.yield(event) }
+            case .idle, .finished, .failed:
+                return
+            }
+        }
+    }
+
+    func generationForClientEvent(_ event: ASRClient.Event) -> UInt64? {
+        values.withLock { values in
+            if case .state(let clientState) = event {
+                switch clientState {
+                case .idle:
+                    values.awaitsClientIdleBarrier = false
+                    values.clientEventGeneration = nil
+                    return nil
+                case .connecting, .streaming:
+                    guard !values.awaitsClientIdleBarrier,
+                          let generation = values.activeGeneration else { return nil }
+                    values.clientEventGeneration = generation
+                    return nil
+                case .finished, .failed:
+                    break
+                }
+            }
+            return values.clientEventGeneration
+        }
+    }
+
+    func finishEvents() {
+        let shouldFinish = values.withLock { values in
+            guard !values.eventsFinished else { return false }
+            values.eventsFinished = true
+            return true
+        }
+        if shouldFinish { continuation.finish() }
+    }
+
+    func handleClientEvent(_ event: ASRClient.Event, generation: UInt64) {
         switch event {
         case .state(let clientState):
             switch clientState {
             case .finished:
-                // 只 emit 一次（setState 不再内部 emit，避免重复事件）
-                updateState(.finished)
-                emit(.state(.finished))
-            case .failed(let message):
-                updateState(.failed(message))
-                emit(.state(.failed(message)))
+                acceptTerminalState(.finished, generation: generation)
+            case .failed(let failure):
+                acceptTerminalState(.failed(failure), generation: generation)
             default:
                 break
             }
         case .transcript(let text):
-            emit(.transcript(text))
+            emit(.transcript(text), generation: generation)
         case .utterance(let text):
-            emit(.utterance(text))
-        case .error(let message):
-            emit(.error(message))
+            emit(.utterance(text), generation: generation)
+        case .error(let failure):
+            emit(.error(failure), generation: generation)
         }
     }
 
-    /// 更新内部状态并 emit（供控制方法使用）。
-    private func setState(_ newState: State) {
-        updateState(newState)
-        emit(.state(newState))
-    }
-
-    /// 只更新内部状态，不 emit（由调用方负责 emit，防止重复事件）。
-    private func updateState(_ newState: State) {
-        stateLock.lock()
-        _state = newState
-        stateLock.unlock()
-    }
-
-    private func emit(_ event: Event) {
-        eventsCont?.yield(event)
+    private func acceptTerminalState(_ state: ASRSession.State, generation: UInt64) {
+        values.withLock { values in
+            guard values.activeGeneration == generation else { return }
+            switch values.state {
+            case .starting, .recording, .finalizing:
+                values.state = state
+                values.activeGeneration = nil
+                values.clientEventGeneration = nil
+                if !values.eventsFinished { continuation.yield(.state(state)) }
+            case .idle, .finished, .failed:
+                return
+            }
+        }
     }
 }

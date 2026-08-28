@@ -13,5 +13,6 @@ let package = Package(
     targets: [
         .target(name: "LLMKit"),
         .testTarget(name: "LLMKitTests", dependencies: ["LLMKit"])
-    ]
+    ],
+    swiftLanguageModes: [.v6]
 )

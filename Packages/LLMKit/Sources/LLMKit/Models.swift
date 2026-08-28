@@ -145,12 +145,15 @@ public enum LLMStreamingEvent: Sendable, Equatable {
 
 public enum LLMStreamingError: Error, LocalizedError, Sendable, Equatable {
     case incompleteToolCall(index: Int)
+    case malformedToolCallArguments(index: Int)
     case incompleteStream
 
     public var errorDescription: String? {
         switch self {
         case .incompleteToolCall(let index):
             return "流式工具调用 \(index) 不完整"
+        case .malformedToolCallArguments(let index):
+            return "流式工具调用 \(index) 的参数不是完整 JSON 对象"
         case .incompleteStream:
             return "流式响应在结束信号前中断"
         }

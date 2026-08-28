@@ -1,4 +1,5 @@
 import Foundation
+import Darwin
 import VoiceChatCore
 import LLMKit
 
@@ -11,7 +12,16 @@ import LLMKit
 @main
 struct ASRCLI {
 
-    static func main() async throws {
+    static func main() async {
+        do {
+            try await run()
+        } catch {
+            print("执行失败（\(coarseReason(for: error).rawValue)）")
+            Darwin.exit(EXIT_FAILURE)
+        }
+    }
+
+    private static func run() async throws {
         // ---- 参数解析 ----
         var args = CommandLine.arguments.dropFirst().map { $0 }
         var apiKey: String? = nil
@@ -49,11 +59,11 @@ struct ASRCLI {
             let searcher = BochaSearchClient(config: BochaSearchClient.Config(apiKey: bochaKey))
             let agent = LLMAgent(transport: client, executor: searcher,
                                  config: .init(systemPrompt: "你是语音助手，用简洁中文回答。"))
-            print("提问: \(question)")
-            let answer = try await agent.send(question) { toolName in
-                print("🔍 触发工具: \(toolName)")
+            print("提问已接收（\(question.count) 字符）")
+            let answer = try await agent.send(question) { _ in
+                print("🔍 已触发工具调用")
             }
-            print("回答: \(answer)")
+            print("回答已完成（\(answer.count) 字符）")
             return
         }
 
@@ -69,17 +79,16 @@ struct ASRCLI {
                 LLMMessage(role: .system, content: "你是一个友好的语音助手，用简洁中文回答。"),
                 LLMMessage(role: .user, content: question),
             ]
-            print("提问: \(question)")
+            print("提问已接收（\(question.count) 字符）")
             if llmStream {
-                print("回答(流式): ", terminator: "")
+                var characterCount = 0
                 for try await delta in client.completeStreaming(messages: messages, temperature: 0.7) {
-                    print(delta, terminator: "")
-                    fflush(stdout)
+                    characterCount += delta.count
                 }
-                print()
+                print("流式回答已完成（\(characterCount) 字符）")
             } else {
                 let reply = try await client.complete(messages: messages, temperature: 0.7)
-                print("回答: \(reply)")
+                print("回答已完成（\(reply.count) 字符）")
             }
             return
         }
@@ -87,7 +96,7 @@ struct ASRCLI {
         let key = try resolveKey(override: apiKey)
         let wav = try resolveWavPath(wavPath)
         let pcm = try loadPCM16(wav)
-        print("音频: \(wav)  \(pcm.count / 2 / 16000)s  \(pcm.count) 字节")
+        print("音频已载入：\(pcm.count / 2 / 16000)s，\(pcm.count) 字节")
 
         // ---- 客户端 ----
         let session = ASRSession(config: ASRSession.Config(
@@ -96,26 +105,27 @@ struct ASRCLI {
         ))
 
         let (doneStream, doneCont) = AsyncStream<Void>.makeStream()
-        var finishedCount = 0
         let eventsTask = Task {
+            var finishedCount = 0
             for await event in session.events {
                 switch event {
                 case .transcript(let text):
-                    print("📝 \(text)")
+                    print("📝 收到转写更新（\(text.count) 字符）")
                 case .state(let state):
                     print("⏺ 状态: \(describe(state))")
                     if state == .finished || isFailed(state) {
                         finishedCount += 1
                         doneCont.yield()
                     }
-                case .error(let message):
-                    print("❌ 错误: \(message)")
+                case .error:
+                    print("❌ 识别失败（service_failure）")
                 case .utterance(let text):
-                    print("✔ 定型句: \(text)")
+                    print("✔ 收到定型句（\(text.count) 字符）")
                 case .level:
                     break
                 }
             }
+            return finishedCount
         }
 
         print("连接并发送起始帧…")
@@ -142,6 +152,7 @@ struct ASRCLI {
         timeoutTask.cancel()
         eventsTask.cancel()
         await session.cancel()
+        let finishedCount = await eventsTask.value
         // 验证 .finished 事件只触发一次（曾因 setState 双 emit 触发两次）
         print("FINISHED_EVENTS: \(finishedCount)（期望 1）")
         print("完成 ✅")
@@ -149,17 +160,36 @@ struct ASRCLI {
 
     // MARK: - 工具
 
-    private enum CLIError: Error, CustomStringConvertible {
+    private enum CLIError: Error {
         case noKey, noWav(String), badWav, noDeepSeekKey, noBochaKey
+    }
 
-        var description: String {
-            switch self {
-            case .noKey: return "未找到 API Key（--key / VOLC_API_KEY / .secrets/volc.json / ~/.dsh/volc-api-key）"
-            case .noWav(let p): return "找不到 wav 文件: \(p)"
-            case .badWav: return "不是有效的 16bit PCM WAV"
-            case .noDeepSeekKey: return "未找到 DeepSeek Key（--deepseek-key / DEEPSEEK_API_KEY）"
-            case .noBochaKey: return "未找到博查 Key（BOCHA_API_KEY / .secrets/bocha.json）"
+    private enum CoarseFailureReason: String {
+        case configurationMissing = "configuration_missing"
+        case invalidInput = "invalid_input"
+        case unauthorized
+        case networkUnavailable = "network_unavailable"
+        case serviceFailure = "service_failure"
+    }
+
+    private static func coarseReason(for error: Error) -> CoarseFailureReason {
+        switch error {
+        case CLIError.noKey, CLIError.noDeepSeekKey, CLIError.noBochaKey:
+            return .configurationMissing
+        case CLIError.noWav, CLIError.badWav:
+            return .invalidInput
+        case let error as LLMAPIError where error.statusCode == 401 || error.statusCode == 403:
+            return .unauthorized
+        case let error as BochaSearchClient.BochaError:
+            if case .apiError(let statusCode, _) = error,
+               statusCode == 401 || statusCode == 403 {
+                return .unauthorized
             }
+            return .serviceFailure
+        case is URLError:
+            return .networkUnavailable
+        default:
+            return .serviceFailure
         }
     }
 
@@ -193,7 +223,7 @@ struct ASRCLI {
         case .recording: return "recording"
         case .finalizing: return "finalizing"
         case .finished: return "finished"
-        case .failed(let msg): return "failed(\(msg))"
+        case .failed(let failure): return "failed(\(failure.code.rawValue))"
         }
     }
 
@@ -234,6 +264,7 @@ struct ASRCLI {
     /// 解析 16bit PCM WAV，返回裸 PCM 字节。
     private static func loadPCM16(_ path: String) throws -> Data {
         let raw = try Data(contentsOf: URL(fileURLWithPath: path))
+        guard raw.count >= 12 else { throw CLIError.badWav }
         let riff = raw.subdata(in: 0..<4)
         let wave = raw.subdata(in: 8..<12)
         guard riff == Data("RIFF".utf8), wave == Data("WAVE".utf8) else {
@@ -244,7 +275,9 @@ struct ASRCLI {
         while pos + 8 <= raw.count {
             let id = String(data: raw.subdata(in: pos..<pos + 4), encoding: .utf8) ?? ""
             let size = Int(raw.subdata(in: pos + 4..<pos + 8).withUnsafeBytes { $0.loadUnaligned(as: UInt32.self).littleEndian })
-            let body = raw[pos + 8..<pos + 8 + size]
+            let bodyStart = pos + 8
+            guard size <= raw.count - bodyStart else { throw CLIError.badWav }
+            let body = raw[bodyStart..<bodyStart + size]
             if id == "data" {
                 pcm = Data(body)
             }

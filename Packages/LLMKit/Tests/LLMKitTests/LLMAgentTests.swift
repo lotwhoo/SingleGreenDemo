@@ -153,6 +153,134 @@ final class LLMAgentTests: XCTestCase {
         XCTAssertTrue(messages.isEmpty)
     }
 
+    func testAgentRejectsIncompleteOrMalformedToolCallsBeforeExecution() async {
+        let cases: [(LLMToolCall, LLMAgentError)] = [
+            (.init(id: "", type: "function", function: .init(name: "web_search", arguments: "{}")),
+             .incompleteToolCall(index: 0)),
+            (.init(id: "call", type: "function", function: .init(name: " \n", arguments: "{}")),
+             .incompleteToolCall(index: 0)),
+            (.init(id: "call", type: "function", function: .init(name: "web_search", arguments: "")),
+             .incompleteToolCall(index: 0)),
+            (.init(id: "call", type: "function", function: .init(name: "web_search", arguments: " \t")),
+             .incompleteToolCall(index: 0)),
+            (.init(id: "call", type: "function", function: .init(name: "web_search", arguments: #"{"query":"北京""#)),
+             .malformedToolCallArguments(index: 0)),
+            (.init(id: "call", type: "function", function: .init(name: "web_search", arguments: #"{"query":}"#)),
+             .malformedToolCallArguments(index: 0))
+        ]
+
+        for (call, expectedError) in cases {
+            let executor = MockToolExecutor()
+            let agent = LLMAgent(
+                transport: FixedToolMessageTransport(
+                    message: .init(role: .assistant, content: nil, toolCalls: [call])
+                ),
+                executor: executor,
+                config: .init()
+            )
+
+            do {
+                _ = try await agent.send("run")
+                XCTFail("invalid tool call must fail")
+            } catch let error as LLMAgentError {
+                XCTAssertEqual(error, expectedError)
+            } catch {
+                XCTFail("unexpected error: \(error)")
+            }
+            XCTAssertEqual(executor.callCount, 0, "validation must precede execution")
+            let messages = await agent.chatMessages
+            XCTAssertTrue(messages.isEmpty, "invalid tool calls must roll back context")
+        }
+    }
+
+    func testAgentValidatesEveryToolCallBeforeExecutingAnyCall() async {
+        let valid = LLMToolCall(
+            id: "valid",
+            type: "function",
+            function: .init(name: "web_search", arguments: "{}")
+        )
+        let invalid = LLMToolCall(
+            id: "invalid",
+            type: "function",
+            function: .init(name: "web_search", arguments: "{")
+        )
+        let executor = MockToolExecutor()
+        let agent = LLMAgent(
+            transport: FixedToolMessageTransport(
+                message: .init(role: .assistant, content: nil, toolCalls: [valid, invalid])
+            ),
+            executor: executor,
+            config: .init()
+        )
+
+        do {
+            _ = try await agent.send("run")
+            XCTFail("malformed second call must reject the whole round")
+        } catch let error as LLMAgentError {
+            XCTAssertEqual(error, .malformedToolCallArguments(index: 1))
+        } catch {
+            XCTFail("unexpected error: \(error)")
+        }
+        XCTAssertEqual(executor.callCount, 0)
+    }
+
+    func testAgentRejectsMixedContentAndToolCallBeforeExecution() async {
+        let call = LLMToolCall(
+            id: "call",
+            type: "function",
+            function: .init(name: "web_search", arguments: "{}")
+        )
+        let executor = MockToolExecutor()
+        let agent = LLMAgent(
+            transport: FixedToolMessageTransport(
+                message: .init(role: .assistant, content: "untrusted", toolCalls: [call])
+            ),
+            executor: executor,
+            config: .init()
+        )
+
+        do {
+            _ = try await agent.send("run")
+            XCTFail("mixed content/tool response must fail")
+        } catch let error as LLMAgentError {
+            XCTAssertEqual(error, .mixedContentAndToolCall)
+        } catch {
+            XCTFail("unexpected error: \(error)")
+        }
+        XCTAssertEqual(executor.callCount, 0)
+        let messages = await agent.chatMessages
+        XCTAssertTrue(messages.isEmpty)
+    }
+
+    func testStreamingCompletedMessageCannotBypassMixedContentValidation() async {
+        let call = LLMToolCall(
+            id: "call",
+            type: "function",
+            function: .init(name: "web_search", arguments: "{}")
+        )
+        let executor = MockToolExecutor()
+        let agent = LLMAgent(
+            transport: FixedToolMessageTransport(
+                message: .init(role: .assistant, content: "untrusted", toolCalls: [call])
+            ),
+            executor: executor,
+            config: .init()
+        )
+
+        do {
+            let transaction = await agent.sendStreaming("run")
+            for try await _ in transaction {}
+            XCTFail("completed-only mixed response must fail")
+        } catch let error as LLMAgentError {
+            XCTAssertEqual(error, .mixedContentAndToolCall)
+        } catch {
+            XCTFail("unexpected error: \(error)")
+        }
+        XCTAssertEqual(executor.callCount, 0)
+        let messages = await agent.chatMessages
+        XCTAssertTrue(messages.isEmpty)
+    }
+
     func testClearContextRemovesSuccessfulConversation() async throws {
         let session = makeSession { _ in
             let json = #"{ "choices": [ { "message": { "role": "assistant", "content": "回答" } } ] }"#
@@ -239,6 +367,7 @@ final class LLMAgentTests: XCTestCase {
         var events: [LLMAgentEvent] = []
         let stream = await agent.sendStreaming("北京天气")
         for try await event in stream { events.append(event) }
+        try await agent.commit(stream.token)
 
         XCTAssertEqual(events, [
             .toolCall("web_search"),
@@ -471,6 +600,7 @@ final class LLMAgentTests: XCTestCase {
         var events: [LLMAgentEvent] = []
         let stream = await agent.sendStreaming("协议化测试")
         for try await event in stream { events.append(event) }
+        try await agent.commit(stream.token)
 
         XCTAssertEqual(events, [
             .contentDelta("可替换传输回答"),
@@ -478,6 +608,93 @@ final class LLMAgentTests: XCTestCase {
         ])
         let messages = await agent.chatMessages
         XCTAssertEqual(messages.map(\.content), ["协议化测试", "可替换传输回答"])
+    }
+
+    func testFinalizedStreamingResponseRemainsPendingUntilCommitted() async throws {
+        let transport = StubChatTransport(answer: "已完成")
+        let agent = LLMAgent(
+            transport: transport,
+            executor: NoopToolExecutor(),
+            config: .init()
+        )
+        let transaction = await agent.sendStreaming("待确认")
+
+        var events: [LLMAgentEvent] = []
+        for try await event in transaction { events.append(event) }
+
+        XCTAssertEqual(events.last, .completed("已完成"))
+        var messages = await agent.chatMessages
+        XCTAssertTrue(messages.isEmpty, "buffered completion must not commit context")
+
+        try await agent.commit(transaction.token)
+        messages = await agent.chatMessages
+        XCTAssertEqual(messages.map(\.content), ["待确认", "已完成"])
+    }
+
+    func testFinalizedStreamingResponseCanBeAbortedWithoutCommitting() async throws {
+        let transport = StubChatTransport(answer: "上游已完成")
+        let agent = LLMAgent(
+            transport: transport,
+            executor: NoopToolExecutor(),
+            config: .init()
+        )
+        let transaction = await agent.sendStreaming("将被取消")
+
+        for try await _ in transaction {}
+        await agent.abort(transaction.token)
+
+        let messages = await agent.chatMessages
+        XCTAssertTrue(messages.isEmpty, "aborting after upstream finalization must discard staged context")
+    }
+
+    func testAbortAfterCommitRollsBackOnlyThatStreamingTransaction() async throws {
+        let transport = StubChatTransport(answer: "accepted")
+        let agent = LLMAgent(
+            transport: transport,
+            executor: NoopToolExecutor(),
+            config: .init()
+        )
+        let accepted = await agent.sendStreaming("preserved")
+        for try await _ in accepted {}
+        try await agent.commit(accepted.token)
+
+        let transaction = await agent.sendStreaming("tentative")
+        for try await _ in transaction {}
+
+        try await agent.commit(transaction.token)
+        await agent.abort(transaction.token)
+        await agent.abort(transaction.token)
+
+        let messages = await agent.chatMessages
+        XCTAssertEqual(
+            messages.map(\.content),
+            ["preserved", "accepted"],
+            "rollback must be token-scoped and idempotent"
+        )
+    }
+
+    func testNewTransactionMakesStaleStreamingCommitHarmless() async throws {
+        let transport = SequencedChatTransport(streamingAnswer: "旧回答", directAnswer: "新回答")
+        let agent = LLMAgent(
+            transport: transport,
+            executor: NoopToolExecutor(),
+            config: .init()
+        )
+        let oldTransaction = await agent.sendStreaming("旧问题")
+        for try await _ in oldTransaction {}
+
+        let newAnswer = try await agent.send("新问题")
+        XCTAssertEqual(newAnswer, "新回答")
+
+        do {
+            try await agent.commit(oldTransaction.token)
+            XCTFail("stale transaction must not commit")
+        } catch let error as LLMAgentTransactionError {
+            XCTAssertEqual(error, .notPending)
+        }
+
+        let messages = await agent.chatMessages
+        XCTAssertEqual(messages.map(\.content), ["新问题", "新回答"])
     }
 }
 
@@ -502,6 +719,58 @@ private struct StubChatTransport: LLMChatTransport {
         AsyncThrowingStream { continuation in
             continuation.yield(.contentDelta(answer))
             continuation.yield(.completed(.init(role: .assistant, content: answer)))
+            continuation.finish()
+        }
+    }
+}
+
+private struct FixedToolMessageTransport: LLMChatTransport {
+    let message: LLMMessage
+
+    func completeMessage(
+        messages: [LLMMessage],
+        temperature: Double?,
+        maxTokens: Int?,
+        tools: [LLMTool]?
+    ) async throws -> LLMMessage {
+        message
+    }
+
+    func completeMessageStreaming(
+        messages: [LLMMessage],
+        temperature: Double?,
+        maxTokens: Int?,
+        tools: [LLMTool]?
+    ) -> AsyncThrowingStream<LLMStreamingEvent, Error> {
+        AsyncThrowingStream { continuation in
+            continuation.yield(.completed(message))
+            continuation.finish()
+        }
+    }
+}
+
+private struct SequencedChatTransport: LLMChatTransport {
+    let streamingAnswer: String
+    let directAnswer: String
+
+    func completeMessage(
+        messages: [LLMMessage],
+        temperature: Double?,
+        maxTokens: Int?,
+        tools: [LLMTool]?
+    ) async throws -> LLMMessage {
+        LLMMessage(role: .assistant, content: directAnswer)
+    }
+
+    func completeMessageStreaming(
+        messages: [LLMMessage],
+        temperature: Double?,
+        maxTokens: Int?,
+        tools: [LLMTool]?
+    ) -> AsyncThrowingStream<LLMStreamingEvent, Error> {
+        AsyncThrowingStream { continuation in
+            continuation.yield(.contentDelta(streamingAnswer))
+            continuation.yield(.completed(.init(role: .assistant, content: streamingAnswer)))
             continuation.finish()
         }
     }

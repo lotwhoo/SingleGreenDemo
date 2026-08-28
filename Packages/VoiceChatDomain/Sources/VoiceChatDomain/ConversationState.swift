@@ -10,6 +10,7 @@ public enum MessageStatus: Sendable, Equatable {
 public enum InputState: Sendable, Equatable {
     case idle
     case preparing
+    case armed
     case recording
     case finalizing
     case failed(String)
@@ -151,6 +152,24 @@ public struct ConversationState: Sendable, Equatable {
     public mutating func cancelActiveReply() -> UUID? {
         guard let id = activeReplyID else { return nil }
         messages.removeAll { $0.id == id && $0.status == .pending }
+        activeReplyID = nil
+        replyState = .cancelled(id)
+        return id
+    }
+
+    /// Aborts an in-flight turn that has not committed Agent context. Completed
+    /// history is preserved; the pending assistant message and its immediately
+    /// preceding user request are removed together.
+    @discardableResult
+    public mutating func abortUncommittedTurn() -> UUID? {
+        guard let id = activeReplyID,
+              let replyIndex = messages.firstIndex(where: { $0.id == id && $0.status == .pending })
+        else { return cancelActiveReply() }
+        let userIndex = replyIndex > messages.startIndex ? messages.index(before: replyIndex) : nil
+        messages.remove(at: replyIndex)
+        if let userIndex, messages.indices.contains(userIndex), messages[userIndex].isUser {
+            messages.remove(at: userIndex)
+        }
         activeReplyID = nil
         replyState = .cancelled(id)
         return id

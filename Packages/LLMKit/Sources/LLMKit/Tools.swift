@@ -55,6 +55,31 @@ public struct LLMToolCall: Codable, Sendable, Equatable {
     public var function: FunctionCall
 }
 
+enum LLMToolCallValidationFailure: Equatable {
+    case incomplete
+    case malformedArguments
+}
+
+extension LLMToolCall {
+    /// Validation is intentionally deferred until every streamed fragment has
+    /// been assembled. Function arguments must be a complete JSON object before
+    /// an agent may hand the call to an executor.
+    func validationFailure() -> LLMToolCallValidationFailure? {
+        let trimmedID = id.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedName = function.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedArguments = function.arguments.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedID.isEmpty, !trimmedName.isEmpty, !trimmedArguments.isEmpty else {
+            return .incomplete
+        }
+        guard let data = trimmedArguments.data(using: .utf8),
+              let value = try? JSONSerialization.jsonObject(with: data),
+              value is [String: Any] else {
+            return .malformedArguments
+        }
+        return nil
+    }
+}
+
 /// 简易 JSON 值类型（用于工具参数 Schema / arguments 解析）。
 public enum AnyJSON: Codable, Sendable, Equatable {
     case string(String)

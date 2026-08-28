@@ -2,6 +2,14 @@ import XCTest
 @testable import VoiceChatDomain
 
 final class ConversationStateTests: XCTestCase {
+    func testArmedInputStateIsPreservedByValueSemantics() {
+        let state = ConversationState(inputState: .armed)
+        let copy = state
+
+        XCTAssertEqual(state.inputState, .armed)
+        XCTAssertEqual(copy, state)
+    }
+
     func testInitializerRestoresActiveReplyIdentity() {
         let requestingID = UUID()
         let searchingID = UUID()
@@ -184,5 +192,18 @@ final class ConversationStateTests: XCTestCase {
         ))
         XCTAssertTrue(state.messages.isEmpty)
         XCTAssertEqual(state.replyState, .failed(id, "mixed content and tool call"))
+    }
+
+    func testAbortUncommittedTurnPreservesCompletedHistory() {
+        let completedUser = ChatMessage(text: "已完成问题", isUser: true)
+        let completedReply = ChatMessage(text: "已完成回答", isUser: false)
+        var state = ConversationState(messages: [completedUser, completedReply])
+        state.appendUser("未提交问题")
+        let pendingID = state.beginReply()
+        state.appendReplyDelta(id: pendingID, delta: "未提交部分")
+
+        XCTAssertEqual(state.abortUncommittedTurn(), pendingID)
+        XCTAssertEqual(state.messages, [completedUser, completedReply])
+        XCTAssertEqual(state.replyState, .cancelled(pendingID))
     }
 }

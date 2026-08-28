@@ -1,3 +1,4 @@
+#if DEBUG
 import Foundation
 import Security
 
@@ -48,3 +49,4 @@ enum KeychainHelper {
         return status == errSecSuccess || status == errSecItemNotFound
     }
 }
+#endif

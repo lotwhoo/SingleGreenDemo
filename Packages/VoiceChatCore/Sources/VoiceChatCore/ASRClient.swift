@@ -1,5 +1,6 @@
 import Foundation
 import os
+import VoiceActivityDetectionKit
 
 /// ASR 客户端统一日志（真机诊断用：macOS `log stream --device` 可远程拉取）。
 let asrLogger = Logger(subsystem: "com.lotwho.voicechat", category: "asr-client")
@@ -56,29 +57,55 @@ public actor ASRClient {
         case connecting
         case streaming
         case finished
-        case failed(String)
+        case failed(ASRFailure)
     }
 
     public enum Event: Sendable {
         case state(State)
         case transcript(String)       // 整段增量文本（实时上屏用）
         case utterance(String)        // 已定型的句子
-        case error(String)
+        case error(ASRFailure)
     }
 
     private let config: Config
+    private let frameSender: (@Sendable (Data, Bool) async throws -> Void)?
     private var task: URLSessionWebSocketTask?
     private var eventsCont: AsyncStream<Event>.Continuation?
     private var audioCont: AsyncStream<Data>.Continuation?
     private var receiveTask: Task<Void, Never>?
     private var audioPumpTask: Task<Void, Never>?
     private var isFinishing = false
+    private var terminalDelivered = false
+    private var connectionMode: ConnectionMode?
+
+    private enum ConnectionMode: Equatable {
+        case legacyQueue
+        case direct
+    }
+
+    private enum TerminalOutcome {
+        case finished
+        case failed(ASRFailure)
+    }
 
     /// 事件流（可在 actor 外订阅）。
     public nonisolated let events: AsyncStream<Event>
+    private var directEventsCont: AsyncStream<StreamingASRTransportEvent>.Continuation?
 
     public init(config: Config) {
         self.config = config
+        self.frameSender = nil
+        let (stream, cont) = AsyncStream<Event>.makeStream()
+        self.events = stream
+        self.eventsCont = cont
+    }
+
+    init(
+        config: Config,
+        frameSender: @escaping @Sendable (Data, Bool) async throws -> Void
+    ) {
+        self.config = config
+        self.frameSender = frameSender
         let (stream, cont) = AsyncStream<Event>.makeStream()
         self.events = stream
         self.eventsCont = cont
@@ -87,11 +114,82 @@ public actor ASRClient {
     // MARK: - 控制
 
     public func start() async throws {
-        guard task == nil else { return }
+        guard try await openConnection(mode: .legacyQueue) else { return }
+        installLegacyAudioPump()
+    }
+
+    @discardableResult
+    private func installLegacyAudioPump() -> Task<Void, Never> {
+        let (stream2, cont2) = AsyncStream<Data>.makeStream()
+        audioCont = cont2
+        let pump = Task { [weak self] in
+            guard let self else { return }
+            await self.runLegacyAudioPump(stream2)
+        }
+        audioPumpTask = pump
+        return pump
+    }
+
+    private func runLegacyAudioPump(_ stream: AsyncStream<Data>) async {
+        do {
+            var packetCount = 0
+            for await chunk in stream {
+                try await sendAudioFrame(chunk, final: false)
+                packetCount += 1
+            }
+            guard !Task.isCancelled else { return }
+            asrLogger.info("音频包发送完毕，共 \(packetCount, privacy: .public) 包，发送末尾帧")
+            try await sendAudioFrame(Data(), final: true)
+            isFinishing = true
+        } catch {
+            guard !Task.isCancelled else { return }
+            terminateConnection(
+                .failed(ASRFailure.transport(error)),
+                closeCode: .goingAway
+            )
+        }
+    }
+
+    func startLegacyAudioPumpForTesting() -> Task<Void, Never> {
+        terminalDelivered = false
+        isFinishing = false
+        connectionMode = .legacyQueue
+        return installLegacyAudioPump()
+    }
+
+    var connectionResourcesReleasedForTesting: Bool {
+        task == nil
+            && audioCont == nil
+            && receiveTask == nil
+            && audioPumpTask == nil
+            && connectionMode == nil
+    }
+
+    func startDirectStream() async throws -> AsyncStream<StreamingASRTransportEvent> {
+        let events = replaceDirectEventStream()
+        do {
+            _ = try await openConnection(mode: .direct)
+            return events
+        } catch {
+            directEventsCont?.finish()
+            directEventsCont = nil
+            throw error
+        }
+    }
+
+    func replaceDirectEventStream() -> AsyncStream<StreamingASRTransportEvent> {
+        directEventsCont?.finish()
+        let (events, continuation) = AsyncStream<StreamingASRTransportEvent>.makeStream()
+        directEventsCont = continuation
+        return events
+    }
+
+    private func openConnection(mode: ConnectionMode) async throws -> Bool {
+        guard task == nil else { return false }
         guard let url = URL(string: "wss://\(config.host)\(config.path)") else {
             throw ASRError.invalidURL
         }
-        asrLogger.info("连接 \(url.absoluteString, privacy: .public)  resourceID=\(self.config.resourceID, privacy: .public)  language=\(self.config.language, privacy: .public)")
+        asrLogger.info("Starting ASR connection")
 
         var request = URLRequest(url: url)
         request.timeoutInterval = config.timeoutInterval
@@ -105,6 +203,8 @@ public actor ASRClient {
         let ws = session.webSocketTask(with: request)
         task = ws
         isFinishing = false
+        terminalDelivered = false
+        connectionMode = mode
         emit(.state(.connecting))
         ws.resume()
 
@@ -129,7 +229,13 @@ public actor ASRClient {
         let startFrame = SAUC.clientFrame(messageType: .fullClientRequest,
                                           flags: .noSequence,
                                           payload: gz)
-        try await ws.send(.data(startFrame))
+        do {
+            try await ws.send(.data(startFrame))
+        } catch {
+            let failure = ASRFailure.transport(error)
+            terminateConnection(.failed(failure), closeCode: .goingAway)
+            throw failure
+        }
         asrLogger.info("起始帧已发送")
         emit(.state(.streaming))
 
@@ -137,20 +243,7 @@ public actor ASRClient {
         receiveTask = Task { [weak self] in
             await self?.receiveLoop()
         }
-
-        // 音频泵：pushAudio 的包逐个发送，流结束发末尾帧
-        let (stream2, cont2) = AsyncStream<Data>.makeStream()
-        audioCont = cont2
-        audioPumpTask = Task { [weak self] in
-            var packetCount = 0
-            for await chunk in stream2 {
-                try? await self?.sendAudioFrame(chunk, final: false)
-                packetCount += 1
-            }
-            asrLogger.info("音频包发送完毕，共 \(packetCount, privacy: .public) 包，发送末尾帧")
-            try? await self?.sendAudioFrame(Data(), final: true)
-            await self?.markFinishing()
-        }
+        return true
     }
 
     /// 推送一个 PCM 音频包（200ms / 6400 字节 @ 16kHz-16bit-mono）。线程安全，可从录音回调调用。
@@ -172,16 +265,64 @@ public actor ASRClient {
         audioPumpTask?.cancel()
         task?.cancel(with: .goingAway, reason: nil)
         task = nil
+        connectionMode = nil
         emit(.state(.idle))
+    }
+
+    /// Direct-stream cancellation is a hard event barrier: it returns only after the receive and
+    /// send tasks from this connection can no longer publish transport events.
+    func cancelDirectStream() async {
+        let receiveTask = receiveTask
+        let audioPumpTask = audioPumpTask
+        cancel()
+        await receiveTask?.value
+        await audioPumpTask?.value
+        directEventsCont?.finish()
+        directEventsCont = nil
+        self.receiveTask = nil
+        self.audioPumpTask = nil
+    }
+
+    func sendDirectAudioFrames(_ frames: [VADPCMFrame]) async throws {
+        guard connectionMode == .direct, task != nil, !isFinishing else {
+            throw ASRFailure.categorized(.connectionLost)
+        }
+        var bytes = Data()
+        bytes.reserveCapacity(frames.count * VADPCMFrame.byteCount)
+        for frame in frames {
+            bytes.append(contentsOf: frame.littleEndianBytes)
+        }
+        do {
+            try await sendAudioFrame(bytes, final: false)
+        } catch {
+            let failure = ASRFailure.transport(error)
+            terminateConnection(.failed(failure), closeCode: .goingAway)
+            throw failure
+        }
+    }
+
+    func finishDirectStream() async throws {
+        guard connectionMode == .direct, task != nil else {
+            throw ASRFailure.categorized(.connectionLost)
+        }
+        guard !isFinishing else { return }
+        isFinishing = true
+        do {
+            try await sendAudioFrame(Data(), final: true)
+        } catch {
+            let failure = ASRFailure.transport(error)
+            terminateConnection(.failed(failure), closeCode: .goingAway)
+            throw failure
+        }
     }
 
     // MARK: - 内部
 
-    private func markFinishing() {
-        isFinishing = true
-    }
-
     private func sendAudioFrame(_ data: Data, final: Bool) async throws {
+        if let frameSender {
+            try await frameSender(data, final)
+            return
+        }
         guard let ws = task else { return }
         let gz = Gzip.compress(data) ?? data
         let frame = SAUC.clientFrame(messageType: .audioOnlyRequest,
@@ -206,24 +347,34 @@ public actor ASRClient {
                 }
             } catch {
                 if !Task.isCancelled {
-                    emit(.state(.failed(error.localizedDescription)))
+                    terminateConnection(
+                        .failed(ASRFailure.transport(error)),
+                        closeCode: .goingAway
+                    )
                 }
                 break
             }
         }
     }
 
-    private func handleServerData(_ data: Data) {
+    func handleServerData(_ data: Data) {
         do {
             let frame = try SAUC.parseServerFrame(data)
             switch frame.messageType {
             case .fullServerResponse:
-                guard let obj = try? JSONDecoder().decode(ASRResponse.self, from: frame.payload) else {
+                guard let obj = try? JSONDecoder().decode(
+                    ASRResponse.self,
+                    from: frame.payload
+                ) else {
+                    terminateConnection(
+                        .failed(.categorized(.protocolFailure)),
+                        closeCode: .goingAway
+                    )
                     return
                 }
                 if let text = obj.result?.text, !text.isEmpty {
                     emit(.transcript(text))
-                    asrLogger.info("增量: \(text, privacy: .public)")
+                    asrLogger.debug("ASR transcript delta received; characters=\(text.count, privacy: .public)")
                 }
                 if let utterances = obj.result?.utterances {
                     for utt in utterances {
@@ -234,21 +385,52 @@ public actor ASRClient {
                 }
                 if frame.flags == .finalNegativeSequence {
                     asrLogger.info("收到最终结果，关闭连接")
-                    emit(.state(.finished))
-                    task?.cancel(with: .normalClosure, reason: nil)
-                    task = nil
-                    receiveTask?.cancel()
+                    terminateConnection(.finished, closeCode: .normalClosure)
                 }
             case .error:
-                let (code, msg) = try SAUC.parseErrorFrame(data)
-                asrLogger.error("SAUC 错误帧: \(code, privacy: .public) \(msg, privacy: .public)")
-                emit(.state(.failed("\(code): \(msg)")))
+                let (code, _) = try SAUC.parseErrorFrame(data)
+                asrLogger.error("ASR provider error; code=\(code, privacy: .public)")
+                terminateConnection(
+                    .failed(ASRFailure.providerStatus(code)),
+                    closeCode: .goingAway
+                )
             default:
                 break
             }
         } catch {
-            emit(.state(.failed(error.localizedDescription)))
+            terminateConnection(
+                .failed(.categorized(.protocolFailure)),
+                closeCode: .goingAway
+            )
         }
+    }
+
+    private func terminateConnection(
+        _ outcome: TerminalOutcome,
+        closeCode: URLSessionWebSocketTask.CloseCode
+    ) {
+        guard !terminalDelivered else { return }
+        terminalDelivered = true
+        isFinishing = true
+        switch outcome {
+        case .finished:
+            emit(.state(.finished))
+        case .failed(let failure):
+            emit(.state(.failed(failure)))
+        }
+        directEventsCont?.finish()
+        directEventsCont = nil
+        audioCont?.finish()
+        audioCont = nil
+        let receiveTask = receiveTask
+        let audioPumpTask = audioPumpTask
+        self.receiveTask = nil
+        self.audioPumpTask = nil
+        receiveTask?.cancel()
+        audioPumpTask?.cancel()
+        task?.cancel(with: closeCode, reason: nil)
+        task = nil
+        connectionMode = nil
     }
 
     private func handleServerText(_ text: String) {
@@ -262,6 +444,18 @@ public actor ASRClient {
 
     private func emit(_ event: Event) {
         eventsCont?.yield(event)
+        switch event {
+        case .state(.finished):
+            directEventsCont?.yield(.finished)
+        case .state(.failed(let failure)), .error(let failure):
+            directEventsCont?.yield(.failed(failure))
+        case .transcript(let text):
+            directEventsCont?.yield(.transcript(text))
+        case .utterance(let text):
+            directEventsCont?.yield(.utterance(text))
+        case .state:
+            break
+        }
     }
 }
 

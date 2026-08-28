@@ -13,5 +13,6 @@ let package = Package(
     targets: [
         .target(name: "VoiceChatDomain"),
         .testTarget(name: "VoiceChatDomainTests", dependencies: ["VoiceChatDomain"])
-    ]
+    ],
+    swiftLanguageModes: [.v6]
 )

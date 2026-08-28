@@ -30,6 +30,8 @@ public actor LLMAgent {
     private var context: LLMChatContext
     private var transactionGeneration = 0
     private var activeTransaction: Int?
+    private var pendingCompletion: PendingCompletion?
+    private var rollbackCompletion: RollbackCompletion?
 
     public init(
         transport: any LLMChatTransport,
@@ -78,6 +80,7 @@ public actor LLMAgent {
                 messages.append(reply)
 
                 if let toolCalls = reply.toolCalls, !toolCalls.isEmpty {
+                    try validateToolRound(toolCalls, content: reply.content)
                     // 执行所有工具调用，结果作为 tool 消息回传
                     for call in toolCalls {
                         try Task.checkCancellation()
@@ -106,13 +109,14 @@ public actor LLMAgent {
 
     /// 发送用户消息并流式发布最终回答。
     ///
-    /// 整轮对话仍是一个上下文事务：只有最终回答成功时才提交；失败、取消或
-    /// 混合的正文/工具响应都回滚。工具轮不会向 UI 发布伪正文。
-    public func sendStreaming(_ userText: String) -> AsyncThrowingStream<LLMAgentEvent, Error> {
+    /// The full exchange remains a context transaction. Finalization stages the
+    /// context, while the caller explicitly commits or aborts after downstream
+    /// delivery. Failed, cancelled, or mixed content/tool rounds are discarded.
+    public func sendStreaming(_ userText: String) -> LLMAgentStreamingTransaction {
         let transaction = beginTransaction()
         var initialContext = context
         initialContext.appendUser(userText)
-        return AsyncThrowingStream { continuation in
+        let events = AsyncThrowingStream<LLMAgentEvent, Error> { continuation in
             let task = Task {
                 await runStreaming(
                     workingContext: initialContext,
@@ -122,6 +126,33 @@ public actor LLMAgent {
             }
             continuation.onTermination = { _ in task.cancel() }
         }
+        return LLMAgentStreamingTransaction(
+            token: LLMAgentTransactionToken(generation: transaction),
+            events: events
+        )
+    }
+
+    /// Commits a successfully finalized streaming response to conversation context.
+    ///
+    /// Callers should acknowledge only after every downstream consumer has accepted
+    /// the completion. Merely receiving or buffering `.completed` does not commit.
+    public func commit(_ token: LLMAgentTransactionToken) throws {
+        try Task.checkCancellation()
+        guard let pendingCompletion,
+              pendingCompletion.transaction == token.generation else {
+            throw LLMAgentTransactionError.notPending
+        }
+        rollbackCompletion = RollbackCompletion(
+            transaction: token.generation,
+            context: context
+        )
+        context = pendingCompletion.context
+        self.pendingCompletion = nil
+    }
+
+    /// Discards a staged streaming response. This operation is idempotent.
+    public func abort(_ token: LLMAgentTransactionToken) {
+        abort(token.generation)
     }
 
     /// 最近对话历史（不含 system）。
@@ -131,6 +162,8 @@ public actor LLMAgent {
     public func clearContext() {
         transactionGeneration += 1
         activeTransaction = nil
+        pendingCompletion = nil
+        rollbackCompletion = nil
         context.clear()
     }
 
@@ -189,6 +222,7 @@ public actor LLMAgent {
                     guard roundContent.isEmpty else {
                         throw LLMAgentStreamError.discardPartialMixedContentAndToolCall
                     }
+                    try validateToolRound(toolCalls, content: reply.content)
                     for call in toolCalls {
                         try Task.checkCancellation()
                         try ensureActive(transaction)
@@ -205,7 +239,7 @@ public actor LLMAgent {
                     throw LLMAgentError.emptyResponse
                 }
                 workingContext.appendAssistant(answer)
-                try commit(workingContext, transaction: transaction)
+                try stageCompletion(workingContext, transaction: transaction)
                 continuation.yield(.completed(answer))
                 continuation.finish()
                 return
@@ -220,11 +254,29 @@ public actor LLMAgent {
     private func beginTransaction() -> Int {
         transactionGeneration += 1
         activeTransaction = transactionGeneration
+        pendingCompletion = nil
+        rollbackCompletion = nil
         return transactionGeneration
     }
 
     private func ensureActive(_ transaction: Int) throws {
         guard activeTransaction == transaction else { throw CancellationError() }
+    }
+
+    private func validateToolRound(_ toolCalls: [LLMToolCall], content: String?) throws {
+        if let content, !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            throw LLMAgentError.mixedContentAndToolCall
+        }
+        for (index, call) in toolCalls.enumerated() {
+            switch call.validationFailure() {
+            case .incomplete:
+                throw LLMAgentError.incompleteToolCall(index: index)
+            case .malformedArguments:
+                throw LLMAgentError.malformedToolCallArguments(index: index)
+            case nil:
+                continue
+            }
+        }
     }
 
     private func commit(_ newContext: LLMChatContext, transaction: Int) throws {
@@ -234,21 +286,84 @@ public actor LLMAgent {
         activeTransaction = nil
     }
 
+    private func stageCompletion(_ newContext: LLMChatContext, transaction: Int) throws {
+        try Task.checkCancellation()
+        try ensureActive(transaction)
+        pendingCompletion = PendingCompletion(transaction: transaction, context: newContext)
+        activeTransaction = nil
+    }
+
     private func abort(_ transaction: Int) {
         if activeTransaction == transaction { activeTransaction = nil }
+        if pendingCompletion?.transaction == transaction { pendingCompletion = nil }
+        if rollbackCompletion?.transaction == transaction {
+            context = rollbackCompletion?.context ?? context
+            rollbackCompletion = nil
+        }
+    }
+
+    private struct PendingCompletion {
+        let transaction: Int
+        let context: LLMChatContext
+    }
+
+    private struct RollbackCompletion {
+        let transaction: Int
+        let context: LLMChatContext
     }
 }
 
-public enum LLMAgentError: Error, LocalizedError, Sendable {
+/// Opaque identity for one streaming context transaction.
+public struct LLMAgentTransactionToken: Sendable, Equatable, Hashable {
+    fileprivate let generation: Int
+}
+
+/// A stream plus the token required to commit or abort its staged context.
+public struct LLMAgentStreamingTransaction: AsyncSequence, Sendable {
+    public typealias Element = LLMAgentEvent
+    public typealias AsyncIterator = AsyncThrowingStream<LLMAgentEvent, Error>.Iterator
+
+    public let token: LLMAgentTransactionToken
+    public let events: AsyncThrowingStream<LLMAgentEvent, Error>
+
+    fileprivate init(
+        token: LLMAgentTransactionToken,
+        events: AsyncThrowingStream<LLMAgentEvent, Error>
+    ) {
+        self.token = token
+        self.events = events
+    }
+
+    public func makeAsyncIterator() -> AsyncIterator {
+        events.makeAsyncIterator()
+    }
+}
+
+public enum LLMAgentTransactionError: Error, LocalizedError, Sendable, Equatable {
+    case notPending
+
+    public var errorDescription: String? {
+        "The streaming response is not pending acknowledgement."
+    }
+}
+
+public enum LLMAgentError: Error, LocalizedError, Sendable, Equatable {
     case tooManyToolRounds
     case emptyResponse
     case missingCompletedMessage
+    case mixedContentAndToolCall
+    case incompleteToolCall(index: Int)
+    case malformedToolCallArguments(index: Int)
 
     public var errorDescription: String? {
         switch self {
         case .tooManyToolRounds: return "工具调用轮数超过上限，请稍后再试"
         case .emptyResponse: return "模型返回了空回答"
         case .missingCompletedMessage: return "流式响应未正常完成"
+        case .mixedContentAndToolCall: return "模型同时返回了正文和工具调用"
+        case .incompleteToolCall(let index): return "工具调用 \(index) 不完整"
+        case .malformedToolCallArguments(let index):
+            return "工具调用 \(index) 的参数不是完整 JSON 对象"
         }
     }
 }

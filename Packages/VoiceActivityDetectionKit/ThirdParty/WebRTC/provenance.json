@@ -1,0 +1,85 @@
+{
+  "dependency": "webrtc-vad-minimal",
+  "remote": "https://webrtc.googlesource.com/src",
+  "commit": "1e7f4c3c39e1aacaf8884452f80cd82749b1f8f1",
+  "tree": "9e1c614027e41b4885cb3712cd9b2444388fac73",
+  "commitDate": "2026-08-26T23:08:09-07:00",
+  "sourceFiles": [
+    {"path": "Sources/CWebRTCVAD/common_audio/vad/webrtc_vad.c", "sha256": "e185a67f8cc1c03a005b24d3a144be237bcdfeb365ee2130f93a0edb81b7819a", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/vad/vad_core.c", "sha256": "6d78d06869f0e85ef84cea4fa05397a6e7a8bfcd70ad415b39ba25de721706e3", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/vad/vad_filterbank.c", "sha256": "e026f2b05183efe34b053d7c7fd53edd7637218afe7a2513ed001ffce0b515b0", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/vad/vad_gmm.c", "sha256": "9ef9fdba74dd87acbd0a3cb90746a1049f33dac7ea1910387f542f73dfbd8876", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/vad/vad_sp.c", "sha256": "2633f8c3abfb6bd3a5a852abc6ce8cdc1756b659f0ffa2a8617f8d536309c25d", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/signal_processing/division_operations.c", "sha256": "2fec2e6baa1ad5ccf47be8e7bd5018fda3d269c381d8843d5ce76995baf3f36e", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/signal_processing/energy.c", "sha256": "a4067e935332b8b759dd2bbb14b2e2783af1df6bb22f016fb13e35af0002fc48", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/signal_processing/get_scaling_square.c", "sha256": "3cb27b5a9fc1715afa769fcca463e27f34075d4cac8770396e39aa64bba17539", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/signal_processing/resample_48khz.c", "sha256": "56a9469c13fce3793d942143d92ca8d64fd66fc4e2162c59e741893db336b135", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/signal_processing/resample_by_2_internal.c", "sha256": "556105d330f1025eaa706af776210d70c1c865d9cc84e863dd772a1a7c4ed9e4", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/signal_processing/resample_fractional.c", "sha256": "a84430c582bcd4505b65fe6723adcd946aa5ddddb302bc0f4528a446b99c7e1e", "upstream": true}
+  ],
+  "headerFiles": [
+    {"path": "Sources/CWebRTCVAD/common_audio/signal_processing/include/signal_processing_library.h", "sha256": "864364506ceb8afe96f2a5cb9c2c0746eb0f1c2450c95c2d8bd761e70319a5d5", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/signal_processing/include/spl_inl.h", "sha256": "efe22cc6622fca9636a8fb9089b48e18d8503cab0151bb7dd096583bff2e75dd", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/signal_processing/resample_by_2_internal.h", "sha256": "f4f84d87cbf1a544a2f16f9b72f3896ba8a6ba7e925daa83f4f3ff4ceb539358", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/third_party/spl_sqrt_floor/spl_sqrt_floor.h", "sha256": "ba9fb284433f5dfa622e88d7a2f845cef1ccc820e1379816db006ec4dfbffd5c", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/vad/include/webrtc_vad.h", "sha256": "6ae83e71dd1bfce6214a71817dd9e6f60e59f44a31c9b88650fad4b0808dc91e", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/vad/vad_core.h", "sha256": "0fcbdb0a819e2f67b48d6e0c7a4731863a5394af0a74b63107775333f933a262", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/vad/vad_filterbank.h", "sha256": "e69172ec0a2c3ca808166bcfc35e87ec5ef7f884a1b30400e038da8eca623bbc", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/vad/vad_gmm.h", "sha256": "85a8a58e5b9af6cbbb30de276f17a01fc6a7e9334f8e2abe48152da3ed8301fb", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/common_audio/vad/vad_sp.h", "sha256": "7fc7e30b29b3c5f8cfcfa3334880186a012e3d896f41ca3edc0c956d4eb2c965", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/rtc_base/checks.h", "sha256": "aaa01bd24e537b581ac3cff43947ecc7d2d95fded7a16c5e5269fff22de24274", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/rtc_base/compile_assert_c.h", "sha256": "2356cc41c37f22f9b0fb94e4030bea7734dc670d7c98ee92c28b95f4ac3c13e5", "upstream": true},
+    {"path": "Sources/CWebRTCVAD/rtc_base/sanitizer.h", "sha256": "bd59bcd852f9d2c84da3957852076e70717edcf403b5453ebda28302da7b33a1", "upstream": true}
+  ],
+  "projectFiles": [
+    {"path": "Sources/CWebRTCVAD/rtc_fatal_message.c", "sha256": "f345a021e05ca9e94def9d5125887d3c3cd29153b067689780b25240446cb678", "upstream": false},
+    {"path": "Sources/CWebRTCVAD/include/CWebRTCVAD.h", "sha256": "313a36fb94a8ada28e2b47b20c1646a238896d5594552398b4cdd088ef3abce0", "upstream": false},
+    {"path": "Sources/CWebRTCVAD/CompilationUnits/division_operations_wrapper.c", "sha256": "2d1a2e8d326440634ff54600445580a60b552e1e2e45235bc00c11203484c4c7", "upstream": false},
+    {"path": "Sources/CWebRTCVAD/CompilationUnits/energy_wrapper.c", "sha256": "cc387e74d55752f3ecf4ee538047db739e54daf40c8db1a87068023ad03b92c5", "upstream": false},
+    {"path": "Sources/CWebRTCVAD/CompilationUnits/get_scaling_square_wrapper.c", "sha256": "81a9b2fc2342d4e058b77ec9242a75a15969311e59e768c67f085b56c9a86050", "upstream": false},
+    {"path": "Sources/CWebRTCVAD/CompilationUnits/resample_48khz_wrapper.c", "sha256": "9d72d595a74cf752e3c8c7af00f0e5b65f1896dde2b2c8e42e20c6ab0b95c08f", "upstream": false},
+    {"path": "Sources/CWebRTCVAD/CompilationUnits/resample_by_2_internal_wrapper.c", "sha256": "fee122ead7c2c72115d4ecfdf57f4a569ee822d4a7b3b5361f440badb5c60521", "upstream": false},
+    {"path": "Sources/CWebRTCVAD/CompilationUnits/resample_fractional_wrapper.c", "sha256": "1aa51505fe02bb532d1c8c493392b4ced419dce4ecf00eec6890d8287a280d9d", "upstream": false},
+    {"path": "Sources/CWebRTCVAD/CompilationUnits/vad_core_wrapper.c", "sha256": "8721f38ce66cfe893b624bc7a8ef6cd11367fab434c6bacf9c129cfe7dcc32ef", "upstream": false},
+    {"path": "Sources/CWebRTCVAD/CompilationUnits/vad_filterbank_wrapper.c", "sha256": "0f710053675971bb74903859d5b315563c29fb63a6ada1f99a03d1064c7297fd", "upstream": false},
+    {"path": "Sources/CWebRTCVAD/CompilationUnits/vad_gmm_wrapper.c", "sha256": "e13dbef0411a7a14699ec9b578cfea085bdaa4cbc25a3f74cbce840a9e4ef160", "upstream": false},
+    {"path": "Sources/CWebRTCVAD/CompilationUnits/vad_sp_wrapper.c", "sha256": "0a0150c132b103d8a0287223228d75a3f7b5e50450eb55b2590b854cba6a2741", "upstream": false},
+    {"path": "Sources/CWebRTCVAD/CompilationUnits/webrtc_vad_wrapper.c", "sha256": "ae19095109109eb0cecc3221a1bfdd1ac26c026c563a61b7b95ada0fea35d35e", "upstream": false}
+  ],
+  "legalFiles": [
+    {"path": "ThirdParty/WebRTC/LICENSE", "sha256": "ab00a482b6a3902e40211b43c5d0441962ea99b6cc7c25c0f243fa270b78d482"},
+    {"path": "ThirdParty/WebRTC/PATENTS", "sha256": "01462e2068d1a04c2274f3389773014c14ed9bc3446b28303543bd3e3c064145"},
+    {"path": "ThirdParty/WebRTC/AUTHORS", "sha256": "8f2721d288f65f4dee92c5794b1d7c084649c76c78923b83f089723f114e120f"},
+    {"path": "ThirdParty/WebRTC/spl_sqrt_floor/LICENSE", "sha256": "41d791701e3e1c1073470403de7e342442d1e6a2af72681023b13a2f45f2125c"},
+    {"path": "ThirdParty/WebRTC/spl_sqrt_floor/README.chromium", "sha256": "292b6fa1147d681f40ff6ff81cccbca4e933ab06ef0212e5d589ddccc6ed2d69"}
+  ],
+  "compiler": {
+    "vendor": "Apple clang",
+    "version": "21.0.0 (clang-2100.1.1.101)",
+    "language": "C11",
+    "productUnsafeFlags": [],
+    "verificationFlags": ["-Wall", "-Wextra", "-Wpedantic", "-Werror"],
+    "visibility": "five-function public facade; project test seam, fatal callback, and upstream implementation symbols hidden by one-source wrappers"
+  },
+  "targets": [
+    "arm64-apple-ios17.0",
+    "arm64-apple-ios17.0-simulator",
+    "x86_64-apple-ios17.0-simulator"
+  ],
+  "artifactSha256": [],
+  "apiInput": {
+    "sampleRateHz": 16000,
+    "frameMs": 20,
+    "sampleCount": 320,
+    "channelCount": 1,
+    "encoding": "signed-int16-little-endian"
+  },
+  "generatedAt": "2026-08-28T12:54:08+08:00",
+  "verification": {
+    "sourceIntegrity": "automated",
+    "compile": "separate-build-evidence-required",
+    "quality": "not-run",
+    "device": "not-run",
+    "realService": "not-run"
+  }
+}

@@ -252,14 +252,22 @@ private struct StreamingMessageAccumulator {
 
     func message() throws -> LLMMessage {
         let completedTools = try toolCalls.keys.sorted().map { index -> LLMToolCall in
-            guard let value = toolCalls[index], !value.id.isEmpty, !value.name.isEmpty else {
+            guard let value = toolCalls[index] else {
                 throw LLMStreamingError.incompleteToolCall(index: index)
             }
-            return LLMToolCall(
+            let call = LLMToolCall(
                 id: value.id,
                 type: value.type,
                 function: .init(name: value.name, arguments: value.arguments)
             )
+            switch call.validationFailure() {
+            case .incomplete:
+                throw LLMStreamingError.incompleteToolCall(index: index)
+            case .malformedArguments:
+                throw LLMStreamingError.malformedToolCallArguments(index: index)
+            case nil:
+                return call
+            }
         }
         return LLMMessage(
             role: .assistant,
