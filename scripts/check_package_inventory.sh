@@ -20,7 +20,7 @@ actual_packages=$(find "$repository_root/Packages" -mindepth 1 -maxdepth 1 -type
     ! -name '.build' ! -name '.swiftpm' -exec basename {} \; | LC_ALL=C sort)
 
 if [ "$actual_packages" != "$expected_packages" ]; then
-    echo "error: local package inventory differs from the reviewed six-package set" >&2
+    echo "error: local package inventory differs from the reviewed package set" >&2
     echo "expected:" >&2
     echo "$expected_packages" >&2
     echo "actual:" >&2
@@ -37,17 +37,16 @@ for package in $expected_packages; do
         echo "error: Packages/README.md does not inventory $package" >&2
         exit 1
     fi
-done
-
-for gate in \
-    "$repository_root/scripts/strict_concurrency_gate.sh" \
-    "$repository_root/scripts/coverage_gate.sh" \
-    "$repository_root/.github/workflows/ci.yml"
-do
-    if ! grep -Fq 'VoiceActivityDetectionKit' "$gate"; then
-        echo "error: VoiceActivityDetectionKit is missing from ${gate#"$repository_root/"}" >&2
-        exit 1
-    fi
+    for gate in \
+        "$repository_root/scripts/strict_concurrency_gate.sh" \
+        "$repository_root/scripts/coverage_gate.sh" \
+        "$repository_root/.github/workflows/ci.yml"
+    do
+        if ! grep -Fq "$package" "$gate"; then
+            echo "error: $package is missing from ${gate#"$repository_root/"}" >&2
+            exit 1
+        fi
+    done
 done
 
 package_count=$(printf '%s\n' "$expected_packages" | wc -l | tr -d ' ')

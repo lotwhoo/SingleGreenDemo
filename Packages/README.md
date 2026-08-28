@@ -1,6 +1,6 @@
 # 本地 AI Packages
 
-本目录保存 SingleGreenDemo 与后续眼镜能力构建所需的六个本地 Swift Package，使仓库不再依赖开发者机器上的 sibling 目录。
+本目录保存 SingleGreenDemo 与后续眼镜能力构建所需的七个本地 Swift Package，使仓库不再依赖开发者机器上的 sibling 目录。
 
 ## 来源基线
 
@@ -25,8 +25,11 @@ VoiceChatCore     → ../LLMKit（仅 ASRCLI 工具使用）
 StreamingTextKit  独立
 VoiceActivityDetectionKit 独立（M6 Stage 1/2A；WebRTC 实现只在 App composition root 注入）
 SingleGreenGlassesKit → VoiceChatDomain + StreamingTextKit
-SingleGreenDemo   → SingleGreenGlassesKit + VoiceChatCore + LLMKit + StreamingTextKit
+SingleGreenConversationAdapters → SingleGreenGlassesKit + VoiceChatCore + LLMKit
+SingleGreenDemo   → SingleGreenConversationAdapters + SingleGreenGlassesKit + VoiceChatCore + LLMKit + StreamingTextKit
 ```
+
+`SingleGreenConversationAdapters` 的复用接口是四个 provider-neutral 类型：`VoiceChatSpeechRecognitionAdapter`、`VoiceChatVoiceActivatedSpeechRecognitionAdapter`、`LLMKitConversationAgentAdapter` 和 `LLMKitConversationAgentAdapterPolicy`。它们只桥接核心 ports 与已配置的 VoiceChat/LLM 实现；凭证、租约、模型/资源配置、WebRTC factory、raw tool name 和展示文案仍由 App composition root 提供。
 
 ## 升级流程
 
@@ -34,8 +37,9 @@ SingleGreenDemo   → SingleGreenGlassesKit + VoiceChatCore + LLMKit + Streaming
 2. 只同步 `Package.swift`、`Sources/`、`Tests/` 和确有必要的 `Tools/`。
 3. 不复制 `.build`、`.swiftpm`、用户状态、凭证或日志。
 4. 对比公开 API、Package 平台版本和 Core → LLMKit 相对路径。
-5. 依次运行三个上游 Package、`StreamingTextKit`、`VoiceActivityDetectionKit`、`SingleGreenGlassesKit`、App XCTest 和 iOS 构建。
-6. 更新本文件的来源提交，并在提交信息中记录行为变化。涉及 VAD 时，先验证 20ms/16kHz/mono/Int16LE 帧契约、300ms pre-roll、3-of-5 起音、800ms 尾部静音、20s 最长段、15s 无起音超时和所有有界队列，再验证连续 rearm、音频通知 wiring、意外 ASR stream closure、PTT 兼容路径及 factory 缺失时的 fail-closed 行为。
+5. 依次运行七个本地 Package、App XCTest 和 iOS 构建；当前 PR3 本地证据为 Package **414/414**、App **55/55**，适配器包 **24/24**。
+6. PR3+PR4 合并复核应达到七个 Package **438/438**、App **55/55**；适配器生命周期重复 480 次、终态生命周期重复 380 次。
+7. 更新本文件的来源提交，并在提交信息中记录行为变化。涉及 VAD 时，先验证 20ms/16kHz/mono/Int16LE 帧契约、300ms pre-roll、3-of-5 起音、800ms 尾部静音、20s 最长段、15s 无起音超时和所有有界队列，再验证连续 rearm、音频通知 wiring、意外 ASR stream closure、PTT 兼容路径及 factory 缺失时的 fail-closed 行为。
 
 ## 分发边界
 
@@ -45,6 +49,6 @@ Provider-neutral 约束：`SingleGreenGlassesKit` 只接收宿主准备好的 PT
 
 ## Public API baseline procedure
 
-The reviewed public API contract is generated with `swift-api-digester` for the seven library modules listed in `config/architecture-boundaries.json`, on macOS arm64 and iOS Simulator arm64. Exact snapshots are stored under `api-baselines/xcode-26.6-swift-6.3.3/`; additions and removals are both review items.
+The reviewed public API contract is generated with `swift-api-digester` for the eight library modules listed in `config/architecture-boundaries.json`, on macOS arm64 and iOS Simulator arm64. Exact snapshots are stored under `api-baselines/xcode-26.6-swift-6.3.3/`; additions and removals are both review items.
 
 Run `scripts/check_public_api_baselines.sh` during normal validation. To intentionally accept a reviewed API change, run `scripts/update_public_api_baselines.sh --accept-current-api`, inspect the generated JSON diff and compatibility impact, then run the checker and relevant package tests. The update command is never automatic and is rejected in CI. The updater stages and preserves a rollback copy on replacement failure; concurrent invocations remain a known P3 limitation.

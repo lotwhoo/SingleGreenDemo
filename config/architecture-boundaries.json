@@ -14,6 +14,18 @@
       ]
     },
     {
+      "name": "SingleGreenConversationAdapters",
+      "path": "Packages/SingleGreenConversationAdapters",
+      "local_dependencies": ["LLMKit", "SingleGreenGlassesKit", "VoiceChatCore"],
+      "products": [
+        { "name": "SingleGreenConversationAdapters", "type": "library", "targets": ["SingleGreenConversationAdapters"] }
+      ],
+      "targets": [
+        { "name": "SingleGreenConversationAdapters", "type": "regular", "dependencies": ["LLMKit", "SingleGreenGlassesKit", "VoiceChatCore"] },
+        { "name": "SingleGreenConversationAdaptersTests", "type": "test", "dependencies": ["LLMKit", "SingleGreenConversationAdapters", "SingleGreenGlassesKit", "VoiceChatCore"] }
+      ]
+    },
+    {
       "name": "SingleGreenGlassesKit",
       "path": "Packages/SingleGreenGlassesKit",
       "local_dependencies": ["StreamingTextKit", "VoiceChatDomain"],
@@ -85,6 +97,13 @@
   ],
   "import_rules": [
     {
+      "id": "conversation-adapters-semantic-bridge-only",
+      "roots": ["Packages/SingleGreenConversationAdapters/Sources/SingleGreenConversationAdapters"],
+      "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "OSLog", "Security", "Network", "WebRTCVoiceActivityDetection", "CWebRTCVAD", "CWebRTCVADTestSupport"],
+      "forbidden_prefixes": ["WebRTC", "CWebRTC"],
+      "allowed_project_modules": ["LLMKit", "SingleGreenGlassesKit", "VoiceChatCore"]
+    },
+    {
       "id": "single-green-core-framework-neutral",
       "roots": ["Packages/SingleGreenGlassesKit/Sources/SingleGreenGlassesKit"],
       "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "Network", "OSLog", "Security", "LLMKit", "VoiceChatCore", "VoiceActivityDetectionKit", "WebRTCVoiceActivityDetection"],
@@ -133,6 +152,7 @@
     "project": "SingleGreenDemo.xcodeproj/project.pbxproj",
     "local_package_paths": [
       "Packages/LLMKit",
+      "Packages/SingleGreenConversationAdapters",
       "Packages/SingleGreenGlassesKit",
       "Packages/StreamingTextKit",
       "Packages/VoiceActivityDetectionKit",
@@ -142,7 +162,7 @@
     "targets": [
       {
         "name": "SingleGreenDemo",
-        "package_products": ["LLMKit", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceChatCore", "WebRTCVoiceActivityDetection"]
+        "package_products": ["LLMKit", "SingleGreenConversationAdapters", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceChatCore", "WebRTCVoiceActivityDetection"]
       },
       {
         "name": "SingleGreenDemoTests",
@@ -152,6 +172,7 @@
   },
   "public_api_modules": [
     { "module": "LLMKit", "package": "LLMKit" },
+    { "module": "SingleGreenConversationAdapters", "package": "SingleGreenConversationAdapters" },
     { "module": "SingleGreenGlassesKit", "package": "SingleGreenGlassesKit" },
     { "module": "StreamingTextKit", "package": "StreamingTextKit" },
     { "module": "VoiceActivityDetectionKit", "package": "VoiceActivityDetectionKit" },

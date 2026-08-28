@@ -210,6 +210,18 @@ final class ExperienceCatalogTests: XCTestCase {
         }
     }
 
+    func testRuntimeValidatedInitializerSurfacesTypedRegistrationErrors() {
+        XCTAssertThrowsError(try ExperienceRuntime(validating: [])) {
+            XCTAssertEqual($0 as? ExperienceCatalogError, .emptyCatalog)
+        }
+
+        let first = NavigationExperience()
+        let duplicate = NavigationExperience()
+        XCTAssertThrowsError(try ExperienceRuntime(validating: [first, duplicate])) {
+            XCTAssertEqual($0 as? ExperienceCatalogError, .duplicateKind(.navigation))
+        }
+    }
+
     func testCatalogRejectsInvalidActionIdentifiersAndMultiplePrimaries() {
         XCTAssertCatalogError(
             actions: [action(id: " ")],

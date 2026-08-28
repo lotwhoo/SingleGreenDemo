@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package: [StreamingTextKit, VoiceChatDomain, VoiceActivityDetectionKit, SingleGreenGlassesKit, LLMKit, VoiceChatCore]
+        package: [StreamingTextKit, VoiceChatDomain, VoiceActivityDetectionKit, SingleGreenGlassesKit, SingleGreenConversationAdapters, LLMKit, VoiceChatCore]
     steps:
       - uses: actions/checkout@v4
       - run: scripts/check_toolchain.sh

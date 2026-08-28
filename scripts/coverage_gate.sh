@@ -12,7 +12,7 @@ mkdir -p "$output_directory"
 # a release-quality substitute for the deterministic streaming test matrix.
 # Only package production files under Sources/ are aggregated. Tools/ASRCLI is
 # intentionally excluded and is enforced by a separate strict build gate.
-packages='StreamingTextKit:70 VoiceChatDomain:75 VoiceActivityDetectionKit:80 SingleGreenGlassesKit:65 LLMKit:60 VoiceChatCore:55'
+packages='StreamingTextKit:70 VoiceChatDomain:75 VoiceActivityDetectionKit:80 SingleGreenGlassesKit:65 SingleGreenConversationAdapters:70 LLMKit:60 VoiceChatCore:55'
 summary="$output_directory/summary.tsv"
 printf 'package\tline_coverage_percent\tthreshold_percent\n' > "$summary"
 printf '%s\n' 'Scope: package Sources/ only; Tools/ASRCLI is covered by a separate strict build gate.'

@@ -372,10 +372,42 @@ final class ConversationPreparationTests: XCTestCase {
 
     func testLiveAdapterMapsRawSearchToolToSemanticCoreActivity() {
         XCTAssertEqual(
-            LLMKitConversationAgent.toolActivity(for: "web_search"),
+            ProductionConversationAgentFactory.toolActivity(for: "web_search"),
             .externalInformationLookup
         )
-        XCTAssertNil(LLMKitConversationAgent.toolActivity(for: "unrelated_tool"))
+        XCTAssertNil(
+            ProductionConversationAgentFactory.toolActivity(for: "unrelated_tool")
+        )
+    }
+
+    func testLiveAdapterPolicyMapsTypedErrorsToReviewedCopyOnly() {
+        XCTAssertEqual(
+            ProductionConversationAgentFactory.streamError(
+                for: LLMStreamingError.incompleteStream
+            ),
+            .failed("模型流未正常完成。", .incompleteStream)
+        )
+        XCTAssertEqual(
+            ProductionConversationAgentFactory.streamError(
+                for: LLMAgentStreamError.discardPartialMixedContentAndToolCall
+            ),
+            .discardPartial("模型同时返回正文和工具调用，已丢弃不可信的部分正文")
+        )
+        XCTAssertEqual(
+            ProductionConversationAgentFactory.streamError(
+                for: BochaSearchClient.BochaError.apiError(
+                    statusCode: 401,
+                    message: PreparationFixtureError.sentinel
+                )
+            ),
+            .failed("搜索服务凭证未通过验证。", .unauthorized)
+        )
+
+        let unknown = ProductionConversationAgentFactory.streamError(
+            for: PreparationFixtureError.sensitiveDetectorFailure
+        )
+        XCTAssertEqual(unknown, .failed("回答流程暂时中断。", .interrupted))
+        XCTAssertFalse(unknown.localizedDescription.contains(PreparationFixtureError.sentinel))
     }
 
     private func waitUntil(

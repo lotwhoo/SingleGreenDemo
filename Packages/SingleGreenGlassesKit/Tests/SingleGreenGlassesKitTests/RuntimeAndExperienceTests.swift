@@ -25,6 +25,135 @@ final class RuntimeAndExperienceTests: XCTestCase {
         XCTAssertEqual(session.shutdownCount, 1)
     }
 
+    func testRuntimeConcurrentShutdownJoinsOneCleanupAfterObservationStops() async {
+        let session = SuspendedShutdownExperience()
+        let runtime = ExperienceRuntime(sessions: [session])
+        await waitUntil { session.hasSubscriber }
+
+        var firstCompleted = false
+        var secondCompleted = false
+        let first = Task {
+            await runtime.shutdown()
+            firstCompleted = true
+        }
+        await waitUntil { session.isShutdownSuspended }
+        let second = Task {
+            await runtime.shutdown()
+            secondCompleted = true
+        }
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertTrue(session.observationStoppedBeforeShutdown)
+        XCTAssertEqual(session.shutdownCount, 1)
+        XCTAssertFalse(firstCompleted)
+        XCTAssertFalse(secondCompleted)
+
+        session.resolveShutdown()
+        await first.value
+        await second.value
+
+        XCTAssertTrue(firstCompleted)
+        XCTAssertTrue(secondCompleted)
+        XCTAssertEqual(session.shutdownCount, 1)
+    }
+
+    func testRuntimeCommandsAndLateUpdatesAreInertAfterShutdown() async {
+        let session = NonFinishingObservationExperience()
+        let runtime = ExperienceRuntime(sessions: [session])
+        await waitUntil { session.hasSubscriber }
+
+        await runtime.shutdown()
+        let terminalSnapshot = runtime.snapshot
+        await runtime.handle(.tap)
+        await runtime.performAction(id: BuiltInExperienceActions.primaryID)
+        await runtime.activate(.caption)
+        session.emit(revision: 99)
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertEqual(session.handleCount, 0)
+        XCTAssertEqual(session.resetCount, 0)
+        XCTAssertEqual(session.shutdownCount, 1)
+        XCTAssertEqual(runtime.snapshot, terminalSnapshot)
+    }
+
+    func testRuntimeShutdownCancelsAndJoinsEveryOutstandingCommandBeforeSessionCleanup() async {
+        let session = CancellationIgnoringCommandExperience()
+        let runtime = ExperienceRuntime(sessions: [session])
+
+        let handle = Task { await runtime.handle(.tap) }
+        await waitUntil { session.isHandleSuspended }
+        let action = Task {
+            await runtime.performAction(id: BuiltInExperienceActions.primaryID)
+        }
+        await waitUntil { session.isActionSuspended }
+        let reset = Task { await runtime.handle(.reset) }
+        await waitUntil { session.isResetSuspended }
+
+        let terminalSnapshot = runtime.snapshot
+        var shutdownCompleted = false
+        let shutdown = Task {
+            await runtime.shutdown()
+            shutdownCompleted = true
+        }
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertFalse(shutdownCompleted)
+        XCTAssertEqual(session.shutdownCount, 0)
+        XCTAssertEqual(session.activeResourceCount, 3)
+
+        session.resolveAllCommands()
+        await handle.value
+        await action.value
+        await reset.value
+        await shutdown.value
+
+        XCTAssertTrue(shutdownCompleted)
+        XCTAssertEqual(session.cancelledCommandCount, 3)
+        XCTAssertEqual(session.activeResourceCount, 0)
+        XCTAssertEqual(session.activeResourcesAtShutdown, 0)
+        XCTAssertEqual(session.shutdownCount, 1)
+        XCTAssertEqual(runtime.snapshot, terminalSnapshot)
+    }
+
+    func testRuntimeUsesDescriptorKindWhenSessionOverridesKind() async throws {
+        let session = DescriptorIdentityExperience(
+            descriptorKind: .navigation,
+            overriddenKind: .caption
+        )
+        let runtime = try ExperienceRuntime(validating: [session])
+
+        XCTAssertEqual(runtime.availableKinds, [.navigation])
+        XCTAssertEqual(runtime.selectedKind, .navigation)
+        XCTAssertEqual(runtime.selectedDescriptor.kind, .navigation)
+
+        await runtime.handle(.tap)
+
+        XCTAssertEqual(session.handleCount, 1)
+    }
+
+    func testRuntimeRegistersUniqueDescriptorKindsDespiteConflictingSessionKindOverrides() async throws {
+        let navigation = DescriptorIdentityExperience(
+            descriptorKind: .navigation,
+            overriddenKind: .conversation
+        )
+        let caption = DescriptorIdentityExperience(
+            descriptorKind: .caption,
+            overriddenKind: .conversation
+        )
+        let runtime = try ExperienceRuntime(validating: [navigation, caption])
+
+        XCTAssertEqual(runtime.availableKinds, [.navigation, .caption])
+        XCTAssertEqual(runtime.selectedKind, .navigation)
+
+        await runtime.activate(.caption)
+        await runtime.handle(.tap)
+
+        XCTAssertEqual(runtime.selectedKind, .caption)
+        XCTAssertEqual(navigation.resetCount, 1)
+        XCTAssertEqual(caption.resetCount, 1)
+        XCTAssertEqual(caption.handleCount, 1)
+    }
+
     func testRuntimeDefaultsToSystemStatusAndRegistersAllExperiences() async {
         let runtime = ExperienceRuntime()
 
@@ -403,11 +532,15 @@ private final class NonFinishingObservationExperience: ExperienceSession {
     private(set) var hasSubscriber = false
     private(set) var wasTerminated = false
     private(set) var shutdownCount = 0
+    private(set) var handleCount = 0
+    private(set) var resetCount = 0
+    private var continuation: AsyncStream<ExperienceUpdate>.Continuation?
 
     func updates() -> AsyncStream<ExperienceUpdate> {
         hasSubscriber = true
         let observer = self
         return AsyncStream { continuation in
+            self.continuation = continuation
             continuation.onTermination = { _ in
                 Task { @MainActor in
                     observer.wasTerminated = true
@@ -416,9 +549,165 @@ private final class NonFinishingObservationExperience: ExperienceSession {
         }
     }
 
+    func handle(_ event: DemoEvent) async { handleCount += 1 }
+    func reset() async { resetCount += 1 }
+    func shutdown() async { shutdownCount += 1 }
+
+    func emit(revision: Int) {
+        continuation?.yield(ExperienceUpdateSource.spontaneous(ExperienceSnapshot(
+            scene: HUDScene(
+                sceneID: "late_non_finishing",
+                revision: revision,
+                presentation: .focused,
+                elements: []
+            ),
+            primaryActionTitle: "Late",
+            eventDescription: "late_update"
+        )))
+    }
+}
+
+@MainActor
+private final class SuspendedShutdownExperience: ExperienceSession {
+    let descriptor = testDescriptor(kind: .caption)
+    let scene = HUDScene(
+        sceneID: "suspended_shutdown",
+        revision: 0,
+        presentation: .compact,
+        elements: []
+    )
+    let primaryActionTitle = "Shutdown"
+    private(set) var hasSubscriber = false
+    private(set) var observationStopped = false
+    private(set) var observationStoppedBeforeShutdown = false
+    private(set) var shutdownCount = 0
+    private(set) var isShutdownSuspended = false
+    private var shutdownContinuation: CheckedContinuation<Void, Never>?
+
+    func updates() -> AsyncStream<ExperienceUpdate> {
+        hasSubscriber = true
+        let observer = self
+        return AsyncStream { continuation in
+            continuation.onTermination = { _ in
+                Task { @MainActor in
+                    observer.observationStopped = true
+                }
+            }
+        }
+    }
+
     func handle(_ event: DemoEvent) async {}
     func reset() async {}
-    func shutdown() async { shutdownCount += 1 }
+
+    func shutdown() async {
+        shutdownCount += 1
+        observationStoppedBeforeShutdown = observationStopped
+        isShutdownSuspended = true
+        await withCheckedContinuation { continuation in
+            shutdownContinuation = continuation
+        }
+        isShutdownSuspended = false
+    }
+
+    func resolveShutdown() {
+        let continuation = shutdownContinuation
+        shutdownContinuation = nil
+        continuation?.resume()
+    }
+}
+
+@MainActor
+private final class CancellationIgnoringCommandExperience: ExperienceSession {
+    let descriptor = testDescriptor(kind: .navigation)
+    let scene = HUDScene(
+        sceneID: "cancellation_ignoring_commands",
+        revision: 0,
+        presentation: .compact,
+        elements: []
+    )
+    let primaryActionTitle = "Run"
+    private(set) var isHandleSuspended = false
+    private(set) var isActionSuspended = false
+    private(set) var isResetSuspended = false
+    private(set) var activeResourceCount = 0
+    private(set) var cancelledCommandCount = 0
+    private(set) var shutdownCount = 0
+    private(set) var activeResourcesAtShutdown = -1
+    private var handleContinuation: CheckedContinuation<Void, Never>?
+    private var actionContinuation: CheckedContinuation<Void, Never>?
+    private var resetContinuation: CheckedContinuation<Void, Never>?
+
+    func handle(_ event: DemoEvent) async {
+        activeResourceCount += 1
+        isHandleSuspended = true
+        await withCheckedContinuation { handleContinuation = $0 }
+        isHandleSuspended = false
+        finishCommand()
+    }
+
+    func handle(_ action: ExperienceActionEvent) async {
+        activeResourceCount += 1
+        isActionSuspended = true
+        await withCheckedContinuation { actionContinuation = $0 }
+        isActionSuspended = false
+        finishCommand()
+    }
+
+    func reset() async {
+        activeResourceCount += 1
+        isResetSuspended = true
+        await withCheckedContinuation { resetContinuation = $0 }
+        isResetSuspended = false
+        finishCommand()
+    }
+
+    func shutdown() async {
+        shutdownCount += 1
+        activeResourcesAtShutdown = activeResourceCount
+    }
+
+    func resolveAllCommands() {
+        let handle = handleContinuation
+        let action = actionContinuation
+        let reset = resetContinuation
+        handleContinuation = nil
+        actionContinuation = nil
+        resetContinuation = nil
+        handle?.resume()
+        action?.resume()
+        reset?.resume()
+    }
+
+    private func finishCommand() {
+        if Task.isCancelled {
+            cancelledCommandCount += 1
+        }
+        activeResourceCount -= 1
+    }
+}
+
+@MainActor
+private final class DescriptorIdentityExperience: ExperienceSession {
+    let descriptor: ExperienceDescriptor
+    let kind: ExperienceKind
+    let scene: HUDScene
+    let primaryActionTitle = "Run"
+    private(set) var handleCount = 0
+    private(set) var resetCount = 0
+
+    init(descriptorKind: ExperienceKind, overriddenKind: ExperienceKind) {
+        descriptor = testDescriptor(kind: descriptorKind)
+        kind = overriddenKind
+        scene = HUDScene(
+            sceneID: "descriptor_\(descriptorKind.rawValue)",
+            revision: 0,
+            presentation: .compact,
+            elements: []
+        )
+    }
+
+    func handle(_ event: DemoEvent) async { handleCount += 1 }
+    func reset() async { resetCount += 1 }
 }
 
 private func testDescriptor(kind: ExperienceKind) -> ExperienceDescriptor {

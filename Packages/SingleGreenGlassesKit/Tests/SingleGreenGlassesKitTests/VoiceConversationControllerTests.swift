@@ -73,6 +73,706 @@ final class VoiceConversationControllerTests: XCTestCase {
         XCTAssertFalse(agent.isWaiting)
     }
 
+    func testConcurrentShutdownJoinsOneInputCleanupAndRejectsLateASREventsAndCommands() async {
+        let session = SuspendedCancelSpeechSession()
+        let agent = FakeConversationAgent(reply: "unused")
+        let controller = VoiceConversationController(dependencies: makeDependencies(
+            session: session,
+            agent: agent
+        ))
+
+        await controller.toggleConversation()
+        XCTAssertEqual(controller.state, .listening)
+
+        let revisionBeforeShutdown = controller.revision
+        var shutdownSnapshots: [ExperienceSnapshot] = []
+        let snapshotCancellable = controller.$snapshot.dropFirst().sink {
+            shutdownSnapshots.append($0)
+        }
+        var firstCompleted = false
+        var secondCompleted = false
+        let first = Task {
+            await controller.shutdown()
+            firstCompleted = true
+        }
+        await waitUntil { session.isCancelSuspended }
+        let terminalSnapshot = controller.snapshot
+        let second = Task {
+            await controller.shutdown()
+            secondCompleted = true
+        }
+
+        session.emit(.transcript("late transcript"))
+        session.emit(.level(1))
+        session.emit(.failed(.init(code: .connectionLost)))
+        session.emit(.finished)
+        await controller.toggleConversation()
+        await controller.resetConversation()
+        await controller.suspendForBackground()
+        controller.resumeFromForeground()
+        await controller.waitForPendingHostLifecycleTransition()
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertEqual(session.cancelCount, 1)
+        XCTAssertEqual(session.startCount, 1)
+        XCTAssertFalse(firstCompleted)
+        XCTAssertFalse(secondCompleted)
+        XCTAssertEqual(controller.revision, revisionBeforeShutdown + 1)
+        XCTAssertEqual(controller.conversation.inputState, .idle)
+        XCTAssertNil(controller.conversation.activeReplyID)
+        XCTAssertEqual(controller.liveText, "")
+        XCTAssertEqual(controller.audioLevel, 0)
+        XCTAssertNil(controller.lastError)
+        XCTAssertEqual(shutdownSnapshots, [terminalSnapshot])
+        XCTAssertEqual(controller.snapshot, terminalSnapshot)
+
+        session.resolveCancel()
+        await first.value
+        await second.value
+
+        XCTAssertTrue(firstCompleted)
+        XCTAssertTrue(secondCompleted)
+        XCTAssertEqual(session.cancelCount, 1)
+        XCTAssertEqual(controller.snapshot, terminalSnapshot)
+        withExtendedLifetime(snapshotCancellable) {}
+    }
+
+    func testConcurrentShutdownJoinsBackgroundCancellationAlreadyInFlightExactlyOnce() async {
+        let completedSession = FakeSpeechSession()
+        let cancellingSession = SuspendedCancelSpeechSession()
+        var sessions: [any SpeechRecognitionSession] = [completedSession, cancellingSession]
+        let agent = FakeConversationAgent(reply: "completed context")
+        let controller = VoiceConversationController(dependencies: makeDependencies(
+            session: completedSession,
+            agent: agent,
+            makeSpeechSession: { _ in sessions.removeFirst() }
+        ))
+
+        await controller.toggleConversation()
+        completedSession.emit(.transcript("retained turn"))
+        completedSession.emit(.finished)
+        await waitUntil { controller.state == .completed }
+        await controller.toggleConversation()
+        XCTAssertEqual(cancellingSession.startCount, 1)
+
+        controller.updateHostLifecycle(.background)
+        await waitUntil { cancellingSession.isCancelSuspended }
+        controller.resumeFromForeground()
+        for _ in 0..<20 { await Task.yield() }
+
+        var firstCompleted = false
+        var secondCompleted = false
+        let first = Task {
+            await controller.shutdown()
+            firstCompleted = true
+        }
+        let second = Task {
+            await controller.shutdown()
+            secondCompleted = true
+        }
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertEqual(cancellingSession.cancelCount, 1)
+        XCTAssertFalse(cancellingSession.observedCancellation)
+        XCTAssertEqual(agent.clearCount, 0)
+        XCTAssertFalse(firstCompleted)
+        XCTAssertFalse(secondCompleted)
+
+        cancellingSession.resolveCancel()
+        await first.value
+        await second.value
+
+        XCTAssertTrue(firstCompleted)
+        XCTAssertTrue(secondCompleted)
+        XCTAssertEqual(cancellingSession.cancelCount, 1)
+        XCTAssertFalse(cancellingSession.observedCancellation)
+        XCTAssertEqual(agent.clearCount, 1)
+    }
+
+    func testShutdownJoinsDirectBackgroundSuspensionWithoutCancellingReservedCleanup() async {
+        let completedSession = FakeSpeechSession()
+        let session = SuspendedCancelSpeechSession()
+        var sessions: [any SpeechRecognitionSession] = [completedSession, session]
+        let agent = FakeConversationAgent(reply: "completed context")
+        let controller = VoiceConversationController(dependencies: makeDependencies(
+            session: completedSession,
+            agent: agent,
+            makeSpeechSession: { _ in sessions.removeFirst() }
+        ))
+
+        await controller.toggleConversation()
+        completedSession.emit(.transcript("retained turn"))
+        completedSession.emit(.finished)
+        await waitUntil { controller.state == .completed }
+        await controller.toggleConversation()
+        var suspendCompleted = false
+        let suspend = Task {
+            await controller.suspendForBackground()
+            suspendCompleted = true
+        }
+        await waitUntil { session.isCancelSuspended }
+
+        var shutdownCompleted = false
+        let shutdown = Task {
+            await controller.shutdown()
+            shutdownCompleted = true
+        }
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertFalse(suspendCompleted)
+        XCTAssertFalse(shutdownCompleted)
+        XCTAssertEqual(session.cancelCount, 1)
+        XCTAssertFalse(session.observedCancellation)
+        XCTAssertEqual(agent.clearCount, 0)
+
+        session.resolveCancel()
+        await suspend.value
+        await shutdown.value
+
+        XCTAssertTrue(suspendCompleted)
+        XCTAssertTrue(shutdownCompleted)
+        XCTAssertEqual(session.cancelCount, 1)
+        XCTAssertFalse(session.observedCancellation)
+        XCTAssertEqual(agent.clearCount, 1)
+    }
+
+    func testSuspendedBackgroundCleanupDoesNotRetainController() async {
+        let session = SuspendedCancelSpeechSession()
+        var controller: VoiceConversationController? = VoiceConversationController(
+            dependencies: makeDependencies(
+                session: session,
+                agent: FakeConversationAgent(reply: "unused")
+            )
+        )
+
+        await controller?.toggleConversation()
+        controller?.updateHostLifecycle(.background)
+        await waitUntil { session.isCancelSuspended }
+        weak let weakController = controller
+
+        controller = nil
+
+        await waitUntil { weakController == nil }
+        XCTAssertFalse(session.observedCancellation)
+
+        session.resolveCancel()
+    }
+
+    func testShutdownJoinsSuspendedPushToTalkStartAndLeavesResourceInactive() async {
+        let session = SuspendedStartSpeechSession()
+        let controller = VoiceConversationController(dependencies: makeDependencies(
+            session: session,
+            agent: FakeConversationAgent(reply: "unused")
+        ))
+
+        let start = Task { await controller.toggleConversation() }
+        await waitUntil { session.isStartSuspended }
+
+        var shutdownCompleted = false
+        let shutdown = Task {
+            await controller.shutdown()
+            shutdownCompleted = true
+        }
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertFalse(shutdownCompleted)
+        XCTAssertEqual(session.cancelCount, 1)
+        XCTAssertFalse(session.isResourceActive)
+
+        session.resolveStart()
+        await start.value
+        await shutdown.value
+
+        XCTAssertTrue(shutdownCompleted)
+        XCTAssertGreaterThanOrEqual(session.cancelCount, 2)
+        XCTAssertFalse(session.isStartSuspended)
+        XCTAssertFalse(session.isResourceActive)
+        XCTAssertEqual(controller.state, .idle)
+    }
+
+    func testShutdownJoinsSuspendedPermissionBeforeReturning() async {
+        let permission = SuspendedPermissionRequest()
+        let session = FakeSpeechSession()
+        let controller = VoiceConversationController(dependencies: makeDependencies(
+            session: session,
+            agent: FakeConversationAgent(reply: "unused"),
+            requestMicrophonePermission: { await permission.request() }
+        ))
+
+        let start = Task { await controller.toggleConversation() }
+        await waitUntil { permission.isSuspended }
+
+        var shutdownCompleted = false
+        let shutdown = Task {
+            await controller.shutdown()
+            shutdownCompleted = true
+        }
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertFalse(shutdownCompleted)
+        XCTAssertEqual(session.cancelCount, 1)
+
+        permission.resolve(true)
+        await start.value
+        await shutdown.value
+
+        XCTAssertTrue(shutdownCompleted)
+        XCTAssertEqual(session.startCount, 0)
+        XCTAssertEqual(session.cancelCount, 1)
+        XCTAssertEqual(controller.state, .idle)
+    }
+
+    func testShutdownJoinsSuspendedAutomaticVoiceRearmAndLeavesResourceInactive() async {
+        let firstSession = FakeVoiceActivatedSpeechSession()
+        let rearmedSession = SuspendedArmVoiceActivatedSpeechSession()
+        var sessions: [any VoiceActivatedSpeechRecognitionSession] = [
+            firstSession,
+            rearmedSession
+        ]
+        let controller = VoiceConversationController(dependencies: makeDependencies(
+            session: FakeSpeechSession(),
+            agent: FakeConversationAgent(reply: "completed answer"),
+            configuration: { .valid(inputMode: .voiceActivated) },
+            makeVoiceActivatedSpeechSession: { _ in sessions.removeFirst() }
+        ))
+
+        await controller.toggleConversation()
+        firstSession.emit(.phase(.speechStarted))
+        firstSession.emit(.transcript("automatic rearm"))
+        firstSession.emit(.finished)
+        await waitUntil { rearmedSession.isArmSuspended }
+
+        var shutdownCompleted = false
+        let shutdown = Task {
+            await controller.shutdown()
+            shutdownCompleted = true
+        }
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertFalse(shutdownCompleted)
+        XCTAssertEqual(rearmedSession.cancelCount, 1)
+        XCTAssertFalse(rearmedSession.isResourceActive)
+
+        rearmedSession.resolveArm()
+        await shutdown.value
+
+        XCTAssertTrue(shutdownCompleted)
+        XCTAssertGreaterThanOrEqual(rearmedSession.cancelCount, 2)
+        XCTAssertFalse(rearmedSession.isArmSuspended)
+        XCTAssertFalse(rearmedSession.isResourceActive)
+        XCTAssertEqual(controller.state, .completed)
+    }
+
+    func testShutdownJoinsResetAlreadySuspendedInSessionCancellation() async {
+        let session = SuspendedCancelSpeechSession()
+        let controller = VoiceConversationController(dependencies: makeDependencies(
+            session: session,
+            agent: FakeConversationAgent(reply: "unused")
+        ))
+
+        await controller.toggleConversation()
+        var resetCompleted = false
+        let reset = Task {
+            await controller.resetConversation()
+            resetCompleted = true
+        }
+        await waitUntil { session.isCancelSuspended }
+
+        var shutdownCompleted = false
+        let shutdown = Task {
+            await controller.shutdown()
+            shutdownCompleted = true
+        }
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertFalse(resetCompleted)
+        XCTAssertFalse(shutdownCompleted)
+        XCTAssertFalse(session.observedCancellation)
+
+        session.resolveCancel()
+        await reset.value
+        await shutdown.value
+
+        XCTAssertTrue(resetCompleted)
+        XCTAssertTrue(shutdownCompleted)
+        XCTAssertFalse(session.observedCancellation)
+        XCTAssertEqual(controller.state, .idle)
+    }
+
+    func testShutdownJoinsResetOwnedSuspendedAgentAbort() async {
+        let session = FakeSpeechSession()
+        let agent = SuspendedAbortConversationAgent()
+        let sleeper = ManualSleeper()
+        let controller = VoiceConversationController(dependencies: makeDependencies(
+            session: session,
+            agent: agent,
+            sleep: { _ in try await sleeper.sleep() },
+            reduceMotion: { false }
+        ))
+
+        await controller.toggleConversation()
+        session.emit(.transcript("pending transaction"))
+        session.emit(.finished)
+        await waitUntil { agent.isWaiting }
+        agent.finalize(with: "display catch-up")
+        await waitUntil { controller.state == .streaming && !controller.assistantReply.isEmpty }
+
+        var resetCompleted = false
+        let reset = Task {
+            await controller.resetConversation()
+            resetCompleted = true
+        }
+        await waitUntil { agent.isAbortSuspended }
+
+        var shutdownCompleted = false
+        let shutdown = Task {
+            await controller.shutdown()
+            shutdownCompleted = true
+        }
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertFalse(resetCompleted)
+        XCTAssertFalse(shutdownCompleted)
+
+        agent.resolveAbort()
+        await reset.value
+        await shutdown.value
+
+        XCTAssertTrue(resetCompleted)
+        XCTAssertTrue(shutdownCompleted)
+        XCTAssertFalse(agent.isAbortSuspended)
+        XCTAssertGreaterThanOrEqual(agent.clearCount, 1)
+        XCTAssertEqual(controller.state, .idle)
+    }
+
+    func testShutdownJoinsResetOwnedSuspendedAgentClearContext() async {
+        let session = FakeSpeechSession()
+        let agent = FirstClearSuspendedConversationAgent(reply: "committed reply")
+        let controller = makeController(session: session, agent: agent)
+
+        await controller.toggleConversation()
+        session.emit(.transcript("committed question"))
+        session.emit(.finished)
+        await waitUntil { controller.state == .completed }
+
+        var resetCompleted = false
+        let reset = Task {
+            await controller.resetConversation()
+            resetCompleted = true
+        }
+        await waitUntil { agent.isFirstClearSuspended }
+
+        var shutdownCompleted = false
+        let shutdown = Task {
+            await controller.shutdown()
+            shutdownCompleted = true
+        }
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertFalse(resetCompleted)
+        XCTAssertFalse(shutdownCompleted)
+        XCTAssertGreaterThanOrEqual(agent.clearCount, 1)
+
+        agent.resolveFirstClear()
+        await reset.value
+        await shutdown.value
+
+        XCTAssertTrue(resetCompleted)
+        XCTAssertTrue(shutdownCompleted)
+        XCTAssertFalse(agent.isFirstClearSuspended)
+        XCTAssertEqual(controller.state, .completed)
+    }
+
+    func testShutdownJoinsToggleStopAlreadySuspendedInFinish() async {
+        let session = SuspendedFinishSpeechSession()
+        let controller = VoiceConversationController(dependencies: makeDependencies(
+            session: session,
+            agent: FakeConversationAgent(reply: "unused")
+        ))
+
+        await controller.toggleConversation()
+        var stopCompleted = false
+        let stop = Task {
+            await controller.toggleConversation()
+            stopCompleted = true
+        }
+        await waitUntil { session.isFinishSuspended }
+
+        var shutdownCompleted = false
+        let shutdown = Task {
+            await controller.shutdown()
+            shutdownCompleted = true
+        }
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertFalse(stopCompleted)
+        XCTAssertFalse(shutdownCompleted)
+        XCTAssertEqual(session.cancelCount, 1)
+        XCTAssertFalse(session.isResourceActive)
+
+        session.resolveFinish()
+        await stop.value
+        await shutdown.value
+
+        XCTAssertTrue(stopCompleted)
+        XCTAssertTrue(shutdownCompleted)
+        XCTAssertGreaterThanOrEqual(session.cancelCount, 2)
+        XCTAssertFalse(session.isResourceActive)
+        XCTAssertEqual(controller.state, .idle)
+    }
+
+    func testShutdownDrainsFailureOwnedCoordinatorCleanupWithoutSelfAwait() async {
+        let session = SuspendedCancelSpeechSession()
+        let controller = VoiceConversationController(dependencies: makeDependencies(
+            session: session,
+            agent: FakeConversationAgent(reply: "unused")
+        ))
+
+        await controller.toggleConversation()
+        session.emit(.failed(.init(code: .connectionLost)))
+        await waitUntil { session.isCancelSuspended }
+
+        var shutdownCompleted = false
+        let shutdown = Task {
+            await controller.shutdown()
+            shutdownCompleted = true
+        }
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertFalse(shutdownCompleted)
+        XCTAssertFalse(session.observedCancellation)
+
+        session.resolveCancel()
+        await shutdown.value
+
+        XCTAssertTrue(shutdownCompleted)
+        XCTAssertFalse(session.observedCancellation)
+        XCTAssertEqual(controller.state, .idle)
+    }
+
+    func testShutdownJoinsRetiredInputEventTaskBlockedInReplyPreparation() async {
+        let session = FakeSpeechSession()
+        let credentials = SuspendedCredentialProvider()
+        let agent = ControlledConversationAgent()
+        let controller = VoiceConversationController(dependencies: makeDependencies(
+            session: session,
+            agent: agent,
+            credentialProvider: credentials
+        ))
+
+        let start = Task { await controller.toggleConversation() }
+        await waitUntilAsync { await credentials.requestCount == 1 }
+        await credentials.resolve(0)
+        await start.value
+        session.emit(.transcript("blocked reply preparation"))
+        session.emit(.finished)
+        await waitUntilAsync { await credentials.requestCount == 2 }
+
+        var shutdownCompleted = false
+        let shutdown = Task {
+            await controller.shutdown()
+            shutdownCompleted = true
+        }
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertFalse(shutdownCompleted)
+
+        await credentials.resolve(1)
+        await shutdown.value
+
+        XCTAssertTrue(shutdownCompleted)
+        XCTAssertTrue(controller.messages.isEmpty)
+        XCTAssertFalse(agent.isWaiting)
+        XCTAssertEqual(controller.state, .idle)
+    }
+
+    func testShutdownAbortsPendingReplyAndRejectsLateTypewriterWorkWithoutRearm() async {
+        let voiceSession = FakeVoiceActivatedSpeechSession()
+        let unexpectedRearmSession = FakeVoiceActivatedSpeechSession()
+        var sessions = [voiceSession, unexpectedRearmSession]
+        let agent = TransactionalControlledAgent()
+        let sleeper = ManualSleeper()
+        let controller = VoiceConversationController(dependencies: makeDependencies(
+            session: FakeSpeechSession(),
+            agent: agent,
+            configuration: { .valid(inputMode: .voiceActivated) },
+            makeVoiceActivatedSpeechSession: { _ in sessions.removeFirst() },
+            sleep: { _ in try await sleeper.sleep() },
+            reduceMotion: { false }
+        ))
+
+        await controller.toggleConversation()
+        voiceSession.emit(.phase(.speechStarted))
+        voiceSession.emit(.transcript("shutdown reply"))
+        voiceSession.emit(.finished)
+        await waitUntil { agent.isWaiting }
+        agent.finalize(with: "late typewriter content")
+        await waitUntil { controller.state == .streaming && !controller.assistantReply.isEmpty }
+
+        let revisionBeforeShutdown = controller.revision
+        var shutdownSnapshots: [ExperienceSnapshot] = []
+        let snapshotCancellable = controller.$snapshot.dropFirst().sink {
+            shutdownSnapshots.append($0)
+        }
+        await controller.shutdown()
+        let terminalSnapshot = controller.snapshot
+        sleeper.advance()
+        await controller.toggleConversation()
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertEqual(agent.committed, [])
+        XCTAssertEqual(agent.aborted, [agent.token])
+        XCTAssertEqual(agent.clearCount, 1)
+        XCTAssertEqual(unexpectedRearmSession.armCount, 0)
+        XCTAssertTrue(controller.messages.isEmpty)
+        XCTAssertNil(controller.conversation.activeReplyID)
+        XCTAssertEqual(controller.conversation.inputState, .idle)
+        XCTAssertEqual(controller.revision, revisionBeforeShutdown + 1)
+        XCTAssertEqual(shutdownSnapshots, [terminalSnapshot])
+        XCTAssertEqual(controller.snapshot, terminalSnapshot)
+        withExtendedLifetime(snapshotCancellable) {}
+    }
+
+    func testShutdownAbortsRequestingTurnAndPublishesOneCoherentTerminalSnapshot() async {
+        let session = FakeSpeechSession()
+        let agent = ControlledConversationAgent()
+        let controller = makeController(session: session, agent: agent)
+
+        await controller.toggleConversation()
+        session.emit(.transcript("pending request"))
+        session.emit(.finished)
+        await waitUntil { agent.isWaiting && controller.state == .thinking }
+
+        let revisionBeforeShutdown = controller.revision
+        var shutdownSnapshots: [ExperienceSnapshot] = []
+        let snapshotCancellable = controller.$snapshot.dropFirst().sink {
+            shutdownSnapshots.append($0)
+        }
+        await controller.shutdown()
+        let terminalSnapshot = controller.snapshot
+
+        XCTAssertTrue(controller.messages.isEmpty)
+        XCTAssertNil(controller.conversation.activeReplyID)
+        XCTAssertEqual(controller.conversation.inputState, .idle)
+        XCTAssertEqual(controller.state, .idle)
+        XCTAssertEqual(controller.liveText, "")
+        XCTAssertEqual(controller.audioLevel, 0)
+        XCTAssertNil(controller.lastError)
+        XCTAssertEqual(controller.revision, revisionBeforeShutdown + 1)
+        XCTAssertEqual(shutdownSnapshots, [terminalSnapshot])
+        withExtendedLifetime(snapshotCancellable) {}
+    }
+
+    func testShutdownAbortsStreamingTurnAndRejectsLateStreamEvents() async {
+        let session = FakeSpeechSession()
+        let agent = ControlledConversationAgent()
+        let controller = makeController(session: session, agent: agent)
+
+        await controller.toggleConversation()
+        session.emit(.transcript("streaming request"))
+        session.emit(.finished)
+        await waitUntil { agent.isWaiting }
+        agent.emit(.contentDelta("visible partial"))
+        await waitUntil { controller.state == .streaming }
+
+        let revisionBeforeShutdown = controller.revision
+        var shutdownSnapshots: [ExperienceSnapshot] = []
+        let snapshotCancellable = controller.$snapshot.dropFirst().sink {
+            shutdownSnapshots.append($0)
+        }
+        await controller.shutdown()
+        let terminalSnapshot = controller.snapshot
+
+        agent.emit(.contentDelta("late content"))
+        agent.complete(with: "late completion")
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertTrue(controller.messages.isEmpty)
+        XCTAssertNil(controller.conversation.activeReplyID)
+        XCTAssertEqual(controller.conversation.inputState, .idle)
+        XCTAssertEqual(controller.state, .idle)
+        XCTAssertEqual(controller.revision, revisionBeforeShutdown + 1)
+        XCTAssertEqual(shutdownSnapshots, [terminalSnapshot])
+        XCTAssertEqual(controller.snapshot, terminalSnapshot)
+        withExtendedLifetime(snapshotCancellable) {}
+    }
+
+    func testShutdownPreservesCommittedHistoryWhileRemovingNewPendingTurn() async {
+        let firstSession = FakeSpeechSession()
+        let secondSession = FakeSpeechSession()
+        var sessions: [any SpeechRecognitionSession] = [firstSession, secondSession]
+        let agent = ControlledConversationAgent()
+        let controller = VoiceConversationController(dependencies: makeDependencies(
+            session: firstSession,
+            agent: agent,
+            makeSpeechSession: { _ in sessions.removeFirst() }
+        ))
+
+        await controller.toggleConversation()
+        firstSession.emit(.transcript("committed question"))
+        firstSession.emit(.finished)
+        await waitUntil { agent.isWaiting }
+        agent.complete(with: "committed answer")
+        await waitUntil { controller.state == .completed }
+        let committedMessages = controller.messages
+
+        await controller.toggleConversation()
+        secondSession.emit(.transcript("pending question"))
+        secondSession.emit(.finished)
+        await waitUntil { agent.isWaiting && controller.state == .thinking }
+
+        let revisionBeforeShutdown = controller.revision
+        var shutdownSnapshots: [ExperienceSnapshot] = []
+        let snapshotCancellable = controller.$snapshot.dropFirst().sink {
+            shutdownSnapshots.append($0)
+        }
+        await controller.shutdown()
+        let terminalSnapshot = controller.snapshot
+
+        XCTAssertEqual(controller.messages, committedMessages)
+        XCTAssertNil(controller.conversation.activeReplyID)
+        XCTAssertEqual(controller.conversation.inputState, .idle)
+        XCTAssertEqual(controller.state, .completed)
+        XCTAssertEqual(controller.transcript, "committed question")
+        XCTAssertEqual(controller.assistantReply, "committed answer")
+        XCTAssertEqual(controller.revision, revisionBeforeShutdown + 1)
+        XCTAssertEqual(shutdownSnapshots, [terminalSnapshot])
+        withExtendedLifetime(snapshotCancellable) {}
+    }
+
+    func testShutdownDuringContextCommitRollsBackAndNeverRestartsVoiceInput() async {
+        let voiceSession = FakeVoiceActivatedSpeechSession()
+        let unexpectedRearmSession = FakeVoiceActivatedSpeechSession()
+        var sessions = [voiceSession, unexpectedRearmSession]
+        let agent = SuspendedCommitConversationAgent()
+        let controller = VoiceConversationController(dependencies: makeDependencies(
+            session: FakeSpeechSession(),
+            agent: agent,
+            configuration: { .valid(inputMode: .voiceActivated) },
+            makeVoiceActivatedSpeechSession: { _ in sessions.removeFirst() }
+        ))
+
+        await controller.toggleConversation()
+        voiceSession.emit(.phase(.speechStarted))
+        voiceSession.emit(.transcript("shutdown during commit"))
+        voiceSession.emit(.finished)
+        await waitUntil { agent.isWaiting }
+        agent.finalize(with: "must roll back")
+        await waitUntil { agent.isCommitSuspended }
+
+        let shutdown = Task { await controller.shutdown() }
+        await waitUntil { !agent.aborted.isEmpty }
+        let terminalSnapshot = controller.snapshot
+        agent.resolveCommitSuccessfully()
+        await shutdown.value
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertFalse(agent.aborted.isEmpty)
+        XCTAssertEqual(agent.clearCount, 1)
+        XCTAssertEqual(unexpectedRearmSession.armCount, 0)
+        XCTAssertEqual(controller.snapshot, terminalSnapshot)
+    }
+
     func testUpstreamFinalizedTransactionIsAbortedWhenResetInterruptsDisplayCatchUp() async {
         let session = FakeSpeechSession()
         let agent = TransactionalControlledAgent()
@@ -1834,819 +2534,4 @@ final class VoiceConversationControllerTests: XCTestCase {
         XCTAssertTrue(lease.description.contains("redacted"))
     }
 
-    private func makeController(
-        session: FakeSpeechSession,
-        agent: any ConversationAgent
-    ) -> VoiceConversationController {
-        VoiceConversationController(dependencies: makeDependencies(session: session, agent: agent))
-    }
-
-    private func makeDependencies(
-        session: any SpeechRecognitionSession,
-        agent: any ConversationAgent,
-        configuration: @escaping () -> AIConversationConfiguration = { .valid },
-        makeSpeechSession: ((SpeechRecognitionConfiguration) -> any SpeechRecognitionSession)? = nil,
-        makeVoiceActivatedSpeechSession:
-            ((SpeechRecognitionConfiguration) -> any VoiceActivatedSpeechRecognitionSession)? = nil,
-        makeAgent: ((ConversationAgentConfiguration) -> any ConversationAgent)? = nil,
-        credentialProvider: (any ConversationCredentialProvider)? = nil,
-        requestMicrophonePermission: @escaping () async -> Bool = { true },
-        now: @escaping () -> Date = { Date(timeIntervalSince1970: 100) },
-        sleep: @escaping (Duration) async throws -> Void = { _ in await Task.yield() },
-        reduceMotion: @escaping () -> Bool = { true },
-        streamingTextPolicy: TypewriterPolicy = .comfortableReading,
-        telemetry: any ConversationTelemetrySink = NoopConversationTelemetry(),
-        monotonicNow: @escaping () -> UInt64 = { 0 }
-    ) -> VoiceConversationDependencies {
-        let contextIdentity = ConversationAgentContextIdentity(
-            id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
-        )
-        return VoiceConversationDependencies(
-            inputMode: { configuration().inputMode },
-            voiceActivatedInputAvailable: {
-                configuration().inputMode != .voiceActivated
-                    || makeVoiceActivatedSpeechSession != nil
-            },
-            prepareSpeechInput: { mode in
-                let current = configuration()
-                let lease = try await credentialProvider?.lease() ?? .init(
-                    speechAPIKey: current.speechAPIKey,
-                    llmAPIKey: current.llmAPIKey,
-                    searchAPIKey: current.bochaAPIKey,
-                    expiresAt: .distantFuture
-                )
-                guard !lease.speechAPIKey.isEmpty, !current.asrResourceID.isEmpty else {
-                    throw ConversationPreparationFailure(
-                        userSafeMessage: "请先在设置中填写豆包 ASR API Key 和资源 ID。",
-                        failureCode: .configurationMissing
-                    )
-                }
-                let speechConfiguration = SpeechRecognitionConfiguration(
-                    apiKey: lease.speechAPIKey,
-                    resourceID: current.asrResourceID,
-                    language: current.asrLanguage,
-                    hotwords: current.hotwords
-                )
-                switch mode {
-                case .pushToTalk:
-                    return .pushToTalk((makeSpeechSession ?? { _ in session })(speechConfiguration))
-                case .voiceActivated:
-                    guard let makeVoiceActivatedSpeechSession else {
-                        throw ConversationPreparationFailure(
-                            userSafeMessage: Self.testPresentationCopy.voiceActivatedUnavailable,
-                            failureCode: .configurationMissing
-                        )
-                    }
-                    return .voiceActivated(makeVoiceActivatedSpeechSession(speechConfiguration))
-                }
-            },
-            prepareAgent: {
-                let current = configuration()
-                let lease = try await credentialProvider?.lease() ?? .init(
-                    speechAPIKey: current.speechAPIKey,
-                    llmAPIKey: current.llmAPIKey,
-                    searchAPIKey: current.bochaAPIKey,
-                    expiresAt: .distantFuture
-                )
-                guard !lease.llmAPIKey.isEmpty, !current.llmModel.isEmpty else {
-                    throw ConversationPreparationFailure(
-                        userSafeMessage: "请先在设置中填写 DeepSeek API Key 和模型。",
-                        failureCode: .configurationMissing
-                    )
-                }
-                guard !current.enableSearch || !lease.searchAPIKey.isEmpty else {
-                    throw ConversationPreparationFailure(
-                        userSafeMessage: "已开启联网搜索，请先填写博查搜索 API Key。",
-                        failureCode: .configurationMissing
-                    )
-                }
-                let agentConfiguration = ConversationAgentConfiguration(
-                    apiKey: lease.llmAPIKey,
-                    model: current.llmModel,
-                    enableSearch: current.enableSearch,
-                    bochaAPIKey: lease.searchAPIKey,
-                    systemPrompt: "test-system-prompt"
-                )
-                return PreparedConversationAgent(
-                    contextIdentity: contextIdentity,
-                    agent: (makeAgent ?? { _ in agent })(agentConfiguration)
-                )
-            },
-            requestMicrophonePermission: requestMicrophonePermission,
-            sleep: sleep,
-            reduceMotion: reduceMotion,
-            streamingTextPolicy: streamingTextPolicy,
-            telemetry: telemetry,
-            presentationCopy: Self.testPresentationCopy,
-            monotonicNow: monotonicNow
-        )
-    }
-
-    private static let testPresentationCopy = ConversationPresentationCopy(
-        voiceActivatedUnavailable: "本地语音检测暂不可用，请切换到手动语音输入。",
-        microphonePermissionDenied: "未获得麦克风权限，请在系统设置中允许访问。",
-        speechRecognitionUnavailable: "语音识别暂时不可用，请稍后重试。",
-        noSpeech: "没有识别到有效语音，请靠近手机后重试。",
-        replyPreparationUnavailable: "暂时无法准备 AI 回答服务，请稍后重试。",
-        emptyReply: "模型返回了空回答",
-        inconsistentReplyStream: "模型流的增量与完整回答不一致",
-        incompleteReplyStream: "模型流未正常完成",
-        unexpectedReplyFailure: "回答流程暂时中断。",
-        interruptedReplyPrefix: "回答中断，请重试：",
-        failedReplyPrefix: "AI 回复失败：",
-        contextCommitFailed: "回答已显示，但对话上下文保存失败，请重试。"
-    )
-
-    private func waitUntil(
-        iterations: Int = 500,
-        _ predicate: @MainActor () -> Bool
-    ) async {
-        for _ in 0..<iterations {
-            if predicate() { return }
-            await Task.yield()
-        }
-        XCTFail("等待异步状态超时")
-    }
-
-    private func waitUntilAsync(
-        iterations: Int = 500,
-        _ predicate: () async -> Bool
-    ) async {
-        for _ in 0..<iterations {
-            if await predicate() { return }
-            await Task.yield()
-        }
-        XCTFail("等待异步状态超时")
-    }
-}
-
-@MainActor
-private final class RecordingTelemetry: ConversationTelemetrySink {
-    private(set) var events: [ConversationTelemetryEvent] = []
-    func record(_ event: ConversationTelemetryEvent) { events.append(event) }
-
-    func terminals(for phase: ConversationTelemetryPhase) -> [ConversationTelemetryEvent] {
-        events.filter { $0.phase == phase && $0.outcome != .started }
-    }
-}
-
-private struct AIConversationConfiguration: Equatable, Sendable {
-    let speechAPIKey: String
-    let asrResourceID: String
-    let asrLanguage: String
-    let hotwords: [String]
-    let inputMode: SpeechInputMode
-    let llmAPIKey: String
-    let llmModel: String
-    let enableSearch: Bool
-    let bochaAPIKey: String
-
-    var handsFree: Bool { inputMode == .voiceActivated }
-
-    init(
-        speechAPIKey: String,
-        asrResourceID: String,
-        asrLanguage: String,
-        hotwords: [String],
-        inputMode: SpeechInputMode,
-        llmAPIKey: String,
-        llmModel: String,
-        enableSearch: Bool,
-        bochaAPIKey: String
-    ) {
-        self.speechAPIKey = speechAPIKey
-        self.asrResourceID = asrResourceID
-        self.asrLanguage = asrLanguage
-        self.hotwords = hotwords
-        self.inputMode = inputMode
-        self.llmAPIKey = llmAPIKey
-        self.llmModel = llmModel
-        self.enableSearch = enableSearch
-        self.bochaAPIKey = bochaAPIKey
-    }
-
-    init(
-        speechAPIKey: String,
-        asrResourceID: String,
-        asrLanguage: String,
-        hotwords: [String],
-        handsFree: Bool,
-        llmAPIKey: String,
-        llmModel: String,
-        enableSearch: Bool,
-        bochaAPIKey: String
-    ) {
-        self.init(
-            speechAPIKey: speechAPIKey,
-            asrResourceID: asrResourceID,
-            asrLanguage: asrLanguage,
-            hotwords: hotwords,
-            inputMode: handsFree ? .voiceActivated : .pushToTalk,
-            llmAPIKey: llmAPIKey,
-            llmModel: llmModel,
-            enableSearch: enableSearch,
-            bochaAPIKey: bochaAPIKey
-        )
-    }
-}
-
-private struct SpeechRecognitionConfiguration: Equatable, Sendable {
-    let apiKey: String
-    let resourceID: String
-    let language: String
-    let hotwords: [String]
-}
-
-private struct ConversationAgentConfiguration: Equatable, Sendable {
-    let apiKey: String
-    let model: String
-    let enableSearch: Bool
-    let bochaAPIKey: String
-    let systemPrompt: String
-}
-
-private struct ConversationCredentialLease: Equatable, Sendable, CustomStringConvertible {
-    let speechAPIKey: String
-    let llmAPIKey: String
-    let searchAPIKey: String
-    let expiresAt: Date
-
-    var description: String {
-        "ConversationCredentialLease(redacted, expiresAt: \(expiresAt.ISO8601Format()))"
-    }
-}
-
-private protocol ConversationCredentialProvider: Sendable {
-    func lease() async throws -> ConversationCredentialLease
-}
-
-private extension AIConversationConfiguration {
-    static let valid = valid(handsFree: false)
-
-    static func valid(inputMode: SpeechInputMode) -> Self {
-        Self(
-            speechAPIKey: "speech-key",
-            asrResourceID: "volc.seedasr.sauc.duration",
-            asrLanguage: "zh-CN",
-            hotwords: ["单绿眼镜"],
-            inputMode: inputMode,
-            llmAPIKey: "llm-key",
-            llmModel: "deepseek-v4-flash",
-            enableSearch: true,
-            bochaAPIKey: "bocha-key"
-        )
-    }
-
-    static func valid(handsFree: Bool) -> Self {
-        Self(
-            speechAPIKey: "speech-key",
-            asrResourceID: "volc.seedasr.sauc.duration",
-            asrLanguage: "zh-CN",
-            hotwords: ["单绿眼镜"],
-            handsFree: handsFree,
-            llmAPIKey: "llm-key",
-            llmModel: "deepseek-v4-flash",
-            enableSearch: true,
-            bochaAPIKey: "bocha-key"
-        )
-    }
-
-    static let missingASR = Self(
-        speechAPIKey: "",
-        asrResourceID: "volc.seedasr.sauc.duration",
-        asrLanguage: "zh-CN",
-        hotwords: [],
-        handsFree: false,
-        llmAPIKey: "llm-key",
-        llmModel: "deepseek-v4-flash",
-        enableSearch: false,
-        bochaAPIKey: ""
-    )
-}
-
-@MainActor
-private final class FakeSpeechSession: SpeechRecognitionSession {
-    nonisolated let events: AsyncStream<SpeechRecognitionEvent>
-    private let continuation: AsyncStream<SpeechRecognitionEvent>.Continuation
-
-    private(set) var startCount = 0
-    private(set) var finishCount = 0
-    private(set) var cancelCount = 0
-
-    init() {
-        let (events, continuation) = AsyncStream<SpeechRecognitionEvent>.makeStream()
-        self.events = events
-        self.continuation = continuation
-    }
-
-    func emit(_ event: SpeechRecognitionEvent) {
-        continuation.yield(event)
-    }
-
-    func start() async throws { startCount += 1 }
-    func finish() async { finishCount += 1 }
-    func cancel() async { cancelCount += 1 }
-}
-
-@MainActor
-private final class FakeVoiceActivatedSpeechSession: VoiceActivatedSpeechRecognitionSession {
-    nonisolated let events: AsyncStream<VoiceActivatedRecognitionEvent>
-    private let continuation: AsyncStream<VoiceActivatedRecognitionEvent>.Continuation
-
-    private(set) var armCount = 0
-    private(set) var finishCount = 0
-    private(set) var cancelCount = 0
-
-    init() {
-        let (events, continuation) = AsyncStream<VoiceActivatedRecognitionEvent>.makeStream()
-        self.events = events
-        self.continuation = continuation
-    }
-
-    func emit(_ event: VoiceActivatedRecognitionEvent) {
-        continuation.yield(event)
-    }
-
-    func arm() async throws { armCount += 1 }
-    func finish() async { finishCount += 1 }
-    func cancel() async { cancelCount += 1 }
-}
-
-@MainActor
-private final class SuspendedCancelSpeechSession: SpeechRecognitionSession {
-    nonisolated let events: AsyncStream<SpeechRecognitionEvent>
-    private var cancelContinuation: CheckedContinuation<Void, Never>?
-    private(set) var isCancelSuspended = false
-
-    init() {
-        events = AsyncStream { _ in }
-    }
-
-    func start() async throws {}
-    func finish() async {}
-
-    func cancel() async {
-        isCancelSuspended = true
-        await withCheckedContinuation { continuation in
-            cancelContinuation = continuation
-        }
-        isCancelSuspended = false
-    }
-
-    func resolveCancel() {
-        let continuation = cancelContinuation
-        cancelContinuation = nil
-        continuation?.resume()
-    }
-}
-
-private actor SuspendedCredentialProvider: ConversationCredentialProvider {
-    private let value = ConversationCredentialLease(
-        speechAPIKey: "speech-fixture",
-        llmAPIKey: "llm-fixture",
-        searchAPIKey: "search-fixture",
-        expiresAt: .distantFuture
-    )
-    private var continuations: [Int: CheckedContinuation<ConversationCredentialLease, Never>] = [:]
-    private var nextRequest = 0
-
-    var requestCount: Int { nextRequest }
-
-    func lease() async throws -> ConversationCredentialLease {
-        let request = nextRequest
-        nextRequest += 1
-        return await withCheckedContinuation { continuation in
-            continuations[request] = continuation
-        }
-    }
-
-    func resolve(_ request: Int) {
-        continuations.removeValue(forKey: request)?.resume(returning: value)
-    }
-}
-
-private actor CountingCredentialProvider: ConversationCredentialProvider {
-    private(set) var requestCount = 0
-
-    func lease() async throws -> ConversationCredentialLease {
-        requestCount += 1
-        return ConversationCredentialLease(
-            speechAPIKey: "unused",
-            llmAPIKey: "unused",
-            searchAPIKey: "unused",
-            expiresAt: .distantFuture
-        )
-    }
-}
-
-private struct FailingCredentialProvider: ConversationCredentialProvider {
-    func lease() async throws -> ConversationCredentialLease {
-        throw CredentialFixtureError.unavailable
-    }
-}
-
-private enum CredentialFixtureError: Error {
-    case unavailable
-}
-
-@MainActor
-private final class SuspendedPermissionRequest {
-    private var continuation: CheckedContinuation<Bool, Never>?
-    private(set) var isSuspended = false
-
-    func request() async -> Bool {
-        isSuspended = true
-        return await withCheckedContinuation { continuation in
-            self.continuation = continuation
-        }
-    }
-
-    func resolve(_ granted: Bool) {
-        isSuspended = false
-        continuation?.resume(returning: granted)
-        continuation = nil
-    }
-}
-
-@MainActor
-private final class SuspendedStartSpeechSession: SpeechRecognitionSession {
-    nonisolated let events: AsyncStream<SpeechRecognitionEvent>
-    private(set) var startCount = 0
-    private(set) var cancelCount = 0
-    private(set) var isStartSuspended = false
-    private(set) var isResourceActive = false
-    private var startContinuation: CheckedContinuation<Void, Error>?
-
-    init() {
-        self.events = AsyncStream { _ in }
-    }
-
-    func start() async throws {
-        startCount += 1
-        isStartSuspended = true
-        do {
-            try await withCheckedThrowingContinuation { continuation in
-                startContinuation = continuation
-            }
-        } catch {
-            isStartSuspended = false
-            isResourceActive = true
-            throw error
-        }
-        isStartSuspended = false
-        isResourceActive = true
-    }
-
-    func finish() async {}
-
-    func cancel() async {
-        cancelCount += 1
-        isResourceActive = false
-    }
-
-    func resolveStart() {
-        startContinuation?.resume(returning: ())
-        startContinuation = nil
-    }
-
-    func resolveStart(throwing error: Error) {
-        startContinuation?.resume(throwing: error)
-        startContinuation = nil
-    }
-}
-
-private enum SuspendedStartError: Error {
-    case failed
-}
-
-@MainActor
-private final class FakeConversationAgent: ConversationAgent {
-    private let reply: String
-    private let error: Error?
-    private(set) var receivedTexts: [String] = []
-    private(set) var clearCount = 0
-
-    init(reply: String = "", error: Error? = nil) {
-        self.reply = reply
-        self.error = error
-    }
-
-    func stream(_ userText: String) async -> AsyncThrowingStream<ConversationAgentEvent, Error> {
-        receivedTexts.append(userText)
-        return AsyncThrowingStream { continuation in
-            if let error {
-                continuation.finish(throwing: error)
-                return
-            }
-            for character in reply {
-                continuation.yield(.contentDelta(String(character)))
-            }
-            continuation.yield(.completed(reply))
-            continuation.finish()
-        }
-    }
-
-    func clearContext() async { clearCount += 1 }
-}
-
-@MainActor
-private final class ControlledConversationAgent: ConversationAgent {
-    private let toolName: String?
-    private var continuation: AsyncThrowingStream<ConversationAgentEvent, Error>.Continuation?
-    private(set) var clearCount = 0
-    private(set) var wasCancelled = false
-
-    var isWaiting: Bool {
-        continuation != nil
-    }
-
-    init(toolName: String? = nil) {
-        self.toolName = toolName
-    }
-
-    func stream(_ userText: String) async -> AsyncThrowingStream<ConversationAgentEvent, Error> {
-        AsyncThrowingStream { continuation in
-            self.continuation = continuation
-            if toolName != nil {
-                continuation.yield(.toolActivity(.externalInformationLookup))
-            }
-            continuation.onTermination = { [weak self] termination in
-                guard case .cancelled = termination else { return }
-                Task { @MainActor in
-                    self?.wasCancelled = true
-                    self?.continuation = nil
-                }
-            }
-        }
-    }
-
-    func complete(with text: String) {
-        let continuation = continuation
-        self.continuation = nil
-        continuation?.yield(.completed(text))
-        continuation?.finish()
-    }
-
-    func emit(_ event: ConversationAgentEvent) {
-        continuation?.yield(event)
-    }
-
-    func fail(_ error: Error) {
-        let continuation = continuation
-        self.continuation = nil
-        continuation?.finish(throwing: error)
-    }
-
-    func finishWithoutCompletion() {
-        let continuation = continuation
-        self.continuation = nil
-        continuation?.finish()
-    }
-
-    func clearContext() async { clearCount += 1 }
-}
-
-@MainActor
-private final class TransactionalControlledAgent: ConversationAgent {
-    let token = ConversationAgentTransactionToken()
-    private var continuation: AsyncThrowingStream<ConversationAgentEvent, Error>.Continuation?
-    private(set) var committed: [ConversationAgentTransactionToken] = []
-    private(set) var aborted: [ConversationAgentTransactionToken] = []
-
-    var isWaiting: Bool { continuation != nil }
-
-    func stream(_ userText: String) async -> AsyncThrowingStream<ConversationAgentEvent, Error> {
-        AsyncThrowingStream { continuation in
-            self.continuation = continuation
-            continuation.yield(.transaction(token))
-        }
-    }
-
-    func finalize(with answer: String) {
-        let continuation = continuation
-        self.continuation = nil
-        continuation?.yield(.contentDelta(answer))
-        continuation?.yield(.completed(answer))
-        continuation?.finish()
-    }
-
-    func commit(_ token: ConversationAgentTransactionToken) async throws {
-        committed.append(token)
-    }
-
-    func abort(_ token: ConversationAgentTransactionToken) async {
-        aborted.append(token)
-    }
-
-    func clearContext() async {}
-}
-
-@MainActor
-private final class SuspendedCommitConversationAgent: ConversationAgent {
-    private var continuation: AsyncThrowingStream<ConversationAgentEvent, Error>.Continuation?
-    private var commitContinuation: CheckedContinuation<Void, Error>?
-    private var activeUserText = ""
-    private var stagedAnswer = ""
-    private var activeToken: ConversationAgentTransactionToken?
-
-    private(set) var committedContext: [String] = []
-    private(set) var contextSnapshotsAtStreamStart: [[String]] = []
-    private(set) var aborted: [ConversationAgentTransactionToken] = []
-    private(set) var clearCount = 0
-    private(set) var isCommitSuspended = false
-
-    var isWaiting: Bool { continuation != nil }
-
-    func stream(_ userText: String) async -> AsyncThrowingStream<ConversationAgentEvent, Error> {
-        contextSnapshotsAtStreamStart.append(committedContext)
-        activeUserText = userText
-        stagedAnswer = ""
-        let token = ConversationAgentTransactionToken()
-        activeToken = token
-        return AsyncThrowingStream { continuation in
-            self.continuation = continuation
-            continuation.yield(.transaction(token))
-        }
-    }
-
-    func finalize(with answer: String) {
-        stagedAnswer = answer
-        let continuation = continuation
-        self.continuation = nil
-        continuation?.yield(.contentDelta(answer))
-        continuation?.yield(.completed(answer))
-        continuation?.finish()
-    }
-
-    func commit(_ token: ConversationAgentTransactionToken) async throws {
-        guard activeToken == token else { throw CommitFixtureError.failed }
-        isCommitSuspended = true
-        try await withCheckedThrowingContinuation { continuation in
-            commitContinuation = continuation
-        }
-        isCommitSuspended = false
-    }
-
-    func abort(_ token: ConversationAgentTransactionToken) async {
-        aborted.append(token)
-    }
-
-    func clearContext() async {
-        clearCount += 1
-        committedContext.removeAll()
-    }
-
-    func resolveCommitSuccessfully() {
-        committedContext.append(contentsOf: [activeUserText, stagedAnswer])
-        let continuation = commitContinuation
-        commitContinuation = nil
-        continuation?.resume(returning: ())
-    }
-
-    func resolveCommitFailure() {
-        let continuation = commitContinuation
-        commitContinuation = nil
-        continuation?.resume(throwing: CommitFixtureError.failed)
-    }
-}
-
-@MainActor
-private final class PostCommitGateConversationAgent: ConversationAgent {
-    let token = ConversationAgentTransactionToken()
-    private var streamContinuation: AsyncThrowingStream<ConversationAgentEvent, Error>.Continuation?
-    private var commitContinuation: CheckedContinuation<Void, Error>?
-    private var activeUserText = ""
-    private var stagedAnswer = ""
-
-    private(set) var committedContext: [String] = []
-    private(set) var aborted: [ConversationAgentTransactionToken] = []
-    private(set) var isCommitAppliedButNotReturned = false
-
-    var isWaiting: Bool { streamContinuation != nil }
-
-    func stream(_ userText: String) async -> AsyncThrowingStream<ConversationAgentEvent, Error> {
-        activeUserText = userText
-        stagedAnswer = ""
-        return AsyncThrowingStream { continuation in
-            streamContinuation = continuation
-            continuation.yield(.transaction(token))
-        }
-    }
-
-    func finalize(with answer: String) {
-        stagedAnswer = answer
-        let continuation = streamContinuation
-        streamContinuation = nil
-        continuation?.yield(.contentDelta(answer))
-        continuation?.yield(.completed(answer))
-        continuation?.finish()
-    }
-
-    func commit(_ token: ConversationAgentTransactionToken) async throws {
-        guard token == self.token else { throw CommitFixtureError.failed }
-        committedContext.append(contentsOf: [activeUserText, stagedAnswer])
-        isCommitAppliedButNotReturned = true
-        try await withCheckedThrowingContinuation { continuation in
-            commitContinuation = continuation
-        }
-        isCommitAppliedButNotReturned = false
-    }
-
-    func abort(_ token: ConversationAgentTransactionToken) async {
-        guard token == self.token else { return }
-        if aborted.last != token { aborted.append(token) }
-        if isCommitAppliedButNotReturned {
-            committedContext.removeAll()
-            isCommitAppliedButNotReturned = false
-            let continuation = commitContinuation
-            commitContinuation = nil
-            continuation?.resume(throwing: CancellationError())
-        }
-    }
-
-    func clearContext() async {
-        committedContext.removeAll()
-    }
-
-    func allowAcceptance() {
-        let continuation = commitContinuation
-        commitContinuation = nil
-        continuation?.resume(returning: ())
-    }
-}
-
-private enum CommitFixtureError: Error {
-    case failed
-}
-
-/// Test-only injected clock; all reads and writes are confined to the MainActor controller test.
-private final class MutableTime: @unchecked Sendable {
-    var value: Date
-    init(_ value: Date) { self.value = value }
-}
-
-private final class ManualSleeper: Sendable {
-    private let ticks: AsyncStream<Void>
-    private let continuation: AsyncStream<Void>.Continuation
-
-    init() {
-        let (ticks, continuation) = AsyncStream<Void>.makeStream(
-            bufferingPolicy: .bufferingNewest(1)
-        )
-        self.ticks = ticks
-        self.continuation = continuation
-    }
-
-    func sleep() async throws {
-        var iterator = ticks.makeAsyncIterator()
-        guard await iterator.next() != nil else { throw CancellationError() }
-        try Task.checkCancellation()
-    }
-
-    func advance() {
-        continuation.yield(())
-    }
-}
-
-@MainActor
-private final class CancellationTrackingSleeper {
-    private var continuation: CheckedContinuation<Void, Never>?
-    private(set) var isSleeping = false
-    private(set) var cancellationCount = 0
-
-    func sleep() async throws {
-        isSleeping = true
-        await withTaskCancellationHandler {
-            await withCheckedContinuation { continuation in
-                self.continuation = continuation
-            }
-        } onCancel: {
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                cancellationCount += 1
-                isSleeping = false
-                continuation?.resume()
-                continuation = nil
-            }
-        }
-        try Task.checkCancellation()
-    }
-}
-
-/// Test-only recorder whose mutable value is fully protected by `lock`.
-private final class DurationRecorder: @unchecked Sendable {
-    private let lock = NSLock()
-    private var storage: Duration?
-
-    var value: Duration? { lock.withLock { storage } }
-
-    func record(_ duration: Duration) {
-        lock.withLock { storage = duration }
-    }
-}
-
-private enum TestFailure: LocalizedError {
-    case agent
-
-    var errorDescription: String? { "SENTINEL_PRIVATE_PROVIDER_PAYLOAD" }
 }

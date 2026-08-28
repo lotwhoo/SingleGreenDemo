@@ -1,13 +1,12 @@
 import SingleGreenGlassesKit
 import VoiceChatCore
 import XCTest
-@testable import SingleGreenDemo
+@testable import SingleGreenConversationAdapters
 
-@MainActor
-final class VoiceActivatedASRAdapterTests: XCTestCase {
-    func testMapsLifecyclePayloadsAndOneFinalizingEventExactlyOnce() async {
-        let base = HostVoiceActivatedASRSessionBase()
-        let adapter = VoiceChatVoiceActivatedSpeechRecognitionSession(base: base)
+final class VoiceActivatedSpeechRecognitionAdapterTests: XCTestCase {
+    func testMapsLifecyclePayloadsAndDeduplicatesEveryPhase() async {
+        let base = TestVoiceActivatedASRSessionBase()
+        let adapter = VoiceChatVoiceActivatedSpeechRecognitionAdapter(base: base)
         let collected = collect(adapter.events)
 
         await base.emit(.state(.arming))
@@ -16,22 +15,20 @@ final class VoiceActivatedASRAdapterTests: XCTestCase {
         await base.emit(.state(.openingRecognizer))
         await base.emit(.state(.openingRecognizer))
         await base.emit(.state(.streaming))
-        await base.emit(.transcript("你好"))
-        await base.emit(.utterance("你好"))
+        await base.emit(.transcript("partial"))
+        await base.emit(.utterance("final"))
         await base.emit(.level(0.4))
         await base.emit(.state(.draining(.silence)))
         await base.emit(.state(.finalizing(.silence)))
         await base.emit(.state(.finalizing(.silence)))
         await base.emit(.state(.finished))
-        await base.emit(.state(.finished))
-        await base.emit(.transcript("过期"))
 
         let values = await collected.value
         XCTAssertEqual(values, [
             .phase(.armed),
             .phase(.speechStarted),
-            .transcript("你好"),
-            .utterance("你好"),
+            .transcript("partial"),
+            .utterance("final"),
             .level(0.4),
             .phase(.finalizing(.silence)),
             .finished
@@ -46,13 +43,11 @@ final class VoiceActivatedASRAdapterTests: XCTestCase {
         ]
 
         for (core, port) in cases {
-            let base = HostVoiceActivatedASRSessionBase()
-            let adapter = VoiceChatVoiceActivatedSpeechRecognitionSession(base: base)
+            let base = TestVoiceActivatedASRSessionBase()
+            let adapter = VoiceChatVoiceActivatedSpeechRecognitionAdapter(base: base)
             let collected = collect(adapter.events)
-
             await base.emit(.state(.finalizing(core)))
             await base.emit(.state(.finished))
-
             let values = await collected.value
             XCTAssertEqual(values, [
                 .phase(.finalizing(port)),
@@ -61,40 +56,37 @@ final class VoiceActivatedASRAdapterTests: XCTestCase {
         }
     }
 
-    func testDrainingImmediatelyMapsFinalizingAndLaterCoreFinalizingIsDeduplicated() async {
-        let base = HostVoiceActivatedASRSessionBase()
-        let adapter = VoiceChatVoiceActivatedSpeechRecognitionSession(base: base)
+    func testDrainingMapsFinalizingImmediatelyAndCoreFinalizingIsDeduplicated() async {
+        let base = TestVoiceActivatedASRSessionBase()
+        let adapter = VoiceChatVoiceActivatedSpeechRecognitionAdapter(base: base)
         var iterator = adapter.events.makeAsyncIterator()
 
         await base.emit(.state(.draining(.manual)))
         let immediate = await iterator.next()
-
         XCTAssertEqual(immediate, .phase(.finalizing(.manual)))
-
         await base.emit(.state(.finalizing(.manual)))
         await base.emit(.state(.finished))
-
-        let next = await iterator.next()
+        let terminal = await iterator.next()
         let end = await iterator.next()
-        XCTAssertEqual(next, .finished)
+        XCTAssertEqual(terminal, .finished)
         XCTAssertNil(end)
     }
 
-    func testNoSpeechIsOneTerminalOutcomeAndRejectsFollowingFinishedOrPayloads() async {
-        let base = HostVoiceActivatedASRSessionBase()
-        let adapter = VoiceChatVoiceActivatedSpeechRecognitionSession(base: base)
+    func testNoSpeechIsTerminalAndRejectsFollowingFinishedAndPayloads() async {
+        let base = TestVoiceActivatedASRSessionBase()
+        let adapter = VoiceChatVoiceActivatedSpeechRecognitionAdapter(base: base)
         let collected = collect(adapter.events)
 
         await base.emit(.state(.armed))
         await base.emit(.noSpeech)
         await base.emit(.state(.finished))
-        await base.emit(.transcript("过期"))
+        await base.emit(.transcript("late"))
 
         let values = await collected.value
         XCTAssertEqual(values, [.phase(.armed), .noSpeech])
     }
 
-    func testMapsAllVADAndBackpressureFailureCodesAndRejectsLateEvents() async {
+    func testFailureIsTerminalAndRejectsLateEvents() async {
         let cases: [(ASRFailure.Code, SpeechRecognitionFailure.Code)] = [
             (.voiceActivityUnavailable, .voiceActivityUnavailable),
             (.voiceActivityProcessingFailed, .voiceActivityProcessingFailed),
@@ -103,24 +95,22 @@ final class VoiceActivatedASRAdapterTests: XCTestCase {
         ]
 
         for (coreCode, portCode) in cases {
-            let base = HostVoiceActivatedASRSessionBase()
-            let adapter = VoiceChatVoiceActivatedSpeechRecognitionSession(base: base)
+            let base = TestVoiceActivatedASRSessionBase()
+            let adapter = VoiceChatVoiceActivatedSpeechRecognitionAdapter(base: base)
             let collected = collect(adapter.events)
-
-            await base.emit(.state(.failed(ASRFailure(code: coreCode))))
+            await base.emit(.state(.failed(.init(code: coreCode))))
             await base.emit(.state(.finished))
             await base.emit(.level(1))
-
             let values = await collected.value
             XCTAssertEqual(values, [
-                .failed(SpeechRecognitionFailure(code: portCode))
+                .failed(.init(code: portCode))
             ])
         }
     }
 
-    func testCancelClosesBridgeForLateEventsAndForwardsCancellationOnce() async {
-        let base = HostVoiceActivatedASRSessionBase()
-        let adapter = VoiceChatVoiceActivatedSpeechRecognitionSession(base: base)
+    func testCancelClosesBridgeForLateEventsAndCancelsBaseExactlyOnce() async {
+        let base = TestVoiceActivatedASRSessionBase()
+        let adapter = VoiceChatVoiceActivatedSpeechRecognitionAdapter(base: base)
         let collected = collect(adapter.events)
 
         await adapter.cancel()
@@ -129,15 +119,16 @@ final class VoiceActivatedASRAdapterTests: XCTestCase {
         await base.emit(.state(.finished))
 
         let values = await collected.value
-        let cancelCount = await base.cancelCount
+        let counts = await base.counts
         XCTAssertEqual(values, [])
-        XCTAssertEqual(cancelCount, 1)
+        XCTAssertEqual(counts.cancel, 1)
     }
 
-    func testArmAndFinishForwardToBaseAndMapTypedStartFailure() async {
-        let failure = ASRFailure(code: .voiceActivityUnavailable)
-        let base = HostVoiceActivatedASRSessionBase(armFailure: failure)
-        let adapter = VoiceChatVoiceActivatedSpeechRecognitionSession(base: base)
+    func testArmAndFinishForwardAndArmMapsTypedFailure() async {
+        let base = TestVoiceActivatedASRSessionBase(
+            armError: ASRFailure(code: .voiceActivityUnavailable)
+        )
+        let adapter = VoiceChatVoiceActivatedSpeechRecognitionAdapter(base: base)
 
         do {
             try await adapter.arm()
@@ -145,15 +136,14 @@ final class VoiceActivatedASRAdapterTests: XCTestCase {
         } catch {
             XCTAssertEqual(
                 error as? SpeechRecognitionFailure,
-                SpeechRecognitionFailure(code: .voiceActivityUnavailable)
+                .init(code: .voiceActivityUnavailable)
             )
         }
 
         await adapter.finish()
-        let armCount = await base.armCount
-        let finishCount = await base.finishCount
-        XCTAssertEqual(armCount, 1)
-        XCTAssertEqual(finishCount, 1)
+        let counts = await base.counts
+        XCTAssertEqual(counts.arm, 1)
+        XCTAssertEqual(counts.finish, 1)
         await adapter.cancel()
     }
 
@@ -168,19 +158,29 @@ final class VoiceActivatedASRAdapterTests: XCTestCase {
     }
 }
 
-private actor HostVoiceActivatedASRSessionBase: VoiceChatVoiceActivatedASRSessionBase {
+private actor TestVoiceActivatedASRSessionBase: VoiceChatVoiceActivatedASRSessionBase {
+    struct Counts: Sendable {
+        let arm: Int
+        let finish: Int
+        let cancel: Int
+    }
+
     nonisolated let events: AsyncStream<VoiceActivatedASREvent>
     private let continuation: AsyncStream<VoiceActivatedASREvent>.Continuation
-    private let armFailure: ASRFailure?
-    private(set) var armCount = 0
-    private(set) var finishCount = 0
-    private(set) var cancelCount = 0
+    private let armError: (any Error)?
+    private var armCount = 0
+    private var finishCount = 0
+    private var cancelCount = 0
 
-    init(armFailure: ASRFailure? = nil) {
+    init(armError: (any Error)? = nil) {
         let (events, continuation) = AsyncStream<VoiceActivatedASREvent>.makeStream()
         self.events = events
         self.continuation = continuation
-        self.armFailure = armFailure
+        self.armError = armError
+    }
+
+    var counts: Counts {
+        Counts(arm: armCount, finish: finishCount, cancel: cancelCount)
     }
 
     func emit(_ event: VoiceActivatedASREvent) {
@@ -189,7 +189,7 @@ private actor HostVoiceActivatedASRSessionBase: VoiceChatVoiceActivatedASRSessio
 
     func arm() async throws {
         armCount += 1
-        if let armFailure { throw armFailure }
+        if let armError { throw armError }
     }
 
     func finish() async {

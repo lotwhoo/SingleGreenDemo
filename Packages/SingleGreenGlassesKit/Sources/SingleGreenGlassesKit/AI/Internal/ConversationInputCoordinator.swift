@@ -21,6 +21,9 @@ final class ConversationInputCoordinator {
     private var speechSession: (any SpeechRecognitionSession)?
     private var voiceActivatedSession: (any VoiceActivatedSpeechRecognitionSession)?
     private var eventsTask: Task<Void, Never>?
+    private var cleanupGeneration = 0
+    private var resourceCleanupTasks: [Int: Task<Void, Never>] = [:]
+    private var retiredEventTasks: [Int: Task<Void, Never>] = [:]
     private var generation = 0
     private var didHandleFinal = false
     private var speechRecognitionUnavailableMessage = ""
@@ -120,11 +123,19 @@ final class ConversationInputCoordinator {
             await onEvent(.finalizing(operation))
             guard isCurrent(operation), isActive(speechSession) else { return }
             await speechSession.finish()
+            guard isCurrent(operation), isActive(speechSession) else {
+                await speechSession.cancel()
+                return
+            }
         } else if let voiceActivatedSession {
             guard isCurrent(operation), isActive(voiceActivatedSession) else { return }
             // The session reports either noSpeech (before onset) or an explicit
             // finalizing(.manual) phase (after onset); do not guess here.
             await voiceActivatedSession.finish()
+            guard isCurrent(operation), isActive(voiceActivatedSession) else {
+                await voiceActivatedSession.cancel()
+                return
+            }
         }
     }
 
@@ -144,6 +155,24 @@ final class ConversationInputCoordinator {
         await cancelResources()
     }
 
+    /// Detaches and cancels current resources, then joins every cleanup that
+    /// was already started by reset, failure handling, or a prior operation.
+    func drainCleanup() async {
+        if let currentCleanup = beginResourceCleanup() {
+            await currentCleanup.value
+        }
+        while !resourceCleanupTasks.isEmpty || !retiredEventTasks.isEmpty {
+            let resourceTasks = Array(resourceCleanupTasks.values)
+            let eventTasks = Array(retiredEventTasks.values)
+            for task in resourceTasks {
+                await task.value
+            }
+            for task in eventTasks {
+                await task.value
+            }
+        }
+    }
+
     func fail(_ message: String, failureCode: ConversationFailureCode) async {
         let operation = beginOperation()
         await cancelResources()
@@ -159,7 +188,7 @@ final class ConversationInputCoordinator {
         _ session: any SpeechRecognitionSession,
         operation: InputOperation
     ) {
-        eventsTask?.cancel()
+        retireCurrentEventsTask()
         eventsTask = Task { [weak self] in
             for await event in session.events {
                 guard !Task.isCancelled else { return }
@@ -172,7 +201,7 @@ final class ConversationInputCoordinator {
         _ session: any VoiceActivatedSpeechRecognitionSession,
         operation: InputOperation
     ) {
-        eventsTask?.cancel()
+        retireCurrentEventsTask()
         eventsTask = Task { [weak self] in
             for await event in session.events {
                 guard !Task.isCancelled else { return }
@@ -304,21 +333,53 @@ final class ConversationInputCoordinator {
     }
 
     private func cancelResources() async {
-        eventsTask?.cancel()
-        eventsTask = nil
+        if let cleanup = beginResourceCleanup() {
+            await cleanup.value
+        }
+    }
+
+    private func beginResourceCleanup() -> Task<Void, Never>? {
+        retireCurrentEventsTask()
+
         let activeSpeechSession = speechSession
         let activeVoiceActivatedSession = voiceActivatedSession
         speechSession = nil
         voiceActivatedSession = nil
         didHandleFinal = false
-        await activeSpeechSession?.cancel()
-        await activeVoiceActivatedSession?.cancel()
+        guard activeSpeechSession != nil || activeVoiceActivatedSession != nil else {
+            return nil
+        }
+
+        cleanupGeneration += 1
+        let cleanupID = cleanupGeneration
+        let work = Task {
+            await activeSpeechSession?.cancel()
+            await activeVoiceActivatedSession?.cancel()
+        }
+        let tracked = Task { [weak self] in
+            await work.value
+            self?.resourceCleanupTasks.removeValue(forKey: cleanupID)
+        }
+        resourceCleanupTasks[cleanupID] = tracked
+        return tracked
+    }
+
+    private func retireCurrentEventsTask() {
+        guard let retiredEventTask = eventsTask else { return }
+        eventsTask = nil
+        retiredEventTask.cancel()
+        cleanupGeneration += 1
+        let eventID = cleanupGeneration
+        let watcher = Task { [weak self] in
+            await retiredEventTask.value
+            self?.retiredEventTasks.removeValue(forKey: eventID)
+        }
+        retiredEventTasks[eventID] = watcher
     }
 
     private func detachFinishedSession(_ finishedSession: any SpeechRecognitionSession) {
         guard isActive(finishedSession) else { return }
-        eventsTask?.cancel()
-        eventsTask = nil
+        retireCurrentEventsTask()
         speechSession = nil
     }
 
@@ -326,8 +387,7 @@ final class ConversationInputCoordinator {
         _ finishedSession: any VoiceActivatedSpeechRecognitionSession
     ) {
         guard isActive(finishedSession) else { return }
-        eventsTask?.cancel()
-        eventsTask = nil
+        retireCurrentEventsTask()
         voiceActivatedSession = nil
     }
 

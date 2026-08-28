@@ -15,9 +15,7 @@ struct SingleGreenDemoApp: App {
         _aiSettings = StateObject(wrappedValue: settings)
         let controller = VoiceConversationController(dependencies: .live(settings: settings))
         _conversationController = StateObject(wrappedValue: controller)
-        _runtime = StateObject(wrappedValue: ExperienceRuntime(
-            sessions: DemoExperienceComposition.sessions(controller: controller)
-        ))
+        _runtime = StateObject(wrappedValue: Self.makeRuntime(controller: controller))
     }
 
     @MainActor
@@ -25,6 +23,19 @@ struct SingleGreenDemoApp: App {
         // The production App target explicitly links the detector product;
         // isolated settings fixtures remain fail-closed unless they opt in.
         AISettings(speechInputAvailability: .productionDetectorAvailable)
+    }
+
+    @MainActor
+    private static func makeRuntime(
+        controller: VoiceConversationController
+    ) -> ExperienceRuntime {
+        do {
+            return try ExperienceRuntime(
+                validating: DemoExperienceComposition.sessions(controller: controller)
+            )
+        } catch {
+            preconditionFailure("Invalid built-in experience composition: \(error)")
+        }
     }
 
     var body: some Scene {

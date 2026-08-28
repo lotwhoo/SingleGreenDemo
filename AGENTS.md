@@ -25,9 +25,11 @@ SingleGreenDemo simulator composition root
         -> Conversation ports and VoiceConversationController
         -> VoiceChatDomain
         -> StreamingTextKit
-    -> Conversation live adapters
+    -> SingleGreenConversationAdapters
         -> VoiceChatCore
-        -> LLMKit -> LLMChatTransport -> provider client
+        -> LLMKit -> LLMChatTransport
+    -> ConversationLiveAdapters.swift
+        -> provider transports, credentials, factories, and presentation policy
     -> SwiftUI HUD rendering
 ```
 
@@ -36,7 +38,8 @@ SingleGreenDemo simulator composition root
 - Simulator controls consume generic `ExperienceControlState`; they must not read a concrete experience controller directly.
 - `VoiceConversationController` owns orchestration, state transitions, cancellation, generation checks, and display scheduling.
 - `ConversationPorts.swift` owns stable glasses-core ASR and Agent contracts.
-- `ConversationLiveAdapters.swift` owns production bridges to VoiceChatCore and LLMKit.
+- `SingleGreenConversationAdapters` owns reusable semantic bridges from VoiceChatCore/LLMKit into the glasses-core conversation ports.
+- `ConversationLiveAdapters.swift` owns App-specific provider transports, credentials, factories, and presentation policy; it composes the reusable adapters and must not move those concerns into the core package.
 - `VoiceChatDomain` owns conversation and reply lifecycle semantics.
 - `LLMKit` owns provider-neutral chat, SSE parsing contracts, tool rounds, and context transactions.
 - `StreamingTextKit` owns typewriter cadence, grapheme-safe buffering, Unicode reconciliation, and auto-follow policy.
@@ -82,7 +85,7 @@ scripts/test_public_api_baseline_update.sh
 scripts/check_public_api_baselines.sh
 ```
 
-Public API snapshots are reviewed artifacts for seven library modules on macOS arm64 and iOS Simulator arm64. Additions and removals both require explicit review. Update only with `scripts/update_public_api_baselines.sh --accept-current-api` after inspecting the diff; the updater is never run automatically in CI.
+Public API snapshots are reviewed artifacts for eight library modules (16 snapshots total) on macOS arm64 and iOS Simulator arm64. Additions and removals both require explicit review. Update only with `scripts/update_public_api_baselines.sh --accept-current-api` after inspecting the diff; the updater is never run automatically in CI.
 
 M7 PR2 lifecycle invariants: `VoiceActivatedASRSession` owns one ContinuousClock-backed, injectable monotonic frame-liveness watchdog. It starts after source start; accepted raw frames refresh the compatibility-derived `noSpeechFrameLimit × 20 ms` interval (standard 15 s). At or after the deadline, pre/post-onset starvation fails closed as typed `audioUnavailable`; valid silent frames remain the `.noSpeech` path. Levels, VAD observations, transport activity, stale frames, and rejected frames are not heartbeats. Manual pre-onset finish emits Core `.noSpeech` then `.finished`; post-onset finish drains buffered tail frames FIFO before completion. Keep actor/generation/epoch checks and one-terminal semantics intact.
 
@@ -94,6 +97,8 @@ cd Packages/VoiceChatDomain && swift test
 cd Packages/VoiceChatCore && swift test
 cd Packages/LLMKit && swift test
 cd Packages/StreamingTextKit && swift test
+cd Packages/VoiceActivityDetectionKit && swift test
+cd Packages/SingleGreenConversationAdapters && swift test
 ```
 
 For App integration, resolve an available simulator before running:

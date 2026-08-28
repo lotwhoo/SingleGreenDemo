@@ -1,6 +1,7 @@
 import AVFoundation
 import Foundation
 import OSLog
+import SingleGreenConversationAdapters
 import SingleGreenGlassesKit
 import UIKit
 import VoiceChatCore
@@ -128,7 +129,7 @@ enum ProductionVoiceActivatedSessionFactory {
         configuration: SpeechProviderConfiguration
     ) throws -> any VoiceActivatedSpeechRecognitionSession {
         let base = try makeCoreSession(configuration: configuration)
-        return VoiceChatVoiceActivatedSpeechRecognitionSession(base: base)
+        return VoiceChatVoiceActivatedSpeechRecognitionAdapter(session: base)
     }
 
     static func makeCoreSession(
@@ -207,8 +208,14 @@ final class ConversationPreparationResolver {
         )
         switch mode {
         case .pushToTalk:
+            let coreSession = ASRSession(config: .init(
+                apiKey: configuration.apiKey,
+                resourceID: configuration.resourceID,
+                language: configuration.language,
+                hotwords: configuration.hotwords
+            ))
             return .pushToTalk(
-                VoiceChatSpeechRecognitionSession(configuration: configuration)
+                VoiceChatSpeechRecognitionAdapter(session: coreSession)
             )
         case .voiceActivated:
             guard let makeVoiceActivatedSession else {
@@ -264,7 +271,7 @@ final class ConversationPreparationResolver {
             credentialProvider: credentialProvider,
             systemPrompt: Self.systemPrompt
         )
-        let agent = LLMKitConversationAgent(configuration: configuration)
+        let agent = ProductionConversationAgentFactory.make(configuration: configuration)
         let cached = CachedAgent(
             scope: scope,
             identity: ConversationAgentContextIdentity(),

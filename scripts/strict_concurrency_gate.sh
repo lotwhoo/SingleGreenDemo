@@ -13,6 +13,7 @@ for package in \
     VoiceChatDomain \
     VoiceActivityDetectionKit \
     SingleGreenGlassesKit \
+    SingleGreenConversationAdapters \
     LLMKit \
     VoiceChatCore
 do

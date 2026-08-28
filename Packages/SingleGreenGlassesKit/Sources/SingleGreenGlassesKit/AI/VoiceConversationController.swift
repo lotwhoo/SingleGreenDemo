@@ -19,14 +19,23 @@ public final class VoiceConversationController: ObservableObject {
     private let inputCoordinator: ConversationInputCoordinator
     private let displayScheduler: ConversationDisplayScheduler
     private let replyPipeline: ConversationReplyPipeline
-    private var phaseStartedAt: [ConversationTelemetryPhase: UInt64] = [:]
+    private let telemetryTracker: ConversationTelemetryTracker
     private var operationGeneration = 0
     private var lifecycleGeneration = 0
     private var isHostActive = true
-    private var lifecycleTask: Task<Void, Never>?
+    private var lifecycleTasks: [Int: Task<Void, Never>] = [:]
+    private var latestLifecycleTask: Task<Void, Never>?
+    private var inputStartTaskGeneration = 0
+    private var inputStartTasks: [Int: Task<Void, Never>] = [:]
+    private var inputFinishTaskGeneration = 0
+    private var inputFinishTasks: [Int: Task<Void, Never>] = [:]
+    private var resetTaskGeneration = 0
+    private var resetTasks: [Int: Task<Void, Never>] = [:]
     private var continuousVoiceActivationGeneration = 0
     private var activeContinuousVoiceActivation: Int?
     private var automaticRearmTask: Task<Void, Never>?
+    private var isShutdown = false
+    private var shutdownTask: Task<Void, Never>?
 
     public init(
         dependencies: VoiceConversationDependencies,
@@ -39,6 +48,10 @@ public final class VoiceConversationController: ObservableObject {
         _ = silenceThreshold
         _ = silenceTimeout
         self.inputCoordinator = ConversationInputCoordinator()
+        self.telemetryTracker = ConversationTelemetryTracker(
+            sink: dependencies.telemetry,
+            monotonicNow: dependencies.monotonicNow
+        )
         self.displayScheduler = ConversationDisplayScheduler(
             policy: dependencies.streamingTextPolicy,
             sleep: dependencies.sleep,
@@ -114,6 +127,7 @@ public final class VoiceConversationController: ObservableObject {
     public var controlState: ExperienceControlState? { snapshot.controlState }
 
     public func toggleConversation() async {
+        guard !isShutdown else { return }
         switch state {
         case .idle, .failed, .completed, .thinking, .searching, .streaming:
             await startListening(trigger: .explicit)
@@ -128,34 +142,23 @@ public final class VoiceConversationController: ObservableObject {
     /// Backgrounding discards incomplete input/reply/display work but preserves
     /// successfully committed conversation history.
     public func suspendForBackground() async {
+        guard !isShutdown else { return }
         let transition = beginHostLifecycleTransition(.background)
-        await applyHostLifecycle(transition)
+        let task = scheduleHostLifecycleTransition(transition)
+        await task.value
     }
 
     /// Captures scene changes synchronously, then serializes their asynchronous
     /// cleanup through a generation check. A delayed background task therefore
     /// cannot cancel work created after a newer foreground transition.
     public func updateHostLifecycle(_ state: ConversationHostLifecycleState) {
+        guard !isShutdown else { return }
         let transition = beginHostLifecycleTransition(state)
-        lifecycleTask = Task { [weak self] in
-            await self?.applyHostLifecycle(transition)
-        }
+        scheduleHostLifecycleTransition(transition)
     }
 
     public func waitForPendingHostLifecycleTransition() async {
-        await lifecycleTask?.value
-    }
-
-    private func applyHostLifecycle(_ transition: HostLifecycleTransition) async {
-        guard transition.state == .background else {
-            guard transition.generation == lifecycleGeneration else { return }
-            record(.lifecycle, outcome: .succeeded)
-            return
-        }
-        if let cancellation = transition.inputCancellation {
-            await inputCoordinator.completeCancellation(cancellation)
-        }
-        await transition.replyCleanup?.value
+        await latestLifecycleTask?.value
     }
 
     /// Foregrounding is intentionally passive. Input and network work resume only
@@ -165,9 +168,23 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     public func resetConversation() async {
+        guard !isShutdown else { return }
+        resetTaskGeneration += 1
+        let generation = resetTaskGeneration
+        let task = Task { [weak self] in
+            guard let self else { return }
+            await self.performResetConversation()
+            self.resetTasks.removeValue(forKey: generation)
+        }
+        resetTasks[generation] = task
+        await task.value
+    }
+
+    private func performResetConversation() async {
+        guard !isShutdown else { return }
         disableContinuousVoiceActivation()
         let controllerOperation = beginConversationOperation()
-        terminateActiveWork(outcome: .cancelled)
+        telemetryTracker.terminateActiveWork(outcome: .cancelled)
         let operation = await inputCoordinator.cancel()
         guard isCurrent(controllerOperation, requiresActiveHost: false),
               inputCoordinator.isCurrent(operation) else { return }
@@ -187,15 +204,79 @@ public final class VoiceConversationController: ObservableObject {
 
     /// Stops active input, reply, and display work before the owning host releases this controller.
     public func shutdown() async {
+        if let shutdownTask {
+            await shutdownTask.value
+            return
+        }
+        guard !isShutdown else { return }
+        isShutdown = true
+        isHostActive = false
+        lifecycleGeneration += 1
+        let inputCancellation = inputCoordinator.reserveCancellation()
+        let pendingLifecycleTasks = Array(lifecycleTasks.values)
+        lifecycleTasks.removeAll()
+        latestLifecycleTask = nil
+        let pendingInputStartTasks = Array(inputStartTasks.values)
+        inputStartTasks.removeAll()
+        let pendingInputFinishTasks = Array(inputFinishTasks.values)
+        inputFinishTasks.removeAll()
+        let pendingResetTasks = Array(resetTasks.values)
+        resetTasks.removeAll()
+        let pendingAutomaticRearmTask = automaticRearmTask
+        automaticRearmTask = nil
         disableContinuousVoiceActivation()
+        for startTask in pendingInputStartTasks {
+            startTask.cancel()
+        }
+        pendingAutomaticRearmTask?.cancel()
         _ = beginConversationOperation()
-        terminateActiveWork(outcome: .cancelled)
-        _ = await inputCoordinator.cancel()
-        await invalidatePendingReply()
-        await replyPipeline.clearContext()
+        telemetryTracker.terminateActiveWork(outcome: .cancelled)
+        let replyCleanup = replyPipeline.beginInvalidation()
+        _ = conversation.abortUncommittedTurn()
+        displayScheduler.reset()
+        conversation.inputState = .idle
+        liveText = ""
+        audioLevel = 0
+        lastError = nil
+        publishShutdownSnapshot()
+        let task = Task { @MainActor [inputCoordinator, replyPipeline] in
+            await inputCoordinator.completeCancellation(inputCancellation)
+            for lifecycleTask in pendingLifecycleTasks {
+                await lifecycleTask.value
+            }
+            for startTask in pendingInputStartTasks {
+                await startTask.value
+            }
+            await pendingAutomaticRearmTask?.value
+            for finishTask in pendingInputFinishTasks {
+                await finishTask.value
+            }
+            for resetTask in pendingResetTasks {
+                await resetTask.value
+            }
+            await inputCoordinator.drainCleanup()
+            await replyCleanup.value
+            await replyPipeline.clearContext()
+        }
+        shutdownTask = task
+        await task.value
     }
 
     private func startListening(trigger: VoiceInputStartTrigger) async {
+        guard !isShutdown else { return }
+        inputStartTaskGeneration += 1
+        let generation = inputStartTaskGeneration
+        let task = Task { [weak self] in
+            guard let self else { return }
+            await self.performStartListening(trigger: trigger)
+            self.inputStartTasks.removeValue(forKey: generation)
+        }
+        inputStartTasks[generation] = task
+        await task.value
+    }
+
+    private func performStartListening(trigger: VoiceInputStartTrigger) async {
+        guard !isShutdown else { return }
         switch trigger {
         case .explicit:
             disableContinuousVoiceActivation()
@@ -204,13 +285,13 @@ public final class VoiceConversationController: ObservableObject {
         }
         guard state.allowsPrimaryAction, state != .listening else { return }
         let controllerOperation = beginConversationOperation()
-        terminateActiveWork(outcome: .cancelled)
+        telemetryTracker.terminateActiveWork(outcome: .cancelled)
         await invalidatePendingReply()
         guard isCurrent(controllerOperation) else { return }
         let operation = await inputCoordinator.beginStart()
         guard isCurrent(controllerOperation), inputCoordinator.isCurrent(operation) else { return }
 
-        beginTelemetry(.input)
+        telemetryTracker.begin(.input)
         let inputMode = dependencies.inputMode()
         let continuousGeneration: Int?
         switch trigger {
@@ -222,7 +303,7 @@ public final class VoiceConversationController: ObservableObject {
             guard inputMode == .voiceActivated,
                   isContinuousVoiceActivationCurrent(generation) else {
                 disableContinuousVoiceActivation()
-                recordIfActive(.input, outcome: .cancelled)
+                telemetryTracker.recordIfActive(.input, outcome: .cancelled)
                 return
             }
             continuousGeneration = generation
@@ -237,7 +318,7 @@ public final class VoiceConversationController: ObservableObject {
             return
         }
         let preparedInput: PreparedSpeechInputSession
-        beginTelemetry(.preparation)
+        telemetryTracker.begin(.preparation)
         do {
             preparedInput = try await dependencies.prepareSpeechInput(inputMode)
             guard isInputStartCurrent(
@@ -250,14 +331,14 @@ public final class VoiceConversationController: ObservableObject {
             }
             guard preparedInput.mode == inputMode else {
                 await preparedInput.cancel()
-                recordIfActive(.preparation, outcome: .failed, failure: .protocolFailure)
+                telemetryTracker.recordIfActive(.preparation, outcome: .failed, failure: .protocolFailure)
                 await inputCoordinator.fail(
                     dependencies.presentationCopy.speechRecognitionUnavailable,
                     failureCode: .protocolFailure
                 )
                 return
             }
-            recordIfActive(.preparation, outcome: .succeeded)
+            telemetryTracker.recordIfActive(.preparation, outcome: .succeeded)
         } catch {
             guard isInputStartCurrent(
                 controllerOperation,
@@ -265,7 +346,7 @@ public final class VoiceConversationController: ObservableObject {
                 continuousGeneration: continuousGeneration
             ) else { return }
             let failure = error as? ConversationPreparationFailure
-            recordIfActive(
+            telemetryTracker.recordIfActive(
                 .preparation,
                 outcome: .failed,
                 failure: failure?.failureCode ?? .preparationUnavailable
@@ -298,6 +379,20 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     private func stopRecognition() async {
+        guard !isShutdown else { return }
+        inputFinishTaskGeneration += 1
+        let generation = inputFinishTaskGeneration
+        let task = Task { [weak self] in
+            guard let self else { return }
+            await self.performStopRecognition()
+            self.inputFinishTasks.removeValue(forKey: generation)
+        }
+        inputFinishTasks[generation] = task
+        await task.value
+    }
+
+    private func performStopRecognition() async {
+        guard !isShutdown else { return }
         guard conversation.inputState == .armed || conversation.inputState == .recording else { return }
         await inputCoordinator.finishCurrent()
     }
@@ -326,20 +421,20 @@ public final class VoiceConversationController: ObservableObject {
         controllerOperation: Int
     ) async {
         guard isCurrent(controllerOperation) else { return }
-        beginTelemetry(.reply)
+        telemetryTracker.begin(.reply)
         let preparedAgent: PreparedConversationAgent
-        beginTelemetry(.preparation)
+        telemetryTracker.begin(.preparation)
         do {
             preparedAgent = try await dependencies.prepareAgent()
             guard isCurrent(controllerOperation) else {
                 await preparedAgent.discard()
                 return
             }
-            recordIfActive(.preparation, outcome: .succeeded)
+            telemetryTracker.recordIfActive(.preparation, outcome: .succeeded)
         } catch {
             guard isCurrent(controllerOperation) else { return }
             let failure = error as? ConversationPreparationFailure
-            recordIfActive(
+            telemetryTracker.recordIfActive(
                 .preparation,
                 outcome: .failed,
                 failure: failure?.failureCode ?? .preparationUnavailable
@@ -367,7 +462,7 @@ public final class VoiceConversationController: ObservableObject {
         )
         guard isCurrent(controllerOperation), replyPipeline.isCurrent(operation) else { return }
         displayScheduler.begin(operation)
-        beginTelemetry(.display)
+        telemetryTracker.begin(.display)
         refreshSnapshot()
     }
 
@@ -378,7 +473,7 @@ public final class VoiceConversationController: ObservableObject {
         disableContinuousVoiceActivation()
         lastError = message
         conversation.inputState = .idle
-        recordIfActive(.reply, outcome: .failed, failure: failureCode)
+        telemetryTracker.recordIfActive(.reply, outcome: .failed, failure: failureCode)
         refreshSnapshot()
     }
 
@@ -422,30 +517,33 @@ public final class VoiceConversationController: ObservableObject {
         _ = conversation.cancelActiveReply()
         displayScheduler.reset()
         await replyPipeline.invalidate()
-        recordIfActive(.display, outcome: .cancelled)
-        recordIfActive(.reply, outcome: .cancelled)
+        telemetryTracker.recordIfActive(.display, outcome: .cancelled)
+        telemetryTracker.recordIfActive(.reply, outcome: .cancelled)
     }
 
     private func handleVisibleTextChanged(_ text: String, operation: ReplyOperation) {
-        guard replyPipeline.isCurrent(operation),
+        guard !isShutdown,
+              replyPipeline.isCurrent(operation),
               conversation.activeReplyID == operation.id else { return }
         refreshSnapshot()
     }
 
     private func acceptAcknowledgedReply(operation: ReplyOperation) -> Bool {
-        guard replyPipeline.isCurrent(operation),
+        guard !isShutdown,
+              replyPipeline.isCurrent(operation),
               conversation.activeReplyID == operation.id,
               conversation.completeReply(id: operation.id) else { return false }
         lastError = nil
-        recordIfActive(.display, outcome: .succeeded)
-        recordIfActive(.reply, outcome: .succeeded)
+        telemetryTracker.recordIfActive(.display, outcome: .succeeded)
+        telemetryTracker.recordIfActive(.reply, outcome: .succeeded)
         refreshSnapshot()
         scheduleAutomaticRearmIfNeeded()
         return true
     }
 
     private func failReplyContextAcknowledgement(operation: ReplyOperation) {
-        guard replyPipeline.isCurrent(operation),
+        guard !isShutdown,
+              replyPipeline.isCurrent(operation),
               conversation.activeReplyID == operation.id,
               displayScheduler.settleFailure(
                 discardPartial: false,
@@ -459,12 +557,13 @@ public final class VoiceConversationController: ObservableObject {
             preservingPartial: true
         )
         lastError = message
-        recordIfActive(.display, outcome: .succeeded)
-        recordIfActive(.reply, outcome: .failed, failure: .contextCommitFailed)
+        telemetryTracker.recordIfActive(.display, outcome: .succeeded)
+        telemetryTracker.recordIfActive(.reply, outcome: .failed, failure: .contextCommitFailed)
         refreshSnapshot()
     }
 
     private func handleReplyPipelineEvent(_ event: ReplyPipelineEvent) throws {
+        guard !isShutdown else { return }
         switch event {
         case .searching(let operation):
             markReplySearching(operation: operation)
@@ -498,12 +597,13 @@ public final class VoiceConversationController: ObservableObject {
             preservingPartial: hasPartialReply
         )
         lastError = message
-        recordIfActive(.display, outcome: .failed, failure: .interrupted)
-        recordIfActive(.reply, outcome: .failed, failure: failure.failureCode)
+        telemetryTracker.recordIfActive(.display, outcome: .failed, failure: .interrupted)
+        telemetryTracker.recordIfActive(.reply, outcome: .failed, failure: failure.failureCode)
         refreshSnapshot()
     }
 
     private func handleInputCoordinatorEvent(_ event: InputCoordinatorEvent) async {
+        guard !isShutdown else { return }
         switch event {
         case .preparing(let operation):
             guard inputCoordinator.isCurrent(operation) else { return }
@@ -537,11 +637,11 @@ public final class VoiceConversationController: ObservableObject {
             liveText = ""
             audioLevel = 0
             lastError = nil
-            recordIfActive(.input, outcome: .succeeded)
+            telemetryTracker.recordIfActive(.input, outcome: .succeeded)
             refreshSnapshot()
         case .finished(let operation):
             guard inputCoordinator.isCurrent(operation) else { return }
-            recordIfActive(.input, outcome: .succeeded)
+            telemetryTracker.recordIfActive(.input, outcome: .succeeded)
             await finishASRAndRequestReply(operation: operation)
         case .failed(let operation, let message, let failure):
             guard inputCoordinator.isCurrent(operation) else { return }
@@ -550,47 +650,13 @@ public final class VoiceConversationController: ObservableObject {
             liveText = ""
             lastError = message
             conversation.inputState = .failed(message)
-            recordIfActive(.input, outcome: .failed, failure: failure)
+            telemetryTracker.recordIfActive(.input, outcome: .failed, failure: failure)
             refreshSnapshot()
         }
     }
 
-    private func beginTelemetry(_ phase: ConversationTelemetryPhase) {
-        recordIfActive(phase, outcome: .cancelled)
-        phaseStartedAt[phase] = dependencies.monotonicNow()
-        dependencies.telemetry.record(.init(
-            phase: phase,
-            outcome: .started,
-            elapsedMilliseconds: 0
-        ))
-    }
-
-    private func record(
-        _ phase: ConversationTelemetryPhase,
-        outcome: ConversationTelemetryOutcome,
-        failure: ConversationFailureCode? = nil
-    ) {
-        let now = dependencies.monotonicNow()
-        let start = phaseStartedAt.removeValue(forKey: phase) ?? now
-        let elapsed = now >= start ? (now - start) / 1_000_000 : 0
-        dependencies.telemetry.record(.init(
-            phase: phase,
-            outcome: outcome,
-            elapsedMilliseconds: elapsed,
-            failureCode: failure
-        ))
-    }
-
-    private func recordIfActive(
-        _ phase: ConversationTelemetryPhase,
-        outcome: ConversationTelemetryOutcome,
-        failure: ConversationFailureCode? = nil
-    ) {
-        guard phaseStartedAt[phase] != nil else { return }
-        record(phase, outcome: outcome, failure: failure)
-    }
-
     private func refreshSnapshot() {
+        guard !isShutdown else { return }
         let capturedState = state
         let capturedTranscript = transcript
         let capturedAssistantReply = assistantReply
@@ -606,6 +672,17 @@ public final class VoiceConversationController: ObservableObject {
         )
     }
 
+    private func publishShutdownSnapshot() {
+        snapshot = ConversationLifecycleProjection.makeSnapshot(
+            revision: snapshot.scene.revision + 1,
+            state: state,
+            transcript: transcript,
+            assistantReply: assistantReply,
+            audioLevel: audioLevel,
+            error: lastError
+        )
+    }
+
     private func beginConversationOperation() -> Int {
         operationGeneration += 1
         return operationGeneration
@@ -615,7 +692,9 @@ public final class VoiceConversationController: ObservableObject {
         _ operation: Int,
         requiresActiveHost: Bool = true
     ) -> Bool {
-        operation == operationGeneration && (!requiresActiveHost || isHostActive)
+        !isShutdown
+            && operation == operationGeneration
+            && (!requiresActiveHost || isHostActive)
     }
 
     private func beginHostLifecycleTransition(
@@ -632,14 +711,14 @@ public final class VoiceConversationController: ObservableObject {
             : nil
         if state == .background {
             disableContinuousVoiceActivation()
-            terminateActiveWork(outcome: .suspended)
+            telemetryTracker.terminateActiveWork(outcome: .suspended)
             _ = conversation.abortUncommittedTurn()
             displayScheduler.reset()
             conversation.inputState = .idle
             liveText = ""
             audioLevel = 0
             lastError = nil
-            record(.lifecycle, outcome: .suspended)
+            telemetryTracker.record(.lifecycle, outcome: .suspended)
             refreshSnapshot()
         }
         return HostLifecycleTransition(
@@ -650,11 +729,36 @@ public final class VoiceConversationController: ObservableObject {
         )
     }
 
-    private func terminateActiveWork(outcome: ConversationTelemetryOutcome) {
-        recordIfActive(.preparation, outcome: outcome)
-        recordIfActive(.input, outcome: outcome)
-        recordIfActive(.display, outcome: outcome)
-        recordIfActive(.reply, outcome: outcome)
+    @discardableResult
+    private func scheduleHostLifecycleTransition(
+        _ transition: HostLifecycleTransition
+    ) -> Task<Void, Never> {
+        let generation = transition.generation
+        let task: Task<Void, Never>
+        switch transition.state {
+        case .background:
+            let inputCoordinator = self.inputCoordinator
+            let inputCancellation = transition.inputCancellation
+            let replyCleanup = transition.replyCleanup
+            task = Task { [weak self] in
+                if let inputCancellation {
+                    await inputCoordinator.completeCancellation(inputCancellation)
+                }
+                await replyCleanup?.value
+                self?.lifecycleTasks.removeValue(forKey: generation)
+            }
+        case .active:
+            task = Task { [weak self] in
+                guard let self else { return }
+                defer { self.lifecycleTasks.removeValue(forKey: generation) }
+                guard !self.isShutdown,
+                      generation == self.lifecycleGeneration else { return }
+                self.telemetryTracker.record(.lifecycle, outcome: .succeeded)
+            }
+        }
+        lifecycleTasks[generation] = task
+        latestLifecycleTask = task
+        return task
     }
 
     private func beginContinuousVoiceActivation() -> Int {
@@ -671,7 +775,8 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     private func isContinuousVoiceActivationCurrent(_ generation: Int) -> Bool {
-        activeContinuousVoiceActivation == generation
+        !isShutdown
+            && activeContinuousVoiceActivation == generation
             && continuousVoiceActivationGeneration == generation
             && isHostActive
     }
@@ -689,7 +794,8 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     private func scheduleAutomaticRearmIfNeeded() {
-        guard let generation = activeContinuousVoiceActivation,
+        guard !isShutdown,
+              let generation = activeContinuousVoiceActivation,
               isContinuousVoiceActivationCurrent(generation) else { return }
         automaticRearmTask?.cancel()
         automaticRearmTask = Task { [weak self] in

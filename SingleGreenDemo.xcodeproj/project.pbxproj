@@ -14,6 +14,7 @@
 		A00000000000000000000076 /* SingleGreenGlassesKit in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000075 /* SingleGreenGlassesKit */; };
 		A00000000000000000000077 /* VoiceChatDomain in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000066 /* VoiceChatDomain */; };
 		A00000000000000000000078 /* WebRTCVoiceActivityDetection in Frameworks */ = {isa = PBXBuildFile; productRef = A0000000000000000000007A /* WebRTCVoiceActivityDetection */; };
+		A00000000000000000000080 /* SingleGreenConversationAdapters in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000082 /* SingleGreenConversationAdapters */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,7 @@
 				A00000000000000000000070 /* StreamingTextKit in Frameworks */,
 				A00000000000000000000073 /* SingleGreenGlassesKit in Frameworks */,
 				A00000000000000000000078 /* WebRTCVoiceActivityDetection in Frameworks */,
+				A00000000000000000000080 /* SingleGreenConversationAdapters in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +114,7 @@
 				A00000000000000000000072 /* StreamingTextKit */,
 				A00000000000000000000075 /* SingleGreenGlassesKit */,
 				A0000000000000000000007A /* WebRTCVoiceActivityDetection */,
+				A00000000000000000000082 /* SingleGreenConversationAdapters */,
 			);
 			productName = SingleGreenDemo;
 			productReference = A00000000000000000000006 /* SingleGreenDemo.app */;
@@ -180,6 +183,7 @@
 				A00000000000000000000071 /* XCLocalSwiftPackageReference "Packages/StreamingTextKit" */,
 				A00000000000000000000074 /* XCLocalSwiftPackageReference "Packages/SingleGreenGlassesKit" */,
 				A00000000000000000000079 /* XCLocalSwiftPackageReference "Packages/VoiceActivityDetectionKit" */,
+				A00000000000000000000081 /* XCLocalSwiftPackageReference "Packages/SingleGreenConversationAdapters" */,
 			);
 			projectDirPath = "";
 			projectRoot = "";
@@ -433,6 +437,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/VoiceActivityDetectionKit;
 		};
+		A00000000000000000000081 /* XCLocalSwiftPackageReference "Packages/SingleGreenConversationAdapters" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/SingleGreenConversationAdapters;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -465,6 +473,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A00000000000000000000079 /* XCLocalSwiftPackageReference "Packages/VoiceActivityDetectionKit" */;
 			productName = WebRTCVoiceActivityDetection;
+		};
+		A00000000000000000000082 /* SingleGreenConversationAdapters */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000081 /* XCLocalSwiftPackageReference "Packages/SingleGreenConversationAdapters" */;
+			productName = SingleGreenConversationAdapters;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

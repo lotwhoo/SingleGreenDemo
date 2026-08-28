@@ -49,6 +49,26 @@ M7 PR1 建立了可审查的架构、工具链和公开 API 门禁；这只表�
 
 PR2 本地严格并发测试为 **390/390**，App XCTest 为 **62/62**；完整测试、覆盖率、构建和证据边界见 [PR2 任务记录](./tasks/2026-08-28-m7-pr2-lifecycle-correctness.md)。GitHub hosted CI、PR2 真机/真实服务/人工无障碍与光学验证尚未执行。
 
+### M7 PR3 Public reuse contract（本地完成，2026-08-28）
+
+PR3 新增 `SingleGreenConversationAdapters`，将 `VoiceChatCore`/`LLMKit` 到 `SingleGreenGlassesKit` conversation ports 的语义桥接从 App composition root 抽出。包内公开 `VoiceChatSpeechRecognitionAdapter`、`VoiceChatVoiceActivatedSpeechRecognitionAdapter`、`LLMKitConversationAgentAdapter` 和 `LLMKitConversationAgentAdapterPolicy`；宿主继续拥有凭证、租约、provider 配置、WebRTC factory、raw `web_search` mapping 和用户可见错误文案。低层 `PCMFrameSource`/`StreamingASRTransport` 不因 PR3 公开。
+
+当前依赖方向为 `SingleGreenConversationAdapters → SingleGreenGlassesKit + VoiceChatCore + LLMKit`，App 仅负责组装。七个 Package 严格并发/WAE 为 **414/414**，新包 **24/24**，关键生命周期重复 **100/100**；App-hosted XCTest **55/55**（`/private/tmp/SingleGreenDemo-M7-PR3-AppTests-4.xcresult`）。适配器包覆盖率为 **347/354（98.02%）**，全包表见 [覆盖率基线](./COVERAGE_BASELINE.md)。Debug 与严格 Release Simulator 构建通过。公开 API 基线为八个模块、macOS arm64 与 iOS Simulator arm64 共 **16 snapshots**。这些均为本地证据，不包含 PR3 真机、真实服务、GitHub CI、无障碍或光学验收。
+
+### M7 PR4 Terminal lifecycle（历史合并检查点，已由 PR5 supersede，本地完成，2026-08-28）
+
+PR4 收紧 `VoiceConversationController` 的终态生命周期：shutdown 幂等且并发调用共享同一清理任务；生命周期、输入、reset 与自动 rearm 任务按 generation 保留并 join；shutdown 后拒绝迟到事件和新操作，并只发布一个终态快照。`ExperienceRuntime.init(validating:)` 作为加法 API 提供 catalog 校验入口，保留既有初始化兼容性。
+
+PR3+PR4 合并历史本地证据为七个 Package **438/438**（7、16、43、174、24、70、104）、App **55/55**（`/private/tmp/SingleGreenDemo-M7-Combined-QA-App.xcresult`）；适配器重复 **480** 次、终态生命周期重复 **380** 次。`SingleGreenGlassesKit` 覆盖率 **94.08%**，适配器包 **98.02%**；Debug 与严格 universal Release Simulator arm64+x86_64 构建通过；API 为八模块/16 snapshots；架构边界自测为 **11 个负例**。该证据已由当前 PR5 隔离复测 supersede，未声明真机、实时服务、GitHub CI、无障碍或光学验证。
+
+### M7 PR5 Mechanical decomposition（本地完成，2026-08-28）
+
+PR5 是行为中性的机械拆分，严格限定为四个文件：内部 `ConversationTelemetryTracker` 抽离同步 telemetry phase bookkeeping，`VoiceConversationController` 仍拥有所有任务、取消、generation、reply/display identity 和生命周期状态；测试支持与 fixture 移入独立文件，95 个 Controller 测试方法的名称、方法体和断言保持不变。`ConversationInputCoordinator`、`ExperienceRuntime` 和 `ConversationLiveAdapters` 不在本 PR5 范围内。
+
+隔离 PR5 证据为 SGK **174/174**，七 Package **438/438**，关键用例 **17×20=340/340**，App **55/55**（`/private/tmp/SingleGreenDemo-M7-PR5-AppTests-Retry/Logs/Test/Test-SingleGreenDemo-2026.08.28_19-46-03-+0800.xcresult`）；覆盖率为 SGK **93.91%**、适配器 **98.02%**。16 个 API snapshots byte-identical，架构负例 11 个；Debug 与 universal Release Simulator 构建通过，独立评审为 GO。PR5 未执行真机、真实服务、GitHub CI、commit 或 push。详见 [PR5 任务卡](./tasks/2026-08-28-m7-pr5-mechanical-decomposition.md)。
+
+非权威并发 timing-warning 结果：`/private/tmp/SingleGreenDemo-M7-PR5-AppTests.xcresult`。
+
 ### M1 已实现的契约
 
 - `ExperienceSession` 以 `currentSnapshot(eventDescription:)` 提供同步兼容入口，以 `updates()` 提供后台变化流。
@@ -272,7 +292,8 @@ AI 回答布局使用专用 `flowingText` 元素，高度为 safeRect 的 61%，
 | `Platform/Profiles/` | 宿主 Profile 选择与 SwiftUI/CoreGraphics 投影 | `DisplayProfileStore`、`HUDPreviewProjection` | 中立 Profile 校验、体验内容 |
 | `Platform/Environment/` | 相机权限和 Session 生命周期 | `CameraSessionController` | HUD 或 AI 业务 |
 | `Packages/SingleGreenGlassesKit/AI/` | AI 用例、端口、对话编排 | ASR/Agent ports、`VoiceConversationController` | 生产 SDK、Keychain、App 页面布局 |
-| `SingleGreenDemo/Platform/AI/` | 生产适配器、Debug/Release 组装、凭证策略与宿主遥测 | `VoiceConversationDependencies.live` | 眼镜核心状态机 |
+| `SingleGreenDemo/Platform/AI/` | provider transports、credentials、factories、presentation policy、Debug/Release 组装与宿主遥测 | `VoiceConversationDependencies.live`、`ConversationLiveAdapters` | 眼镜核心状态机与可复用 semantic bridge |
+| `SingleGreenConversationAdapters` | VoiceChatCore/LLMKit 到眼镜核心 ports 的可复用语义桥接 | 四个 public adapter/policy 类型 | 凭证、provider 配置、UI、raw provider tool mapping |
 | `StreamingTextKit` | 打字节奏、字素缓冲、Unicode 对齐、自动尾随策略 | `TypewriterPolicy`、`TypewriterTextBuffer`、`StreamingTextReconciler` | 会话状态、SwiftUI 样式、网络 |
 | `VoiceChatDomain` | 消息和回复生命周期 | `ConversationState` | 音频、网络、UI |
 | `VoiceChatCore` | 音频、ASR WebSocket、协议帧和 VAD 门控会话 | `ASRSession`、`VoiceActivatedASRSession`、`PCMFrameSource` | LLM 和 HUD |
@@ -318,7 +339,7 @@ App 内部 `VoiceActivatedFactory` 为 throwing contract：错误映射为 revie
 
 ### 7.1 当前测试结果
 
-当前集成工作树的最终本地严格门禁证据：
+PR3 集成工作树的历史本地严格门禁证据（已由 PR3+PR4 supersede，PR3+PR4 又已由 PR5 supersede）：
 
 | 测试层 | 数量 | 结果 |
 | --- | ---: | --- |
@@ -328,9 +349,10 @@ App 内部 `VoiceActivatedFactory` 为 throwing contract：错误映射为 revie
 | VoiceChatDomain | 16 | 通过 |
 | LLMKit | 70 | 通过 |
 | StreamingTextKit | 7 | 通过 |
-| 六个 Package 合计 | **377** | **0 失败** |
+| SingleGreenConversationAdapters | 24 | 通过 |
+| 七个 Package 合计 | **414** | **0 失败** |
 
-PR1 的六个 Package **377/377** 和 App **62/62** 属于历史证据。当前 PR2 六个 Package 均通过 Swift 6 complete strict-concurrency + warnings-as-errors 门禁，为 **390/390**（7、16、43、150、70、104）；App-hosted XCTest 为 **62/62**，结果包为 `/private/tmp/SingleGreenDemo-M7-PR2-AppTests-Final.xcresult`。PR2 覆盖率与 focused evidence 见任务记录；此前 351/58、349/48 与更早结果保留为历史证据。
+PR1 的六个 Package **377/377**、PR2 的六个 Package **390/390**、PR3 的七个 Package **414/414**（适配器 **24/24**、关键重复 **100/100**）以及 PR3 App **55/55** 均属于历史证据。PR3+PR4 历史合并门禁为七个 Package **438/438**（7、16、43、174、24、70、104）、App **55/55**，适配器重复 **480** 次、终态生命周期重复 **380** 次；结果包为 `/private/tmp/SingleGreenDemo-M7-Combined-QA-App.xcresult`。该历史快照已由当前 PR5 隔离复测 supersede。覆盖率和构建证据见 PR4 记录及 [COVERAGE_BASELINE.md](./COVERAGE_BASELINE.md)。
 
 FinalQA2 的 focused evidence 还包括 `VoiceActivatedASRSession` **24/24** 与 `VoiceConversationController` **77/77**。最终修复覆盖：同一 context 下未使用的 prepared Agent 会被 discard；credential account scope 稳定且不含秘密，每次调用刷新凭证并隔离 account；未知错误只输出安全 copy；credential resolution 挂起期间可取消；DEBUG 持久化的非敏感 account revision 具备明确的 revision 语义。
 
@@ -405,16 +427,17 @@ M1 快照契约硬化于 2026-08-28 完成。实现后的首次完整 QA 为五�
 
 独立 `streaming_qa` 专项 QA 代理容量曾连续两次不可用；随后由等价的独立确定性测试与构建回归完成 QA 兜底。该事实不改变测试结果，但说明后续长程任务需要保留人工/独立验证路径。
 
-当前六个 Package 只统计各自 canonical `Sources/<package-name>/` 的生产行覆盖率；benchmark/test-support 和可执行工具不计入生产库覆盖率：
+当前七个 Package 只统计各自 canonical `Sources/<package-name>/` 的生产行覆盖率；benchmark/test-support 和可执行工具不计入生产库覆盖率：
 
 | 目标 | 覆盖行 / 生产源码行 | 行覆盖率 |
 | --- | ---: | ---: |
 | StreamingTextKit | 75 / 88 | 85.23% |
 | VoiceChatDomain | 106 / 107 | 99.07% |
 | VoiceActivityDetectionKit | 379 / 397 | 95.47% |
-| SingleGreenGlassesKit | FinalQA2 measured baseline | 93.38% |
-| LLMKit | FinalQA2 measured baseline | 89.89% |
-| VoiceChatCore | FinalQA2 measured baseline | 73.02% |
+| SingleGreenGlassesKit | PR5 isolated measured baseline | 93.91% |
+| LLMKit | 925 / 1029 | 89.89% |
+| VoiceChatCore | 2051 / 2706 | 75.79% |
+| SingleGreenConversationAdapters | 347 / 354 | 98.02% |
 
 详细分子/分母、门槛和 ASRCLI 排除边界见 [COVERAGE_BASELINE.md](./COVERAGE_BASELINE.md)。
 
@@ -551,7 +574,7 @@ final class ExampleExperience: ExperienceSession {
 
 ### 9.2 Package 管理
 
-当前 Xcode 工程引用仓库内六个 Package：
+当前 Xcode 工程引用仓库内七个 Package：
 
 ```text
 Packages/VoiceChatDomain
@@ -560,6 +583,7 @@ Packages/LLMKit
 Packages/StreamingTextKit
 Packages/SingleGreenGlassesKit
 Packages/VoiceActivityDetectionKit
+Packages/SingleGreenConversationAdapters
 ```
 
 当前采用自包含 monorepo，以保证单仓库克隆和离线测试可复现。三个上游 Package 来源于 AiiOSStudy 提交 `f05467c9243e9ac498e1e2874a08445d3380b034`；`StreamingTextKit`、`SingleGreenGlassesKit` 与 `VoiceActivityDetectionKit` 由本项目维护。同步规则记录在 `Packages/README.md`。
@@ -583,7 +607,7 @@ Packages/VoiceActivityDetectionKit
 
 1. 将 `AVAudioSession` interruption、route change、media-services reset 的真实通知接入当前 seam，并在 Bluetooth、有线麦克风和系统抢占场景验证。
 2. 执行相机权限、HUD 布局、Reduce Motion、VoiceOver、动态字体、横竖屏和设备尺寸的 UI/人工矩阵。
-3. 单独建立 App 生产源码覆盖率基线；当前 canonical 覆盖率门禁仅统计六个 Package，不对 App 覆盖率作未经测量的声明。
+3. 单独建立 App 生产源码覆盖率基线；当前 canonical 覆盖率门禁仅统计七个 Package，不对 App 覆盖率作未经测量的声明。
 4. 在真实手机和眼镜硬件上验证视觉位置、光学可读性、长会话性能、功耗与温升。
 
 ### P2：规模扩大后
@@ -595,7 +619,7 @@ Packages/VoiceActivityDetectionKit
 
 ### M4 并发状态
 
-六个 Package manifest、App 和测试 Target 已启用 Swift 6；Debug/Release 均启用 complete strict concurrency 与 warnings-as-errors。`scripts/strict_concurrency_gate.sh` 提供统一门禁。生产代码仅保留已记录的 `VoiceChatCore.ASRSession`、`LegacyAudioCaptureCallbacks`、`AudioCaptureRunState`、`PCMFrameSourceRelay` 与 `CameraSessionPipeline` 五个 `@unchecked Sendable` 框架边界；此前 AudioCapture/测试的过时 warning 描述不再适用。Stage 2A 的 `ASRFailure` typed payload 与 payload-free `CaptureError.engineFailed` 属于有意的本地 Package source migrations。
+七个 Package manifest、App 和测试 Target 已启用 Swift 6；Debug/Release 均启用 complete strict concurrency 与 warnings-as-errors。`scripts/strict_concurrency_gate.sh` 提供统一门禁。生产代码仅保留已记录的 `VoiceChatCore.ASRSession`、`LegacyAudioCaptureCallbacks`、`AudioCaptureRunState`、`PCMFrameSourceRelay` 与 `CameraSessionPipeline` 五个 `@unchecked Sendable` 框架边界；此前 AudioCapture/测试的过时 warning 描述不再适用。Stage 2A 的 `ASRFailure` typed payload 与 payload-free `CaptureError.engineFailed` 属于有意的本地 Package source migrations。
 
 ## 11. 推荐演进路线
 

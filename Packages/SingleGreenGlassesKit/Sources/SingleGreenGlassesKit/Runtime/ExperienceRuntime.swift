@@ -7,6 +7,12 @@ public final class ExperienceRuntime: ObservableObject {
         let token: ExperienceCommandToken
     }
 
+    private struct Registration {
+        let sessions: [ExperienceKind: any ExperienceSession]
+        let catalog: ExperienceCatalog
+        let initial: any ExperienceSession
+    }
+
     @Published public private(set) var selectedKind: ExperienceKind
     @Published public private(set) var snapshot: ExperienceSnapshot
 
@@ -14,7 +20,10 @@ public final class ExperienceRuntime: ObservableObject {
     private let catalog: ExperienceCatalog
     private var commandGeneration = 0
     private var activeCommandToken: ExperienceCommandToken?
+    private var commandTasks: [ExperienceCommandToken: Task<Void, Never>] = [:]
     private var updateTasks: [ExperienceKind: Task<Void, Never>] = [:]
+    private var isShutdown = false
+    private var shutdownTask: Task<Void, Never>?
 
     public init(sessions: [any ExperienceSession]? = nil) {
         let registered = sessions ?? [
@@ -23,24 +32,43 @@ public final class ExperienceRuntime: ObservableObject {
             NotificationExperience(),
             CaptionExperience()
         ]
-        let catalog: ExperienceCatalog
+        let registration: Registration
         do {
-            catalog = try ExperienceCatalog(descriptors: registered.map(\.descriptor))
+            registration = try Self.validate(registered)
         } catch {
             preconditionFailure("Invalid experience catalog: \(error)")
         }
-        let registry = Dictionary(uniqueKeysWithValues: registered.map { ($0.kind, $0) })
-        let initial = registry[.systemStatus]
-            ?? registered.first
-            ?? SystemStatusExperience()
-
-        self.sessions = registry
-        self.catalog = catalog
-        self.selectedKind = initial.kind
-        self.snapshot = initial.currentSnapshot(eventDescription: "ready")
+        self.sessions = registration.sessions
+        self.catalog = registration.catalog
+        self.selectedKind = registration.initial.descriptor.kind
+        self.snapshot = registration.initial.currentSnapshot(eventDescription: "ready")
         for session in registered {
             observe(session)
         }
+    }
+
+    /// Creates a runtime while surfacing invalid registrations as typed catalog errors.
+    public init(validating sessions: [any ExperienceSession]) throws {
+        let registered = sessions
+        let registration = try Self.validate(registered)
+        self.sessions = registration.sessions
+        self.catalog = registration.catalog
+        self.selectedKind = registration.initial.descriptor.kind
+        self.snapshot = registration.initial.currentSnapshot(eventDescription: "ready")
+        for session in registered {
+            observe(session)
+        }
+    }
+
+    private static func validate(_ registered: [any ExperienceSession]) throws -> Registration {
+        let catalog = try ExperienceCatalog(descriptors: registered.map(\.descriptor))
+        let registry = Dictionary(uniqueKeysWithValues: registered.map {
+            ($0.descriptor.kind, $0)
+        })
+        let initial = registry[.systemStatus]
+            ?? registered.first
+            ?? SystemStatusExperience()
+        return Registration(sessions: registry, catalog: catalog, initial: initial)
     }
 
     deinit {
@@ -74,11 +102,13 @@ public final class ExperienceRuntime: ObservableObject {
     }
 
     public func activate(_ kind: ExperienceKind) async {
+        guard !isShutdown else { return }
         await activate(kind, expectedKind: selectedKind)
     }
 
     public func activate(_ kind: ExperienceKind, expectedKind: ExperienceKind) async {
-        guard selectedKind == expectedKind,
+        guard !isShutdown,
+              selectedKind == expectedKind,
               let origin = sessions[expectedKind],
               sessions[selectedKind] === origin else { return }
         guard let destination = sessions[kind] else {
@@ -86,9 +116,13 @@ public final class ExperienceRuntime: ObservableObject {
             return
         }
 
-        let completed = await runCommand(
+        await runCommand(
             expectedKind: expectedKind,
-            expectedSession: origin
+            expectedSession: origin,
+            completion: {
+                self.selectedKind = kind
+                self.publish(destination, eventName: "activate_\(kind.rawValue)")
+            }
         ) { command in
             if origin !== destination {
                 await origin.reset()
@@ -100,17 +134,15 @@ public final class ExperienceRuntime: ObservableObject {
             }
             await destination.reset()
         }
-        guard completed else { return }
-        selectedKind = kind
-        publish(destination, eventName: "activate_\(kind.rawValue)")
     }
 
     public func handle(_ event: DemoEvent) async {
+        guard !isShutdown else { return }
         await handle(event, expectedKind: selectedKind)
     }
 
     public func handle(_ event: DemoEvent, expectedKind: ExperienceKind) async {
-        guard selectedKind == expectedKind else { return }
+        guard !isShutdown, selectedKind == expectedKind else { return }
         guard let expectedSession = sessions[expectedKind] else {
             publishEventDescription("experience_not_found")
             return
@@ -119,11 +151,13 @@ public final class ExperienceRuntime: ObservableObject {
     }
 
     public func performAction(id: String) async {
+        guard !isShutdown else { return }
         await performAction(id: id, expectedKind: selectedKind)
     }
 
     public func performAction(id: String, expectedKind: ExperienceKind) async {
-        guard selectedKind == expectedKind,
+        guard !isShutdown,
+              selectedKind == expectedKind,
               let expectedSession = sessions[expectedKind],
               sessions[selectedKind] === expectedSession else { return }
         guard let action = activeActions.first(where: { $0.id == id }),
@@ -137,19 +171,38 @@ public final class ExperienceRuntime: ObservableObject {
 
     /// Stops background observation and releases resources owned by registered sessions.
     public func shutdown() async {
+        if let shutdownTask {
+            await shutdownTask.value
+            return
+        }
+        guard !isShutdown else { return }
+        isShutdown = true
         commandGeneration += 1
         activeCommandToken = nil
-        let tasks = Array(updateTasks.values)
+        let commands = Array(commandTasks.values)
+        commandTasks.removeAll()
+        for command in commands {
+            command.cancel()
+        }
+        let observations = Array(updateTasks.values)
         updateTasks.removeAll()
-        for task in tasks {
-            task.cancel()
+        for observation in observations {
+            observation.cancel()
         }
-        for task in tasks {
-            await task.value
+        let registeredSessions = Array(sessions.values)
+        let task = Task { @MainActor in
+            for command in commands {
+                await command.value
+            }
+            for observation in observations {
+                await observation.value
+            }
+            for session in registeredSessions {
+                await session.shutdown()
+            }
         }
-        for session in sessions.values {
-            await session.shutdown()
-        }
+        shutdownTask = task
+        await task.value
     }
 
     private func execute(
@@ -157,9 +210,12 @@ public final class ExperienceRuntime: ObservableObject {
         expectedKind: ExperienceKind,
         expectedSession: any ExperienceSession
     ) async {
-        let completed = await runCommand(
+        await runCommand(
             expectedKind: expectedKind,
-            expectedSession: expectedSession
+            expectedSession: expectedSession,
+            completion: {
+                self.publish(expectedSession, eventName: event.debugName)
+            }
         ) { _ in
             if event == .reset {
                 await expectedSession.reset()
@@ -167,8 +223,6 @@ public final class ExperienceRuntime: ObservableObject {
                 await expectedSession.handle(event)
             }
         }
-        guard completed else { return }
-        publish(expectedSession, eventName: event.debugName)
     }
 
     private func executeAction(
@@ -176,38 +230,46 @@ public final class ExperienceRuntime: ObservableObject {
         expectedKind: ExperienceKind,
         expectedSession: any ExperienceSession
     ) async {
-        let completed = await runCommand(
+        await runCommand(
             expectedKind: expectedKind,
-            expectedSession: expectedSession
+            expectedSession: expectedSession,
+            completion: {
+                self.publish(expectedSession, eventName: action.rawValue)
+            }
         ) { _ in
             await expectedSession.handle(action)
         }
-        guard completed else { return }
-        publish(expectedSession, eventName: action.rawValue)
     }
 
     private func runCommand(
         expectedKind: ExperienceKind,
         expectedSession: any ExperienceSession,
-        operation: (CommandInvocation) async -> Void
-    ) async -> Bool {
-        guard selectedKind == expectedKind,
-              sessions[expectedKind] === expectedSession else { return false }
+        completion: @escaping () -> Void,
+        operation: @escaping (CommandInvocation) async -> Void
+    ) async {
+        guard !isShutdown,
+              selectedKind == expectedKind,
+              sessions[expectedKind] === expectedSession else { return }
 
         commandGeneration += 1
         let generation = commandGeneration
         let token = ExperienceCommandToken()
         let command = CommandInvocation(generation: generation, token: token)
         activeCommandToken = token
-        await ExperienceCommandContext.$currentToken.withValue(token) {
-            await operation(command)
+        let task = Task { @MainActor in
+            await ExperienceCommandContext.$currentToken.withValue(token) {
+                await operation(command)
+            }
+            guard self.isCurrent(
+                command,
+                expectedKind: expectedKind,
+                expectedSession: expectedSession
+            ) else { return }
+            completion()
         }
-
-        return isCurrent(
-            command,
-            expectedKind: expectedKind,
-            expectedSession: expectedSession
-        )
+        commandTasks[token] = task
+        await task.value
+        commandTasks.removeValue(forKey: token)
     }
 
     private func isCurrent(
@@ -216,20 +278,27 @@ public final class ExperienceRuntime: ObservableObject {
         expectedSession: any ExperienceSession
     ) -> Bool {
         command.generation == commandGeneration
+            && !isShutdown
             && activeCommandToken == command.token
             && selectedKind == expectedKind
             && sessions[expectedKind] === expectedSession
     }
 
     private func observe(_ session: any ExperienceSession) {
-        updateTasks[session.kind]?.cancel()
-        updateTasks[session.kind] = Task { [weak self] in
+        let kind = session.descriptor.kind
+        updateTasks[kind]?.cancel()
+        updateTasks[kind] = Task { [weak self] in
             for await update in session.updates() {
                 guard !Task.isCancelled, let self else { return }
+                guard !self.isShutdown else { return }
                 guard self.sessions[self.selectedKind] === session else { continue }
-                if case .command(let token) = update.provenance,
-                   token != self.activeCommandToken {
-                    continue
+                if case .command(let token) = update.provenance {
+                    // Let a directly-following command publish its newer token
+                    // before accepting a buffered descendant update.
+                    await Task.yield()
+                    guard !Task.isCancelled,
+                          !self.isShutdown,
+                          token == self.activeCommandToken else { continue }
                 }
                 self.assign(update.snapshot)
             }
@@ -250,7 +319,7 @@ public final class ExperienceRuntime: ObservableObject {
     }
 
     private func assign(_ newSnapshot: ExperienceSnapshot) {
-        guard snapshot != newSnapshot else { return }
+        guard !isShutdown, snapshot != newSnapshot else { return }
         snapshot = newSnapshot
     }
 }

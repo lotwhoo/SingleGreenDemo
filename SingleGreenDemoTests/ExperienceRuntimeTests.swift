@@ -1,6 +1,5 @@
 import Foundation
 import SingleGreenGlassesKit
-import VoiceChatCore
 import XCTest
 @testable import SingleGreenDemo
 
@@ -555,64 +554,38 @@ final class ExperienceRuntimeTests: XCTestCase {
         }
     }
 
-    func testVoiceChatASRFailureMappingIsTypedAndRedacted() {
-        for status in [401, 403] {
-            let failure = VoiceChatSpeechRecognitionSession.failure(forCoreFailure: .providerStatus(
-                UInt32(status)
-            ))
-            XCTAssertEqual(failure.code, .unauthorized)
+    func testUnauthorizedSpeechFailureRecordsOneRedactedInputFailure() async {
+        let session = HostSpeechRecognitionSession()
+        let telemetry = ConversationTelemetryStore()
+        let controller = VoiceConversationController(dependencies: VoiceConversationDependencies(
+            inputMode: { .pushToTalk },
+            voiceActivatedInputAvailable: { false },
+            prepareSpeechInput: { _ in .pushToTalk(session) },
+            prepareAgent: {
+                preconditionFailure("ASR failure must not prepare an Agent")
+            },
+            requestMicrophonePermission: { true },
+            sleep: { _ in },
+            telemetry: telemetry,
+            presentationCopy: .singleGreenDemo
+        ))
+
+        await controller.toggleConversation()
+        await session.emit(.failed(.init(
+            code: .unauthorized,
+            userSafeMessage: "语音服务凭证未通过验证。"
+        )))
+        await waitUntil { controller.state == .failed }
+
+        let terminalInputEvents = telemetry.events.filter {
+            $0.phase == .input && $0.outcome != .started
         }
-
-        XCTAssertEqual(
-            VoiceChatSpeechRecognitionSession.failure(forCoreFailure: .transport(
-                URLError(.notConnectedToInternet)
-            )).code,
-            .networkUnavailable
-        )
-        XCTAssertEqual(
-            VoiceChatSpeechRecognitionSession.failure(forCoreFailure: .audioCapture(.noInput)).code,
-            .audioUnavailable
-        )
-        XCTAssertEqual(
-            VoiceChatSpeechRecognitionSession.failure(
-                forAudioSystemEvent: .interruptionBegan
-            )?.code,
-            .audioInterrupted
-        )
-    }
-
-    func testASRUnauthorizedProviderStatesRecordOneRedactedInputFailure() async {
-        for status in [401, 403] {
-            let base = HostASRSessionBase()
-            let adapter = VoiceChatSpeechRecognitionSession(base: base)
-            let telemetry = ConversationTelemetryStore()
-            let controller = VoiceConversationController(dependencies: VoiceConversationDependencies(
-                inputMode: { .pushToTalk },
-                voiceActivatedInputAvailable: { false },
-                prepareSpeechInput: { _ in .pushToTalk(adapter) },
-                prepareAgent: {
-                    preconditionFailure("ASR failure must not prepare an Agent")
-                },
-                requestMicrophonePermission: { true },
-                sleep: { _ in },
-                telemetry: telemetry,
-                presentationCopy: .singleGreenDemo
-            ))
-
-            await controller.toggleConversation()
-            await base.emit(.state(.failed(.providerStatus(UInt32(status)))))
-            await waitUntil { controller.state == .failed }
-
-            let terminalInputEvents = telemetry.events.filter {
-                $0.phase == .input && $0.outcome != .started
-            }
-            XCTAssertEqual(terminalInputEvents.count, 1)
-            XCTAssertEqual(terminalInputEvents.first?.outcome, .failed)
-            XCTAssertEqual(terminalInputEvents.first?.failureCode, .unauthorized)
-            XCTAssertEqual(controller.lastError, "语音服务凭证未通过验证。")
-            XCTAssertFalse(controller.lastError?.contains("private-provider-detail") == true)
-            await controller.shutdown()
-        }
+        XCTAssertEqual(terminalInputEvents.count, 1)
+        XCTAssertEqual(terminalInputEvents.first?.outcome, .failed)
+        XCTAssertEqual(terminalInputEvents.first?.failureCode, .unauthorized)
+        XCTAssertEqual(controller.lastError, "语音服务凭证未通过验证。")
+        XCTAssertFalse(controller.lastError?.contains("private-provider-detail") == true)
+        await controller.shutdown()
     }
 
     func testReleaseCredentialTransportFailsClosedWithoutBackend() async {
@@ -748,17 +721,17 @@ private actor SuspendedCredentialTransport: ServerCredentialTransport {
     }
 }
 
-private actor HostASRSessionBase: VoiceChatASRSessionBase {
-    nonisolated let events: AsyncStream<ASRSession.Event>
-    private let continuation: AsyncStream<ASRSession.Event>.Continuation
+private actor HostSpeechRecognitionSession: SpeechRecognitionSession {
+    nonisolated let events: AsyncStream<SpeechRecognitionEvent>
+    private let continuation: AsyncStream<SpeechRecognitionEvent>.Continuation
 
     init() {
-        let (events, continuation) = AsyncStream<ASRSession.Event>.makeStream()
+        let (events, continuation) = AsyncStream<SpeechRecognitionEvent>.makeStream()
         self.events = events
         self.continuation = continuation
     }
 
-    func emit(_ event: ASRSession.Event) {
+    func emit(_ event: SpeechRecognitionEvent) {
         continuation.yield(event)
     }
 

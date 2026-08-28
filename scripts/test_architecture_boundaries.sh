@@ -58,6 +58,27 @@ valid="$temporary_root/valid"
 cp -R "$base" "$valid"
 run_check "$valid" >/dev/null
 
+conversation_adapters="$temporary_root/conversation-adapters-boundary"
+cp -R "$base" "$conversation_adapters"
+cat >"$conversation_adapters/Packages/SingleGreenConversationAdapters/Sources/SingleGreenConversationAdapters/FixtureViolation.swift" <<'SWIFT'
+import SwiftUI
+import VoiceActivityDetectionKit
+import WebRTCVoiceActivityDetection
+import CWebRTCVAD
+SWIFT
+expect_failure "$conversation_adapters" 'Packages/SingleGreenConversationAdapters/Sources/SingleGreenConversationAdapters/FixtureViolation.swift:1: import rule conversation-adapters-semantic-bridge-only forbids module SwiftUI'
+for adapter_violation in \
+    'FixtureViolation.swift:2: import rule conversation-adapters-semantic-bridge-only forbids module VoiceActivityDetectionKit' \
+    'FixtureViolation.swift:3: import rule conversation-adapters-semantic-bridge-only forbids module WebRTCVoiceActivityDetection' \
+    'FixtureViolation.swift:4: import rule conversation-adapters-semantic-bridge-only forbids module CWebRTCVAD'
+do
+    if ! grep -Fq "$adapter_violation" "$conversation_adapters/check-output.txt"; then
+        echo "error: conversation adapter boundary violation was not detected: $adapter_violation" >&2
+        cat "$conversation_adapters/check-output.txt" >&2
+        exit 1
+    fi
+done
+
 swiftui="$temporary_root/sgk-swiftui"
 cp -R "$base" "$swiftui"
 cat >"$swiftui/Packages/SingleGreenGlassesKit/Sources/SingleGreenGlassesKit/FixtureViolation.swift" <<'SWIFT'
@@ -246,4 +267,4 @@ path.write_text(text.replace(old, new, 1))
 PY
 expect_failure "$ownership_drift" 'App product ownership rule: SingleGreenDemo product LLMKit expected local owner .*Packages/LLMKit.*got Packages/VoiceChatCore'
 
-echo "Architecture boundary self-tests passed (legal import syntax, valid graph, and 10 negative fixtures)."
+echo "Architecture boundary self-tests passed (legal import syntax, valid graph, and 11 negative fixtures)."

@@ -176,9 +176,31 @@
 
 The approved minimal WebRTC detector is integrated only at the `SingleGreenDemo` composition root; production factory is non-nil there and inert until arm. Current evidence is six Package **377/377** (7,16,43,150,70,91), App **62/62** at `/private/tmp/SingleGreenDemo-QA-PostWrapper-AppTest.xcresult`, focused ASR/controller **24/24** and **77/77**, VAD ASan/UBSan/TSan **43/43** each, with coverage at `/private/tmp/SingleGreenDemo-QA-PostWrapper-Coverage`. After unlock, mic-fix launch succeeded at 13:29 with PID 5053 stable; the user reported no apparent issues in physical-device testing. This is user-observed acceptance, not a complete scripted VAD/service matrix.
 
-## M7：纯代码质量（PR1、PR2 本地完成，M7 整体继续）
+## M7：纯代码质量（PR1–PR5 本地完成，M7 整体继续）
 
 - PR1 建立架构边界、工具链 pin、14 个公开 API snapshots 与 CI 质量门禁；PR1 的 377/377 和 62/62 记录属于历史快照。
 - PR2 为 `VoiceActivatedASRSession` 增加单一可注入单调时钟 frame-liveness watchdog，并固定无帧超时、finish、tail drain、actor/generation/epoch 和 one-terminal 契约。
 - 当前 PR2 严格 Package 证据为 **390/390**，App 为 **62/62**；完整记录见 [M7 PR2 任务卡](./2026-08-28-m7-pr2-lifecycle-correctness.md)。
 - GitHub CI、PR2 真机/真实服务/人工无障碍与光学验证仍未完成。
+
+### M7 PR3 public reuse contract（本地完成，2026-08-28）
+
+- 新增 `SingleGreenConversationAdapters`，公开四个 provider-neutral conversation adapter/policy 类型；核心 ports、provider 配置与宿主策略保持解耦。
+- 七 Package 严格并发/WAE **414/414**，App **55/55**；新包 **24/24**，关键生命周期重复 **100/100**。
+- 适配器包覆盖率 **347/354（98.02%）**；Debug 与严格 Release Simulator builds、架构/公开 API/仓库卫生门禁通过。
+- 公开 API 基线为八个模块、16 个 macOS arm64/iOS Simulator arm64 snapshots。PR3 未执行 GitHub CI、真机、真实服务、无障碍或光学验收。
+- 详细范围、兼容契约与升级清单见 [M7 PR3 任务卡](./2026-08-28-m7-pr3-public-reuse-contract.md)。
+
+### M7 PR4 terminal lifecycle（历史本地完成，已由 PR5 supersede，2026-08-28）
+
+- `VoiceConversationController.shutdown()` 现为幂等、可并发 join 的终态操作；生命周期、输入、reset 和自动 rearm 任务均被保留并等待清理，shutdown 后拒绝迟到事件与新操作。
+- `ExperienceRuntime.init(validating:)` 作为兼容性加法 API 纳入八模块/16 snapshots 基线。
+- PR3+PR4 历史合并证据：七 Package **438/438**（7、16、43、174、24、70、104）、App **55/55**；适配器重复 480、终态生命周期重复 380；`SingleGreenGlassesKit` 94.08%、适配器 98.02%；Debug/严格 universal Release Simulator 通过。该证据已由当前 PR5 隔离复测 supersede。
+- 未声明真机、实时服务、GitHub CI、无障碍、光学或回滚证据。详见 [M7 PR4 任务卡](./2026-08-28-m7-pr4-terminal-lifecycle.md)。
+
+### M7 PR5 mechanical decomposition（本地完成，2026-08-28）
+
+- 仅四个文件发生 PR5 机械拆分：内部 `ConversationTelemetryTracker` 承接同步 telemetry bookkeeping，控制器继续拥有任务、取消、generation 和生命周期；95 个 Controller 测试方法的名称、方法体和断言保持不变，支持 helpers/fixtures 移入独立支持文件。
+- 隔离复测：`SingleGreenGlassesKit` **174/174**，关键用例 **17×20=340/340**，App **55/55**；SGK 覆盖率 **93.91%**，适配器 **98.02%**；八模块两架构 **16** 个 API snapshots byte-identical；架构负例 **11**。
+- Debug 与 universal Release Simulator（arm64+x86_64）构建及独立评审 GO 均已通过。并发 simulator 仅产生 timing warning；已完成隔离的 55/55 重跑。
+- PR5 未执行真机、真实服务、GitHub CI、commit 或 push。详见 [M7 PR5 任务卡](./2026-08-28-m7-pr5-mechanical-decomposition.md)。

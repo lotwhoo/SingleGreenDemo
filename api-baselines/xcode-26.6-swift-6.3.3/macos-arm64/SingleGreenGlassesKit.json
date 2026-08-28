@@ -23830,6 +23830,42 @@
             "usr": "s:21SingleGreenGlassesKit17ExperienceRuntimeC8sessionsACSayAA0E7Session_pGSg_tcfc"
           },
           {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "ExperienceRuntime",
+                "printedName": "SingleGreenGlassesKit.ExperienceRuntime",
+                "usr": "s:21SingleGreenGlassesKit17ExperienceRuntimeC"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ExperienceSession",
+                    "printedName": "any SingleGreenGlassesKit.ExperienceSession",
+                    "usr": "s:21SingleGreenGlassesKit17ExperienceSessionP"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[any SingleGreenGlassesKit.ExperienceSession]",
+                "usr": "s:Sa"
+              }
+            ],
+            "declAttributes": [
+              "Custom"
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s21SingleGreenGlassesKit17ExperienceRuntimeC10validatingACSayAA0E7Session_pG_tKcfc",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "init",
+            "printedName": "init(validating:)",
+            "throwing": true,
+            "usr": "s:21SingleGreenGlassesKit17ExperienceRuntimeC10validatingACSayAA0E7Session_pG_tKcfc"
+          },
+          {
             "accessors": [
               {
                 "accessorKind": "get",
