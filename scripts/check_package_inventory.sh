@@ -5,12 +5,17 @@ set -eu
 script_directory=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repository_root=$(CDPATH= cd -- "$script_directory/.." && pwd)
 
-expected_packages='LLMKit
-SingleGreenGlassesKit
-StreamingTextKit
-VoiceActivityDetectionKit
-VoiceChatCore
-VoiceChatDomain'
+architecture_config="$repository_root/config/architecture-boundaries.json"
+expected_packages=$(python3 - "$architecture_config" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as stream:
+    config = json.load(stream)
+for name in sorted(package["name"] for package in config["packages"]):
+    print(name)
+PY
+)
 actual_packages=$(find "$repository_root/Packages" -mindepth 1 -maxdepth 1 -type d \
     ! -name '.build' ! -name '.swiftpm' -exec basename {} \; | LC_ALL=C sort)
 
@@ -45,4 +50,5 @@ do
     fi
 done
 
-echo "Package inventory check passed (6 local packages)."
+package_count=$(printf '%s\n' "$expected_packages" | wc -l | tr -d ' ')
+echo "Package inventory check passed ($package_count local packages from architecture config)."

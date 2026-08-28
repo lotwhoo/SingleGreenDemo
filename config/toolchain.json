@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "xcode_version": "26.6",
+  "xcode_build": "17F113",
+  "swift_version": "6.3.3",
+  "macos_sdk": "26.5",
+  "iphone_simulator_sdk": "26.5",
+  "allowed_host_architectures": ["arm64", "x86_64"],
+  "api_baseline_version": "xcode-26.6-swift-6.3.3"
+}

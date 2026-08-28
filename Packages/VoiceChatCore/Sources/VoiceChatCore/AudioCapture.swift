@@ -1,8 +1,5 @@
 import AVFoundation
 import os
-#if os(iOS)
-import UIKit
-#endif
 
 protocol AudioSessionActivating {
     func activate() throws

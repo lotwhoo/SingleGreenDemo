@@ -68,8 +68,6 @@
 - 新增 Experience 时不再在宿主维护大段类型 switch。
 - 验收：新增体验只需注册自身能力和实现，Runtime、控制面板与测试不依赖具体 Controller 类型。
 
-## M3：Experience Capability Catalog（已实现并完成自动化验证）
-
 ### 已交付
 
 - 每个 Session 拥有不可变 `ExperienceDescriptor`；`ExperienceCatalog` 对 metadata、动作 ID、primary action 和重复 kind 执行类型化校验。
@@ -177,3 +175,10 @@
 ### Superseding integrated VAD status (2026-08-28)
 
 The approved minimal WebRTC detector is integrated only at the `SingleGreenDemo` composition root; production factory is non-nil there and inert until arm. Current evidence is six Package **377/377** (7,16,43,150,70,91), App **62/62** at `/private/tmp/SingleGreenDemo-QA-PostWrapper-AppTest.xcresult`, focused ASR/controller **24/24** and **77/77**, VAD ASan/UBSan/TSan **43/43** each, with coverage at `/private/tmp/SingleGreenDemo-QA-PostWrapper-Coverage`. After unlock, mic-fix launch succeeded at 13:29 with PID 5053 stable; the user reported no apparent issues in physical-device testing. This is user-observed acceptance, not a complete scripted VAD/service matrix.
+
+## M7：纯代码质量（PR1、PR2 本地完成，M7 整体继续）
+
+- PR1 建立架构边界、工具链 pin、14 个公开 API snapshots 与 CI 质量门禁；PR1 的 377/377 和 62/62 记录属于历史快照。
+- PR2 为 `VoiceActivatedASRSession` 增加单一可注入单调时钟 frame-liveness watchdog，并固定无帧超时、finish、tail drain、actor/generation/epoch 和 one-terminal 契约。
+- 当前 PR2 严格 Package 证据为 **390/390**，App 为 **62/62**；完整记录见 [M7 PR2 任务卡](./2026-08-28-m7-pr2-lifecycle-correctness.md)。
+- GitHub CI、PR2 真机/真实服务/人工无障碍与光学验证仍未完成。

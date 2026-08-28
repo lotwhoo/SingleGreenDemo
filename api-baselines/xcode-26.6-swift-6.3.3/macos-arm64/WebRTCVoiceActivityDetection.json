@@ -1,0 +1,1024 @@
+{
+  "ABIRoot": {
+    "children": [
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "WebRTCVoiceActivityDetection",
+        "name": "CWebRTCVAD",
+        "printedName": "CWebRTCVAD"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "WebRTCVoiceActivityDetection",
+        "name": "SwiftOnoneSupport",
+        "printedName": "SwiftOnoneSupport"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "WebRTCVoiceActivityDetection",
+        "name": "VoiceActivityDetectionKit",
+        "printedName": "VoiceActivityDetectionKit"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "WebRTCVoiceActivityDetection",
+        "name": "_Concurrency",
+        "printedName": "_Concurrency"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "WebRTCVoiceActivityDetection",
+        "name": "_StringProcessing",
+        "printedName": "_StringProcessing"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "WebRTCVoiceActivityDetection",
+        "name": "_SwiftConcurrencyShims",
+        "printedName": "_SwiftConcurrencyShims"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "WebRTCVADAggressiveness",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness",
+                    "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebRTCVADAggressiveness",
+                        "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness",
+                        "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(WebRTCVoiceActivityDetection.WebRTCVADAggressiveness.Type) -> WebRTCVoiceActivityDetection.WebRTCVADAggressiveness"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO7qualityyA2CmF",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "quality",
+            "printedName": "quality",
+            "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO7qualityyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "WebRTCVADAggressiveness",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness",
+                    "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebRTCVADAggressiveness",
+                        "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness",
+                        "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(WebRTCVoiceActivityDetection.WebRTCVADAggressiveness.Type) -> WebRTCVoiceActivityDetection.WebRTCVADAggressiveness"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO10lowBitrateyA2CmF",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "lowBitrate",
+            "printedName": "lowBitrate",
+            "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO10lowBitrateyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "WebRTCVADAggressiveness",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness",
+                    "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebRTCVADAggressiveness",
+                        "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness",
+                        "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(WebRTCVoiceActivityDetection.WebRTCVADAggressiveness.Type) -> WebRTCVoiceActivityDetection.WebRTCVADAggressiveness"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO10aggressiveyA2CmF",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "aggressive",
+            "printedName": "aggressive",
+            "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO10aggressiveyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "WebRTCVADAggressiveness",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness",
+                    "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebRTCVADAggressiveness",
+                        "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness",
+                        "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(WebRTCVoiceActivityDetection.WebRTCVADAggressiveness.Type) -> WebRTCVoiceActivityDetection.WebRTCVADAggressiveness"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO14veryAggressiveyA2CmF",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "veryAggressive",
+            "printedName": "veryAggressive",
+            "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO14veryAggressiveyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "WebRTCVADAggressiveness",
+                "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness",
+                "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO14validatingModeACSi_tKcfc",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "init",
+            "printedName": "init(validatingMode:)",
+            "throwing": true,
+            "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO14validatingModeACSi_tKcfc"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "WebRTCVADAggressiveness",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness",
+                    "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness?",
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "Inlinable"
+            ],
+            "declKind": "Constructor",
+            "implicit": true,
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO8rawValueACSgSi_tcfc",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "init",
+            "printedName": "init(rawValue:)",
+            "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO8rawValueACSgSi_tcfc"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "WebRTCVADAggressiveness",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness",
+                    "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[WebRTCVoiceActivityDetection.WebRTCVADAggressiveness]",
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "TypeAlias",
+            "implicit": true,
+            "kind": "TypeAlias",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO8AllCasesa",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "AllCases",
+            "printedName": "AllCases",
+            "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO8AllCasesa"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "TypeAlias",
+            "implicit": true,
+            "kind": "TypeAlias",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO8RawValuea",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "RawValue",
+            "printedName": "RawValue",
+            "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO8RawValuea"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebRTCVADAggressiveness",
+                        "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness",
+                        "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[WebRTCVoiceActivityDetection.WebRTCVADAggressiveness]",
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO8allCasesSayACGvgZ",
+                "moduleName": "WebRTCVoiceActivityDetection",
+                "name": "Get",
+                "printedName": "Get()",
+                "static": true,
+                "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO8allCasesSayACGvgZ"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "WebRTCVADAggressiveness",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness",
+                    "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[WebRTCVoiceActivityDetection.WebRTCVADAggressiveness]",
+                "usr": "s:Sa"
+              }
+            ],
+            "declAttributes": [
+              "Nonisolated"
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "kind": "Var",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO8allCasesSayACGvpZ",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "allCases",
+            "printedName": "allCases",
+            "static": true,
+            "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO8allCasesSayACGvpZ"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Inlinable"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO8rawValueSivg",
+                "moduleName": "WebRTCVoiceActivityDetection",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO8rawValueSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "kind": "Var",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO8rawValueSivp",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "rawValue",
+            "printedName": "rawValue",
+            "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO8rawValueSivp"
+          }
+        ],
+        "conformances": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebRTCVADAggressiveness",
+                        "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness",
+                        "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[WebRTCVoiceActivityDetection.WebRTCVADAggressiveness]",
+                    "usr": "s:Sa"
+                  }
+                ],
+                "kind": "TypeWitness",
+                "name": "AllCases",
+                "printedName": "AllCases"
+              }
+            ],
+            "kind": "Conformance",
+            "mangledName": "$ss12CaseIterableP",
+            "name": "CaseIterable",
+            "printedName": "CaseIterable",
+            "usr": "s:s12CaseIterableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSH",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "kind": "TypeWitness",
+                "name": "RawValue",
+                "printedName": "RawValue"
+              }
+            ],
+            "kind": "Conformance",
+            "mangledName": "$sSY",
+            "name": "RawRepresentable",
+            "printedName": "RawRepresentable",
+            "usr": "s:SY"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "enumRawTypeName": "Int",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO",
+        "moduleName": "WebRTCVoiceActivityDetection",
+        "name": "WebRTCVADAggressiveness",
+        "printedName": "WebRTCVADAggressiveness",
+        "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "WebRTCVoiceActivityDetectorError",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError",
+                    "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebRTCVoiceActivityDetectorError",
+                        "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError",
+                        "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError.Type) -> WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0abC13DetectorErrorO16allocationFailedyA2CmF",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "allocationFailed",
+            "printedName": "allocationFailed",
+            "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO16allocationFailedyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "WebRTCVoiceActivityDetectorError",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError",
+                    "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebRTCVoiceActivityDetectorError",
+                        "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError",
+                        "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError.Type) -> WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0abC13DetectorErrorO20initializationFailedyA2CmF",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "initializationFailed",
+            "printedName": "initializationFailed",
+            "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO20initializationFailedyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebRTCVoiceActivityDetectorError",
+                        "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError",
+                        "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int) -> WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebRTCVoiceActivityDetectorError",
+                        "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError",
+                        "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError.Type) -> (Swift.Int) -> WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0abC13DetectorErrorO25invalidAggressivenessModeyACSicACmF",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "invalidAggressivenessMode",
+            "printedName": "invalidAggressivenessMode",
+            "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO25invalidAggressivenessModeyACSicACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebRTCVoiceActivityDetectorError",
+                        "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError",
+                        "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int) -> WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebRTCVoiceActivityDetectorError",
+                        "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError",
+                        "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError.Type) -> (Swift.Int) -> WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0abC13DetectorErrorO23modeConfigurationFailedyACSicACmF",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "modeConfigurationFailed",
+            "printedName": "modeConfigurationFailed",
+            "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO23modeConfigurationFailedyACSicACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebRTCVoiceActivityDetectorError",
+                        "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError",
+                        "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(sampleRateHertz: Swift.Int, sampleCount: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int, Swift.Int) -> WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebRTCVoiceActivityDetectorError",
+                        "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError",
+                        "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError.Type) -> (Swift.Int, Swift.Int) -> WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0abC13DetectorErrorO16processingFailedyACSi_SitcACmF",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "processingFailed",
+            "printedName": "processingFailed",
+            "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO16processingFailedyACSi_SitcACmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "WebRTCVoiceActivityDetectorError",
+                "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError",
+                "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "WebRTCVoiceActivityDetectorError",
+                "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetectorError",
+                "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0abC13DetectorErrorO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO21__derived_enum_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss5ErrorP",
+            "name": "Error",
+            "printedName": "Error",
+            "usr": "s:s5ErrorP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s28WebRTCVoiceActivityDetection0abC13DetectorErrorO",
+        "moduleName": "WebRTCVoiceActivityDetection",
+        "name": "WebRTCVoiceActivityDetectorError",
+        "printedName": "WebRTCVoiceActivityDetectorError",
+        "usr": "s:28WebRTCVoiceActivityDetection0abC13DetectorErrorO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "WebRTCVoiceActivityDetector",
+                "printedName": "WebRTCVoiceActivityDetection.WebRTCVoiceActivityDetector",
+                "usr": "s:28WebRTCVoiceActivityDetection0abC8DetectorC"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "WebRTCVADAggressiveness",
+                "printedName": "WebRTCVoiceActivityDetection.WebRTCVADAggressiveness",
+                "usr": "s:28WebRTCVoiceActivityDetection0A20RTCVADAggressivenessO"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Convenience",
+            "kind": "Constructor",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0abC8DetectorC14aggressivenessAcA0A20RTCVADAggressivenessO_tKcfc",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "init",
+            "printedName": "init(aggressiveness:)",
+            "throwing": true,
+            "usr": "s:28WebRTCVoiceActivityDetection0abC8DetectorC14aggressivenessAcA0A20RTCVADAggressivenessO_tKcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivityObservation",
+                "printedName": "VoiceActivityDetectionKit.VoiceActivityObservation",
+                "usr": "s:25VoiceActivityDetectionKit0aB11ObservationV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADPCMFrame",
+                "printedName": "VoiceActivityDetectionKit.VADPCMFrame",
+                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0abC8DetectorC11observation3for05VoicecD3Kit0hC11ObservationVAF11VADPCMFrameV_tYaKF",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "observation",
+            "printedName": "observation(for:)",
+            "throwing": true,
+            "usr": "s:28WebRTCVoiceActivityDetection0abC8DetectorC11observation3for05VoicecD3Kit0hC11ObservationVAF11VADPCMFrameV_tYaKF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0abC8DetectorC5resetyyYaF",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "reset",
+            "printedName": "reset()",
+            "usr": "s:28WebRTCVoiceActivityDetection0abC8DetectorC5resetyyYaF"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UnownedSerialExecutor",
+                    "printedName": "_Concurrency.UnownedSerialExecutor",
+                    "usr": "s:Sce"
+                  }
+                ],
+                "declAttributes": [
+                  "Final"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s28WebRTCVoiceActivityDetection0abC8DetectorC15unownedExecutorScevg",
+                "moduleName": "WebRTCVoiceActivityDetection",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:28WebRTCVoiceActivityDetection0abC8DetectorC15unownedExecutorScevg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UnownedSerialExecutor",
+                "printedName": "_Concurrency.UnownedSerialExecutor",
+                "usr": "s:Sce"
+              }
+            ],
+            "declAttributes": [
+              "Available",
+              "Available",
+              "Available",
+              "Available",
+              "Final",
+              "Nonisolated",
+              "Semantics"
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "intro_Macosx": "10.15",
+            "intro_iOS": "13.0",
+            "intro_tvOS": "13.0",
+            "intro_watchOS": "6.0",
+            "kind": "Var",
+            "mangledName": "$s28WebRTCVoiceActivityDetection0abC8DetectorC15unownedExecutorScevp",
+            "moduleName": "WebRTCVoiceActivityDetection",
+            "name": "unownedExecutor",
+            "printedName": "unownedExecutor",
+            "usr": "s:28WebRTCVoiceActivityDetection0abC8DetectorC15unownedExecutorScevp"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$s25VoiceActivityDetectionKit0aB9DetectingP",
+            "name": "VoiceActivityDetecting",
+            "printedName": "VoiceActivityDetecting",
+            "usr": "s:25VoiceActivityDetectionKit0aB9DetectingP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sScA",
+            "name": "Actor",
+            "printedName": "Actor",
+            "usr": "s:ScA"
+          }
+        ],
+        "declKind": "Class",
+        "hasMissingDesignatedInitializers": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s28WebRTCVoiceActivityDetection0abC8DetectorC",
+        "moduleName": "WebRTCVoiceActivityDetection",
+        "name": "WebRTCVoiceActivityDetector",
+        "printedName": "WebRTCVoiceActivityDetector",
+        "usr": "s:28WebRTCVoiceActivityDetection0abC8DetectorC"
+      }
+    ],
+    "json_format_version": 8,
+    "kind": "Root",
+    "name": "WebRTCVoiceActivityDetection",
+    "printedName": "WebRTCVoiceActivityDetection"
+  }
+}

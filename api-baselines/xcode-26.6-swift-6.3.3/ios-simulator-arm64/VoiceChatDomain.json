@@ -1,0 +1,2232 @@
+{
+  "ABIRoot": {
+    "children": [
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "VoiceChatDomain",
+        "name": "Foundation",
+        "printedName": "Foundation"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "VoiceChatDomain",
+        "name": "SwiftOnoneSupport",
+        "printedName": "SwiftOnoneSupport"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "VoiceChatDomain",
+        "name": "_Concurrency",
+        "printedName": "_Concurrency"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "VoiceChatDomain",
+        "name": "_StringProcessing",
+        "printedName": "_StringProcessing"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "VoiceChatDomain",
+        "name": "_SwiftConcurrencyShims",
+        "printedName": "_SwiftConcurrencyShims"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "MessageStatus",
+                    "printedName": "VoiceChatDomain.MessageStatus",
+                    "usr": "s:15VoiceChatDomain13MessageStatusO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "MessageStatus",
+                        "printedName": "VoiceChatDomain.MessageStatus",
+                        "usr": "s:15VoiceChatDomain13MessageStatusO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.MessageStatus.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.MessageStatus.Type) -> VoiceChatDomain.MessageStatus"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain13MessageStatusO7pendingyA2CmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "pending",
+            "printedName": "pending",
+            "usr": "s:15VoiceChatDomain13MessageStatusO7pendingyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "MessageStatus",
+                    "printedName": "VoiceChatDomain.MessageStatus",
+                    "usr": "s:15VoiceChatDomain13MessageStatusO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "MessageStatus",
+                        "printedName": "VoiceChatDomain.MessageStatus",
+                        "usr": "s:15VoiceChatDomain13MessageStatusO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.MessageStatus.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.MessageStatus.Type) -> VoiceChatDomain.MessageStatus"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain13MessageStatusO9completedyA2CmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "completed",
+            "printedName": "completed",
+            "usr": "s:15VoiceChatDomain13MessageStatusO9completedyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "MessageStatus",
+                    "printedName": "VoiceChatDomain.MessageStatus",
+                    "usr": "s:15VoiceChatDomain13MessageStatusO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "MessageStatus",
+                        "printedName": "VoiceChatDomain.MessageStatus",
+                        "usr": "s:15VoiceChatDomain13MessageStatusO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.MessageStatus.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.MessageStatus.Type) -> VoiceChatDomain.MessageStatus"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain13MessageStatusO6failedyA2CmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "failed",
+            "printedName": "failed",
+            "usr": "s:15VoiceChatDomain13MessageStatusO6failedyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "MessageStatus",
+                    "printedName": "VoiceChatDomain.MessageStatus",
+                    "usr": "s:15VoiceChatDomain13MessageStatusO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "MessageStatus",
+                        "printedName": "VoiceChatDomain.MessageStatus",
+                        "usr": "s:15VoiceChatDomain13MessageStatusO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.MessageStatus.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.MessageStatus.Type) -> VoiceChatDomain.MessageStatus"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain13MessageStatusO9cancelledyA2CmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "cancelled",
+            "printedName": "cancelled",
+            "usr": "s:15VoiceChatDomain13MessageStatusO9cancelledyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "MessageStatus",
+                "printedName": "VoiceChatDomain.MessageStatus",
+                "usr": "s:15VoiceChatDomain13MessageStatusO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "MessageStatus",
+                "printedName": "VoiceChatDomain.MessageStatus",
+                "usr": "s:15VoiceChatDomain13MessageStatusO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s15VoiceChatDomain13MessageStatusO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceChatDomain",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:15VoiceChatDomain13MessageStatusO21__derived_enum_equalsySbAC_ACtFZ"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Hasher",
+                "paramValueOwnership": "InOut",
+                "printedName": "Swift.Hasher",
+                "usr": "s:s6HasherV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s15VoiceChatDomain13MessageStatusO4hash4intoys6HasherVz_tF",
+            "moduleName": "VoiceChatDomain",
+            "name": "hash",
+            "printedName": "hash(into:)",
+            "usr": "s:15VoiceChatDomain13MessageStatusO4hash4intoys6HasherVz_tF"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s15VoiceChatDomain13MessageStatusO9hashValueSivg",
+                "moduleName": "VoiceChatDomain",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:15VoiceChatDomain13MessageStatusO9hashValueSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain13MessageStatusO9hashValueSivp",
+            "moduleName": "VoiceChatDomain",
+            "name": "hashValue",
+            "printedName": "hashValue",
+            "usr": "s:15VoiceChatDomain13MessageStatusO9hashValueSivp"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSH",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s15VoiceChatDomain13MessageStatusO",
+        "moduleName": "VoiceChatDomain",
+        "name": "MessageStatus",
+        "printedName": "MessageStatus",
+        "usr": "s:15VoiceChatDomain13MessageStatusO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "InputState",
+                    "printedName": "VoiceChatDomain.InputState",
+                    "usr": "s:15VoiceChatDomain10InputStateO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "InputState",
+                        "printedName": "VoiceChatDomain.InputState",
+                        "usr": "s:15VoiceChatDomain10InputStateO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.InputState.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.InputState.Type) -> VoiceChatDomain.InputState"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain10InputStateO4idleyA2CmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "idle",
+            "printedName": "idle",
+            "usr": "s:15VoiceChatDomain10InputStateO4idleyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "InputState",
+                    "printedName": "VoiceChatDomain.InputState",
+                    "usr": "s:15VoiceChatDomain10InputStateO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "InputState",
+                        "printedName": "VoiceChatDomain.InputState",
+                        "usr": "s:15VoiceChatDomain10InputStateO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.InputState.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.InputState.Type) -> VoiceChatDomain.InputState"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain10InputStateO9preparingyA2CmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "preparing",
+            "printedName": "preparing",
+            "usr": "s:15VoiceChatDomain10InputStateO9preparingyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "InputState",
+                    "printedName": "VoiceChatDomain.InputState",
+                    "usr": "s:15VoiceChatDomain10InputStateO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "InputState",
+                        "printedName": "VoiceChatDomain.InputState",
+                        "usr": "s:15VoiceChatDomain10InputStateO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.InputState.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.InputState.Type) -> VoiceChatDomain.InputState"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain10InputStateO5armedyA2CmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "armed",
+            "printedName": "armed",
+            "usr": "s:15VoiceChatDomain10InputStateO5armedyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "InputState",
+                    "printedName": "VoiceChatDomain.InputState",
+                    "usr": "s:15VoiceChatDomain10InputStateO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "InputState",
+                        "printedName": "VoiceChatDomain.InputState",
+                        "usr": "s:15VoiceChatDomain10InputStateO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.InputState.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.InputState.Type) -> VoiceChatDomain.InputState"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain10InputStateO9recordingyA2CmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "recording",
+            "printedName": "recording",
+            "usr": "s:15VoiceChatDomain10InputStateO9recordingyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "InputState",
+                    "printedName": "VoiceChatDomain.InputState",
+                    "usr": "s:15VoiceChatDomain10InputStateO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "InputState",
+                        "printedName": "VoiceChatDomain.InputState",
+                        "usr": "s:15VoiceChatDomain10InputStateO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.InputState.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.InputState.Type) -> VoiceChatDomain.InputState"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain10InputStateO10finalizingyA2CmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "finalizing",
+            "printedName": "finalizing",
+            "usr": "s:15VoiceChatDomain10InputStateO10finalizingyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "InputState",
+                        "printedName": "VoiceChatDomain.InputState",
+                        "usr": "s:15VoiceChatDomain10InputStateO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.String) -> VoiceChatDomain.InputState"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "InputState",
+                        "printedName": "VoiceChatDomain.InputState",
+                        "usr": "s:15VoiceChatDomain10InputStateO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.InputState.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.InputState.Type) -> (Swift.String) -> VoiceChatDomain.InputState"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain10InputStateO6failedyACSScACmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "failed",
+            "printedName": "failed",
+            "usr": "s:15VoiceChatDomain10InputStateO6failedyACSScACmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "InputState",
+                "printedName": "VoiceChatDomain.InputState",
+                "usr": "s:15VoiceChatDomain10InputStateO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "InputState",
+                "printedName": "VoiceChatDomain.InputState",
+                "usr": "s:15VoiceChatDomain10InputStateO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s15VoiceChatDomain10InputStateO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceChatDomain",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:15VoiceChatDomain10InputStateO21__derived_enum_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s15VoiceChatDomain10InputStateO",
+        "moduleName": "VoiceChatDomain",
+        "name": "InputState",
+        "printedName": "InputState",
+        "usr": "s:15VoiceChatDomain10InputStateO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ReplyState",
+                    "printedName": "VoiceChatDomain.ReplyState",
+                    "usr": "s:15VoiceChatDomain10ReplyStateO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ReplyState",
+                        "printedName": "VoiceChatDomain.ReplyState",
+                        "usr": "s:15VoiceChatDomain10ReplyStateO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.ReplyState.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.ReplyState.Type) -> VoiceChatDomain.ReplyState"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain10ReplyStateO4idleyA2CmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "idle",
+            "printedName": "idle",
+            "usr": "s:15VoiceChatDomain10ReplyStateO4idleyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ReplyState",
+                        "printedName": "VoiceChatDomain.ReplyState",
+                        "usr": "s:15VoiceChatDomain10ReplyStateO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "UUID",
+                        "printedName": "Foundation.UUID",
+                        "usr": "s:10Foundation4UUIDV"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Foundation.UUID) -> VoiceChatDomain.ReplyState"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ReplyState",
+                        "printedName": "VoiceChatDomain.ReplyState",
+                        "usr": "s:15VoiceChatDomain10ReplyStateO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.ReplyState.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.ReplyState.Type) -> (Foundation.UUID) -> VoiceChatDomain.ReplyState"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain10ReplyStateO10requestingyAC10Foundation4UUIDVcACmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "requesting",
+            "printedName": "requesting",
+            "usr": "s:15VoiceChatDomain10ReplyStateO10requestingyAC10Foundation4UUIDVcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ReplyState",
+                        "printedName": "VoiceChatDomain.ReplyState",
+                        "usr": "s:15VoiceChatDomain10ReplyStateO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "UUID",
+                        "printedName": "Foundation.UUID",
+                        "usr": "s:10Foundation4UUIDV"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Foundation.UUID) -> VoiceChatDomain.ReplyState"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ReplyState",
+                        "printedName": "VoiceChatDomain.ReplyState",
+                        "usr": "s:15VoiceChatDomain10ReplyStateO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.ReplyState.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.ReplyState.Type) -> (Foundation.UUID) -> VoiceChatDomain.ReplyState"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain10ReplyStateO9searchingyAC10Foundation4UUIDVcACmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "searching",
+            "printedName": "searching",
+            "usr": "s:15VoiceChatDomain10ReplyStateO9searchingyAC10Foundation4UUIDVcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ReplyState",
+                        "printedName": "VoiceChatDomain.ReplyState",
+                        "usr": "s:15VoiceChatDomain10ReplyStateO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "UUID",
+                        "printedName": "Foundation.UUID",
+                        "usr": "s:10Foundation4UUIDV"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Foundation.UUID) -> VoiceChatDomain.ReplyState"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ReplyState",
+                        "printedName": "VoiceChatDomain.ReplyState",
+                        "usr": "s:15VoiceChatDomain10ReplyStateO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.ReplyState.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.ReplyState.Type) -> (Foundation.UUID) -> VoiceChatDomain.ReplyState"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain10ReplyStateO9streamingyAC10Foundation4UUIDVcACmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "streaming",
+            "printedName": "streaming",
+            "usr": "s:15VoiceChatDomain10ReplyStateO9streamingyAC10Foundation4UUIDVcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ReplyState",
+                        "printedName": "VoiceChatDomain.ReplyState",
+                        "usr": "s:15VoiceChatDomain10ReplyStateO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "UUID",
+                        "printedName": "Foundation.UUID",
+                        "usr": "s:10Foundation4UUIDV"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Foundation.UUID) -> VoiceChatDomain.ReplyState"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ReplyState",
+                        "printedName": "VoiceChatDomain.ReplyState",
+                        "usr": "s:15VoiceChatDomain10ReplyStateO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.ReplyState.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.ReplyState.Type) -> (Foundation.UUID) -> VoiceChatDomain.ReplyState"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain10ReplyStateO9completedyAC10Foundation4UUIDVcACmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "completed",
+            "printedName": "completed",
+            "usr": "s:15VoiceChatDomain10ReplyStateO9completedyAC10Foundation4UUIDVcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ReplyState",
+                        "printedName": "VoiceChatDomain.ReplyState",
+                        "usr": "s:15VoiceChatDomain10ReplyStateO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UUID",
+                            "printedName": "Foundation.UUID",
+                            "usr": "s:10Foundation4UUIDV"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(Foundation.UUID, Swift.String)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Foundation.UUID, Swift.String) -> VoiceChatDomain.ReplyState"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ReplyState",
+                        "printedName": "VoiceChatDomain.ReplyState",
+                        "usr": "s:15VoiceChatDomain10ReplyStateO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.ReplyState.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.ReplyState.Type) -> (Foundation.UUID, Swift.String) -> VoiceChatDomain.ReplyState"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain10ReplyStateO6failedyAC10Foundation4UUIDV_SStcACmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "failed",
+            "printedName": "failed",
+            "usr": "s:15VoiceChatDomain10ReplyStateO6failedyAC10Foundation4UUIDV_SStcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ReplyState",
+                        "printedName": "VoiceChatDomain.ReplyState",
+                        "usr": "s:15VoiceChatDomain10ReplyStateO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "UUID",
+                        "printedName": "Foundation.UUID",
+                        "usr": "s:10Foundation4UUIDV"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Foundation.UUID) -> VoiceChatDomain.ReplyState"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ReplyState",
+                        "printedName": "VoiceChatDomain.ReplyState",
+                        "usr": "s:15VoiceChatDomain10ReplyStateO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatDomain.ReplyState.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatDomain.ReplyState.Type) -> (Foundation.UUID) -> VoiceChatDomain.ReplyState"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain10ReplyStateO9cancelledyAC10Foundation4UUIDVcACmF",
+            "moduleName": "VoiceChatDomain",
+            "name": "cancelled",
+            "printedName": "cancelled",
+            "usr": "s:15VoiceChatDomain10ReplyStateO9cancelledyAC10Foundation4UUIDVcACmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ReplyState",
+                "printedName": "VoiceChatDomain.ReplyState",
+                "usr": "s:15VoiceChatDomain10ReplyStateO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ReplyState",
+                "printedName": "VoiceChatDomain.ReplyState",
+                "usr": "s:15VoiceChatDomain10ReplyStateO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s15VoiceChatDomain10ReplyStateO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceChatDomain",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:15VoiceChatDomain10ReplyStateO21__derived_enum_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s15VoiceChatDomain10ReplyStateO",
+        "moduleName": "VoiceChatDomain",
+        "name": "ReplyState",
+        "printedName": "ReplyState",
+        "usr": "s:15VoiceChatDomain10ReplyStateO"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UUID",
+                    "printedName": "Foundation.UUID",
+                    "usr": "s:10Foundation4UUIDV"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s15VoiceChatDomain0B7MessageV2id10Foundation4UUIDVvg",
+                "moduleName": "VoiceChatDomain",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:15VoiceChatDomain0B7MessageV2id10Foundation4UUIDVvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UUID",
+                "printedName": "Foundation.UUID",
+                "usr": "s:10Foundation4UUIDV"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain0B7MessageV2id10Foundation4UUIDVvp",
+            "moduleName": "VoiceChatDomain",
+            "name": "id",
+            "printedName": "id",
+            "usr": "s:15VoiceChatDomain0B7MessageV2id10Foundation4UUIDVvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s15VoiceChatDomain0B7MessageV4textSSvg",
+                "moduleName": "VoiceChatDomain",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:15VoiceChatDomain0B7MessageV4textSSvg"
+              },
+              {
+                "accessorKind": "set",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s15VoiceChatDomain0B7MessageV4textSSvs",
+                "moduleName": "VoiceChatDomain",
+                "name": "Set",
+                "printedName": "Set()",
+                "usr": "s:15VoiceChatDomain0B7MessageV4textSSvs"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain0B7MessageV4textSSvp",
+            "moduleName": "VoiceChatDomain",
+            "name": "text",
+            "printedName": "text",
+            "usr": "s:15VoiceChatDomain0B7MessageV4textSSvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s15VoiceChatDomain0B7MessageV6isUserSbvg",
+                "moduleName": "VoiceChatDomain",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:15VoiceChatDomain0B7MessageV6isUserSbvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain0B7MessageV6isUserSbvp",
+            "moduleName": "VoiceChatDomain",
+            "name": "isUser",
+            "printedName": "isUser",
+            "usr": "s:15VoiceChatDomain0B7MessageV6isUserSbvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Date",
+                    "printedName": "Foundation.Date",
+                    "usr": "s:10Foundation4DateV"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s15VoiceChatDomain0B7MessageV9timestamp10Foundation4DateVvg",
+                "moduleName": "VoiceChatDomain",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:15VoiceChatDomain0B7MessageV9timestamp10Foundation4DateVvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Date",
+                "printedName": "Foundation.Date",
+                "usr": "s:10Foundation4DateV"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain0B7MessageV9timestamp10Foundation4DateVvp",
+            "moduleName": "VoiceChatDomain",
+            "name": "timestamp",
+            "printedName": "timestamp",
+            "usr": "s:15VoiceChatDomain0B7MessageV9timestamp10Foundation4DateVvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "MessageStatus",
+                    "printedName": "VoiceChatDomain.MessageStatus",
+                    "usr": "s:15VoiceChatDomain13MessageStatusO"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s15VoiceChatDomain0B7MessageV6statusAA0D6StatusOvg",
+                "moduleName": "VoiceChatDomain",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:15VoiceChatDomain0B7MessageV6statusAA0D6StatusOvg"
+              },
+              {
+                "accessorKind": "set",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "MessageStatus",
+                    "printedName": "VoiceChatDomain.MessageStatus",
+                    "usr": "s:15VoiceChatDomain13MessageStatusO"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s15VoiceChatDomain0B7MessageV6statusAA0D6StatusOvs",
+                "moduleName": "VoiceChatDomain",
+                "name": "Set",
+                "printedName": "Set()",
+                "usr": "s:15VoiceChatDomain0B7MessageV6statusAA0D6StatusOvs"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "MessageStatus",
+                "printedName": "VoiceChatDomain.MessageStatus",
+                "usr": "s:15VoiceChatDomain13MessageStatusO"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain0B7MessageV6statusAA0D6StatusOvp",
+            "moduleName": "VoiceChatDomain",
+            "name": "status",
+            "printedName": "status",
+            "usr": "s:15VoiceChatDomain0B7MessageV6statusAA0D6StatusOvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "ChatMessage",
+                "printedName": "VoiceChatDomain.ChatMessage",
+                "usr": "s:15VoiceChatDomain0B7MessageV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Date",
+                "printedName": "Foundation.Date",
+                "usr": "s:10Foundation4DateV"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "UUID",
+                "printedName": "Foundation.UUID",
+                "usr": "s:10Foundation4UUIDV"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "MessageStatus",
+                "printedName": "VoiceChatDomain.MessageStatus",
+                "usr": "s:15VoiceChatDomain13MessageStatusO"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s15VoiceChatDomain0B7MessageV4text6isUser9timestamp2id6statusACSS_Sb10Foundation4DateVAI4UUIDVAA0D6StatusOtcfc",
+            "moduleName": "VoiceChatDomain",
+            "name": "init",
+            "printedName": "init(text:isUser:timestamp:id:status:)",
+            "usr": "s:15VoiceChatDomain0B7MessageV4text6isUser9timestamp2id6statusACSS_Sb10Foundation4DateVAI4UUIDVAA0D6StatusOtcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UUID",
+                "printedName": "Foundation.UUID",
+                "usr": "s:10Foundation4UUIDV"
+              }
+            ],
+            "declKind": "TypeAlias",
+            "implicit": true,
+            "kind": "TypeAlias",
+            "mangledName": "$s15VoiceChatDomain0B7MessageV2IDa",
+            "moduleName": "VoiceChatDomain",
+            "name": "ID",
+            "printedName": "ID",
+            "usr": "s:15VoiceChatDomain0B7MessageV2IDa"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ChatMessage",
+                "printedName": "VoiceChatDomain.ChatMessage",
+                "usr": "s:15VoiceChatDomain0B7MessageV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ChatMessage",
+                "printedName": "VoiceChatDomain.ChatMessage",
+                "usr": "s:15VoiceChatDomain0B7MessageV"
+              }
+            ],
+            "declAttributes": [
+              "Implements"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s15VoiceChatDomain0B7MessageV23__derived_struct_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceChatDomain",
+            "name": "__derived_struct_equals",
+            "printedName": "__derived_struct_equals(_:_:)",
+            "static": true,
+            "usr": "s:15VoiceChatDomain0B7MessageV23__derived_struct_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UUID",
+                    "printedName": "Foundation.UUID",
+                    "usr": "s:10Foundation4UUIDV"
+                  }
+                ],
+                "kind": "TypeWitness",
+                "name": "ID",
+                "printedName": "ID"
+              }
+            ],
+            "kind": "Conformance",
+            "mangledName": "$ss12IdentifiableP",
+            "name": "Identifiable",
+            "printedName": "Identifiable",
+            "usr": "s:s12IdentifiableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s15VoiceChatDomain0B7MessageV",
+        "moduleName": "VoiceChatDomain",
+        "name": "ChatMessage",
+        "printedName": "ChatMessage",
+        "usr": "s:15VoiceChatDomain0B7MessageV"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ChatMessage",
+                        "printedName": "VoiceChatDomain.ChatMessage",
+                        "usr": "s:15VoiceChatDomain0B7MessageV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[VoiceChatDomain.ChatMessage]",
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s15VoiceChatDomain17ConversationStateV8messagesSayAA0B7MessageVGvg",
+                "moduleName": "VoiceChatDomain",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:15VoiceChatDomain17ConversationStateV8messagesSayAA0B7MessageVGvg"
+              },
+              {
+                "accessorKind": "set",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ChatMessage",
+                        "printedName": "VoiceChatDomain.ChatMessage",
+                        "usr": "s:15VoiceChatDomain0B7MessageV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[VoiceChatDomain.ChatMessage]",
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s15VoiceChatDomain17ConversationStateV8messagesSayAA0B7MessageVGvs",
+                "moduleName": "VoiceChatDomain",
+                "name": "Set",
+                "printedName": "Set()",
+                "usr": "s:15VoiceChatDomain17ConversationStateV8messagesSayAA0B7MessageVGvs"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ChatMessage",
+                    "printedName": "VoiceChatDomain.ChatMessage",
+                    "usr": "s:15VoiceChatDomain0B7MessageV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[VoiceChatDomain.ChatMessage]",
+                "usr": "s:Sa"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain17ConversationStateV8messagesSayAA0B7MessageVGvp",
+            "moduleName": "VoiceChatDomain",
+            "name": "messages",
+            "printedName": "messages",
+            "usr": "s:15VoiceChatDomain17ConversationStateV8messagesSayAA0B7MessageVGvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "InputState",
+                    "printedName": "VoiceChatDomain.InputState",
+                    "usr": "s:15VoiceChatDomain10InputStateO"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s15VoiceChatDomain17ConversationStateV05inputE0AA05InputE0Ovg",
+                "moduleName": "VoiceChatDomain",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:15VoiceChatDomain17ConversationStateV05inputE0AA05InputE0Ovg"
+              },
+              {
+                "accessorKind": "set",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "InputState",
+                    "printedName": "VoiceChatDomain.InputState",
+                    "usr": "s:15VoiceChatDomain10InputStateO"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s15VoiceChatDomain17ConversationStateV05inputE0AA05InputE0Ovs",
+                "moduleName": "VoiceChatDomain",
+                "name": "Set",
+                "printedName": "Set()",
+                "usr": "s:15VoiceChatDomain17ConversationStateV05inputE0AA05InputE0Ovs"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "InputState",
+                "printedName": "VoiceChatDomain.InputState",
+                "usr": "s:15VoiceChatDomain10InputStateO"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain17ConversationStateV05inputE0AA05InputE0Ovp",
+            "moduleName": "VoiceChatDomain",
+            "name": "inputState",
+            "printedName": "inputState",
+            "usr": "s:15VoiceChatDomain17ConversationStateV05inputE0AA05InputE0Ovp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ReplyState",
+                    "printedName": "VoiceChatDomain.ReplyState",
+                    "usr": "s:15VoiceChatDomain10ReplyStateO"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s15VoiceChatDomain17ConversationStateV05replyE0AA05ReplyE0Ovg",
+                "moduleName": "VoiceChatDomain",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:15VoiceChatDomain17ConversationStateV05replyE0AA05ReplyE0Ovg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "ReplyState",
+                "printedName": "VoiceChatDomain.ReplyState",
+                "usr": "s:15VoiceChatDomain10ReplyStateO"
+              }
+            ],
+            "declAttributes": [
+              "SetterAccess",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain17ConversationStateV05replyE0AA05ReplyE0Ovp",
+            "moduleName": "VoiceChatDomain",
+            "name": "replyState",
+            "printedName": "replyState",
+            "usr": "s:15VoiceChatDomain17ConversationStateV05replyE0AA05ReplyE0Ovp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "UUID",
+                        "printedName": "Foundation.UUID",
+                        "usr": "s:10Foundation4UUIDV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Foundation.UUID?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s15VoiceChatDomain17ConversationStateV13activeReplyID10Foundation4UUIDVSgvg",
+                "moduleName": "VoiceChatDomain",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:15VoiceChatDomain17ConversationStateV13activeReplyID10Foundation4UUIDVSgvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UUID",
+                    "printedName": "Foundation.UUID",
+                    "usr": "s:10Foundation4UUIDV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Foundation.UUID?",
+                "usr": "s:Sq"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "SetterAccess",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "kind": "Var",
+            "mangledName": "$s15VoiceChatDomain17ConversationStateV13activeReplyID10Foundation4UUIDVSgvp",
+            "moduleName": "VoiceChatDomain",
+            "name": "activeReplyID",
+            "printedName": "activeReplyID",
+            "usr": "s:15VoiceChatDomain17ConversationStateV13activeReplyID10Foundation4UUIDVSgvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "ConversationState",
+                "printedName": "VoiceChatDomain.ConversationState",
+                "usr": "s:15VoiceChatDomain17ConversationStateV"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ChatMessage",
+                    "printedName": "VoiceChatDomain.ChatMessage",
+                    "usr": "s:15VoiceChatDomain0B7MessageV"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[VoiceChatDomain.ChatMessage]",
+                "usr": "s:Sa"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "InputState",
+                "printedName": "VoiceChatDomain.InputState",
+                "usr": "s:15VoiceChatDomain10InputStateO"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "ReplyState",
+                "printedName": "VoiceChatDomain.ReplyState",
+                "usr": "s:15VoiceChatDomain10ReplyStateO"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s15VoiceChatDomain17ConversationStateV8messages05inputE005replyE0ACSayAA0B7MessageVG_AA05InputE0OAA05ReplyE0Otcfc",
+            "moduleName": "VoiceChatDomain",
+            "name": "init",
+            "printedName": "init(messages:inputState:replyState:)",
+            "usr": "s:15VoiceChatDomain17ConversationStateV8messages05inputE005replyE0ACSayAA0B7MessageVG_AA05InputE0OAA05ReplyE0Otcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s15VoiceChatDomain17ConversationStateV10appendUseryySSF",
+            "moduleName": "VoiceChatDomain",
+            "name": "appendUser",
+            "printedName": "appendUser(_:)",
+            "usr": "s:15VoiceChatDomain17ConversationStateV10appendUseryySSF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UUID",
+                "printedName": "Foundation.UUID",
+                "usr": "s:10Foundation4UUIDV"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "UUID",
+                "printedName": "Foundation.UUID",
+                "usr": "s:10Foundation4UUIDV"
+              }
+            ],
+            "declAttributes": [
+              "DiscardableResult"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s15VoiceChatDomain17ConversationStateV10beginReply2id10Foundation4UUIDVAH_tF",
+            "moduleName": "VoiceChatDomain",
+            "name": "beginReply",
+            "printedName": "beginReply(id:)",
+            "usr": "s:15VoiceChatDomain17ConversationStateV10beginReply2id10Foundation4UUIDVAH_tF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UUID",
+                "printedName": "Foundation.UUID",
+                "usr": "s:10Foundation4UUIDV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s15VoiceChatDomain17ConversationStateV13markSearching2idy10Foundation4UUIDV_tF",
+            "moduleName": "VoiceChatDomain",
+            "name": "markSearching",
+            "printedName": "markSearching(id:)",
+            "usr": "s:15VoiceChatDomain17ConversationStateV13markSearching2idy10Foundation4UUIDV_tF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UUID",
+                "printedName": "Foundation.UUID",
+                "usr": "s:10Foundation4UUIDV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declAttributes": [
+              "DiscardableResult"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s15VoiceChatDomain17ConversationStateV16appendReplyDelta2id5deltaSb10Foundation4UUIDV_SStF",
+            "moduleName": "VoiceChatDomain",
+            "name": "appendReplyDelta",
+            "printedName": "appendReplyDelta(id:delta:)",
+            "usr": "s:15VoiceChatDomain17ConversationStateV16appendReplyDelta2id5deltaSb10Foundation4UUIDV_SStF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UUID",
+                "printedName": "Foundation.UUID",
+                "usr": "s:10Foundation4UUIDV"
+              }
+            ],
+            "declAttributes": [
+              "DiscardableResult"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s15VoiceChatDomain17ConversationStateV13completeReply2idSb10Foundation4UUIDV_tF",
+            "moduleName": "VoiceChatDomain",
+            "name": "completeReply",
+            "printedName": "completeReply(id:)",
+            "usr": "s:15VoiceChatDomain17ConversationStateV13completeReply2idSb10Foundation4UUIDV_tF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UUID",
+                "printedName": "Foundation.UUID",
+                "usr": "s:10Foundation4UUIDV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declAttributes": [
+              "DiscardableResult"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s15VoiceChatDomain17ConversationStateV13completeReply2id4textSb10Foundation4UUIDV_SStF",
+            "moduleName": "VoiceChatDomain",
+            "name": "completeReply",
+            "printedName": "completeReply(id:text:)",
+            "usr": "s:15VoiceChatDomain17ConversationStateV13completeReply2id4textSb10Foundation4UUIDV_SStF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UUID",
+                "printedName": "Foundation.UUID",
+                "usr": "s:10Foundation4UUIDV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declAttributes": [
+              "DiscardableResult"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s15VoiceChatDomain17ConversationStateV9failReply2id7message17preservingPartialSb10Foundation4UUIDV_SSSbtF",
+            "moduleName": "VoiceChatDomain",
+            "name": "failReply",
+            "printedName": "failReply(id:message:preservingPartial:)",
+            "usr": "s:15VoiceChatDomain17ConversationStateV9failReply2id7message17preservingPartialSb10Foundation4UUIDV_SSSbtF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UUID",
+                    "printedName": "Foundation.UUID",
+                    "usr": "s:10Foundation4UUIDV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Foundation.UUID?",
+                "usr": "s:Sq"
+              }
+            ],
+            "declAttributes": [
+              "DiscardableResult"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s15VoiceChatDomain17ConversationStateV17cancelActiveReply10Foundation4UUIDVSgyF",
+            "moduleName": "VoiceChatDomain",
+            "name": "cancelActiveReply",
+            "printedName": "cancelActiveReply()",
+            "usr": "s:15VoiceChatDomain17ConversationStateV17cancelActiveReply10Foundation4UUIDVSgyF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UUID",
+                    "printedName": "Foundation.UUID",
+                    "usr": "s:10Foundation4UUIDV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Foundation.UUID?",
+                "usr": "s:Sq"
+              }
+            ],
+            "declAttributes": [
+              "DiscardableResult"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s15VoiceChatDomain17ConversationStateV20abortUncommittedTurn10Foundation4UUIDVSgyF",
+            "moduleName": "VoiceChatDomain",
+            "name": "abortUncommittedTurn",
+            "printedName": "abortUncommittedTurn()",
+            "usr": "s:15VoiceChatDomain17ConversationStateV20abortUncommittedTurn10Foundation4UUIDVSgyF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ConversationState",
+                "printedName": "VoiceChatDomain.ConversationState",
+                "usr": "s:15VoiceChatDomain17ConversationStateV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ConversationState",
+                "printedName": "VoiceChatDomain.ConversationState",
+                "usr": "s:15VoiceChatDomain17ConversationStateV"
+              }
+            ],
+            "declAttributes": [
+              "Implements"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s15VoiceChatDomain17ConversationStateV23__derived_struct_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceChatDomain",
+            "name": "__derived_struct_equals",
+            "printedName": "__derived_struct_equals(_:_:)",
+            "static": true,
+            "usr": "s:15VoiceChatDomain17ConversationStateV23__derived_struct_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s15VoiceChatDomain17ConversationStateV",
+        "moduleName": "VoiceChatDomain",
+        "name": "ConversationState",
+        "printedName": "ConversationState",
+        "usr": "s:15VoiceChatDomain17ConversationStateV"
+      }
+    ],
+    "json_format_version": 8,
+    "kind": "Root",
+    "name": "VoiceChatDomain",
+    "printedName": "VoiceChatDomain"
+  }
+}

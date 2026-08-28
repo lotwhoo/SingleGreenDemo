@@ -70,6 +70,22 @@ Do not move provider-specific code into the Controller, duplicate StreamingTextK
 
 ## Test gates
 
+M7 PR1 quality gates (run from the repository root):
+
+```bash
+scripts/check_toolchain.sh
+scripts/check_package_inventory.sh
+scripts/check_architecture_boundaries.sh
+scripts/test_architecture_boundaries.sh
+scripts/test_public_api_baselines.sh
+scripts/test_public_api_baseline_update.sh
+scripts/check_public_api_baselines.sh
+```
+
+Public API snapshots are reviewed artifacts for seven library modules on macOS arm64 and iOS Simulator arm64. Additions and removals both require explicit review. Update only with `scripts/update_public_api_baselines.sh --accept-current-api` after inspecting the diff; the updater is never run automatically in CI.
+
+M7 PR2 lifecycle invariants: `VoiceActivatedASRSession` owns one ContinuousClock-backed, injectable monotonic frame-liveness watchdog. It starts after source start; accepted raw frames refresh the compatibility-derived `noSpeechFrameLimit × 20 ms` interval (standard 15 s). At or after the deadline, pre/post-onset starvation fails closed as typed `audioUnavailable`; valid silent frames remain the `.noSpeech` path. Levels, VAD observations, transport activity, stale frames, and rejected frames are not heartbeats. Manual pre-onset finish emits Core `.noSpeech` then `.finished`; post-onset finish drains buffered tail frames FIFO before completion. Keep actor/generation/epoch checks and one-terminal semantics intact.
+
 Run the narrowest affected suite first, then all suites relevant to the changed boundary.
 
 ```bash

@@ -25,7 +25,7 @@
 
 ## 长程开发路线
 
-项目按产品设计、架构、实现、测试、评审、文档和发布的完整流程推进。当前 M1–M6 的自动化基础已按下表推进：
+项目按产品设计、架构、实现、测试、评审、文档和发布的完整流程推进。当前 M1–M7 的自动化基础已按下表推进：
 
 | 里程碑 | 目标 | 状态 |
 | --- | --- | --- |
@@ -35,6 +35,11 @@
 | M4 | Controller Decomposition / Strict Concurrency：拆分对话控制器并收紧并发隔离 | 已实现并完成自动化验证 |
 | M5 | Production Readiness / Release System：CI、设备回归、短期凭证、观测和发布流程 | 自动化基础已实现，人工门禁待完成 |
 | M6 | Local VAD / Automatic Endpointing：本地检测、自动端点和 ASR 门控 | WebRTC production detector 已集成并通过本地回归；真机/真实服务门禁待完成 |
+| M7 | 纯代码质量：架构边界、工具链、公开 API 与生命周期正确性 | PR1、PR2 已在本地完成；M7 整体继续推进 |
+
+M7 PR1 的本地证据为六个 Package 严格并发 **377/377**、App XCTest **62/62**、架构边界 10 个负例和 14 个公开 API snapshot 门禁通过；该记录属于历史快照，见 [M7 PR1 任务卡](./docs/tasks/2026-08-28-m7-pr1-quality-baseline.md)。
+
+当前 M7 PR2 已在本地完成 VAD/ASR 生命周期正确性加固：六个 Package 严格并发 **390/390**，其中 `VoiceChatCore` 104 项；App XCTest **62/62**。`VoiceActivatedASRSession` 使用单一可注入单调时钟 watchdog 处理无帧超时，并保留 pre-onset/post-onset finish 与尾部排空契约。完整证据见 [M7 PR2 任务卡](./docs/tasks/2026-08-28-m7-pr2-lifecycle-correctness.md)。GitHub Actions 尚未执行，PR2 未进行真机、真实服务或人工无障碍/光学验收。
 
 M1 的首次完整 QA 为五个 Package 150 项 + App-hosted 13 项，共 **163/0**；两项 P2 修复后的受影响复测为 SingleGreenGlassesKit 46 项 + App-hosted 13 项，共 **59/0**。两次均通过通用 Simulator build。详细验收清单和残余人工检查见[架构与升级报告](./docs/PROJECT_ARCHITECTURE_AND_UPGRADE_REPORT.md)及[M1 任务卡](./docs/tasks/2026-08-28-long-term-roadmap.md)。
 
@@ -165,6 +170,9 @@ iPhone 叠加效果不等同于真实眼镜 OST 光学效果。
 - [M6 VAD Stage 1 package contract](./Packages/VoiceActivityDetectionKit/README.md)
 - [M6 Stage 2A VAD/ASR integration record](./docs/tasks/2026-08-28-vad-stage2a.md)
 - [WebRTC VAD dependency approval ADR](./docs/tasks/2026-08-28-webrtc-vad-approval-adr.md)
+- [M7 PR1 architecture/API/toolchain quality baseline](./docs/tasks/2026-08-28-m7-pr1-quality-baseline.md)
+- [Public API baseline procedure](./api-baselines/README.md)
+- [M7 PR2 lifecycle correctness](./docs/tasks/2026-08-28-m7-pr2-lifecycle-correctness.md)
 - [发布检查单](./docs/RELEASE_CHECKLIST.md)
 - [覆盖率基线](./docs/COVERAGE_BASELINE.md)
 - [第三方声明与许可证状态](./NOTICE.md)

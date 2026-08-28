@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "packages": [
+    {
+      "name": "LLMKit",
+      "path": "Packages/LLMKit",
+      "local_dependencies": [],
+      "products": [
+        { "name": "LLMKit", "type": "library", "targets": ["LLMKit"] }
+      ],
+      "targets": [
+        { "name": "LLMKit", "type": "regular", "dependencies": [] },
+        { "name": "LLMKitTests", "type": "test", "dependencies": ["LLMKit"] }
+      ]
+    },
+    {
+      "name": "SingleGreenGlassesKit",
+      "path": "Packages/SingleGreenGlassesKit",
+      "local_dependencies": ["StreamingTextKit", "VoiceChatDomain"],
+      "products": [
+        { "name": "SingleGreenGlassesKit", "type": "library", "targets": ["SingleGreenGlassesKit"] }
+      ],
+      "targets": [
+        { "name": "SingleGreenGlassesKit", "type": "regular", "dependencies": ["StreamingTextKit", "VoiceChatDomain"] },
+        { "name": "SingleGreenGlassesKitTests", "type": "test", "dependencies": ["SingleGreenGlassesKit", "StreamingTextKit", "VoiceChatDomain"] }
+      ]
+    },
+    {
+      "name": "StreamingTextKit",
+      "path": "Packages/StreamingTextKit",
+      "local_dependencies": [],
+      "products": [
+        { "name": "StreamingTextKit", "type": "library", "targets": ["StreamingTextKit"] }
+      ],
+      "targets": [
+        { "name": "StreamingTextKit", "type": "regular", "dependencies": [] },
+        { "name": "StreamingTextKitTests", "type": "test", "dependencies": ["StreamingTextKit"] }
+      ]
+    },
+    {
+      "name": "VoiceActivityDetectionKit",
+      "path": "Packages/VoiceActivityDetectionKit",
+      "local_dependencies": [],
+      "products": [
+        { "name": "VADBenchmark", "type": "executable", "targets": ["VADBenchmark"] },
+        { "name": "VoiceActivityDetectionKit", "type": "library", "targets": ["VoiceActivityDetectionKit"] },
+        { "name": "WebRTCVoiceActivityDetection", "type": "library", "targets": ["WebRTCVoiceActivityDetection"] }
+      ],
+      "targets": [
+        { "name": "CWebRTCVAD", "type": "regular", "dependencies": [] },
+        { "name": "CWebRTCVADTestSupport", "type": "regular", "dependencies": ["CWebRTCVAD"] },
+        { "name": "VADBenchmark", "type": "executable", "dependencies": ["VADBenchmarkSupport", "VoiceActivityDetectionKit"] },
+        { "name": "VADBenchmarkSupport", "type": "regular", "dependencies": ["VoiceActivityDetectionKit"] },
+        { "name": "VoiceActivityDetectionKit", "type": "regular", "dependencies": [] },
+        { "name": "VoiceActivityDetectionKitTests", "type": "test", "dependencies": ["VADBenchmarkSupport", "VoiceActivityDetectionKit"] },
+        { "name": "WebRTCVoiceActivityDetection", "type": "regular", "dependencies": ["CWebRTCVAD", "VoiceActivityDetectionKit"] },
+        { "name": "WebRTCVoiceActivityDetectionTests", "type": "test", "dependencies": ["CWebRTCVAD", "CWebRTCVADTestSupport", "WebRTCVoiceActivityDetection"] }
+      ]
+    },
+    {
+      "name": "VoiceChatCore",
+      "path": "Packages/VoiceChatCore",
+      "local_dependencies": ["LLMKit", "VoiceActivityDetectionKit"],
+      "products": [
+        { "name": "VoiceChatCore", "type": "library", "targets": ["VoiceChatCore"] }
+      ],
+      "targets": [
+        { "name": "ASRCLI", "type": "executable", "dependencies": ["LLMKit", "VoiceChatCore"] },
+        { "name": "VoiceChatCore", "type": "regular", "dependencies": ["VoiceActivityDetectionKit"] },
+        { "name": "VoiceChatCoreTests", "type": "test", "dependencies": ["VoiceActivityDetectionKit", "VoiceChatCore"] }
+      ]
+    },
+    {
+      "name": "VoiceChatDomain",
+      "path": "Packages/VoiceChatDomain",
+      "local_dependencies": [],
+      "products": [
+        { "name": "VoiceChatDomain", "type": "library", "targets": ["VoiceChatDomain"] }
+      ],
+      "targets": [
+        { "name": "VoiceChatDomain", "type": "regular", "dependencies": [] },
+        { "name": "VoiceChatDomainTests", "type": "test", "dependencies": ["VoiceChatDomain"] }
+      ]
+    }
+  ],
+  "import_rules": [
+    {
+      "id": "single-green-core-framework-neutral",
+      "roots": ["Packages/SingleGreenGlassesKit/Sources/SingleGreenGlassesKit"],
+      "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "Network", "OSLog", "Security", "LLMKit", "VoiceChatCore", "VoiceActivityDetectionKit", "WebRTCVoiceActivityDetection"],
+      "forbidden_prefixes": ["OpenAI", "DeepSeek", "Doubao", "Bocha", "Ark"]
+    },
+    {
+      "id": "vad-core-framework-neutral",
+      "roots": ["Packages/VoiceActivityDetectionKit/Sources/VoiceActivityDetectionKit"],
+      "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "Network", "Security", "LLMKit", "SingleGreenGlassesKit", "VoiceChatCore", "VoiceChatDomain", "WebRTCVoiceActivityDetection", "CWebRTCVAD"],
+      "forbidden_prefixes": ["OpenAI", "DeepSeek", "Doubao", "Bocha", "Ark"]
+    },
+    {
+      "id": "streaming-text-leaf",
+      "roots": ["Packages/StreamingTextKit/Sources/StreamingTextKit"],
+      "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "Network", "Security", "LLMKit", "SingleGreenGlassesKit", "VoiceActivityDetectionKit", "VoiceChatCore", "VoiceChatDomain", "WebRTCVoiceActivityDetection"],
+      "forbidden_prefixes": ["OpenAI", "DeepSeek", "Doubao", "Bocha", "Ark"]
+    },
+    {
+      "id": "voice-domain-leaf",
+      "roots": ["Packages/VoiceChatDomain/Sources/VoiceChatDomain"],
+      "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "Network", "Security", "LLMKit", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceActivityDetectionKit", "VoiceChatCore", "WebRTCVoiceActivityDetection"],
+      "forbidden_prefixes": ["OpenAI", "DeepSeek", "Doubao", "Bocha", "Ark"]
+    },
+    {
+      "id": "llm-provider-neutral-ui-free",
+      "roots": ["Packages/LLMKit/Sources/LLMKit"],
+      "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceActivityDetectionKit", "VoiceChatCore", "VoiceChatDomain", "WebRTCVoiceActivityDetection"]
+    },
+    {
+      "id": "voice-core-no-ui-or-reverse-edge",
+      "roots": ["Packages/VoiceChatCore/Sources/VoiceChatCore"],
+      "forbidden": ["SwiftUI", "UIKit", "AppKit", "LLMKit", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceChatDomain", "WebRTCVoiceActivityDetection", "CWebRTCVAD"]
+    },
+    {
+      "id": "asr-cli-project-imports",
+      "roots": ["Packages/VoiceChatCore/Tools/ASRCLI"],
+      "allowed_project_modules": ["LLMKit", "VoiceChatCore"]
+    },
+    {
+      "id": "app-rendering-does-not-own-adapters",
+      "roots": ["SingleGreenDemo/Platform/Rendering"],
+      "forbidden": ["LLMKit", "VoiceChatCore", "WebRTCVoiceActivityDetection", "AVFoundation", "AudioToolbox", "Security"]
+    }
+  ],
+  "app": {
+    "project": "SingleGreenDemo.xcodeproj/project.pbxproj",
+    "local_package_paths": [
+      "Packages/LLMKit",
+      "Packages/SingleGreenGlassesKit",
+      "Packages/StreamingTextKit",
+      "Packages/VoiceActivityDetectionKit",
+      "Packages/VoiceChatCore",
+      "Packages/VoiceChatDomain"
+    ],
+    "targets": [
+      {
+        "name": "SingleGreenDemo",
+        "package_products": ["LLMKit", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceChatCore", "WebRTCVoiceActivityDetection"]
+      },
+      {
+        "name": "SingleGreenDemoTests",
+        "package_products": ["SingleGreenGlassesKit", "VoiceChatDomain"]
+      }
+    ]
+  },
+  "public_api_modules": [
+    { "module": "LLMKit", "package": "LLMKit" },
+    { "module": "SingleGreenGlassesKit", "package": "SingleGreenGlassesKit" },
+    { "module": "StreamingTextKit", "package": "StreamingTextKit" },
+    { "module": "VoiceActivityDetectionKit", "package": "VoiceActivityDetectionKit" },
+    { "module": "WebRTCVoiceActivityDetection", "package": "VoiceActivityDetectionKit", "clang_modulemaps": ["CWebRTCVAD.build/module.modulemap"] },
+    { "module": "VoiceChatCore", "package": "VoiceChatCore" },
+    { "module": "VoiceChatDomain", "package": "VoiceChatDomain" }
+  ]
+}

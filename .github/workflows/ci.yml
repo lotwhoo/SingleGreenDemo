@@ -8,16 +8,20 @@ on:
 permissions:
   contents: read
 
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+
 jobs:
   package-matrix:
     name: Package / ${{ matrix.package }}
-    runs-on: macos-15
+    runs-on: macos-26
     strategy:
       fail-fast: false
       matrix:
         package: [StreamingTextKit, VoiceChatDomain, VoiceActivityDetectionKit, SingleGreenGlassesKit, LLMKit, VoiceChatCore]
     steps:
       - uses: actions/checkout@v4
+      - run: scripts/check_toolchain.sh
       - run: swift test --package-path "Packages/${{ matrix.package }}" -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
       - name: Build aggregate-only VAD benchmark
         if: matrix.package == 'VoiceActivityDetectionKit'
@@ -28,9 +32,10 @@ jobs:
 
   app-simulator:
     name: App simulator tests
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
+      - run: scripts/check_toolchain.sh
       - name: Resolve Simulator and run App tests
         run: |
           set -o pipefail
@@ -51,9 +56,10 @@ jobs:
 
   release-build:
     name: Release generic simulator build
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
+      - run: scripts/check_toolchain.sh
       - run: |
           set -o pipefail
           xcodebuild -project SingleGreenDemo.xcodeproj -scheme SingleGreenDemo \
@@ -68,16 +74,20 @@ jobs:
 
   coverage-and-hygiene:
     name: Coverage and repository hygiene
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
+      - run: scripts/check_toolchain.sh
       - run: scripts/check_repository_hygiene.sh
       - run: scripts/check_package_inventory.sh
+      - run: scripts/check_architecture_boundaries.sh
+      - run: scripts/test_architecture_boundaries.sh
       - run: scripts/scan_secrets.sh
       - run: scripts/test_repository_checks.sh
       - run: scripts/test_coverage_scope.sh
       - run: scripts/check_privacy_logging.sh
       - run: scripts/check_vad_privacy.sh
+      - run: scripts/check_vad_documentation_state.sh
       - run: scripts/test_release_evidence_validator.sh
       - run: scripts/test_simulator_destination.sh
       - run: scripts/coverage_gate.sh "$RUNNER_TEMP/coverage"
@@ -87,3 +97,13 @@ jobs:
           name: package-coverage
           path: ${{ runner.temp }}/coverage
           if-no-files-found: warn
+
+  public-api:
+    name: Reviewed public API baselines
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/check_toolchain.sh
+      - run: scripts/test_public_api_baselines.sh
+      - run: scripts/test_public_api_baseline_update.sh
+      - run: scripts/check_public_api_baselines.sh

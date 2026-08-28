@@ -9,7 +9,7 @@ Reviewed locally on 2026-08-28 for the provider-neutral M6 Stage 2A state. The g
 | VoiceActivityDetectionKit | 379 / 397 | 95.47% | 80% |
 | SingleGreenGlassesKit | FinalQA2 measured baseline | 93.38% | 65% |
 | LLMKit | Post-provider-neutral measured baseline | 89.89% | 60% |
-| VoiceChatCore | Post-provider-neutral measured baseline | 73.02% | 55% |
+| VoiceChatCore | M7 PR2 measured baseline | 75.79% | 55% |
 
 The initial gates are intentionally below the measured baseline. They catch large regressions while leaving room for platform seams and provider adapters that require higher-level tests. Line coverage is not evidence of real-service, physical-device, accessibility, or optical behavior.
 

@@ -12,9 +12,10 @@ require_text() {
 require_text "docs/tasks/2026-08-28-webrtc-vad-approval-adr.md" "状态：已获用户批准并完成实现"
 require_text "docs/tasks/2026-08-28-webrtc-vad-approval-adr.md" "1e7f4c3c39e1aacaf8884452f80cd82749b1f8f1"
 require_text "docs/tasks/2026-08-28-webrtc-vad-approval-adr.md" "11 upstream C + 1 local compatibility C + 12 upstream headers"
-require_text "README.md" "377/377"
+require_text "README.md" "390/390"
 require_text "README.md" "62/62"
-require_text "docs/RELEASE_CHECKLIST.md" "377/377"
+require_text "docs/RELEASE_CHECKLIST.md" "390/390"
+require_text "docs/tasks/2026-08-28-m7-pr2-lifecycle-correctness.md" "owns one ContinuousClock-backed, injectable monotonic frame-liveness watchdog"
 require_text "NOTICE.md" "BSD/PATENTS/AUTHORS acknowledgements"
 require_text "NOTICE.md" "spl_sqrt_floor/spl_sqrt_floor.h"
 authoritative=(README.md Packages/README.md docs/PROJECT_ARCHITECTURE_AND_UPGRADE_REPORT.md docs/RELEASE_CHECKLIST.md)
@@ -22,4 +23,4 @@ if rg -n 'production detector factory remains nil|生产检测器 factory 仍为
   echo "error: stale pre-integration VAD claim found in authoritative documentation" >&2
   exit 1
 fi
-echo "VAD documentation state check passed (approved integration; current evidence 377/377 and 62/62)."
+echo "VAD documentation state check passed (approved integration; current evidence 390/390 and 62/62)."

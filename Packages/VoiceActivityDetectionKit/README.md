@@ -12,6 +12,8 @@
 
 `VADBenchmarkSupport` is intentionally not a library product. Its simple energy detector exists only for deterministic tests and the aggregate-only benchmark executable; an application cannot select it as a package product.
 
+Source frame liveness belongs to `VoiceChatCore.VoiceActivatedASRSession`, not this package. `VoiceActivityDetectionKit` remains responsible for detector observations and pure endpoint segmentation; the Core session owns the single monotonic no-frame watchdog, ASR lifecycle, source starvation error mapping, and tail-drain semantics.
+
 ## Production WebRTC adapter
 
 The package keeps the dependency direction explicit:

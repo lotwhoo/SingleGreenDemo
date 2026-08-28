@@ -42,3 +42,9 @@ SingleGreenDemo   → SingleGreenGlassesKit + VoiceChatCore + LLMKit + Streaming
 上游同步基线没有通用 LICENSE；本仓库现已随 vendored WebRTC 文件保留 BSD `LICENSE`、`PATENTS`、`AUTHORS`、SPL 归属和 provenance，详见根目录 `NOTICE.md`。这不表示整个仓库采用 WebRTC 许可证；对外分发仍需选择项目许可证并履行二进制 acknowledgements。WebRTC 集成不允许能量检测回退到生产上传；后审计还覆盖连续免按 rearm、音频通知 wiring、意外 ASR stream closure、工具调用参数完整校验和开放宿主 Experience 注册边界。
 
 Provider-neutral 约束：`SingleGreenGlassesKit` 只接收宿主准备好的 PTT/VAD session、opaque Agent context identity 和 semantic external-information activity；API keys、provider model/resource 配置、credential leasing、validation copy 与 raw `web_search` mapping 必须留在 `SingleGreenDemo` resolver/adapters。取消或新一代操作必须丢弃 stale preparation。Experience ID 使用大小写敏感的 ASCII 语法 `[A-Za-z0-9][A-Za-z0-9._-]*`。
+
+## Public API baseline procedure
+
+The reviewed public API contract is generated with `swift-api-digester` for the seven library modules listed in `config/architecture-boundaries.json`, on macOS arm64 and iOS Simulator arm64. Exact snapshots are stored under `api-baselines/xcode-26.6-swift-6.3.3/`; additions and removals are both review items.
+
+Run `scripts/check_public_api_baselines.sh` during normal validation. To intentionally accept a reviewed API change, run `scripts/update_public_api_baselines.sh --accept-current-api`, inspect the generated JSON diff and compatibility impact, then run the checker and relevant package tests. The update command is never automatic and is rejected in CI. The updater stages and preserves a rollback copy on replacement failure; concurrent invocations remain a known P3 limitation.

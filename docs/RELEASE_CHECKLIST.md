@@ -2,7 +2,7 @@
 
 This checklist records evidence; it does not imply that a GitHub runner, device, or real service was exercised.
 
-## Provider-neutral post-audit evidence (2026-08-28)
+## Provider-neutral post-audit evidence (historical PR1 snapshot, 2026-08-28)
 
 - Six local Package strict-concurrency/WAE suites: **377/377** (`StreamingTextKit` 7, `VoiceChatDomain` 16, `VoiceActivityDetectionKit` 43, `SingleGreenGlassesKit` 150, `LLMKit` 70, `VoiceChatCore` 91).
 - App-hosted XCTest: **62/62**, result bundle `/private/tmp/SingleGreenDemo-QA-PostWrapper-AppTest.xcresult`; focused ASR/controller: **24/24** and **77/77**; VAD sanitizer suites: **43/43** each under ASan/UBSan/TSan.
@@ -13,6 +13,13 @@ This checklist records evidence; it does not imply that a GitHub runner, device,
 - Continuous voice rearm, audio notification wiring, unexpected ASR stream closure, open custom Experience registration, and complete tool-call argument validation are covered by the post-audit code/tests.
 - The production WebRTC detector is integrated only at the App composition root; independent AISettings remains fail-closed and there is no energy fallback. The current worktree has the user-observed physical-device microphone/VAD/conversation-flow acceptance described above. No complete scripted route/interruption matrix, independently captured real-provider trace, GitHub CI, backend, or rollback evidence is claimed.
 
+## M7 PR2 current local evidence (2026-08-28)
+
+- [x] Six Package strict-concurrency/WAE suites: **390/390** (7, 16, 43, 150, 70, 104); focused `VoiceActivatedASRSession` **37/37**, critical repetition **100/100**, Controller **77/77**, App adapter **7/7**.
+- [x] Full App-hosted XCTest: **62/62**, `/private/tmp/SingleGreenDemo-M7-PR2-AppTests-Final.xcresult`.
+- [x] Coverage thresholds pass at `/private/tmp/SingleGreenDemo-M7-PR2-Coverage-Final`; Debug generic Simulator and Release universal Simulator arm64+x86_64 builds pass.
+- [ ] GitHub hosted CI, PR2 physical-device build/install/launch, real providers, manual accessibility/optical validation, and fresh sanitizer execution.
+
 ## Version and source
 
 - [ ] Version and migration notes are reviewed.
@@ -21,6 +28,11 @@ This checklist records evidence; it does not imply that a GitHub runner, device,
 - [ ] Root license status and `NOTICE.md` are reviewed for the intended distribution.
 
 ## Automated gates
+
+- [x] Local toolchain matches the reviewed contract: Xcode 26.6 (17F113), Swift 6.3.3, macOS/iPhone Simulator SDK 26.5.
+- [x] Architecture boundary checker and its 10 negative fixtures pass.
+- [x] Public API inventory has 14 reviewed snapshots (7 modules × macOS arm64 and iOS Simulator arm64); additions and removals require explicit review.
+- [ ] GitHub Actions execution of the pinned workflow (not run for M7 PR1).
 
 - [x] Six Package suites pass in Swift 6 complete concurrency mode with warnings as errors: `StreamingTextKit` 7, `VoiceChatDomain` 16, `VoiceActivityDetectionKit` 43, `SingleGreenGlassesKit` 150, `LLMKit` 70, `VoiceChatCore` 91 (377/377 total).
 - [x] ASRCLI passes its separate strict-concurrency/warnings-as-errors build and privacy-log static check; it is not included in package `Sources/` coverage.

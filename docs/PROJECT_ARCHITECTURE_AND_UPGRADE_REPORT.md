@@ -35,6 +35,20 @@
 | M4 Controller Decomposition / Strict Concurrency | 拆分对话控制器内部职责，消除不必要的 `@unchecked Sendable`，开启更严格并发检查 | 已实现并完成自动化验证 |
 | M5 Production Readiness / Release System | 建立 CI、真实设备回归、短期凭证、结构化观测、版本迁移与发布检查 | 自动化基础已实现；hosted CI、真机/真服务与发布人工门禁待完成 |
 
+### M7 PR1 quality baseline（本地完成，2026-08-28）
+
+M7 PR1 建立了可审查的架构、工具链和公开 API 门禁；这只表示 PR1 本地完成，不表示 M7 整体完成。测试基于 `a2c39745b61bef71ecbfe6f2541287f86ca0e8f9` 的未提交工作树，历史稳定产品基线仍为 `5a02b2e90321265b61533b948928319cccf9f161`。架构图和 import/Xcode ownership 规则位于 `config/architecture-boundaries.json`，工具链契约位于 `config/toolchain.json`；14 个 API snapshot 覆盖七个模块的 macOS arm64 与 iOS Simulator arm64。API 增加和删除都必须显式评审，确认后才可运行 `scripts/update_public_api_baselines.sh --accept-current-api`。
+
+本地证据：严格并发 **377/377**；包覆盖率为 StreamingTextKit 85.23%、VoiceChatDomain 99.07%、VoiceActivityDetectionKit 95.47%、SingleGreenGlassesKit 93.38%、LLMKit 89.89%、VoiceChatCore 74.50%，产物位于 `/private/tmp/SingleGreenDemo-M7-PR1-Coverage-Final`；App XCTest **62/62**，结果位于 `/private/tmp/SingleGreenDemo-M7-PR1-AppTests-Final.xcresult`；Debug generic Simulator 和 Release universal Simulator arm64+x86_64 构建通过；release credential-isolation scan 通过；架构自测（10 个负例）和 API baseline 测试通过。工具链为 Xcode 26.6 build 17F113、Swift 6.3.3、SDK 26.5。GitHub Actions 尚未运行此 workflow；PR1 未执行真机 build/install/launch、commit 或 push。唯一运行时代码变化是删除 `VoiceChatCore/AudioCapture.swift` 中未使用的条件 UIKit import。
+
+残余 P3 风险：API updater 尚无并发调用锁；snapshot 按设计仅覆盖 arm64；文本 pbxproj parser 可能需要随未来 Xcode 格式维护。PR2 已补齐 VAD no-frame wall-clock watchdog，详情见 [PR2 任务记录](./tasks/2026-08-28-m7-pr2-lifecycle-correctness.md)。
+
+### M7 PR2 生命周期正确性（本地完成，2026-08-28）
+
+`VoiceActivatedASRSession` 在 source start 后启动单一 ContinuousClock-backed、可注入的单调时钟 watchdog；接受的 raw frame 按兼容策略刷新 `noSpeechFrameLimit × 20ms`（标准 15 秒）。达到 deadline 时，起音前后无帧均 fail closed 为 typed `audioUnavailable`；合法静音帧仍走自动 `.noSpeech`，levels/VAD/transport/stale/rejected frame 不作为 heartbeat。手动起音前 finish 发出 Core `.noSpeech` 后 `.finished`，起音后 finish 在完成前按 FIFO 排空 buffered tail。该变更未改变公开 API 或 API snapshot。
+
+PR2 本地严格并发测试为 **390/390**，App XCTest 为 **62/62**；完整测试、覆盖率、构建和证据边界见 [PR2 任务记录](./tasks/2026-08-28-m7-pr2-lifecycle-correctness.md)。GitHub hosted CI、PR2 真机/真实服务/人工无障碍与光学验证尚未执行。
+
 ### M1 已实现的契约
 
 - `ExperienceSession` 以 `currentSnapshot(eventDescription:)` 提供同步兼容入口，以 `updates()` 提供后台变化流。
@@ -316,7 +330,7 @@ App 内部 `VoiceActivatedFactory` 为 throwing contract：错误映射为 revie
 | StreamingTextKit | 7 | 通过 |
 | 六个 Package 合计 | **377** | **0 失败** |
 
-六个 Package 均通过 Swift 6 complete strict-concurrency + warnings-as-errors 门禁，当前为 **377/377**（7、16、43、150、70、91）。App-hosted XCTest 为 **62/62**，结果包为 `/private/tmp/SingleGreenDemo-QA-PostWrapper-AppTest.xcresult`；ASR/controller focused 为 **24/24、77/77**，VAD ASan/UBSan/TSan 各 **43/43**。覆盖率为 85.23%、99.07%、95.47%、93.38%、89.89%、73.02%，路径 `/private/tmp/SingleGreenDemo-QA-PostWrapper-Coverage`。此前 351/58、349/48 与更早结果保留为历史证据。
+PR1 的六个 Package **377/377** 和 App **62/62** 属于历史证据。当前 PR2 六个 Package 均通过 Swift 6 complete strict-concurrency + warnings-as-errors 门禁，为 **390/390**（7、16、43、150、70、104）；App-hosted XCTest 为 **62/62**，结果包为 `/private/tmp/SingleGreenDemo-M7-PR2-AppTests-Final.xcresult`。PR2 覆盖率与 focused evidence 见任务记录；此前 351/58、349/48 与更早结果保留为历史证据。
 
 FinalQA2 的 focused evidence 还包括 `VoiceActivatedASRSession` **24/24** 与 `VoiceConversationController` **77/77**。最终修复覆盖：同一 context 下未使用的 prepared Agent 会被 discard；credential account scope 稳定且不含秘密，每次调用刷新凭证并隔离 account；未知错误只输出安全 copy；credential resolution 挂起期间可取消；DEBUG 持久化的非敏感 account revision 具备明确的 revision 语义。
 

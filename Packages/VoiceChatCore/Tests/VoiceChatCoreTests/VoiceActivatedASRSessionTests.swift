@@ -38,6 +38,26 @@ final class VoiceActivatedASRSessionTests: XCTestCase {
         ))
     }
 
+    func testStandardPolicyFrameLivenessIntervalIsFifteenSeconds() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: false)
+        let transport = FakeStreamingASRTransport()
+        let clock = ManualMonotonicClock()
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: .standard,
+            frameLivenessClock: clock.injectedClock
+        )
+
+        try await session.arm()
+        await waitUntil { await clock.sleepCallCount == 1 }
+        let deadline = await clock.earliestDeadline
+        XCTAssertEqual(deadline, .seconds(15))
+        await session.cancel()
+    }
+
     func testSilenceTimesOutLocallyWithoutOpeningTransport() async throws {
         let source = FakePCMFrameSource()
         let detector = FakeVoiceActivityDetector(defaultSpeech: false)
@@ -63,6 +83,305 @@ final class VoiceActivatedASRSessionTests: XCTestCase {
         XCTAssertEqual(metrics.openCount, 0)
         XCTAssertTrue(metrics.sentSequences.isEmpty)
         XCTAssertEqual(metrics.finishCount, 0)
+    }
+
+    func testFrameLivenessWatchdogFailsAtExactZeroFrameBoundary() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: false)
+        let transport = FakeStreamingASRTransport()
+        let clock = ManualMonotonicClock()
+        let session = try makeSession(
+            source: source,
+            detector: detector,
+            transport: transport,
+            noSpeech: 5,
+            clock: clock.injectedClock
+        )
+        let observation = collectEvents(from: session) { event in
+            if case .state(.failed) = event { return true }
+            return false
+        }
+
+        try await session.arm()
+        await waitUntil { await clock.sleepCallCount == 1 }
+        await clock.advance(by: .milliseconds(99))
+        await source.emit(level: 0.5)
+        for _ in 0..<10 { await Task.yield() }
+        let stateBeforeDeadline = await session.state
+        XCTAssertEqual(stateBeforeDeadline, .armed)
+
+        await clock.advance(by: .milliseconds(1))
+        let events = await observation.value
+
+        assertSingleAudioUnavailableFailure(in: events)
+        XCTAssertTrue(events.contains(.level(0.5)))
+        XCTAssertFalse(events.contains(.noSpeech))
+        await waitUntil { await source.stopCount == 1 }
+        let stopCount = await source.stopCount
+        XCTAssertEqual(stopCount, 1)
+        let metrics = await transport.metrics()
+        XCTAssertEqual(metrics.openCount, 0)
+        XCTAssertEqual(metrics.sendCallCount, 0)
+        XCTAssertEqual(metrics.finishCount, 0)
+        XCTAssertEqual(metrics.cancelCount, 0)
+        XCTAssertTrue(metrics.sentSequences.isEmpty)
+    }
+
+    func testFrameAtExpiredDeadlineCannotRetroactivelyResetWatchdog() async throws {
+        try await assertExpiredFrameIsRejected(arrivalOffset: .zero)
+    }
+
+    func testFrameAfterExpiredDeadlineCannotRetroactivelyResetWatchdog() async throws {
+        try await assertExpiredFrameIsRejected(arrivalOffset: .milliseconds(1))
+    }
+
+    private func assertExpiredFrameIsRejected(arrivalOffset: Duration) async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: false)
+        let transport = FakeStreamingASRTransport()
+        let clock = ManualMonotonicClock()
+        let session = try makeSession(
+            source: source,
+            detector: detector,
+            transport: transport,
+            noSpeech: 5,
+            clock: clock.injectedClock
+        )
+        let recorder = ASREventRecorder()
+        let observation = recordEvents(from: session, into: recorder)
+
+        try await session.arm()
+        await waitUntil { await clock.sleepCallCount == 1 }
+        await clock.advance(
+            by: .milliseconds(100) + arrivalOffset,
+            resumeDueSleepers: false
+        )
+        await source.emit(try frame(0))
+        await waitUntil { await recorder.values().contains(where: isTerminalState) }
+        await waitUntil { await source.stopCount == 1 }
+
+        let retainedDeadline = await clock.earliestDeadline
+        XCTAssertEqual(retainedDeadline, .milliseconds(100))
+        let observedFrameCount = await detector.observedFrameCount
+        XCTAssertEqual(observedFrameCount, 0)
+
+        await clock.releaseDueSleepers()
+        for _ in 0..<20 { await Task.yield() }
+        let events = await recorder.values()
+        observation.cancel()
+
+        let terminals = terminalStates(in: events)
+        XCTAssertEqual(terminals.count, 1)
+        guard let terminal = terminals.first,
+              case .failed(let failure) = terminal else {
+            return XCTFail("Expected expired frame to produce audio-unavailable failure")
+        }
+        XCTAssertEqual(failure.code, .audioUnavailable)
+        XCTAssertFalse(events.contains(.noSpeech))
+        let finalStopCount = await source.stopCount
+        XCTAssertEqual(finalStopCount, 1)
+        let metrics = await transport.metrics()
+        XCTAssertEqual(metrics.openCount, 0)
+        XCTAssertEqual(metrics.sendCallCount, 0)
+        XCTAssertEqual(metrics.finishCount, 0)
+        XCTAssertEqual(metrics.cancelCount, 0)
+        XCTAssertTrue(metrics.sentSequences.isEmpty)
+    }
+
+    func testAcceptedFrameHeartbeatResetsFrameLivenessDeadline() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: false)
+        let transport = FakeStreamingASRTransport()
+        let clock = ManualMonotonicClock()
+        let session = try makeSession(
+            source: source,
+            detector: detector,
+            transport: transport,
+            noSpeech: 5,
+            clock: clock.injectedClock
+        )
+
+        try await session.arm()
+        await waitUntil { await clock.sleepCallCount == 1 }
+        await clock.advance(by: .milliseconds(80))
+        await source.emit(try frame(0))
+        await detector.waitUntilObserved(sequence: 0)
+
+        await clock.advance(by: .milliseconds(20))
+        await waitUntil { await clock.sleepCallCount == 2 }
+        let stateAtOldDeadline = await session.state
+        XCTAssertEqual(stateAtOldDeadline, .armed)
+
+        await clock.advance(by: .milliseconds(79))
+        for _ in 0..<10 { await Task.yield() }
+        let stateBeforeResetDeadline = await session.state
+        XCTAssertEqual(stateBeforeResetDeadline, .armed)
+        await clock.advance(by: .milliseconds(1))
+        await waitUntil {
+            if case .failed = await session.state { return true }
+            return false
+        }
+
+        guard case .failed(let failure) = await session.state else {
+            return XCTFail("Expected frame-liveness failure")
+        }
+        XCTAssertEqual(failure.code, .audioUnavailable)
+    }
+
+    func testPartialValidSilenceThenFrameStallFailsAsAudioUnavailable() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: false)
+        let transport = FakeStreamingASRTransport()
+        let clock = ManualMonotonicClock()
+        let session = try makeSession(
+            source: source,
+            detector: detector,
+            transport: transport,
+            noSpeech: 5,
+            clock: clock.injectedClock
+        )
+        let observation = collectEvents(from: session) { event in
+            if case .state(.failed) = event { return true }
+            return false
+        }
+
+        try await session.arm()
+        await clock.advance(by: .milliseconds(20))
+        await source.emit(try frame(0))
+        await detector.waitUntilObserved(sequence: 0)
+        await clock.advance(by: .milliseconds(20))
+        await source.emit(try frame(1))
+        await detector.waitUntilObserved(sequence: 1)
+
+        await clock.advance(by: .milliseconds(100))
+        let events = await observation.value
+
+        assertSingleAudioUnavailableFailure(in: events)
+        XCTAssertFalse(events.contains(.noSpeech))
+        let metrics = await transport.metrics()
+        XCTAssertEqual(metrics.openCount, 0)
+        XCTAssertEqual(metrics.cancelCount, 0)
+    }
+
+    func testHealthySilentFramesRemainTheSoleAutomaticNoSpeechProducer() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: false)
+        let transport = FakeStreamingASRTransport()
+        let clock = ManualMonotonicClock()
+        let session = try makeSession(
+            source: source,
+            detector: detector,
+            transport: transport,
+            noSpeech: 5,
+            clock: clock.injectedClock
+        )
+        let observation = collectEvents(from: session) { $0 == .state(.finished) }
+
+        try await session.arm()
+        for sequence in 0..<5 {
+            await source.emit(try frame(UInt64(sequence)))
+        }
+        let events = await observation.value
+        await clock.advance(by: .seconds(1))
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertEqual(events.filter { $0 == .noSpeech }.count, 1)
+        XCTAssertEqual(events.filter(isFailedState).count, 0)
+        let finalState = await session.state
+        let stopCount = await source.stopCount
+        XCTAssertEqual(finalState, .finished)
+        XCTAssertEqual(stopCount, 1)
+        let metrics = await transport.metrics()
+        XCTAssertEqual(metrics.openCount, 0)
+        XCTAssertEqual(metrics.cancelCount, 0)
+    }
+
+    func testPostOnsetFrameStarvationFailsAndCancelsTransportExactlyOnce() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: true)
+        let transport = FakeStreamingASRTransport(autoFinishEvent: false)
+        let clock = ManualMonotonicClock()
+        let policy = try makePolicy(
+            preRoll: 1,
+            onsetWindow: 1,
+            onsetRequired: 1,
+            noSpeech: 5
+        )
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: policy,
+            frameLivenessClock: clock.injectedClock
+        )
+        let observation = collectEvents(from: session) { event in
+            if case .state(.failed) = event { return true }
+            return false
+        }
+
+        try await session.arm()
+        await source.emit(try frame(0))
+        await waitUntil { await session.state == .streaming }
+        await clock.advance(by: .milliseconds(80))
+        await transport.emit(.transcript("still connected"))
+        for _ in 0..<10 { await Task.yield() }
+        await clock.advance(by: .milliseconds(20))
+        let events = await observation.value
+        await waitUntil { await transport.metrics().cancelCount == 1 }
+
+        assertSingleAudioUnavailableFailure(in: events)
+        XCTAssertTrue(events.contains(.transcript("still connected")))
+        XCTAssertFalse(events.contains(.noSpeech))
+        let stopCount = await source.stopCount
+        XCTAssertEqual(stopCount, 1)
+        let metrics = await transport.metrics()
+        XCTAssertEqual(metrics.openCount, 1)
+        XCTAssertEqual(metrics.cancelCount, 1)
+        XCTAssertEqual(metrics.finishCount, 0)
+    }
+
+    func testCancelledCancellationInsensitiveWatchdogCannotAffectRearmedGeneration() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: false)
+        let transport = FakeStreamingASRTransport()
+        let clock = ManualMonotonicClock()
+        let session = try makeSession(
+            source: source,
+            detector: detector,
+            transport: transport,
+            noSpeech: 5,
+            clock: clock.injectedClock
+        )
+
+        try await session.arm()
+        await waitUntil { await clock.sleepCallCount == 1 }
+        await session.cancel()
+        await clock.advance(by: .milliseconds(50))
+
+        try await session.arm()
+        await waitUntil { await clock.sleepCallCount == 2 }
+        await clock.advance(by: .milliseconds(50))
+        for _ in 0..<20 { await Task.yield() }
+
+        let stateAfterStaleWake = await session.state
+        let startCountAfterRearm = await source.startCount
+        let stopCountAfterRearm = await source.stopCount
+        XCTAssertEqual(stateAfterStaleWake, .armed)
+        XCTAssertEqual(startCountAfterRearm, 2)
+        XCTAssertEqual(stopCountAfterRearm, 1)
+
+        await clock.advance(by: .milliseconds(50))
+        await waitUntil {
+            if case .failed = await session.state { return true }
+            return false
+        }
+        guard case .failed(let failure) = await session.state else {
+            return XCTFail("Expected current generation to expire at its own deadline")
+        }
+        XCTAssertEqual(failure.code, .audioUnavailable)
+        await waitUntil { await source.stopCount == 2 }
+        let finalStopCount = await source.stopCount
+        XCTAssertEqual(finalStopCount, 2)
     }
 
     func testOnsetDelaysConnectionAndUploadsPreRollAndEndpointFramesInStrictFIFO() async throws {
@@ -107,15 +426,130 @@ final class VoiceActivatedASRSessionTests: XCTestCase {
         let transport = FakeStreamingASRTransport()
         let session = try makeSession(source: source, detector: detector, transport: transport)
 
+        let observation = collectEvents(from: session) { $0 == .state(.finished) }
         try await session.arm()
         await source.emit(try frame(0))
         await session.finish()
+        let events = await observation.value
 
         let state = await session.state
         XCTAssertEqual(state, .finished)
+        XCTAssertEqual(events.filter { $0 == .noSpeech }.count, 1)
+        guard let noSpeechIndex = events.firstIndex(of: .noSpeech),
+              let finishedIndex = events.firstIndex(of: .state(.finished)) else {
+            return XCTFail("Expected no-speech followed by finished")
+        }
+        XCTAssertLessThan(noSpeechIndex, finishedIndex)
+        XCTAssertEqual(events.filter { $0 == .state(.finished) }.count, 1)
+        XCTAssertFalse(events.contains(.state(.draining(.manual))))
+        XCTAssertFalse(events.contains(.state(.finalizing(.manual))))
+        let stopCount = await source.stopCount
+        XCTAssertEqual(stopCount, 1)
         let metrics = await transport.metrics()
         XCTAssertEqual(metrics.openCount, 0)
         XCTAssertEqual(metrics.finishCount, 0)
+        XCTAssertEqual(metrics.cancelCount, 0)
+        XCTAssertTrue(metrics.sentSequences.isEmpty)
+    }
+
+    func testFrameTimeoutAndManualFinishRaceProducesOneTerminalOutcome() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: false)
+        let transport = FakeStreamingASRTransport()
+        let clock = ManualMonotonicClock()
+        let session = try makeSession(
+            source: source,
+            detector: detector,
+            transport: transport,
+            noSpeech: 5,
+            clock: clock.injectedClock
+        )
+        let recorder = ASREventRecorder()
+        let observation = recordEvents(from: session, into: recorder)
+
+        try await session.arm()
+        await waitUntil { await clock.sleepCallCount == 1 }
+        async let advance: Void = clock.advance(by: .milliseconds(100))
+        async let finish: Void = session.finish()
+        _ = await (advance, finish)
+        await waitUntil { await recorder.values().contains(where: isTerminalState) }
+        await waitUntil { await source.stopCount == 1 }
+        await clock.releaseDueSleepers()
+        for _ in 0..<20 { await Task.yield() }
+        let events = await recorder.values()
+        observation.cancel()
+
+        let terminals = terminalStates(in: events)
+        XCTAssertEqual(terminals.count, 1)
+        guard let terminal = terminals.first else {
+            return XCTFail("Expected exactly one terminal result")
+        }
+        let stopCount = await source.stopCount
+        XCTAssertEqual(stopCount, 1)
+        let metrics = await transport.metrics()
+        XCTAssertEqual(metrics.openCount, 0)
+        XCTAssertEqual(metrics.sendCallCount, 0)
+        XCTAssertEqual(metrics.finishCount, 0)
+        XCTAssertEqual(metrics.cancelCount, 0)
+        XCTAssertTrue(metrics.sentSequences.isEmpty)
+        switch terminal {
+        case .finished:
+            XCTAssertEqual(events.filter { $0 == .noSpeech }.count, 1)
+            guard let noSpeechIndex = events.firstIndex(of: .noSpeech),
+                  let finishedIndex = events.firstIndex(of: .state(.finished)) else {
+                return XCTFail("Expected no-speech before finished")
+            }
+            XCTAssertLessThan(noSpeechIndex, finishedIndex)
+        case .failed(let failure):
+            XCTAssertEqual(failure.code, .audioUnavailable)
+            XCTAssertFalse(events.contains(.noSpeech))
+        default:
+            XCTFail("Expected exactly one terminal result")
+        }
+    }
+
+    func testSourceFailureAndFrameTimeoutRaceProducesOneTerminalFailure() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: false)
+        let transport = FakeStreamingASRTransport()
+        let clock = ManualMonotonicClock()
+        let session = try makeSession(
+            source: source,
+            detector: detector,
+            transport: transport,
+            noSpeech: 5,
+            clock: clock.injectedClock
+        )
+        let recorder = ASREventRecorder()
+        let observation = recordEvents(from: session, into: recorder)
+
+        try await session.arm()
+        await waitUntil { await clock.sleepCallCount == 1 }
+        async let advance: Void = clock.advance(by: .milliseconds(100))
+        async let sourceFailure: Void = source.fail(PCMFrameSourceFailure.bufferOverflow)
+        _ = await (advance, sourceFailure)
+        await waitUntil { await recorder.values().contains(where: isTerminalState) }
+        await waitUntil { await source.stopCount == 1 }
+        await clock.releaseDueSleepers()
+        for _ in 0..<20 { await Task.yield() }
+        let events = await recorder.values()
+        observation.cancel()
+
+        let terminals = terminalStates(in: events)
+        XCTAssertEqual(terminals.count, 1)
+        XCTAssertFalse(events.contains(.noSpeech))
+        let stopCount = await source.stopCount
+        XCTAssertEqual(stopCount, 1)
+        guard let terminal = terminals.first,
+              case .failed(let failure) = terminal else {
+            return XCTFail("Expected a terminal source or liveness failure")
+        }
+        XCTAssertTrue([.audioUnavailable, .audioCaptureOverrun].contains(failure.code))
+        let metrics = await transport.metrics()
+        XCTAssertEqual(metrics.openCount, 0)
+        XCTAssertEqual(metrics.sendCallCount, 0)
+        XCTAssertEqual(metrics.finishCount, 0)
+        XCTAssertEqual(metrics.cancelCount, 0)
         XCTAssertTrue(metrics.sentSequences.isEmpty)
     }
 
@@ -137,6 +571,80 @@ final class VoiceActivatedASRSessionTests: XCTestCase {
         XCTAssertEqual(metrics.operations.last, "finish")
         let finalizingState = await session.state
         XCTAssertEqual(finalizingState, .finalizing(.manual))
+    }
+
+    func testManualFinishDrainsTailFrameSuspendedInHeartbeatRead() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: true)
+        let transport = FakeStreamingASRTransport(autoFinishEvent: false)
+        let clock = ManualMonotonicClock()
+        let policy = try makePolicy(
+            preRoll: 1,
+            onsetWindow: 1,
+            onsetRequired: 1,
+            noSpeech: 5,
+            batch: 1
+        )
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: policy,
+            frameLivenessClock: clock.injectedClock
+        )
+        let recorder = ASREventRecorder()
+        let observation = recordEvents(from: session, into: recorder)
+
+        try await session.arm()
+        await source.emit(try frame(0))
+        await waitUntil { await session.state == .streaming }
+        await waitUntil { await transport.metrics().sentSequences == [0] }
+
+        await clock.suspendNextNow()
+        await source.emit(try frame(1))
+        await clock.waitUntilNowIsSuspended()
+        let observedBeforeRelease = await detector.observedFrameCount
+        XCTAssertEqual(observedBeforeRelease, 1)
+
+        let finish = Task { await session.finish() }
+        await waitUntil { await source.stopCount == 1 }
+        await waitUntil { await session.state == .draining(.manual) }
+        await clock.releaseSuspendedNow()
+        await finish.value
+
+        let metricsAtFinalization = await transport.metrics()
+        let observedAfterRelease = await detector.observedFrameCount
+        XCTAssertEqual(observedAfterRelease, 2)
+        XCTAssertEqual(metricsAtFinalization.sentSequences, [0, 1])
+        XCTAssertEqual(
+            metricsAtFinalization.operations,
+            ["open", "send:[0]", "send:[1]", "finish"]
+        )
+        XCTAssertEqual(metricsAtFinalization.finishCount, 1)
+        XCTAssertEqual(metricsAtFinalization.cancelCount, 0)
+        let stopCountAtFinalization = await source.stopCount
+        let stateAtFinalization = await session.state
+        XCTAssertEqual(stopCountAtFinalization, 2)
+        XCTAssertEqual(stateAtFinalization, .finalizing(.manual))
+
+        await clock.advance(by: .seconds(1))
+        for _ in 0..<20 { await Task.yield() }
+        let stateAfterStaleWake = await session.state
+        XCTAssertEqual(stateAfterStaleWake, .finalizing(.manual))
+
+        await transport.emit(.finished)
+        await waitUntil { await session.state == .finished }
+        for _ in 0..<20 { await Task.yield() }
+        let events = await recorder.values()
+        observation.cancel()
+
+        XCTAssertEqual(terminalStates(in: events), [.finished])
+        XCTAssertFalse(events.contains(.noSpeech))
+        XCTAssertEqual(events.filter(isFailedState).count, 0)
+        let finalMetrics = await transport.metrics()
+        XCTAssertEqual(finalMetrics.sentSequences, [0, 1])
+        XCTAssertEqual(finalMetrics.finishCount, 1)
+        XCTAssertEqual(finalMetrics.cancelCount, 0)
     }
 
     func testMaximumDurationEndpointFinalizesExactlyOnce() async throws {
@@ -389,6 +897,53 @@ final class VoiceActivatedASRSessionTests: XCTestCase {
         XCTAssertEqual(state, .finalizing(.silence))
     }
 
+    func testAutomaticFinalizationCancelsFrameLivenessWatchdog() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(
+            speechBySequence: [0: true, 1: false],
+            defaultSpeech: false
+        )
+        let transport = FakeStreamingASRTransport(autoFinishEvent: false)
+        let clock = ManualMonotonicClock()
+        let policy = try makePolicy(
+            preRoll: 1,
+            onsetWindow: 1,
+            onsetRequired: 1,
+            endpointSilence: 1,
+            noSpeech: 5,
+            batch: 1
+        )
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: policy,
+            frameLivenessClock: clock.injectedClock
+        )
+
+        try await session.arm()
+        await source.emit(try frame(0))
+        await source.emit(try frame(1))
+        await waitUntil { await session.state == .finalizing(.silence) }
+        let metricsAtFinalization = await transport.metrics()
+        XCTAssertEqual(metricsAtFinalization.finishCount, 1)
+
+        await clock.advance(by: .seconds(1))
+        for _ in 0..<20 { await Task.yield() }
+
+        let stateAfterStaleWake = await session.state
+        let stopCount = await source.stopCount
+        let metricsAfterStaleWake = await transport.metrics()
+        XCTAssertEqual(stateAfterStaleWake, .finalizing(.silence))
+        XCTAssertEqual(stopCount, 1)
+        XCTAssertEqual(metricsAfterStaleWake.cancelCount, 0)
+
+        await transport.emit(.finished)
+        await waitUntil { await session.state == .finished }
+        let finalMetrics = await transport.metrics()
+        XCTAssertEqual(finalMetrics.cancelCount, 0)
+    }
+
     func testLateEventDuringHardCancelCannotCrossIntoRearmedGeneration() async throws {
         let source = FakePCMFrameSource()
         let detector = FakeVoiceActivityDetector(defaultSpeech: true)
@@ -600,15 +1155,28 @@ final class VoiceActivatedASRSessionTests: XCTestCase {
         let source = FakePCMFrameSource()
         let detector = FakeVoiceActivityDetector(defaultSpeech: false)
         let transport = FakeStreamingASRTransport()
+        let clock = ManualMonotonicClock()
         weak var weakSession: VoiceActivatedASRSession?
 
         do {
-            let session = try makeSession(source: source, detector: detector, transport: transport)
+            let session = try makeSession(
+                source: source,
+                detector: detector,
+                transport: transport,
+                clock: clock.injectedClock
+            )
             weakSession = session
             try await session.arm()
+            await waitUntil { await clock.sleepCallCount == 1 }
         }
 
         for _ in 0..<100 where weakSession != nil { await Task.yield() }
+        XCTAssertNil(weakSession)
+        let pendingSleeperCount = await clock.pendingSleeperCount
+        XCTAssertEqual(pendingSleeperCount, 1)
+
+        await clock.advance(by: .seconds(1))
+        for _ in 0..<20 { await Task.yield() }
         XCTAssertNil(weakSession)
     }
 
@@ -672,13 +1240,15 @@ private func makeSession(
     source: FakePCMFrameSource,
     detector: FakeVoiceActivityDetector,
     transport: FakeStreamingASRTransport,
-    noSpeech: Int = 10
+    noSpeech: Int = 10,
+    clock: VoiceActivatedASRMonotonicClock = .continuous
 ) throws -> VoiceActivatedASRSession {
     VoiceActivatedASRSession(
         frameSource: source,
         detector: detector,
         transport: transport,
-        policy: try makePolicy(noSpeech: noSpeech)
+        policy: try makePolicy(noSpeech: noSpeech),
+        frameLivenessClock: clock
     )
 }
 
@@ -710,6 +1280,152 @@ private func collectEvents(
             if predicate(event) { return events }
         }
         return events
+    }
+}
+
+private func recordEvents(
+    from session: VoiceActivatedASRSession,
+    into recorder: ASREventRecorder
+) -> Task<Void, Never> {
+    Task {
+        for await event in session.events {
+            await recorder.append(event)
+        }
+    }
+}
+
+private func isFailedState(_ event: VoiceActivatedASREvent) -> Bool {
+    if case .state(.failed) = event { return true }
+    return false
+}
+
+private func isTerminalState(_ event: VoiceActivatedASREvent) -> Bool {
+    switch event {
+    case .state(.finished), .state(.failed): true
+    default: false
+    }
+}
+
+private func terminalStates(
+    in events: [VoiceActivatedASREvent]
+) -> [VoiceActivatedASRState] {
+    events.compactMap { event -> VoiceActivatedASRState? in
+        guard case .state(let state) = event else { return nil }
+        switch state {
+        case .finished, .failed: return state
+        default: return nil
+        }
+    }
+}
+
+private func assertSingleAudioUnavailableFailure(
+    in events: [VoiceActivatedASREvent],
+    file: StaticString = #filePath,
+    line: UInt = #line
+) {
+    let failures = events.compactMap { event -> ASRFailure? in
+        guard case .state(.failed(let failure)) = event else { return nil }
+        return failure
+    }
+    XCTAssertEqual(failures.count, 1, file: file, line: line)
+    XCTAssertEqual(failures.first?.code, .audioUnavailable, file: file, line: line)
+}
+
+private actor ManualMonotonicClock {
+    private struct Sleeper {
+        let deadline: Duration
+        let continuation: CheckedContinuation<Void, Never>
+    }
+
+    private var current: Duration = .zero
+    private var sleepers: [Sleeper] = []
+    private(set) var sleepCallCount = 0
+    private var shouldSuspendNextNow = false
+    private var nowIsSuspended = false
+    private var suspendedNowContinuation: CheckedContinuation<Void, Never>?
+    private var nowSuspensionWaiters: [CheckedContinuation<Void, Never>] = []
+
+    nonisolated var injectedClock: VoiceActivatedASRMonotonicClock {
+        VoiceActivatedASRMonotonicClock(
+            now: { await self.now() },
+            sleepUntil: { deadline in await self.sleep(until: deadline) }
+        )
+    }
+
+    var pendingSleeperCount: Int { sleepers.count }
+
+    var earliestDeadline: Duration? {
+        sleepers.map(\.deadline).min()
+    }
+
+    func now() async -> Duration {
+        if shouldSuspendNextNow {
+            shouldSuspendNextNow = false
+            nowIsSuspended = true
+            nowSuspensionWaiters.forEach { $0.resume() }
+            nowSuspensionWaiters.removeAll()
+            await withCheckedContinuation { continuation in
+                suspendedNowContinuation = continuation
+            }
+            nowIsSuspended = false
+        }
+        return current
+    }
+
+    func suspendNextNow() {
+        shouldSuspendNextNow = true
+    }
+
+    func waitUntilNowIsSuspended() async {
+        guard !nowIsSuspended else { return }
+        await withCheckedContinuation { continuation in
+            nowSuspensionWaiters.append(continuation)
+        }
+    }
+
+    func releaseSuspendedNow() {
+        suspendedNowContinuation?.resume()
+        suspendedNowContinuation = nil
+    }
+
+    func sleep(until deadline: Duration) async {
+        sleepCallCount += 1
+        guard deadline > current else { return }
+        await withCheckedContinuation { continuation in
+            sleepers.append(Sleeper(deadline: deadline, continuation: continuation))
+        }
+    }
+
+    func advance(
+        by duration: Duration,
+        resumeDueSleepers: Bool = true
+    ) {
+        precondition(duration >= .zero)
+        current += duration
+        guard resumeDueSleepers else { return }
+        resumeDueSleepersNow()
+    }
+
+    func releaseDueSleepers() {
+        resumeDueSleepersNow()
+    }
+
+    private func resumeDueSleepersNow() {
+        let ready = sleepers.filter { $0.deadline <= current }
+        sleepers.removeAll { $0.deadline <= current }
+        ready.forEach { $0.continuation.resume() }
+    }
+}
+
+private actor ASREventRecorder {
+    private var recorded: [VoiceActivatedASREvent] = []
+
+    func append(_ event: VoiceActivatedASREvent) {
+        recorded.append(event)
+    }
+
+    func values() -> [VoiceActivatedASREvent] {
+        recorded
     }
 }
 
@@ -881,6 +1597,8 @@ private actor FakeVoiceActivityDetector: VoiceActivityDetecting {
     private var gates: [UInt64: CheckedContinuation<Void, Never>] = [:]
     private var observedSequences: Set<UInt64> = []
     private var waiters: [UInt64: [CheckedContinuation<Void, Never>]] = [:]
+
+    var observedFrameCount: Int { observedSequences.count }
 
     init(
         speechBySequence: [UInt64: Bool] = [:],

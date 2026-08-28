@@ -102,6 +102,8 @@ public actor VoiceActivatedASRSession {
     private let transport: any StreamingASRTransport
     private let pipeline: VoiceActivityDetectionPipeline
     private let policy: VoiceActivatedASRPolicy
+    private let frameLivenessClock: VoiceActivatedASRMonotonicClock
+    private let frameLivenessInterval: Duration
     private let eventContinuation: AsyncStream<VoiceActivatedASREvent>.Continuation
     private let cleanupWaitHook: (
         @Sendable (UInt64, VoiceActivatedASRCleanupWaitPhase) async -> Void
@@ -124,6 +126,9 @@ public actor VoiceActivatedASRSession {
     private var sourceLevelTask: Task<Void, Never>?
     private var transportEventTask: Task<Void, Never>?
     private var workerTask: Task<Void, Never>?
+    private var frameLivenessTask: Task<Void, Never>?
+    private var frameLivenessDeadline: Duration?
+    private var frameLivenessEpoch: UInt64 = 0
     private var nextCleanupID: UInt64 = 0
     private var cleanupBarrier: CleanupBarrier?
 
@@ -157,6 +162,8 @@ public actor VoiceActivatedASRSession {
             policy: policy.segmentation
         )
         self.policy = policy
+        self.frameLivenessClock = .continuous
+        self.frameLivenessInterval = Self.frameLivenessInterval(for: policy)
         self.cleanupWaitHook = nil
     }
 
@@ -165,6 +172,7 @@ public actor VoiceActivatedASRSession {
         detector: any VoiceActivityDetecting,
         transport: any StreamingASRTransport,
         policy: VoiceActivatedASRPolicy,
+        frameLivenessClock: VoiceActivatedASRMonotonicClock = .continuous,
         cleanupWaitHook: (
             @Sendable (UInt64, VoiceActivatedASRCleanupWaitPhase) async -> Void
         )? = nil
@@ -179,6 +187,8 @@ public actor VoiceActivatedASRSession {
             policy: policy.segmentation
         )
         self.policy = policy
+        self.frameLivenessClock = frameLivenessClock
+        self.frameLivenessInterval = Self.frameLivenessInterval(for: policy)
         self.cleanupWaitHook = cleanupWaitHook
     }
 
@@ -187,6 +197,7 @@ public actor VoiceActivatedASRSession {
         sourceLevelTask?.cancel()
         transportEventTask?.cancel()
         workerTask?.cancel()
+        frameLivenessTask?.cancel()
         cleanupBarrier?.task.cancel()
         eventContinuation.finish()
     }
@@ -225,6 +236,10 @@ public actor VoiceActivatedASRSession {
                 throw CancellationError()
             }
             acceptingFrames = true
+            await startFrameLivenessWatchdog(generation: runGeneration)
+            guard activeGeneration == runGeneration, acceptingFrames else {
+                throw CancellationError()
+            }
             startSourceTasks(streams: streams, generation: runGeneration)
             transition(to: .armed)
         } catch is CancellationError {
@@ -241,7 +256,7 @@ public actor VoiceActivatedASRSession {
         switch state {
         case .arming, .armed:
             if !speechStarted {
-                await completeLocallyWithoutOpeningTransport(generation: runGeneration)
+                await completeNoSpeech(generation: runGeneration)
                 return
             }
         case .openingRecognizer, .streaming:
@@ -253,10 +268,10 @@ public actor VoiceActivatedASRSession {
         manualFinishRequested = true
         transition(to: .draining(.manual))
         sourceStopExpected = true
+        cancelFrameLivenessWatchdog()
         await frameSource.stop()
         await sourceFrameTask?.value
         acceptingFrames = false
-
         if frameQueue.isEmpty, workerTask == nil {
             await finalize(reason: .manual, generation: runGeneration)
             return
@@ -293,6 +308,7 @@ public actor VoiceActivatedASRSession {
     }
 
     private func resetRunState() {
+        cancelFrameLivenessWatchdog()
         acceptingFrames = false
         speechStarted = false
         transportAttempted = false
@@ -307,6 +323,79 @@ public actor VoiceActivatedASRSession {
         sourceLevelTask = nil
         transportEventTask = nil
         workerTask = nil
+    }
+
+    private static func frameLivenessInterval(for policy: VoiceActivatedASRPolicy) -> Duration {
+        let frameCount = UInt64(policy.noSpeechFrameLimit)
+        let frameDuration = UInt64(VADPCMFrame.durationMilliseconds)
+        let (milliseconds, overflowed) = frameCount.multipliedReportingOverflow(by: frameDuration)
+        let maximumMilliseconds = UInt64(Int64.max)
+        let boundedMilliseconds = overflowed ? maximumMilliseconds : min(milliseconds, maximumMilliseconds)
+        return .milliseconds(Int64(boundedMilliseconds))
+    }
+
+    private func startFrameLivenessWatchdog(generation runGeneration: UInt64) async {
+        cancelFrameLivenessWatchdog()
+        guard activeGeneration == runGeneration, acceptingFrames else { return }
+
+        let now = await frameLivenessClock.now()
+        guard activeGeneration == runGeneration, acceptingFrames else { return }
+
+        frameLivenessEpoch &+= 1
+        let watchdogEpoch = frameLivenessEpoch
+        frameLivenessDeadline = now + frameLivenessInterval
+        let clock = frameLivenessClock
+        frameLivenessTask = Task { [weak self, clock] in
+            while !Task.isCancelled {
+                guard let deadline = await self?.currentFrameLivenessDeadline(
+                    generation: runGeneration,
+                    epoch: watchdogEpoch
+                ) else { return }
+                await clock.sleep(until: deadline)
+                guard !Task.isCancelled else { return }
+                guard let shouldContinue = await self?.frameLivenessWatchdogWoke(
+                    generation: runGeneration,
+                    epoch: watchdogEpoch
+                ), shouldContinue else { return }
+            }
+        }
+    }
+
+    private func currentFrameLivenessDeadline(
+        generation runGeneration: UInt64,
+        epoch watchdogEpoch: UInt64
+    ) -> Duration? {
+        guard activeGeneration == runGeneration,
+              acceptingFrames,
+              frameLivenessEpoch == watchdogEpoch else { return nil }
+        return frameLivenessDeadline
+    }
+
+    private func frameLivenessWatchdogWoke(
+        generation runGeneration: UInt64,
+        epoch watchdogEpoch: UInt64
+    ) async -> Bool {
+        guard activeGeneration == runGeneration,
+              acceptingFrames,
+              frameLivenessEpoch == watchdogEpoch,
+              let deadline = frameLivenessDeadline else { return false }
+
+        let now = await frameLivenessClock.now()
+        guard activeGeneration == runGeneration,
+              acceptingFrames,
+              frameLivenessEpoch == watchdogEpoch,
+              frameLivenessDeadline == deadline else { return true }
+        guard now >= deadline else { return true }
+
+        await fail(.categorized(.audioUnavailable), generation: runGeneration)
+        return false
+    }
+
+    private func cancelFrameLivenessWatchdog() {
+        frameLivenessEpoch &+= 1
+        frameLivenessDeadline = nil
+        frameLivenessTask?.cancel()
+        frameLivenessTask = nil
     }
 
     private func startSourceTasks(
@@ -341,8 +430,36 @@ public actor VoiceActivatedASRSession {
             await fail(.categorized(.uploadBackpressureExceeded), generation: runGeneration)
             return
         }
+
+        let acceptedAt = await frameLivenessClock.now()
+        guard activeGeneration == runGeneration, acceptingFrames else { return }
+        let currentPendingCount = frameQueue.count
+            + pendingUploadFrames.count
+            + inFlightUploadFrameCount
+        guard currentPendingCount < policy.maximumPendingUploadFrameCount else {
+            await fail(.categorized(.uploadBackpressureExceeded), generation: runGeneration)
+            return
+        }
+        if let currentDeadline = frameLivenessDeadline {
+            guard acceptedAt < currentDeadline else {
+                await fail(.categorized(.audioUnavailable), generation: runGeneration)
+                return
+            }
+            frameLivenessDeadline = acceptedAt + frameLivenessInterval
+        } else {
+            guard isDrainingManualCapture else {
+                await fail(.categorized(.audioUnavailable), generation: runGeneration)
+                return
+            }
+        }
         frameQueue.append(frame)
         startWorkerIfNeeded(generation: runGeneration)
+    }
+
+    private var isDrainingManualCapture: Bool {
+        guard manualFinishRequested, sourceStopExpected else { return false }
+        if case .draining(.manual) = state { return true }
+        return false
     }
 
     private func receive(level: Float, generation runGeneration: UInt64) {
@@ -501,6 +618,7 @@ public actor VoiceActivatedASRSession {
         guard activeGeneration == runGeneration, !finalizationStarted else { return }
         finalizationStarted = true
         acceptingFrames = false
+        cancelFrameLivenessWatchdog()
         manualFinishRequested = false
         transition(to: .draining(reason))
         await frameSource.stop()
@@ -578,6 +696,7 @@ public actor VoiceActivatedASRSession {
         guard activeGeneration == runGeneration else { return }
         activeGeneration = nil
         acceptingFrames = false
+        cancelFrameLivenessWatchdog()
         sourceFrameTask?.cancel()
         sourceLevelTask?.cancel()
         transportEventTask?.cancel()
@@ -606,6 +725,7 @@ public actor VoiceActivatedASRSession {
         generation &+= 1
         activeGeneration = nil
         acceptingFrames = false
+        cancelFrameLivenessWatchdog()
         sourceFrameTask?.cancel()
         sourceLevelTask?.cancel()
         workerTask?.cancel()

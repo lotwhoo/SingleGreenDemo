@@ -1,0 +1,1087 @@
+{
+  "ABIRoot": {
+    "children": [
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "StreamingTextKit",
+        "name": "CoreGraphics",
+        "printedName": "CoreGraphics"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "StreamingTextKit",
+        "name": "Foundation",
+        "printedName": "Foundation"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "StreamingTextKit",
+        "name": "SwiftOnoneSupport",
+        "printedName": "SwiftOnoneSupport"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "StreamingTextKit",
+        "name": "_Concurrency",
+        "printedName": "_Concurrency"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "StreamingTextKit",
+        "name": "_StringProcessing",
+        "printedName": "_StringProcessing"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "StreamingTextKit",
+        "name": "_SwiftConcurrencyShims",
+        "printedName": "_SwiftConcurrencyShims"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CGFloat",
+                "printedName": "CoreGraphics.CGFloat",
+                "usr": "s:14CoreFoundation7CGFloatV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CGFloat",
+                "printedName": "CoreGraphics.CGFloat",
+                "usr": "s:14CoreFoundation7CGFloatV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CGFloat",
+                "printedName": "CoreGraphics.CGFloat",
+                "usr": "s:14CoreFoundation7CGFloatV"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "CGFloat",
+                "printedName": "CoreGraphics.CGFloat",
+                "usr": "s:14CoreFoundation7CGFloatV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s16StreamingTextKit0aB16AutoFollowPolicyO06shouldE021previousContentHeight03newiJ008viewportJ09toleranceSb12CoreGraphics7CGFloatV_A3KtFZ",
+            "moduleName": "StreamingTextKit",
+            "name": "shouldFollow",
+            "printedName": "shouldFollow(previousContentHeight:newContentHeight:viewportHeight:tolerance:)",
+            "static": true,
+            "usr": "s:16StreamingTextKit0aB16AutoFollowPolicyO06shouldE021previousContentHeight03newiJ008viewportJ09toleranceSb14CoreFoundation7CGFloatV_A3KtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s16StreamingTextKit0aB16AutoFollowPolicyO",
+        "moduleName": "StreamingTextKit",
+        "name": "StreamingTextAutoFollowPolicy",
+        "printedName": "StreamingTextAutoFollowPolicy",
+        "usr": "s:16StreamingTextKit0aB16AutoFollowPolicyO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s16StreamingTextKit0aB10ReconcilerO6suffix2in5afterSSSgSS_SStFZ",
+            "moduleName": "StreamingTextKit",
+            "name": "suffix",
+            "printedName": "suffix(in:after:)",
+            "static": true,
+            "usr": "s:16StreamingTextKit0aB10ReconcilerO6suffix2in5afterSSSgSS_SStFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s16StreamingTextKit0aB10ReconcilerO",
+        "moduleName": "StreamingTextKit",
+        "name": "StreamingTextReconciler",
+        "printedName": "StreamingTextReconciler",
+        "usr": "s:16StreamingTextKit0aB10ReconcilerO"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s16StreamingTextKit16TypewriterPolicyV24tickIntervalMillisecondsSivg",
+                "moduleName": "StreamingTextKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:16StreamingTextKit16TypewriterPolicyV24tickIntervalMillisecondsSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s16StreamingTextKit16TypewriterPolicyV24tickIntervalMillisecondsSivp",
+            "moduleName": "StreamingTextKit",
+            "name": "tickIntervalMilliseconds",
+            "printedName": "tickIntervalMilliseconds",
+            "usr": "s:16StreamingTextKit16TypewriterPolicyV24tickIntervalMillisecondsSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s16StreamingTextKit16TypewriterPolicyV17shortBacklogLimitSivg",
+                "moduleName": "StreamingTextKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:16StreamingTextKit16TypewriterPolicyV17shortBacklogLimitSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s16StreamingTextKit16TypewriterPolicyV17shortBacklogLimitSivp",
+            "moduleName": "StreamingTextKit",
+            "name": "shortBacklogLimit",
+            "printedName": "shortBacklogLimit",
+            "usr": "s:16StreamingTextKit16TypewriterPolicyV17shortBacklogLimitSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s16StreamingTextKit16TypewriterPolicyV18mediumBacklogLimitSivg",
+                "moduleName": "StreamingTextKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:16StreamingTextKit16TypewriterPolicyV18mediumBacklogLimitSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s16StreamingTextKit16TypewriterPolicyV18mediumBacklogLimitSivp",
+            "moduleName": "StreamingTextKit",
+            "name": "mediumBacklogLimit",
+            "printedName": "mediumBacklogLimit",
+            "usr": "s:16StreamingTextKit16TypewriterPolicyV18mediumBacklogLimitSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s16StreamingTextKit16TypewriterPolicyV15mediumBatchSizeSivg",
+                "moduleName": "StreamingTextKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:16StreamingTextKit16TypewriterPolicyV15mediumBatchSizeSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s16StreamingTextKit16TypewriterPolicyV15mediumBatchSizeSivp",
+            "moduleName": "StreamingTextKit",
+            "name": "mediumBatchSize",
+            "printedName": "mediumBatchSize",
+            "usr": "s:16StreamingTextKit16TypewriterPolicyV15mediumBatchSizeSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s16StreamingTextKit16TypewriterPolicyV21minimumLargeBatchSizeSivg",
+                "moduleName": "StreamingTextKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:16StreamingTextKit16TypewriterPolicyV21minimumLargeBatchSizeSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s16StreamingTextKit16TypewriterPolicyV21minimumLargeBatchSizeSivp",
+            "moduleName": "StreamingTextKit",
+            "name": "minimumLargeBatchSize",
+            "printedName": "minimumLargeBatchSize",
+            "usr": "s:16StreamingTextKit16TypewriterPolicyV21minimumLargeBatchSizeSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s16StreamingTextKit16TypewriterPolicyV17catchUpTickBudgetSivg",
+                "moduleName": "StreamingTextKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:16StreamingTextKit16TypewriterPolicyV17catchUpTickBudgetSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s16StreamingTextKit16TypewriterPolicyV17catchUpTickBudgetSivp",
+            "moduleName": "StreamingTextKit",
+            "name": "catchUpTickBudget",
+            "printedName": "catchUpTickBudget",
+            "usr": "s:16StreamingTextKit16TypewriterPolicyV17catchUpTickBudgetSivp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "TypewriterPolicy",
+                "printedName": "StreamingTextKit.TypewriterPolicy",
+                "usr": "s:16StreamingTextKit16TypewriterPolicyV"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s16StreamingTextKit16TypewriterPolicyV24tickIntervalMilliseconds17shortBacklogLimit06mediumjK00L9BatchSize012minimumLargemN017catchUpTickBudgetACSi_S5itcfc",
+            "moduleName": "StreamingTextKit",
+            "name": "init",
+            "printedName": "init(tickIntervalMilliseconds:shortBacklogLimit:mediumBacklogLimit:mediumBatchSize:minimumLargeBatchSize:catchUpTickBudget:)",
+            "usr": "s:16StreamingTextKit16TypewriterPolicyV24tickIntervalMilliseconds17shortBacklogLimit06mediumjK00L9BatchSize012minimumLargemN017catchUpTickBudgetACSi_S5itcfc"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "TypewriterPolicy",
+                    "printedName": "StreamingTextKit.TypewriterPolicy",
+                    "usr": "s:16StreamingTextKit16TypewriterPolicyV"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s16StreamingTextKit16TypewriterPolicyV8standardACvgZ",
+                "moduleName": "StreamingTextKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "static": true,
+                "usr": "s:16StreamingTextKit16TypewriterPolicyV8standardACvgZ"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "TypewriterPolicy",
+                "printedName": "StreamingTextKit.TypewriterPolicy",
+                "usr": "s:16StreamingTextKit16TypewriterPolicyV"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s16StreamingTextKit16TypewriterPolicyV8standardACvpZ",
+            "moduleName": "StreamingTextKit",
+            "name": "standard",
+            "printedName": "standard",
+            "static": true,
+            "usr": "s:16StreamingTextKit16TypewriterPolicyV8standardACvpZ"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "TypewriterPolicy",
+                "printedName": "StreamingTextKit.TypewriterPolicy",
+                "usr": "s:16StreamingTextKit16TypewriterPolicyV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "TypewriterPolicy",
+                "printedName": "StreamingTextKit.TypewriterPolicy",
+                "usr": "s:16StreamingTextKit16TypewriterPolicyV"
+              }
+            ],
+            "declAttributes": [
+              "Implements"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s16StreamingTextKit16TypewriterPolicyV23__derived_struct_equalsySbAC_ACtFZ",
+            "moduleName": "StreamingTextKit",
+            "name": "__derived_struct_equals",
+            "printedName": "__derived_struct_equals(_:_:)",
+            "static": true,
+            "usr": "s:16StreamingTextKit16TypewriterPolicyV23__derived_struct_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s16StreamingTextKit16TypewriterPolicyV",
+        "moduleName": "StreamingTextKit",
+        "name": "TypewriterPolicy",
+        "printedName": "TypewriterPolicy",
+        "usr": "s:16StreamingTextKit16TypewriterPolicyV"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV06targetB0SSvg",
+                "moduleName": "StreamingTextKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:16StreamingTextKit010TypewriterB6BufferV06targetB0SSvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "SetterAccess",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "kind": "Var",
+            "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV06targetB0SSvp",
+            "moduleName": "StreamingTextKit",
+            "name": "targetText",
+            "printedName": "targetText",
+            "usr": "s:16StreamingTextKit010TypewriterB6BufferV06targetB0SSvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV07visibleB0SSvg",
+                "moduleName": "StreamingTextKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:16StreamingTextKit010TypewriterB6BufferV07visibleB0SSvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "SetterAccess",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "kind": "Var",
+            "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV07visibleB0SSvp",
+            "moduleName": "StreamingTextKit",
+            "name": "visibleText",
+            "printedName": "visibleText",
+            "usr": "s:16StreamingTextKit010TypewriterB6BufferV07visibleB0SSvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "TypewriterPolicy",
+                    "printedName": "StreamingTextKit.TypewriterPolicy",
+                    "usr": "s:16StreamingTextKit16TypewriterPolicyV"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV6policyAA0D6PolicyVvg",
+                "moduleName": "StreamingTextKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:16StreamingTextKit010TypewriterB6BufferV6policyAA0D6PolicyVvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "TypewriterPolicy",
+                "printedName": "StreamingTextKit.TypewriterPolicy",
+                "usr": "s:16StreamingTextKit16TypewriterPolicyV"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV6policyAA0D6PolicyVvp",
+            "moduleName": "StreamingTextKit",
+            "name": "policy",
+            "printedName": "policy",
+            "usr": "s:16StreamingTextKit010TypewriterB6BufferV6policyAA0D6PolicyVvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "TypewriterTextBuffer",
+                "printedName": "StreamingTextKit.TypewriterTextBuffer",
+                "usr": "s:16StreamingTextKit010TypewriterB6BufferV"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "TypewriterPolicy",
+                "printedName": "StreamingTextKit.TypewriterPolicy",
+                "usr": "s:16StreamingTextKit16TypewriterPolicyV"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV6policyAcA0D6PolicyV_tcfc",
+            "moduleName": "StreamingTextKit",
+            "name": "init",
+            "printedName": "init(policy:)",
+            "usr": "s:16StreamingTextKit010TypewriterB6BufferV6policyAcA0D6PolicyV_tcfc"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV10isCaughtUpSbvg",
+                "moduleName": "StreamingTextKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:16StreamingTextKit010TypewriterB6BufferV10isCaughtUpSbvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Var",
+            "kind": "Var",
+            "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV10isCaughtUpSbvp",
+            "moduleName": "StreamingTextKit",
+            "name": "isCaughtUp",
+            "printedName": "isCaughtUp",
+            "usr": "s:16StreamingTextKit010TypewriterB6BufferV10isCaughtUpSbvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV21pendingCharacterCountSivg",
+                "moduleName": "StreamingTextKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:16StreamingTextKit010TypewriterB6BufferV21pendingCharacterCountSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "kind": "Var",
+            "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV21pendingCharacterCountSivp",
+            "moduleName": "StreamingTextKit",
+            "name": "pendingCharacterCount",
+            "printedName": "pendingCharacterCount",
+            "usr": "s:16StreamingTextKit010TypewriterB6BufferV21pendingCharacterCountSivp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV6appendyySSF",
+            "moduleName": "StreamingTextKit",
+            "name": "append",
+            "printedName": "append(_:)",
+            "usr": "s:16StreamingTextKit010TypewriterB6BufferV6appendyySSF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV5resetyyF",
+            "moduleName": "StreamingTextKit",
+            "name": "reset",
+            "printedName": "reset()",
+            "usr": "s:16StreamingTextKit010TypewriterB6BufferV5resetyyF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declAttributes": [
+              "DiscardableResult"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV5flushSbyF",
+            "moduleName": "StreamingTextKit",
+            "name": "flush",
+            "printedName": "flush()",
+            "usr": "s:16StreamingTextKit010TypewriterB6BufferV5flushSbyF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "DiscardableResult"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV7advance13maxCharactersSbSi_tF",
+            "moduleName": "StreamingTextKit",
+            "name": "advance",
+            "printedName": "advance(maxCharacters:)",
+            "usr": "s:16StreamingTextKit010TypewriterB6BufferV7advance13maxCharactersSbSi_tF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV18suggestedBatchSizeSiyF",
+            "moduleName": "StreamingTextKit",
+            "name": "suggestedBatchSize",
+            "printedName": "suggestedBatchSize()",
+            "usr": "s:16StreamingTextKit010TypewriterB6BufferV18suggestedBatchSizeSiyF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "TypewriterTextBuffer",
+                "printedName": "StreamingTextKit.TypewriterTextBuffer",
+                "usr": "s:16StreamingTextKit010TypewriterB6BufferV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "TypewriterTextBuffer",
+                "printedName": "StreamingTextKit.TypewriterTextBuffer",
+                "usr": "s:16StreamingTextKit010TypewriterB6BufferV"
+              }
+            ],
+            "declAttributes": [
+              "Implements"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV23__derived_struct_equalsySbAC_ACtFZ",
+            "moduleName": "StreamingTextKit",
+            "name": "__derived_struct_equals",
+            "printedName": "__derived_struct_equals(_:_:)",
+            "static": true,
+            "usr": "s:16StreamingTextKit010TypewriterB6BufferV23__derived_struct_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s16StreamingTextKit010TypewriterB6BufferV",
+        "moduleName": "StreamingTextKit",
+        "name": "TypewriterTextBuffer",
+        "printedName": "TypewriterTextBuffer",
+        "usr": "s:16StreamingTextKit010TypewriterB6BufferV"
+      }
+    ],
+    "json_format_version": 8,
+    "kind": "Root",
+    "name": "StreamingTextKit",
+    "printedName": "StreamingTextKit"
+  }
+}

@@ -68,6 +68,18 @@ Every streaming conversation change must consider:
 
 Test counts are evidence for a specific commit, not a fixed target. Agents must report the current count produced by the current code.
 
+## M7 PR1 quality gates
+
+`config/architecture-boundaries.json` records package products, target dependencies, Swift imports, and Xcode local-package ownership. Run `scripts/check_architecture_boundaries.sh` for the real graph and `scripts/test_architecture_boundaries.sh` for the valid graph plus negative fixtures. `config/toolchain.json` pins Xcode 26.6, Swift 6.3.3, and the macOS/iPhone Simulator 26.5 SDKs.
+
+Reviewed public API snapshots live under `api-baselines/xcode-26.6-swift-6.3.3/` (seven modules × two arm64 platforms). Run `scripts/check_public_api_baselines.sh` for exact drift checking and `scripts/test_public_api_baselines.sh` for symbol, inventory, and mapping negatives. To intentionally accept a reviewed API change, run `scripts/update_public_api_baselines.sh --accept-current-api`, inspect additions and removals, then rerun the checker and relevant tests. `scripts/test_public_api_baseline_update.sh` covers unsafe paths, rollback, and replacement failure. The updater is explicit and blocked in CI.
+
+See [the M7 PR1 evidence record](./tasks/2026-08-28-m7-pr1-quality-baseline.md). GitHub Actions has not yet run this workflow; its configuration is not execution evidence.
+
+## M7 PR2 lifecycle invariants
+
+`VoiceActivatedASRSession` owns source liveness, not `VoiceActivityDetectionKit`: one ContinuousClock-backed injectable monotonic watchdog starts after source start, and accepted raw frames refresh the compatibility-derived `noSpeechFrameLimit × 20 ms` interval (standard 15 s). Deadline expiry fails closed as typed `audioUnavailable` both before and after onset. Silent frames remain the automatic `.noSpeech` path; VAD/levels/transport/stale/rejected frames are not heartbeats. Manual pre-onset finish emits Core `.noSpeech` then `.finished`; post-onset finish drains buffered tail frames FIFO. Tests must preserve actor/generation/epoch isolation, cancellation-insensitive stale wake handling, exact deadlines, one terminal event, source failures, finish races, automatic finalization, deallocation, and tail drain.
+
 ## Example requests
 
 Architecture and implementation:

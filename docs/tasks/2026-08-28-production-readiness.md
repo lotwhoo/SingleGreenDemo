@@ -44,7 +44,7 @@ Fresh local QA on 2026-08-28 passed the strict five-package gate with 254 tests 
 
 ## Superseding integrated VAD status (2026-08-28)
 
-The approved WebRTC production detector is integrated only at the `SingleGreenDemo` composition root; independent AISettings remains fail-closed. Current strict evidence is **377/377** across six Packages (7,16,43,150,70,91), App **62/62** at `/private/tmp/SingleGreenDemo-QA-PostWrapper-AppTest.xcresult`, focused ASR/controller **24/24** and **77/77**, and VAD ASan/UBSan/TSan **43/43** each. Debug/Release universal simulator, unsigned Release iphoneos, and static gates pass; coverage is `/private/tmp/SingleGreenDemo-QA-PostWrapper-Coverage`. After unlock, the mic-fix device launch succeeded at 2026-08-28 13:29 with PID 5053 stable; the user reported no apparent issues in physical-device testing. This is user-observed acceptance, not a complete scripted VAD/ASR/provider route/interruption matrix.
+The approved WebRTC production detector is integrated only at the `SingleGreenDemo` composition root; independent AISettings remains fail-closed. This is a historical PR1 snapshot: strict evidence was **377/377** across six Packages and App **62/62** at `/private/tmp/SingleGreenDemo-QA-PostWrapper-AppTest.xcresult`; it is not current PR2 evidence.
 
 Until those boxes are supported by release evidence, M5 is an automated foundation rather than a production launch approval.
 
@@ -53,6 +53,8 @@ Until those boxes are supported by release evidence, M5 is an automated foundati
 The prior provider-neutral post-audit snapshot (now historical) had six Package suites at **349/349** (`StreamingTextKit` 7, `VoiceChatDomain` 16, `VoiceActivityDetectionKit` 23, `SingleGreenGlassesKit` 148, `LLMKit` 70, `VoiceChatCore` 85) and App-hosted XCTest **48/48** at `/private/tmp/SingleGreenDemo-ProviderNeutral-OwnerApp.xcresult`; Release Simulator `arm64 + x86_64` builds and credential isolation passed. Its package source coverage was 85.23%, 99.07%, 95.47%, 93.57%, 89.89%, and 73.02% respectively.
 
 The prior FinalQA2 snapshot (now superseded) had six Package suites at **351/351**, App-hosted XCTest **54/54** at `/private/tmp/SingleGreenDemo-FinalQA2-App.xcresult`, and focused `VoiceActivatedASRSession`/`VoiceConversationController` suites **24/24** and **77/77**. Its coverage was 85.23%, 99.07%, 95.47%, 93.38%, 89.89%, and 73.02% respectively.
+
+M7 PR2 supersedes the above local test snapshot with **390/390** Package tests and **62/62** App tests. It does not add physical-device, real-provider, hosted-CI, accessibility, optical, or fresh-sanitizer evidence; see [the PR2 lifecycle record](2026-08-28-m7-pr2-lifecycle-correctness.md).
 
 The current Throwing-VAD FinalQA2 evidence has six Package suites at **351/351**, App-hosted XCTest **58/58** at `/private/tmp/SingleGreenDemo-ThrowingVAD-Full.xcresult`, and throwing factory focused tests **12/12** at `/private/tmp/SingleGreenDemo-ThrowingVAD-Focused.xcresult`; Debug/Release generic Simulator universal `arm64 + x86_64` builds, static gates, and Release credential isolation pass.
 

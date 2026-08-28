@@ -1,0 +1,3456 @@
+{
+  "ABIRoot": {
+    "children": [
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "VoiceActivityDetectionKit",
+        "name": "SwiftOnoneSupport",
+        "printedName": "SwiftOnoneSupport"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "VoiceActivityDetectionKit",
+        "name": "_Concurrency",
+        "printedName": "_Concurrency"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "VoiceActivityDetectionKit",
+        "name": "_StringProcessing",
+        "printedName": "_StringProcessing"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "VoiceActivityDetectionKit",
+        "name": "_SwiftConcurrencyShims",
+        "printedName": "_SwiftConcurrencyShims"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV15sampleRateHertzSivgZ",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "static": true,
+                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV15sampleRateHertzSivgZ"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV15sampleRateHertzSivpZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "sampleRateHertz",
+            "printedName": "sampleRateHertz",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV15sampleRateHertzSivpZ"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV12channelCountSivgZ",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "static": true,
+                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV12channelCountSivgZ"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV12channelCountSivpZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "channelCount",
+            "printedName": "channelCount",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV12channelCountSivpZ"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV20durationMillisecondsSivgZ",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "static": true,
+                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV20durationMillisecondsSivgZ"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV20durationMillisecondsSivpZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "durationMilliseconds",
+            "printedName": "durationMilliseconds",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV20durationMillisecondsSivpZ"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV11sampleCountSivgZ",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "static": true,
+                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV11sampleCountSivgZ"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV11sampleCountSivpZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "sampleCount",
+            "printedName": "sampleCount",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV11sampleCountSivpZ"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV9byteCountSivgZ",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "static": true,
+                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV9byteCountSivgZ"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV9byteCountSivpZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "byteCount",
+            "printedName": "byteCount",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV9byteCountSivpZ"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UInt64",
+                    "printedName": "Swift.UInt64",
+                    "usr": "s:s6UInt64V"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV8sequences6UInt64Vvg",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV8sequences6UInt64Vvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UInt64",
+                "printedName": "Swift.UInt64",
+                "usr": "s:s6UInt64V"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV8sequences6UInt64Vvp",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "sequence",
+            "printedName": "sequence",
+            "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV8sequences6UInt64Vvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "UInt8",
+                        "printedName": "Swift.UInt8",
+                        "usr": "s:s5UInt8V"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[Swift.UInt8]",
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV17littleEndianBytesSays5UInt8VGvg",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV17littleEndianBytesSays5UInt8VGvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UInt8",
+                    "printedName": "Swift.UInt8",
+                    "usr": "s:s5UInt8V"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[Swift.UInt8]",
+                "usr": "s:Sa"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV17littleEndianBytesSays5UInt8VGvp",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "littleEndianBytes",
+            "printedName": "littleEndianBytes",
+            "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV17littleEndianBytesSays5UInt8VGvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VADPCMFrame",
+                "printedName": "VoiceActivityDetectionKit.VADPCMFrame",
+                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UInt64",
+                "printedName": "Swift.UInt64",
+                "usr": "s:s6UInt64V"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UInt8",
+                    "printedName": "Swift.UInt8",
+                    "usr": "s:s5UInt8V"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[Swift.UInt8]",
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV8sequence17littleEndianBytesACs6UInt64V_Says5UInt8VGtKcfc",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "init",
+            "printedName": "init(sequence:littleEndianBytes:)",
+            "throwing": true,
+            "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV8sequence17littleEndianBytesACs6UInt64V_Says5UInt8VGtKcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VADPCMFrame",
+                "printedName": "VoiceActivityDetectionKit.VADPCMFrame",
+                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UInt64",
+                "printedName": "Swift.UInt64",
+                "usr": "s:s6UInt64V"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int16",
+                    "printedName": "Swift.Int16",
+                    "usr": "s:s5Int16V"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[Swift.Int16]",
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV8sequence7samplesACs6UInt64V_Says5Int16VGtKcfc",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "init",
+            "printedName": "init(sequence:samples:)",
+            "throwing": true,
+            "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV8sequence7samplesACs6UInt64V_Says5Int16VGtKcfc"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int16",
+                        "printedName": "Swift.Int16",
+                        "usr": "s:s5Int16V"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[Swift.Int16]",
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV7samplesSays5Int16VGvg",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV7samplesSays5Int16VGvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int16",
+                    "printedName": "Swift.Int16",
+                    "usr": "s:s5Int16V"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[Swift.Int16]",
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Var",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV7samplesSays5Int16VGvp",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "samples",
+            "printedName": "samples",
+            "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV7samplesSays5Int16VGvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADPCMFrame",
+                "printedName": "VoiceActivityDetectionKit.VADPCMFrame",
+                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADPCMFrame",
+                "printedName": "VoiceActivityDetectionKit.VADPCMFrame",
+                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV"
+              }
+            ],
+            "declAttributes": [
+              "Implements"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV23__derived_struct_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "__derived_struct_equals",
+            "printedName": "__derived_struct_equals(_:_:)",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV23__derived_struct_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s25VoiceActivityDetectionKit11VADPCMFrameV",
+        "moduleName": "VoiceActivityDetectionKit",
+        "name": "VADPCMFrame",
+        "printedName": "VADPCMFrame",
+        "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADPCMFrameError",
+                        "printedName": "VoiceActivityDetectionKit.VADPCMFrameError",
+                        "usr": "s:25VoiceActivityDetectionKit16VADPCMFrameErrorO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(expected: Swift.Int, actual: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int, Swift.Int) -> VoiceActivityDetectionKit.VADPCMFrameError"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADPCMFrameError",
+                        "printedName": "VoiceActivityDetectionKit.VADPCMFrameError",
+                        "usr": "s:25VoiceActivityDetectionKit16VADPCMFrameErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VADPCMFrameError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VADPCMFrameError.Type) -> (Swift.Int, Swift.Int) -> VoiceActivityDetectionKit.VADPCMFrameError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit16VADPCMFrameErrorO16invalidByteCountyACSi_SitcACmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "invalidByteCount",
+            "printedName": "invalidByteCount",
+            "usr": "s:25VoiceActivityDetectionKit16VADPCMFrameErrorO16invalidByteCountyACSi_SitcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADPCMFrameError",
+                        "printedName": "VoiceActivityDetectionKit.VADPCMFrameError",
+                        "usr": "s:25VoiceActivityDetectionKit16VADPCMFrameErrorO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(expected: Swift.Int, actual: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int, Swift.Int) -> VoiceActivityDetectionKit.VADPCMFrameError"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADPCMFrameError",
+                        "printedName": "VoiceActivityDetectionKit.VADPCMFrameError",
+                        "usr": "s:25VoiceActivityDetectionKit16VADPCMFrameErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VADPCMFrameError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VADPCMFrameError.Type) -> (Swift.Int, Swift.Int) -> VoiceActivityDetectionKit.VADPCMFrameError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit16VADPCMFrameErrorO18invalidSampleCountyACSi_SitcACmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "invalidSampleCount",
+            "printedName": "invalidSampleCount",
+            "usr": "s:25VoiceActivityDetectionKit16VADPCMFrameErrorO18invalidSampleCountyACSi_SitcACmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADPCMFrameError",
+                "printedName": "VoiceActivityDetectionKit.VADPCMFrameError",
+                "usr": "s:25VoiceActivityDetectionKit16VADPCMFrameErrorO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADPCMFrameError",
+                "printedName": "VoiceActivityDetectionKit.VADPCMFrameError",
+                "usr": "s:25VoiceActivityDetectionKit16VADPCMFrameErrorO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s25VoiceActivityDetectionKit16VADPCMFrameErrorO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit16VADPCMFrameErrorO21__derived_enum_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss5ErrorP",
+            "name": "Error",
+            "printedName": "Error",
+            "usr": "s:s5ErrorP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s25VoiceActivityDetectionKit16VADPCMFrameErrorO",
+        "moduleName": "VoiceActivityDetectionKit",
+        "name": "VADPCMFrameError",
+        "printedName": "VADPCMFrameError",
+        "usr": "s:25VoiceActivityDetectionKit16VADPCMFrameErrorO"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV24maximumPreRollFrameCountSivgZ",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "static": true,
+                "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV24maximumPreRollFrameCountSivgZ"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV24maximumPreRollFrameCountSivpZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "maximumPreRollFrameCount",
+            "printedName": "maximumPreRollFrameCount",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV24maximumPreRollFrameCountSivpZ"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV28maximumOnsetWindowFrameCountSivgZ",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "static": true,
+                "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV28maximumOnsetWindowFrameCountSivgZ"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV28maximumOnsetWindowFrameCountSivpZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "maximumOnsetWindowFrameCount",
+            "printedName": "maximumOnsetWindowFrameCount",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV28maximumOnsetWindowFrameCountSivpZ"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV32maximumEndpointSilenceFrameCountSivgZ",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "static": true,
+                "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV32maximumEndpointSilenceFrameCountSivgZ"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV32maximumEndpointSilenceFrameCountSivpZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "maximumEndpointSilenceFrameCount",
+            "printedName": "maximumEndpointSilenceFrameCount",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV32maximumEndpointSilenceFrameCountSivpZ"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV24maximumSegmentFrameCountSivgZ",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "static": true,
+                "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV24maximumSegmentFrameCountSivgZ"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV24maximumSegmentFrameCountSivpZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "maximumSegmentFrameCount",
+            "printedName": "maximumSegmentFrameCount",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV24maximumSegmentFrameCountSivpZ"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV17preRollFrameCountSivg",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV17preRollFrameCountSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV17preRollFrameCountSivp",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "preRollFrameCount",
+            "printedName": "preRollFrameCount",
+            "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV17preRollFrameCountSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV21onsetWindowFrameCountSivg",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV21onsetWindowFrameCountSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV21onsetWindowFrameCountSivp",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "onsetWindowFrameCount",
+            "printedName": "onsetWindowFrameCount",
+            "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV21onsetWindowFrameCountSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV29onsetRequiredSpeechFrameCountSivg",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV29onsetRequiredSpeechFrameCountSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV29onsetRequiredSpeechFrameCountSivp",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "onsetRequiredSpeechFrameCount",
+            "printedName": "onsetRequiredSpeechFrameCount",
+            "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV29onsetRequiredSpeechFrameCountSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV25endpointSilenceFrameCountSivg",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV25endpointSilenceFrameCountSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV25endpointSilenceFrameCountSivp",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "endpointSilenceFrameCount",
+            "printedName": "endpointSilenceFrameCount",
+            "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV25endpointSilenceFrameCountSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV24maximumSegmentFrameCountSivg",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV24maximumSegmentFrameCountSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV24maximumSegmentFrameCountSivp",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "maximumSegmentFrameCount",
+            "printedName": "maximumSegmentFrameCount",
+            "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV24maximumSegmentFrameCountSivp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VADSegmentationPolicy",
+                "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicy",
+                "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV17preRollFrameCount011onsetWindowiJ00k14RequiredSpeechiJ0015endpointSilenceiJ0014maximumSegmentiJ0ACSi_S4itKcfc",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "init",
+            "printedName": "init(preRollFrameCount:onsetWindowFrameCount:onsetRequiredSpeechFrameCount:endpointSilenceFrameCount:maximumSegmentFrameCount:)",
+            "throwing": true,
+            "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV17preRollFrameCount011onsetWindowiJ00k14RequiredSpeechiJ0015endpointSilenceiJ0014maximumSegmentiJ0ACSi_S4itKcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADSegmentationPolicy",
+                "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicy",
+                "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADSegmentationPolicy",
+                "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicy",
+                "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV"
+              }
+            ],
+            "declAttributes": [
+              "Implements"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV23__derived_struct_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "__derived_struct_equals",
+            "printedName": "__derived_struct_equals(_:_:)",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV23__derived_struct_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s25VoiceActivityDetectionKit21VADSegmentationPolicyV",
+        "moduleName": "VoiceActivityDetectionKit",
+        "name": "VADSegmentationPolicy",
+        "printedName": "VADSegmentationPolicy",
+        "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationPolicyError",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError",
+                        "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(actual: Swift.Int, maximum: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int, Swift.Int) -> VoiceActivityDetectionKit.VADSegmentationPolicyError"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationPolicyError",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError",
+                        "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VADSegmentationPolicyError.Type) -> (Swift.Int, Swift.Int) -> VoiceActivityDetectionKit.VADSegmentationPolicyError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO27preRollFrameCountOutOfRangeyACSi_SitcACmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "preRollFrameCountOutOfRange",
+            "printedName": "preRollFrameCountOutOfRange",
+            "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO27preRollFrameCountOutOfRangeyACSi_SitcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationPolicyError",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError",
+                        "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(actual: Swift.Int, maximum: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int, Swift.Int) -> VoiceActivityDetectionKit.VADSegmentationPolicyError"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationPolicyError",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError",
+                        "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VADSegmentationPolicyError.Type) -> (Swift.Int, Swift.Int) -> VoiceActivityDetectionKit.VADSegmentationPolicyError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO31onsetWindowFrameCountOutOfRangeyACSi_SitcACmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "onsetWindowFrameCountOutOfRange",
+            "printedName": "onsetWindowFrameCountOutOfRange",
+            "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO31onsetWindowFrameCountOutOfRangeyACSi_SitcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationPolicyError",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError",
+                        "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(preRoll: Swift.Int, onsetWindow: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int, Swift.Int) -> VoiceActivityDetectionKit.VADSegmentationPolicyError"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationPolicyError",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError",
+                        "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VADSegmentationPolicyError.Type) -> (Swift.Int, Swift.Int) -> VoiceActivityDetectionKit.VADSegmentationPolicyError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO29preRollShorterThanOnsetWindowyACSi_SitcACmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "preRollShorterThanOnsetWindow",
+            "printedName": "preRollShorterThanOnsetWindow",
+            "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO29preRollShorterThanOnsetWindowyACSi_SitcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationPolicyError",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError",
+                        "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(actual: Swift.Int, onsetWindow: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int, Swift.Int) -> VoiceActivityDetectionKit.VADSegmentationPolicyError"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationPolicyError",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError",
+                        "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VADSegmentationPolicyError.Type) -> (Swift.Int, Swift.Int) -> VoiceActivityDetectionKit.VADSegmentationPolicyError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO39onsetRequiredSpeechFrameCountOutOfRangeyACSi_SitcACmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "onsetRequiredSpeechFrameCountOutOfRange",
+            "printedName": "onsetRequiredSpeechFrameCountOutOfRange",
+            "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO39onsetRequiredSpeechFrameCountOutOfRangeyACSi_SitcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationPolicyError",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError",
+                        "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(actual: Swift.Int, maximum: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int, Swift.Int) -> VoiceActivityDetectionKit.VADSegmentationPolicyError"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationPolicyError",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError",
+                        "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VADSegmentationPolicyError.Type) -> (Swift.Int, Swift.Int) -> VoiceActivityDetectionKit.VADSegmentationPolicyError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO35endpointSilenceFrameCountOutOfRangeyACSi_SitcACmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "endpointSilenceFrameCountOutOfRange",
+            "printedName": "endpointSilenceFrameCountOutOfRange",
+            "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO35endpointSilenceFrameCountOutOfRangeyACSi_SitcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationPolicyError",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError",
+                        "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(actual: Swift.Int, minimum: Swift.Int, maximum: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int, Swift.Int, Swift.Int) -> VoiceActivityDetectionKit.VADSegmentationPolicyError"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationPolicyError",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError",
+                        "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VADSegmentationPolicyError.Type) -> (Swift.Int, Swift.Int, Swift.Int) -> VoiceActivityDetectionKit.VADSegmentationPolicyError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO34maximumSegmentFrameCountOutOfRangeyACSi_S2itcACmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "maximumSegmentFrameCountOutOfRange",
+            "printedName": "maximumSegmentFrameCountOutOfRange",
+            "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO34maximumSegmentFrameCountOutOfRangeyACSi_S2itcACmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADSegmentationPolicyError",
+                "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError",
+                "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADSegmentationPolicyError",
+                "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicyError",
+                "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO21__derived_enum_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss5ErrorP",
+            "name": "Error",
+            "printedName": "Error",
+            "usr": "s:s5ErrorP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO",
+        "moduleName": "VoiceActivityDetectionKit",
+        "name": "VADSegmentationPolicyError",
+        "printedName": "VADSegmentationPolicyError",
+        "usr": "s:25VoiceActivityDetectionKit26VADSegmentationPolicyErrorO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADEndpointReason",
+                        "printedName": "VoiceActivityDetectionKit.VADEndpointReason",
+                        "usr": "s:25VoiceActivityDetectionKit17VADEndpointReasonO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(silentFrameCount: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int) -> VoiceActivityDetectionKit.VADEndpointReason"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADEndpointReason",
+                        "printedName": "VoiceActivityDetectionKit.VADEndpointReason",
+                        "usr": "s:25VoiceActivityDetectionKit17VADEndpointReasonO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VADEndpointReason.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VADEndpointReason.Type) -> (Swift.Int) -> VoiceActivityDetectionKit.VADEndpointReason"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit17VADEndpointReasonO7silenceyACSi_tcACmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "silence",
+            "printedName": "silence",
+            "usr": "s:25VoiceActivityDetectionKit17VADEndpointReasonO7silenceyACSi_tcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADEndpointReason",
+                        "printedName": "VoiceActivityDetectionKit.VADEndpointReason",
+                        "usr": "s:25VoiceActivityDetectionKit17VADEndpointReasonO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(frameCount: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int) -> VoiceActivityDetectionKit.VADEndpointReason"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADEndpointReason",
+                        "printedName": "VoiceActivityDetectionKit.VADEndpointReason",
+                        "usr": "s:25VoiceActivityDetectionKit17VADEndpointReasonO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VADEndpointReason.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VADEndpointReason.Type) -> (Swift.Int) -> VoiceActivityDetectionKit.VADEndpointReason"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit17VADEndpointReasonO15maximumDurationyACSi_tcACmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "maximumDuration",
+            "printedName": "maximumDuration",
+            "usr": "s:25VoiceActivityDetectionKit17VADEndpointReasonO15maximumDurationyACSi_tcACmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADEndpointReason",
+                "printedName": "VoiceActivityDetectionKit.VADEndpointReason",
+                "usr": "s:25VoiceActivityDetectionKit17VADEndpointReasonO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADEndpointReason",
+                "printedName": "VoiceActivityDetectionKit.VADEndpointReason",
+                "usr": "s:25VoiceActivityDetectionKit17VADEndpointReasonO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s25VoiceActivityDetectionKit17VADEndpointReasonO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit17VADEndpointReasonO21__derived_enum_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s25VoiceActivityDetectionKit17VADEndpointReasonO",
+        "moduleName": "VoiceActivityDetectionKit",
+        "name": "VADEndpointReason",
+        "printedName": "VADEndpointReason",
+        "usr": "s:25VoiceActivityDetectionKit17VADEndpointReasonO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationEvent",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationEvent",
+                        "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(segmentID: Swift.UInt64)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64) -> VoiceActivityDetectionKit.VADSegmentationEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationEvent",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationEvent",
+                        "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VADSegmentationEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VADSegmentationEvent.Type) -> (Swift.UInt64) -> VoiceActivityDetectionKit.VADSegmentationEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit20VADSegmentationEventO14segmentStartedyACs6UInt64V_tcACmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "segmentStarted",
+            "printedName": "segmentStarted",
+            "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO14segmentStartedyACs6UInt64V_tcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationEvent",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationEvent",
+                        "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "VADPCMFrame",
+                                "printedName": "VoiceActivityDetectionKit.VADPCMFrame",
+                                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV"
+                              }
+                            ],
+                            "kind": "TypeNominal",
+                            "name": "Array",
+                            "printedName": "[VoiceActivityDetectionKit.VADPCMFrame]",
+                            "usr": "s:Sa"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(segmentID: Swift.UInt64, frames: [VoiceActivityDetectionKit.VADPCMFrame])"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64, [VoiceActivityDetectionKit.VADPCMFrame]) -> VoiceActivityDetectionKit.VADSegmentationEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationEvent",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationEvent",
+                        "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VADSegmentationEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VADSegmentationEvent.Type) -> (Swift.UInt64, [VoiceActivityDetectionKit.VADPCMFrame]) -> VoiceActivityDetectionKit.VADSegmentationEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit20VADSegmentationEventO6framesyACs6UInt64V_SayAA11VADPCMFrameVGtcACmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "frames",
+            "printedName": "frames",
+            "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO6framesyACs6UInt64V_SayAA11VADPCMFrameVGtcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationEvent",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationEvent",
+                        "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(segmentID: Swift.UInt64, afterSilentFrameCount: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64, Swift.Int) -> VoiceActivityDetectionKit.VADSegmentationEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationEvent",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationEvent",
+                        "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VADSegmentationEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VADSegmentationEvent.Type) -> (Swift.UInt64, Swift.Int) -> VoiceActivityDetectionKit.VADSegmentationEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit20VADSegmentationEventO13speechResumedyACs6UInt64V_SitcACmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "speechResumed",
+            "printedName": "speechResumed",
+            "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO13speechResumedyACs6UInt64V_SitcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationEvent",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationEvent",
+                        "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "VADEndpointReason",
+                            "printedName": "VoiceActivityDetectionKit.VADEndpointReason",
+                            "usr": "s:25VoiceActivityDetectionKit17VADEndpointReasonO"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(segmentID: Swift.UInt64, reason: VoiceActivityDetectionKit.VADEndpointReason)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64, VoiceActivityDetectionKit.VADEndpointReason) -> VoiceActivityDetectionKit.VADSegmentationEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationEvent",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationEvent",
+                        "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VADSegmentationEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VADSegmentationEvent.Type) -> (Swift.UInt64, VoiceActivityDetectionKit.VADEndpointReason) -> VoiceActivityDetectionKit.VADSegmentationEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit20VADSegmentationEventO12segmentEndedyACs6UInt64V_AA17VADEndpointReasonOtcACmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "segmentEnded",
+            "printedName": "segmentEnded",
+            "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO12segmentEndedyACs6UInt64V_AA17VADEndpointReasonOtcACmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADSegmentationEvent",
+                "printedName": "VoiceActivityDetectionKit.VADSegmentationEvent",
+                "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADSegmentationEvent",
+                "printedName": "VoiceActivityDetectionKit.VADSegmentationEvent",
+                "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s25VoiceActivityDetectionKit20VADSegmentationEventO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO21__derived_enum_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s25VoiceActivityDetectionKit20VADSegmentationEventO",
+        "moduleName": "VoiceActivityDetectionKit",
+        "name": "VADSegmentationEvent",
+        "printedName": "VADSegmentationEvent",
+        "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationError",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationError",
+                        "usr": "s:25VoiceActivityDetectionKit20VADSegmentationErrorO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(previous: Swift.UInt64, current: Swift.UInt64)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64, Swift.UInt64) -> VoiceActivityDetectionKit.VADSegmentationError"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VADSegmentationError",
+                        "printedName": "VoiceActivityDetectionKit.VADSegmentationError",
+                        "usr": "s:25VoiceActivityDetectionKit20VADSegmentationErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VADSegmentationError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VADSegmentationError.Type) -> (Swift.UInt64, Swift.UInt64) -> VoiceActivityDetectionKit.VADSegmentationError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit20VADSegmentationErrorO21sequenceNotIncreasingyACs6UInt64V_AFtcACmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "sequenceNotIncreasing",
+            "printedName": "sequenceNotIncreasing",
+            "usr": "s:25VoiceActivityDetectionKit20VADSegmentationErrorO21sequenceNotIncreasingyACs6UInt64V_AFtcACmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADSegmentationError",
+                "printedName": "VoiceActivityDetectionKit.VADSegmentationError",
+                "usr": "s:25VoiceActivityDetectionKit20VADSegmentationErrorO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADSegmentationError",
+                "printedName": "VoiceActivityDetectionKit.VADSegmentationError",
+                "usr": "s:25VoiceActivityDetectionKit20VADSegmentationErrorO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s25VoiceActivityDetectionKit20VADSegmentationErrorO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit20VADSegmentationErrorO21__derived_enum_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss5ErrorP",
+            "name": "Error",
+            "printedName": "Error",
+            "usr": "s:s5ErrorP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s25VoiceActivityDetectionKit20VADSegmentationErrorO",
+        "moduleName": "VoiceActivityDetectionKit",
+        "name": "VADSegmentationError",
+        "printedName": "VADSegmentationError",
+        "usr": "s:25VoiceActivityDetectionKit20VADSegmentationErrorO"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VADSegmentationPolicy",
+                    "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicy",
+                    "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit12VADSegmenterV6policyAA21VADSegmentationPolicyVvg",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:25VoiceActivityDetectionKit12VADSegmenterV6policyAA21VADSegmentationPolicyVvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VADSegmentationPolicy",
+                "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicy",
+                "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit12VADSegmenterV6policyAA21VADSegmentationPolicyVvp",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "policy",
+            "printedName": "policy",
+            "usr": "s:25VoiceActivityDetectionKit12VADSegmenterV6policyAA21VADSegmentationPolicyVvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VADSegmenter",
+                "printedName": "VoiceActivityDetectionKit.VADSegmenter",
+                "usr": "s:25VoiceActivityDetectionKit12VADSegmenterV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADSegmentationPolicy",
+                "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicy",
+                "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s25VoiceActivityDetectionKit12VADSegmenterV6policyAcA21VADSegmentationPolicyV_tcfc",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "init",
+            "printedName": "init(policy:)",
+            "usr": "s:25VoiceActivityDetectionKit12VADSegmenterV6policyAcA21VADSegmentationPolicyV_tcfc"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit12VADSegmenterV15isSegmentActiveSbvg",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:25VoiceActivityDetectionKit12VADSegmenterV15isSegmentActiveSbvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Var",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit12VADSegmenterV15isSegmentActiveSbvp",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "isSegmentActive",
+            "printedName": "isSegmentActive",
+            "usr": "s:25VoiceActivityDetectionKit12VADSegmenterV15isSegmentActiveSbvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit12VADSegmenterV25bufferedPreRollFrameCountSivg",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:25VoiceActivityDetectionKit12VADSegmenterV25bufferedPreRollFrameCountSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit12VADSegmenterV25bufferedPreRollFrameCountSivp",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "bufferedPreRollFrameCount",
+            "printedName": "bufferedPreRollFrameCount",
+            "usr": "s:25VoiceActivityDetectionKit12VADSegmenterV25bufferedPreRollFrameCountSivp"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VADSegmentationEvent",
+                    "printedName": "VoiceActivityDetectionKit.VADSegmentationEvent",
+                    "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[VoiceActivityDetectionKit.VADSegmentationEvent]",
+                "usr": "s:Sa"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADPCMFrame",
+                "printedName": "VoiceActivityDetectionKit.VADPCMFrame",
+                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivityObservation",
+                "printedName": "VoiceActivityDetectionKit.VoiceActivityObservation",
+                "usr": "s:25VoiceActivityDetectionKit0aB11ObservationV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s25VoiceActivityDetectionKit12VADSegmenterV7consume_11observationSayAA20VADSegmentationEventOGAA11VADPCMFrameV_AA0aB11ObservationVtKF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "consume",
+            "printedName": "consume(_:observation:)",
+            "throwing": true,
+            "usr": "s:25VoiceActivityDetectionKit12VADSegmenterV7consume_11observationSayAA20VADSegmentationEventOGAA11VADPCMFrameV_AA0aB11ObservationVtKF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s25VoiceActivityDetectionKit12VADSegmenterV5resetyyF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "reset",
+            "printedName": "reset()",
+            "usr": "s:25VoiceActivityDetectionKit12VADSegmenterV5resetyyF"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s25VoiceActivityDetectionKit12VADSegmenterV",
+        "moduleName": "VoiceActivityDetectionKit",
+        "name": "VADSegmenter",
+        "printedName": "VADSegmenter",
+        "usr": "s:25VoiceActivityDetectionKit12VADSegmenterV"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit0aB11ObservationV17speechProbabilitySdvg",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:25VoiceActivityDetectionKit0aB11ObservationV17speechProbabilitySdvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Double",
+                "printedName": "Swift.Double",
+                "usr": "s:Sd"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit0aB11ObservationV17speechProbabilitySdvp",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "speechProbability",
+            "printedName": "speechProbability",
+            "usr": "s:25VoiceActivityDetectionKit0aB11ObservationV17speechProbabilitySdvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit0aB11ObservationV8isSpeechSbvg",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:25VoiceActivityDetectionKit0aB11ObservationV8isSpeechSbvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit0aB11ObservationV8isSpeechSbvp",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "isSpeech",
+            "printedName": "isSpeech",
+            "usr": "s:25VoiceActivityDetectionKit0aB11ObservationV8isSpeechSbvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivityObservation",
+                "printedName": "VoiceActivityDetectionKit.VoiceActivityObservation",
+                "usr": "s:25VoiceActivityDetectionKit0aB11ObservationV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Double",
+                "printedName": "Swift.Double",
+                "usr": "s:Sd"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s25VoiceActivityDetectionKit0aB11ObservationV17speechProbability8isSpeechACSd_SbtKcfc",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "init",
+            "printedName": "init(speechProbability:isSpeech:)",
+            "throwing": true,
+            "usr": "s:25VoiceActivityDetectionKit0aB11ObservationV17speechProbability8isSpeechACSd_SbtKcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivityObservation",
+                "printedName": "VoiceActivityDetectionKit.VoiceActivityObservation",
+                "usr": "s:25VoiceActivityDetectionKit0aB11ObservationV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivityObservation",
+                "printedName": "VoiceActivityDetectionKit.VoiceActivityObservation",
+                "usr": "s:25VoiceActivityDetectionKit0aB11ObservationV"
+              }
+            ],
+            "declAttributes": [
+              "Implements"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s25VoiceActivityDetectionKit0aB11ObservationV23__derived_struct_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "__derived_struct_equals",
+            "printedName": "__derived_struct_equals(_:_:)",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit0aB11ObservationV23__derived_struct_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s25VoiceActivityDetectionKit0aB11ObservationV",
+        "moduleName": "VoiceActivityDetectionKit",
+        "name": "VoiceActivityObservation",
+        "printedName": "VoiceActivityObservation",
+        "usr": "s:25VoiceActivityDetectionKit0aB11ObservationV"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivityObservationError",
+                    "printedName": "VoiceActivityDetectionKit.VoiceActivityObservationError",
+                    "usr": "s:25VoiceActivityDetectionKit0aB16ObservationErrorO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivityObservationError",
+                        "printedName": "VoiceActivityDetectionKit.VoiceActivityObservationError",
+                        "usr": "s:25VoiceActivityDetectionKit0aB16ObservationErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VoiceActivityObservationError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VoiceActivityObservationError.Type) -> VoiceActivityDetectionKit.VoiceActivityObservationError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit0aB16ObservationErrorO20nonFiniteProbabilityyA2CmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "nonFiniteProbability",
+            "printedName": "nonFiniteProbability",
+            "usr": "s:25VoiceActivityDetectionKit0aB16ObservationErrorO20nonFiniteProbabilityyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivityObservationError",
+                        "printedName": "VoiceActivityDetectionKit.VoiceActivityObservationError",
+                        "usr": "s:25VoiceActivityDetectionKit0aB16ObservationErrorO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Double",
+                        "printedName": "Swift.Double",
+                        "usr": "s:Sd"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Double) -> VoiceActivityDetectionKit.VoiceActivityObservationError"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivityObservationError",
+                        "printedName": "VoiceActivityDetectionKit.VoiceActivityObservationError",
+                        "usr": "s:25VoiceActivityDetectionKit0aB16ObservationErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceActivityDetectionKit.VoiceActivityObservationError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceActivityDetectionKit.VoiceActivityObservationError.Type) -> (Swift.Double) -> VoiceActivityDetectionKit.VoiceActivityObservationError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit0aB16ObservationErrorO21probabilityOutOfRangeyACSdcACmF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "probabilityOutOfRange",
+            "printedName": "probabilityOutOfRange",
+            "usr": "s:25VoiceActivityDetectionKit0aB16ObservationErrorO21probabilityOutOfRangeyACSdcACmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivityObservationError",
+                "printedName": "VoiceActivityDetectionKit.VoiceActivityObservationError",
+                "usr": "s:25VoiceActivityDetectionKit0aB16ObservationErrorO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivityObservationError",
+                "printedName": "VoiceActivityDetectionKit.VoiceActivityObservationError",
+                "usr": "s:25VoiceActivityDetectionKit0aB16ObservationErrorO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s25VoiceActivityDetectionKit0aB16ObservationErrorO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:25VoiceActivityDetectionKit0aB16ObservationErrorO21__derived_enum_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss5ErrorP",
+            "name": "Error",
+            "printedName": "Error",
+            "usr": "s:s5ErrorP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s25VoiceActivityDetectionKit0aB16ObservationErrorO",
+        "moduleName": "VoiceActivityDetectionKit",
+        "name": "VoiceActivityObservationError",
+        "printedName": "VoiceActivityObservationError",
+        "usr": "s:25VoiceActivityDetectionKit0aB16ObservationErrorO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivityObservation",
+                "printedName": "VoiceActivityDetectionKit.VoiceActivityObservation",
+                "usr": "s:25VoiceActivityDetectionKit0aB11ObservationV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADPCMFrame",
+                "printedName": "VoiceActivityDetectionKit.VADPCMFrame",
+                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "genericSig": "<Self where Self : VoiceActivityDetectionKit.VoiceActivityDetecting>",
+            "kind": "Function",
+            "mangledName": "$s25VoiceActivityDetectionKit0aB9DetectingP11observation3forAA0aB11ObservationVAA11VADPCMFrameV_tYaKF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "observation",
+            "printedName": "observation(for:)",
+            "protocolReq": true,
+            "reqNewWitnessTableEntry": true,
+            "throwing": true,
+            "usr": "s:25VoiceActivityDetectionKit0aB9DetectingP11observation3forAA0aB11ObservationVAA11VADPCMFrameV_tYaKF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "genericSig": "<Self where Self : VoiceActivityDetectionKit.VoiceActivityDetecting>",
+            "kind": "Function",
+            "mangledName": "$s25VoiceActivityDetectionKit0aB9DetectingP5resetyyYaF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "reset",
+            "printedName": "reset()",
+            "protocolReq": true,
+            "reqNewWitnessTableEntry": true,
+            "usr": "s:25VoiceActivityDetectionKit0aB9DetectingP5resetyyYaF"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sScA",
+            "name": "Actor",
+            "printedName": "Actor",
+            "usr": "s:ScA"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Protocol",
+        "genericSig": "<Self : _Concurrency.Actor>",
+        "kind": "TypeDecl",
+        "mangledName": "$s25VoiceActivityDetectionKit0aB9DetectingP",
+        "moduleName": "VoiceActivityDetectionKit",
+        "name": "VoiceActivityDetecting",
+        "printedName": "VoiceActivityDetecting",
+        "usr": "s:25VoiceActivityDetectionKit0aB9DetectingP"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivityDetectionPipeline",
+                "printedName": "VoiceActivityDetectionKit.VoiceActivityDetectionPipeline",
+                "usr": "s:25VoiceActivityDetectionKit0abC8PipelineC"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivityDetecting",
+                "printedName": "any VoiceActivityDetectionKit.VoiceActivityDetecting",
+                "usr": "s:25VoiceActivityDetectionKit0aB9DetectingP"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADSegmentationPolicy",
+                "printedName": "VoiceActivityDetectionKit.VADSegmentationPolicy",
+                "usr": "s:25VoiceActivityDetectionKit21VADSegmentationPolicyV"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s25VoiceActivityDetectionKit0abC8PipelineC8detector6policyAcA0aB9Detecting_p_AA21VADSegmentationPolicyVtcfc",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "init",
+            "printedName": "init(detector:policy:)",
+            "usr": "s:25VoiceActivityDetectionKit0abC8PipelineC8detector6policyAcA0aB9Detecting_p_AA21VADSegmentationPolicyVtcfc"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VADSegmentationEvent",
+                    "printedName": "VoiceActivityDetectionKit.VADSegmentationEvent",
+                    "usr": "s:25VoiceActivityDetectionKit20VADSegmentationEventO"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[VoiceActivityDetectionKit.VADSegmentationEvent]",
+                "usr": "s:Sa"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VADPCMFrame",
+                "printedName": "VoiceActivityDetectionKit.VADPCMFrame",
+                "usr": "s:25VoiceActivityDetectionKit11VADPCMFrameV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s25VoiceActivityDetectionKit0abC8PipelineC7processySayAA20VADSegmentationEventOGAA11VADPCMFrameVYaKF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "process",
+            "printedName": "process(_:)",
+            "throwing": true,
+            "usr": "s:25VoiceActivityDetectionKit0abC8PipelineC7processySayAA20VADSegmentationEventOGAA11VADPCMFrameVYaKF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s25VoiceActivityDetectionKit0abC8PipelineC5resetyyYaF",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "reset",
+            "printedName": "reset()",
+            "usr": "s:25VoiceActivityDetectionKit0abC8PipelineC5resetyyYaF"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UnownedSerialExecutor",
+                    "printedName": "_Concurrency.UnownedSerialExecutor",
+                    "usr": "s:Sce"
+                  }
+                ],
+                "declAttributes": [
+                  "Final"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s25VoiceActivityDetectionKit0abC8PipelineC15unownedExecutorScevg",
+                "moduleName": "VoiceActivityDetectionKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:25VoiceActivityDetectionKit0abC8PipelineC15unownedExecutorScevg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UnownedSerialExecutor",
+                "printedName": "_Concurrency.UnownedSerialExecutor",
+                "usr": "s:Sce"
+              }
+            ],
+            "declAttributes": [
+              "Available",
+              "Available",
+              "Available",
+              "Available",
+              "Final",
+              "Nonisolated",
+              "Semantics"
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "intro_Macosx": "10.15",
+            "intro_iOS": "13.0",
+            "intro_tvOS": "13.0",
+            "intro_watchOS": "6.0",
+            "kind": "Var",
+            "mangledName": "$s25VoiceActivityDetectionKit0abC8PipelineC15unownedExecutorScevp",
+            "moduleName": "VoiceActivityDetectionKit",
+            "name": "unownedExecutor",
+            "printedName": "unownedExecutor",
+            "usr": "s:25VoiceActivityDetectionKit0abC8PipelineC15unownedExecutorScevp"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sScA",
+            "name": "Actor",
+            "printedName": "Actor",
+            "usr": "s:ScA"
+          }
+        ],
+        "declKind": "Class",
+        "kind": "TypeDecl",
+        "mangledName": "$s25VoiceActivityDetectionKit0abC8PipelineC",
+        "moduleName": "VoiceActivityDetectionKit",
+        "name": "VoiceActivityDetectionPipeline",
+        "printedName": "VoiceActivityDetectionPipeline",
+        "usr": "s:25VoiceActivityDetectionKit0abC8PipelineC"
+      }
+    ],
+    "json_format_version": 8,
+    "kind": "Root",
+    "name": "VoiceActivityDetectionKit",
+    "printedName": "VoiceActivityDetectionKit"
+  }
+}
