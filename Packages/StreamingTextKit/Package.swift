@@ -13,5 +13,6 @@ let package = Package(
     targets: [
         .target(name: "StreamingTextKit"),
         .testTarget(name: "StreamingTextKitTests", dependencies: ["StreamingTextKit"])
-    ]
+    ],
+    swiftLanguageModes: [.v6]
 )

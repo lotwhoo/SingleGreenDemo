@@ -6,6 +6,10 @@ Pods/
 build/
 *.xcresult
 *.ipa
+*.profdata
+*.profraw
+*.log
+.coverage/
 .swiftpm/
 *.xcuserstate
 xcuserdata/

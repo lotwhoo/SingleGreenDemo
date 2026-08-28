@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  package-matrix:
+    name: Package / ${{ matrix.package }}
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [StreamingTextKit, VoiceChatDomain, VoiceActivityDetectionKit, SingleGreenGlassesKit, LLMKit, VoiceChatCore]
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift test --package-path "Packages/${{ matrix.package }}" -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+      - name: Build aggregate-only VAD benchmark
+        if: matrix.package == 'VoiceActivityDetectionKit'
+        run: swift build --package-path Packages/VoiceActivityDetectionKit --product VADBenchmark -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+      - name: Build privacy-safe ASRCLI
+        if: matrix.package == 'VoiceChatCore'
+        run: swift build --package-path Packages/VoiceChatCore --product ASRCLI -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+
+  app-simulator:
+    name: App simulator tests
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve Simulator and run App tests
+        run: |
+          set -o pipefail
+          xcodebuild -project SingleGreenDemo.xcodeproj -scheme SingleGreenDemo -showdestinations
+          simulator_udid=$(scripts/resolve_simulator_destination.sh)
+          xcodebuild -project SingleGreenDemo.xcodeproj -scheme SingleGreenDemo \
+            -destination "platform=iOS Simulator,id=$simulator_udid" \
+            -derivedDataPath "$RUNNER_TEMP/SingleGreenDemo-AppTests" \
+            -resultBundlePath "$RUNNER_TEMP/SingleGreenDemo-AppTests.xcresult" \
+            test -only-testing:SingleGreenDemoTests \
+            SWIFT_STRICT_CONCURRENCY=complete
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: app-simulator-xcresult
+          path: ${{ runner.temp }}/SingleGreenDemo-AppTests.xcresult
+          if-no-files-found: warn
+
+  release-build:
+    name: Release generic simulator build
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set -o pipefail
+          xcodebuild -project SingleGreenDemo.xcodeproj -scheme SingleGreenDemo \
+            -configuration Release -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/SingleGreenDemo-Release" \
+            CODE_SIGNING_ALLOWED=NO \
+            SWIFT_STRICT_CONCURRENCY=complete \
+            ONLY_ACTIVE_ARCH=NO \
+            'ARCHS=arm64 x86_64' build
+          scripts/check_release_credential_isolation.sh \
+            "$RUNNER_TEMP/SingleGreenDemo-Release/Build/Products/Release-iphonesimulator/SingleGreenDemo.app"
+
+  coverage-and-hygiene:
+    name: Coverage and repository hygiene
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/check_repository_hygiene.sh
+      - run: scripts/check_package_inventory.sh
+      - run: scripts/scan_secrets.sh
+      - run: scripts/test_repository_checks.sh
+      - run: scripts/test_coverage_scope.sh
+      - run: scripts/check_privacy_logging.sh
+      - run: scripts/check_vad_privacy.sh
+      - run: scripts/test_release_evidence_validator.sh
+      - run: scripts/test_simulator_destination.sh
+      - run: scripts/coverage_gate.sh "$RUNNER_TEMP/coverage"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: package-coverage
+          path: ${{ runner.temp }}/coverage
+          if-no-files-found: warn
