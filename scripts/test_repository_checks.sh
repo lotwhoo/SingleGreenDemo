@@ -29,4 +29,13 @@ if "$script_directory/scan_secrets.sh" --root "$text_secret_directory" >/dev/nul
     exit 1
 fi
 
+documentation_output=$(PATH=/usr/bin:/bin "$script_directory/check_vad_documentation_state.sh")
+case "$documentation_output" in
+    *"VAD documentation state check passed"*) ;;
+    *)
+        echo "error: VAD documentation check did not pass without ripgrep" >&2
+        exit 1
+        ;;
+esac
+
 echo "Repository scan regression tests passed."

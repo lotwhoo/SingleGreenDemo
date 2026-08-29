@@ -2,6 +2,17 @@
 set -euo pipefail
 
 repository_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+
+if command -v rg >/dev/null 2>&1; then
+  search_lines() { rg -n -- "$@"; }
+  search_lines_ignore_case() { rg -n -i -- "$@"; }
+  search_matches() { rg -o -- "$@"; }
+else
+  search_lines() { grep -nE -- "$@"; }
+  search_lines_ignore_case() { grep -nEi -- "$@"; }
+  search_matches() { grep -Eo -- "$@"; }
+fi
+
 require_text() {
   local file=$1 marker=$2
   if ! grep -Fq "$marker" "$repository_root/$file"; then
@@ -18,7 +29,7 @@ require_text "docs/tasks/2026-08-28-m7-pr2-lifecycle-correctness.md" "owns one C
 require_text "NOTICE.md" "BSD/PATENTS/AUTHORS acknowledgements"
 require_text "NOTICE.md" "spl_sqrt_floor/spl_sqrt_floor.h"
 authoritative=(README.md Packages/README.md docs/PROJECT_ARCHITECTURE_AND_UPGRADE_REPORT.md docs/RELEASE_CHECKLIST.md)
-if rg -n 'production detector factory remains nil|生产检测器 factory 仍为空|生产 detector factory 仍为空|生产 detector.*尚未批准|approval box.*unchecked|未引入 WebRTC|真实麦克风/VAD/服务和当前真机功能仍未验收|mic-fix signed device build/codesign/install passed, but launch was blocked|real VAD/mic/ASR/provider/UI acceptance remains unverified|No real VAD, microphone, ASR, LLM, Search, GitHub CI, backend, or rollback evidence is claimed' "${authoritative[@]/#/$repository_root/}"; then
+if search_lines 'production detector factory remains nil|生产检测器 factory 仍为空|生产 detector factory 仍为空|生产 detector.*尚未批准|approval box.*unchecked|未引入 WebRTC|真实麦克风/VAD/服务和当前真机功能仍未验收|mic-fix signed device build/codesign/install passed, but launch was blocked|real VAD/mic/ASR/provider/UI acceptance remains unverified|No real VAD, microphone, ASR, LLM, Search, GitHub CI, backend, or rollback evidence is claimed' "${authoritative[@]/#/$repository_root/}"; then
   echo "error: stale pre-integration VAD claim found in authoritative documentation" >&2
   exit 1
 fi
@@ -58,7 +69,7 @@ require_section_text "architecture report PR5 section" "$current_arch" "架构�
 require_section_text "architecture report PR5 section" "$current_arch" "$retry_xcresult"
 
 if printf '%s\n%s\n%s\n' "$current_readme" "$current_release" "$current_arch" | \
-    rg -n 'seven modules|七个模块|14 snapshots|14 个|390/390|414/414|62/62|10 个负例|10 negative'; then
+    search_lines 'seven modules|七个模块|14 snapshots|14 个|390/390|414/414|62/62|10 个负例|10 negative'; then
   echo "error: stale historical count found in an authoritative M7 PR5 evidence section" >&2
   exit 1
 fi
@@ -68,13 +79,13 @@ while IFS= read -r claim; do
     echo "error: PR3+PR4 evidence is still labeled current/latest without a historical or superseded qualifier: $claim" >&2
     exit 1
   fi
-done < <(rg -n -i \
+done < <(search_lines_ignore_case \
   '(PR3[[:space:]]*\+[[:space:]]*PR4.*(current|latest|当前|最新)|(current|latest|当前|最新).*PR3[[:space:]]*\+[[:space:]]*PR4)' \
   "${authoritative[@]/#/$repository_root/}" || true)
 
 validate_concurrent_result_claim() {
   local claim=$1 old_concurrent_result normalized
-  old_concurrent_result=$(rg -o '/private/tmp/SingleGreenDemo-M7-PR5-AppTests(\.xcresult|/Logs/Test/[^`[:space:]]+\.xcresult)' <<<"$claim" | head -n 1)
+  old_concurrent_result=$(search_matches '/private/tmp/SingleGreenDemo-M7-PR5-AppTests(\.xcresult|/Logs/Test/[^`[:space:]]+\.xcresult)' <<<"$claim" | head -n 1)
   [[ -n "$old_concurrent_result" ]] || return 1
 
   normalized=${claim//non-authoritative/}
@@ -109,7 +120,7 @@ while IFS= read -r claim; do
     echo "error: the concurrent PR5 xcresult must be non-authoritative concurrent timing-warning evidence: $claim" >&2
     exit 1
   fi
-done < <(rg -n \
+done < <(search_lines \
   '/private/tmp/SingleGreenDemo-M7-PR5-AppTests(\.xcresult|/Logs/Test/[^`[:space:]]+\.xcresult)' \
   "${authoritative[@]/#/$repository_root/}" || true)
 
