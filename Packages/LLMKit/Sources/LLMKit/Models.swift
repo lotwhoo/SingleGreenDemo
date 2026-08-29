@@ -10,6 +10,8 @@ public struct LLMMessage: Codable, Sendable, Equatable {
 
     public var role: Role
     public var content: String?
+    /// Provider reasoning retained only for protocol replay; presentation layers must ignore it.
+    public var reasoningContent: String?
     /// 助手消息携带的工具调用（模型请求执行工具时非空）。
     public var toolCalls: [LLMToolCall]?
     /// tool 角色消息关联的工具调用 id。
@@ -18,6 +20,7 @@ public struct LLMMessage: Codable, Sendable, Equatable {
     public init(role: Role, content: String) {
         self.role = role
         self.content = content
+        self.reasoningContent = nil
         self.toolCalls = nil
         self.toolCallID = nil
     }
@@ -27,18 +30,59 @@ public struct LLMMessage: Codable, Sendable, Equatable {
                 toolCallID: String? = nil) {
         self.role = role
         self.content = content
+        self.reasoningContent = nil
+        self.toolCalls = toolCalls
+        self.toolCallID = toolCallID
+    }
+
+    public init(role: Role, content: String?,
+                reasoningContent: String?,
+                toolCalls: [LLMToolCall]? = nil,
+                toolCallID: String? = nil) {
+        self.role = role
+        self.content = content
+        self.reasoningContent = reasoningContent
         self.toolCalls = toolCalls
         self.toolCallID = toolCallID
     }
 
     enum CodingKeys: String, CodingKey {
         case role, content
+        case reasoningContent = "reasoning_content"
         case toolCalls = "tool_calls"
         case toolCallID = "tool_call_id"
     }
 }
 
 // MARK: - 请求
+
+/// Provider-neutral opt-in for models that expose an internal thinking mode.
+public struct LLMThinkingConfiguration: Sendable, Equatable {
+    public enum Mode: String, Codable, Sendable, Equatable {
+        case enabled
+        case disabled
+    }
+
+    public enum Effort: String, Codable, Sendable, Equatable {
+        case low
+        case high
+        case maximum = "max"
+    }
+
+    public let mode: Mode
+    public let effort: Effort?
+
+    public init(mode: Mode, effort: Effort? = nil) {
+        self.mode = mode
+        self.effort = mode == .enabled ? effort : nil
+    }
+
+    public static func enabled(effort: Effort? = nil) -> Self {
+        .init(mode: .enabled, effort: effort)
+    }
+
+    public static let disabled = Self(mode: .disabled)
+}
 
 /// Chat Completions 请求体。
 public struct LLMChatRequest: Codable, Sendable, Equatable {
@@ -49,21 +93,79 @@ public struct LLMChatRequest: Codable, Sendable, Equatable {
     public var stream: Bool
     /// 可用工具列表（Function Calling）。
     public var tools: [LLMTool]?
+    /// Explicit thinking policy. Nil preserves generic OpenAI-compatible payloads.
+    public var thinking: LLMThinkingConfiguration?
 
     enum CodingKeys: String, CodingKey {
-        case model, messages, temperature, stream, tools
+        case model, messages, temperature, stream, tools, thinking
         case maxTokens = "max_tokens"
+        case reasoningEffort = "reasoning_effort"
     }
 
     public init(model: String, messages: [LLMMessage],
                 temperature: Double? = nil, maxTokens: Int? = nil,
                 stream: Bool = false, tools: [LLMTool]? = nil) {
+        self.init(
+            model: model,
+            messages: messages,
+            temperature: temperature,
+            maxTokens: maxTokens,
+            stream: stream,
+            tools: tools,
+            thinking: nil
+        )
+    }
+
+    public init(model: String, messages: [LLMMessage],
+                temperature: Double? = nil, maxTokens: Int? = nil,
+                stream: Bool = false, tools: [LLMTool]? = nil,
+                thinking: LLMThinkingConfiguration?) {
         self.model = model
         self.messages = messages
         self.temperature = temperature
         self.maxTokens = maxTokens
         self.stream = stream
         self.tools = tools
+        self.thinking = thinking
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        model = try container.decode(String.self, forKey: .model)
+        messages = try container.decode([LLMMessage].self, forKey: .messages)
+        temperature = try container.decodeIfPresent(Double.self, forKey: .temperature)
+        maxTokens = try container.decodeIfPresent(Int.self, forKey: .maxTokens)
+        stream = try container.decode(Bool.self, forKey: .stream)
+        tools = try container.decodeIfPresent([LLMTool].self, forKey: .tools)
+        if let wireThinking = try container.decodeIfPresent(WireThinking.self, forKey: .thinking) {
+            thinking = LLMThinkingConfiguration(
+                mode: wireThinking.type,
+                effort: try container.decodeIfPresent(
+                    LLMThinkingConfiguration.Effort.self,
+                    forKey: .reasoningEffort
+                )
+            )
+        } else {
+            thinking = nil
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(model, forKey: .model)
+        try container.encode(messages, forKey: .messages)
+        try container.encodeIfPresent(temperature, forKey: .temperature)
+        try container.encodeIfPresent(maxTokens, forKey: .maxTokens)
+        try container.encode(stream, forKey: .stream)
+        try container.encodeIfPresent(tools, forKey: .tools)
+        if let thinking {
+            try container.encode(WireThinking(type: thinking.mode), forKey: .thinking)
+            try container.encodeIfPresent(thinking.effort, forKey: .reasoningEffort)
+        }
+    }
+
+    private struct WireThinking: Codable {
+        let type: LLMThinkingConfiguration.Mode
     }
 }
 
@@ -104,10 +206,12 @@ public struct LLMSSEChunk: Codable, Sendable {
     public struct Choice: Codable, Sendable {
         public struct Delta: Codable, Sendable {
             public var content: String?
+            public var reasoningContent: String?
             public var toolCalls: [ToolCallDelta]?
 
             enum CodingKeys: String, CodingKey {
                 case content
+                case reasoningContent = "reasoning_content"
                 case toolCalls = "tool_calls"
             }
         }

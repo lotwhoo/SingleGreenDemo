@@ -278,7 +278,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JZK35JTQH6;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "单绿显示实验室";
+				INFOPLIST_KEY_CFBundleDisplayName = "单绿测试平台";
 				INFOPLIST_KEY_NSCameraUsageDescription = "用于显示后置摄像头画面并模拟单绿眼镜的环境透视效果。";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "用于采集语音并与 AI 助手对话。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -310,7 +310,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JZK35JTQH6;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "单绿显示实验室";
+				INFOPLIST_KEY_CFBundleDisplayName = "单绿测试平台";
 				INFOPLIST_KEY_NSCameraUsageDescription = "用于显示后置摄像头画面并模拟单绿眼镜的环境透视效果。";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "用于采集语音并与 AI 助手对话。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

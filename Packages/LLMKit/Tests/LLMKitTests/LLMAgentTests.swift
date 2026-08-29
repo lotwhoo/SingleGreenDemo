@@ -48,6 +48,21 @@ final class LLMAgentTests: XCTestCase {
         return URLSession(configuration: config)
     }
 
+    private func requestBodyData(_ request: URLRequest) -> Data? {
+        if let body = request.httpBody { return body }
+        guard let stream = request.httpBodyStream else { return nil }
+        stream.open()
+        defer { stream.close() }
+        var data = Data()
+        var buffer = [UInt8](repeating: 0, count: 4096)
+        while stream.hasBytesAvailable {
+            let read = stream.read(&buffer, maxLength: buffer.count)
+            if read <= 0 { break }
+            data.append(buffer, count: read)
+        }
+        return data
+    }
+
     /// 第一轮：模型请求 web_search；第二轮：给出最终回答。
     func testAgentExecutesToolLoop() async throws {
         let session = makeSession { round in
@@ -224,61 +239,78 @@ final class LLMAgentTests: XCTestCase {
         XCTAssertEqual(executor.callCount, 0)
     }
 
-    func testAgentRejectsMixedContentAndToolCallBeforeExecution() async {
-        let call = LLMToolCall(
-            id: "call",
-            type: "function",
-            function: .init(name: "web_search", arguments: "{}")
-        )
+    func testAgentDiscardsUnpublishedToolPreambleBeforeExecution() async throws {
+        let session = makeSession { round in
+            let json = round == 0
+                ? #"{"choices":[{"message":{"role":"assistant","content":"Let me check.","tool_calls":[{"id":"call","type":"function","function":{"name":"web_search","arguments":"{}"}}]}}]}"#
+                : #"{"choices":[{"message":{"role":"assistant","content":"final"}}]}"#
+            return (
+                HTTPURLResponse(url: URL(string: "https://x/v1/chat/completions")!,
+                                statusCode: 200, httpVersion: nil, headerFields: nil)!,
+                Data(json.utf8)
+            )
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
         let executor = MockToolExecutor()
         let agent = LLMAgent(
-            transport: FixedToolMessageTransport(
-                message: .init(role: .assistant, content: "untrusted", toolCalls: [call])
-            ),
+            transport: LLMChatClient(config: .init(apiKey: "sk-test"), session: session),
             executor: executor,
             config: .init()
         )
 
-        do {
-            _ = try await agent.send("run")
-            XCTFail("mixed content/tool response must fail")
-        } catch let error as LLMAgentError {
-            XCTAssertEqual(error, .mixedContentAndToolCall)
-        } catch {
-            XCTFail("unexpected error: \(error)")
-        }
-        XCTAssertEqual(executor.callCount, 0)
+        let answer = try await agent.send("run")
+        XCTAssertEqual(answer, "final")
+        XCTAssertEqual(executor.callCount, 1)
         let messages = await agent.chatMessages
-        XCTAssertTrue(messages.isEmpty)
+        XCTAssertEqual(messages.map(\.content), ["run", "final"])
+        XCTAssertFalse(messages.contains { $0.content == "Let me check." })
     }
 
-    func testStreamingCompletedMessageCannotBypassMixedContentValidation() async {
-        let call = LLMToolCall(
-            id: "call",
-            type: "function",
-            function: .init(name: "web_search", arguments: "{}")
-        )
+    func testStreamingSameDeltaToolPreambleIsNotPublishedAndToolExecutes() async throws {
+        let session = makeSession { round in
+            let sse = round == 0
+                ? """
+                  data: {"choices":[{"index":0,"delta":{"content":"Let me check.","tool_calls":[{"index":0,"id":"call","type":"function","function":{"name":"web_search","arguments":"{}"}}]},"finish_reason":"tool_calls"}]}
+
+                  data: [DONE]
+
+                  """
+                : """
+                  data: {"choices":[{"index":0,"delta":{"content":"final"},"finish_reason":"stop"}]}
+
+                  data: [DONE]
+
+                  """
+            return (
+                HTTPURLResponse(url: URL(string: "https://x/v1/chat/completions")!,
+                                statusCode: 200, httpVersion: nil, headerFields: nil)!,
+                Data(sse.utf8)
+            )
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
         let executor = MockToolExecutor()
         let agent = LLMAgent(
-            transport: FixedToolMessageTransport(
-                message: .init(role: .assistant, content: "untrusted", toolCalls: [call])
-            ),
+            transport: LLMChatClient(config: .init(apiKey: "sk-test"), session: session),
             executor: executor,
             config: .init()
         )
 
-        do {
-            let transaction = await agent.sendStreaming("run")
-            for try await _ in transaction {}
-            XCTFail("completed-only mixed response must fail")
-        } catch let error as LLMAgentError {
-            XCTAssertEqual(error, .mixedContentAndToolCall)
-        } catch {
-            XCTFail("unexpected error: \(error)")
-        }
-        XCTAssertEqual(executor.callCount, 0)
+        var events: [LLMAgentEvent] = []
+        let transaction = await agent.sendStreaming("run")
+        for try await event in transaction { events.append(event) }
+        try await agent.commit(transaction.token)
+
+        XCTAssertEqual(events, [
+            .toolCall("web_search"),
+            .contentDelta("final"),
+            .completed("final")
+        ])
+        XCTAssertEqual(executor.callCount, 1)
         let messages = await agent.chatMessages
-        XCTAssertTrue(messages.isEmpty)
+        XCTAssertEqual(messages.map(\.content), ["run", "final"])
+        XCTAssertFalse(events.contains(.contentDelta("Let me check.")))
     }
 
     func testClearContextRemovesSuccessfulConversation() async throws {
@@ -379,6 +411,117 @@ final class LLMAgentTests: XCTestCase {
         let messages = await agent.chatMessages
         XCTAssertEqual(messages.map(\.role), [.user, .assistant])
         XCTAssertEqual(messages.last?.content, "北京今天晴朗。")
+    }
+
+    func testThinkingToolRoundReplaysReasoningAndNonNullContentInSecondRequest() async throws {
+        var requestBodies: [[String: Any]] = []
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+        MockURLProtocol.requestHandler = { request in
+            let data = try XCTUnwrap(self.requestBodyData(request))
+            let body = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+            requestBodies.append(body)
+            let sse: String
+            if requestBodies.count == 1 {
+                sse = """
+                data: {"choices":[{"index":0,"delta":{"reasoning_content":"need "}}]}
+
+                data: {"choices":[{"index":0,"delta":{"reasoning_content":"search"}}]}
+
+                data: {"choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"id":"call_1","type":"function","function":{"name":"web_search","arguments":"{}"}}]},"finish_reason":"tool_calls"}]}
+
+                data: [DONE]
+
+                """
+            } else {
+                sse = """
+                data: {"choices":[{"index":0,"delta":{"reasoning_content":"use result"}}]}
+
+                data: {"choices":[{"index":0,"delta":{"content":"final answer"},"finish_reason":"stop"}]}
+
+                data: [DONE]
+
+                """
+            }
+            return (
+                HTTPURLResponse(url: URL(string: "https://x/v1/chat/completions")!,
+                                statusCode: 200, httpVersion: nil, headerFields: nil)!,
+                Data(sse.utf8)
+            )
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
+        let client = LLMChatClient(
+            config: .init(apiKey: "sk-test", thinking: .enabled(effort: .high)),
+            session: URLSession(configuration: config)
+        )
+        let agent = LLMAgent(
+            transport: client,
+            executor: MockToolExecutor(),
+            config: .init(temperature: 0.7)
+        )
+
+        var events: [LLMAgentEvent] = []
+        let transaction = await agent.sendStreaming("search")
+        for try await event in transaction { events.append(event) }
+        try await agent.commit(transaction.token)
+
+        XCTAssertEqual(events, [
+            .toolCall("web_search"),
+            .contentDelta("final answer"),
+            .completed("final answer")
+        ])
+        XCTAssertEqual(requestBodies.count, 2)
+        XCTAssertNil(requestBodies[0]["temperature"])
+        XCTAssertNil(requestBodies[1]["temperature"])
+        for body in requestBodies {
+            XCTAssertEqual((body["thinking"] as? [String: Any])?["type"] as? String, "enabled")
+            XCTAssertEqual(body["reasoning_effort"] as? String, "high")
+        }
+
+        let secondMessages = try XCTUnwrap(requestBodies[1]["messages"] as? [[String: Any]])
+        let assistant = try XCTUnwrap(secondMessages.first { ($0["role"] as? String) == "assistant" })
+        XCTAssertEqual(assistant["content"] as? String, "")
+        XCTAssertEqual(assistant["reasoning_content"] as? String, "need search")
+        XCTAssertEqual((assistant["tool_calls"] as? [[String: Any]])?.count, 1)
+
+        let durableMessages = await agent.chatMessages
+        XCTAssertEqual(durableMessages.map(\.content), ["search", "final answer"])
+        XCTAssertTrue(durableMessages.allSatisfy { $0.reasoningContent == nil })
+
+        let secondTransaction = await agent.sendStreaming("follow up")
+        for try await _ in secondTransaction {}
+        try await agent.commit(secondTransaction.token)
+        XCTAssertEqual(requestBodies.count, 3)
+        let thirdMessages = try XCTUnwrap(requestBodies[2]["messages"] as? [[String: Any]])
+        let priorAssistant = try XCTUnwrap(thirdMessages.first {
+            ($0["role"] as? String) == "assistant" && ($0["content"] as? String) == "final answer"
+        })
+        XCTAssertEqual(priorAssistant["reasoning_content"] as? String, "use result")
+    }
+
+    func testFinalReasoningDoesNotEnterDurableContextWhenToolsAreDisabled() async throws {
+        let agent = LLMAgent(
+            transport: FixedToolMessageTransport(
+                message: .init(
+                    role: .assistant,
+                    content: "visible answer",
+                    reasoningContent: "private reasoning"
+                )
+            ),
+            executor: NoopToolExecutor(),
+            config: .init()
+        )
+
+        var events: [LLMAgentEvent] = []
+        let transaction = await agent.sendStreaming("question")
+        for try await event in transaction { events.append(event) }
+        try await agent.commit(transaction.token)
+
+        XCTAssertEqual(events, [.completed("visible answer")])
+        let messages = await agent.chatMessages
+        XCTAssertEqual(messages.map(\.content), ["question", "visible answer"])
+        XCTAssertTrue(messages.allSatisfy { $0.reasoningContent == nil })
     }
 
     func testStreamingMixedContentAndToolCallFailsAndRollsBackContext() async {

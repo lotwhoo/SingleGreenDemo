@@ -21864,6 +21864,43 @@
             ],
             "declKind": "EnumElement",
             "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit12HUDTextStyleO6answeryA2CmF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "answer",
+            "printedName": "answer",
+            "usr": "s:21SingleGreenGlassesKit12HUDTextStyleO6answeryA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "HUDTextStyle",
+                    "printedName": "SingleGreenGlassesKit.HUDTextStyle",
+                    "usr": "s:21SingleGreenGlassesKit12HUDTextStyleO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDTextStyle",
+                        "printedName": "SingleGreenGlassesKit.HUDTextStyle",
+                        "usr": "s:21SingleGreenGlassesKit12HUDTextStyleO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SingleGreenGlassesKit.HUDTextStyle.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.HUDTextStyle.Type) -> SingleGreenGlassesKit.HUDTextStyle"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
             "mangledName": "$s21SingleGreenGlassesKit12HUDTextStyleO5valueyA2CmF",
             "moduleName": "SingleGreenGlassesKit",
             "name": "value",
@@ -21906,6 +21943,80 @@
             "name": "detail",
             "printedName": "detail",
             "usr": "s:21SingleGreenGlassesKit12HUDTextStyleO6detailyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "HUDTextStyle",
+                    "printedName": "SingleGreenGlassesKit.HUDTextStyle",
+                    "usr": "s:21SingleGreenGlassesKit12HUDTextStyleO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDTextStyle",
+                        "printedName": "SingleGreenGlassesKit.HUDTextStyle",
+                        "usr": "s:21SingleGreenGlassesKit12HUDTextStyleO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SingleGreenGlassesKit.HUDTextStyle.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.HUDTextStyle.Type) -> SingleGreenGlassesKit.HUDTextStyle"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit12HUDTextStyleO7captionyA2CmF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "caption",
+            "printedName": "caption",
+            "usr": "s:21SingleGreenGlassesKit12HUDTextStyleO7captionyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "HUDTextStyle",
+                    "printedName": "SingleGreenGlassesKit.HUDTextStyle",
+                    "usr": "s:21SingleGreenGlassesKit12HUDTextStyleO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDTextStyle",
+                        "printedName": "SingleGreenGlassesKit.HUDTextStyle",
+                        "usr": "s:21SingleGreenGlassesKit12HUDTextStyleO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SingleGreenGlassesKit.HUDTextStyle.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.HUDTextStyle.Type) -> SingleGreenGlassesKit.HUDTextStyle"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit12HUDTextStyleO8questionyA2CmF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "question",
+            "printedName": "question",
+            "usr": "s:21SingleGreenGlassesKit12HUDTextStyleO8questionyA2CmF"
           },
           {
             "children": [
@@ -22068,6 +22179,770 @@
               {
                 "children": [
                   {
+                    "kind": "TypeNominal",
+                    "name": "HUDContentAlignment",
+                    "printedName": "SingleGreenGlassesKit.HUDContentAlignment",
+                    "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDContentAlignment",
+                        "printedName": "SingleGreenGlassesKit.HUDContentAlignment",
+                        "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SingleGreenGlassesKit.HUDContentAlignment.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.HUDContentAlignment.Type) -> SingleGreenGlassesKit.HUDContentAlignment"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit19HUDContentAlignmentO7leadingyA2CmF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "leading",
+            "printedName": "leading",
+            "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO7leadingyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "HUDContentAlignment",
+                    "printedName": "SingleGreenGlassesKit.HUDContentAlignment",
+                    "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDContentAlignment",
+                        "printedName": "SingleGreenGlassesKit.HUDContentAlignment",
+                        "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SingleGreenGlassesKit.HUDContentAlignment.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.HUDContentAlignment.Type) -> SingleGreenGlassesKit.HUDContentAlignment"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit19HUDContentAlignmentO6centeryA2CmF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "center",
+            "printedName": "center",
+            "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO6centeryA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "HUDContentAlignment",
+                    "printedName": "SingleGreenGlassesKit.HUDContentAlignment",
+                    "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDContentAlignment",
+                        "printedName": "SingleGreenGlassesKit.HUDContentAlignment",
+                        "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SingleGreenGlassesKit.HUDContentAlignment.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.HUDContentAlignment.Type) -> SingleGreenGlassesKit.HUDContentAlignment"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit19HUDContentAlignmentO8trailingyA2CmF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "trailing",
+            "printedName": "trailing",
+            "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO8trailingyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "HUDContentAlignment",
+                "printedName": "SingleGreenGlassesKit.HUDContentAlignment",
+                "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "HUDContentAlignment",
+                "printedName": "SingleGreenGlassesKit.HUDContentAlignment",
+                "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s21SingleGreenGlassesKit19HUDContentAlignmentO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO21__derived_enum_equalsySbAC_ACtFZ"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Hasher",
+                "paramValueOwnership": "InOut",
+                "printedName": "Swift.Hasher",
+                "usr": "s:s6HasherV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s21SingleGreenGlassesKit19HUDContentAlignmentO4hash4intoys6HasherVz_tF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "hash",
+            "printedName": "hash(into:)",
+            "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO4hash4intoys6HasherVz_tF"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit19HUDContentAlignmentO9hashValueSivg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO9hashValueSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit19HUDContentAlignmentO9hashValueSivp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "hashValue",
+            "printedName": "hashValue",
+            "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO9hashValueSivp"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSH",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s21SingleGreenGlassesKit19HUDContentAlignmentO",
+        "moduleName": "SingleGreenGlassesKit",
+        "name": "HUDContentAlignment",
+        "printedName": "HUDContentAlignment",
+        "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "HUDRuleOrientation",
+                    "printedName": "SingleGreenGlassesKit.HUDRuleOrientation",
+                    "usr": "s:21SingleGreenGlassesKit18HUDRuleOrientationO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDRuleOrientation",
+                        "printedName": "SingleGreenGlassesKit.HUDRuleOrientation",
+                        "usr": "s:21SingleGreenGlassesKit18HUDRuleOrientationO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SingleGreenGlassesKit.HUDRuleOrientation.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.HUDRuleOrientation.Type) -> SingleGreenGlassesKit.HUDRuleOrientation"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit18HUDRuleOrientationO10horizontalyA2CmF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "horizontal",
+            "printedName": "horizontal",
+            "usr": "s:21SingleGreenGlassesKit18HUDRuleOrientationO10horizontalyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "HUDRuleOrientation",
+                    "printedName": "SingleGreenGlassesKit.HUDRuleOrientation",
+                    "usr": "s:21SingleGreenGlassesKit18HUDRuleOrientationO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDRuleOrientation",
+                        "printedName": "SingleGreenGlassesKit.HUDRuleOrientation",
+                        "usr": "s:21SingleGreenGlassesKit18HUDRuleOrientationO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SingleGreenGlassesKit.HUDRuleOrientation.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.HUDRuleOrientation.Type) -> SingleGreenGlassesKit.HUDRuleOrientation"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit18HUDRuleOrientationO8verticalyA2CmF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "vertical",
+            "printedName": "vertical",
+            "usr": "s:21SingleGreenGlassesKit18HUDRuleOrientationO8verticalyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "HUDRuleOrientation",
+                "printedName": "SingleGreenGlassesKit.HUDRuleOrientation",
+                "usr": "s:21SingleGreenGlassesKit18HUDRuleOrientationO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "HUDRuleOrientation",
+                "printedName": "SingleGreenGlassesKit.HUDRuleOrientation",
+                "usr": "s:21SingleGreenGlassesKit18HUDRuleOrientationO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s21SingleGreenGlassesKit18HUDRuleOrientationO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:21SingleGreenGlassesKit18HUDRuleOrientationO21__derived_enum_equalsySbAC_ACtFZ"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Hasher",
+                "paramValueOwnership": "InOut",
+                "printedName": "Swift.Hasher",
+                "usr": "s:s6HasherV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s21SingleGreenGlassesKit18HUDRuleOrientationO4hash4intoys6HasherVz_tF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "hash",
+            "printedName": "hash(into:)",
+            "usr": "s:21SingleGreenGlassesKit18HUDRuleOrientationO4hash4intoys6HasherVz_tF"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit18HUDRuleOrientationO9hashValueSivg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit18HUDRuleOrientationO9hashValueSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit18HUDRuleOrientationO9hashValueSivp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "hashValue",
+            "printedName": "hashValue",
+            "usr": "s:21SingleGreenGlassesKit18HUDRuleOrientationO9hashValueSivp"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSH",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s21SingleGreenGlassesKit18HUDRuleOrientationO",
+        "moduleName": "SingleGreenGlassesKit",
+        "name": "HUDRuleOrientation",
+        "printedName": "HUDRuleOrientation",
+        "usr": "s:21SingleGreenGlassesKit18HUDRuleOrientationO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "HUDSemanticRole",
+                    "printedName": "SingleGreenGlassesKit.HUDSemanticRole",
+                    "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDSemanticRole",
+                        "printedName": "SingleGreenGlassesKit.HUDSemanticRole",
+                        "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SingleGreenGlassesKit.HUDSemanticRole.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.HUDSemanticRole.Type) -> SingleGreenGlassesKit.HUDSemanticRole"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit15HUDSemanticRoleO7contentyA2CmF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "content",
+            "printedName": "content",
+            "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO7contentyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "HUDSemanticRole",
+                    "printedName": "SingleGreenGlassesKit.HUDSemanticRole",
+                    "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDSemanticRole",
+                        "printedName": "SingleGreenGlassesKit.HUDSemanticRole",
+                        "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SingleGreenGlassesKit.HUDSemanticRole.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.HUDSemanticRole.Type) -> SingleGreenGlassesKit.HUDSemanticRole"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit15HUDSemanticRoleO6statusyA2CmF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "status",
+            "printedName": "status",
+            "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO6statusyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "HUDSemanticRole",
+                    "printedName": "SingleGreenGlassesKit.HUDSemanticRole",
+                    "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDSemanticRole",
+                        "printedName": "SingleGreenGlassesKit.HUDSemanticRole",
+                        "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SingleGreenGlassesKit.HUDSemanticRole.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.HUDSemanticRole.Type) -> SingleGreenGlassesKit.HUDSemanticRole"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit15HUDSemanticRoleO10decorativeyA2CmF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "decorative",
+            "printedName": "decorative",
+            "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO10decorativeyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "HUDSemanticRole",
+                "printedName": "SingleGreenGlassesKit.HUDSemanticRole",
+                "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "HUDSemanticRole",
+                "printedName": "SingleGreenGlassesKit.HUDSemanticRole",
+                "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s21SingleGreenGlassesKit15HUDSemanticRoleO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO21__derived_enum_equalsySbAC_ACtFZ"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Hasher",
+                "paramValueOwnership": "InOut",
+                "printedName": "Swift.Hasher",
+                "usr": "s:s6HasherV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s21SingleGreenGlassesKit15HUDSemanticRoleO4hash4intoys6HasherVz_tF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "hash",
+            "printedName": "hash(into:)",
+            "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO4hash4intoys6HasherVz_tF"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit15HUDSemanticRoleO9hashValueSivg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO9hashValueSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit15HUDSemanticRoleO9hashValueSivp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "hashValue",
+            "printedName": "hashValue",
+            "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO9hashValueSivp"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSH",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s21SingleGreenGlassesKit15HUDSemanticRoleO",
+        "moduleName": "SingleGreenGlassesKit",
+        "name": "HUDSemanticRole",
+        "printedName": "HUDSemanticRole",
+        "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
                     "children": [
                       {
                         "kind": "TypeNominal",
@@ -22216,6 +23091,89 @@
                         "usr": "s:21SingleGreenGlassesKit17HUDElementContentO"
                       },
                       {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Bool",
+                            "printedName": "Swift.Bool",
+                            "usr": "s:Sb"
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "String",
+                                "printedName": "Swift.String",
+                                "usr": "s:SS"
+                              }
+                            ],
+                            "kind": "TypeNominal",
+                            "name": "Optional",
+                            "printedName": "Swift.String?",
+                            "usr": "s:Sq"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "HUDTextStyle",
+                            "printedName": "SingleGreenGlassesKit.HUDTextStyle",
+                            "usr": "s:21SingleGreenGlassesKit12HUDTextStyleO"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(Swift.String, isStreaming: Swift.Bool, footer: Swift.String?, style: SingleGreenGlassesKit.HUDTextStyle)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.String, Swift.Bool, Swift.String?, SingleGreenGlassesKit.HUDTextStyle) -> SingleGreenGlassesKit.HUDElementContent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDElementContent",
+                        "printedName": "SingleGreenGlassesKit.HUDElementContent",
+                        "usr": "s:21SingleGreenGlassesKit17HUDElementContentO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SingleGreenGlassesKit.HUDElementContent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.HUDElementContent.Type) -> (Swift.String, Swift.Bool, Swift.String?, SingleGreenGlassesKit.HUDTextStyle) -> SingleGreenGlassesKit.HUDElementContent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit17HUDElementContentO17styledFlowingTextyACSS_SbSSSgAA12HUDTextStyleOtcACmF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "styledFlowingText",
+            "printedName": "styledFlowingText",
+            "usr": "s:21SingleGreenGlassesKit17HUDElementContentO17styledFlowingTextyACSS_SbSSSgAA12HUDTextStyleOtcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDElementContent",
+                        "printedName": "SingleGreenGlassesKit.HUDElementContent",
+                        "usr": "s:21SingleGreenGlassesKit17HUDElementContentO"
+                      },
+                      {
                         "kind": "TypeNominal",
                         "name": "String",
                         "printedName": "Swift.String",
@@ -22266,6 +23224,69 @@
                         "usr": "s:21SingleGreenGlassesKit17HUDElementContentO"
                       },
                       {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Double",
+                            "printedName": "Swift.Double",
+                            "usr": "s:Sd"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Bool",
+                            "printedName": "Swift.Bool",
+                            "usr": "s:Sb"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(level: Swift.Double, isActive: Swift.Bool)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Double, Swift.Bool) -> SingleGreenGlassesKit.HUDElementContent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDElementContent",
+                        "printedName": "SingleGreenGlassesKit.HUDElementContent",
+                        "usr": "s:21SingleGreenGlassesKit17HUDElementContentO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SingleGreenGlassesKit.HUDElementContent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.HUDElementContent.Type) -> (Swift.Double, Swift.Bool) -> SingleGreenGlassesKit.HUDElementContent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit17HUDElementContentO13voiceWaveformyACSd_SbtcACmF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "voiceWaveform",
+            "printedName": "voiceWaveform",
+            "usr": "s:21SingleGreenGlassesKit17HUDElementContentO13voiceWaveformyACSd_SbtcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDElementContent",
+                        "printedName": "SingleGreenGlassesKit.HUDElementContent",
+                        "usr": "s:21SingleGreenGlassesKit17HUDElementContentO"
+                      },
+                      {
                         "kind": "TypeNominal",
                         "name": "Double",
                         "printedName": "Swift.Double",
@@ -22302,6 +23323,106 @@
             "name": "progress",
             "printedName": "progress",
             "usr": "s:21SingleGreenGlassesKit17HUDElementContentO8progressyACSdcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDElementContent",
+                        "printedName": "SingleGreenGlassesKit.HUDElementContent",
+                        "usr": "s:21SingleGreenGlassesKit17HUDElementContentO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "HUDRuleOrientation",
+                            "printedName": "SingleGreenGlassesKit.HUDRuleOrientation",
+                            "usr": "s:21SingleGreenGlassesKit18HUDRuleOrientationO"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Double",
+                            "printedName": "Swift.Double",
+                            "usr": "s:Sd"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(SingleGreenGlassesKit.HUDRuleOrientation, progress: Swift.Double)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(SingleGreenGlassesKit.HUDRuleOrientation, Swift.Double) -> SingleGreenGlassesKit.HUDElementContent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDElementContent",
+                        "printedName": "SingleGreenGlassesKit.HUDElementContent",
+                        "usr": "s:21SingleGreenGlassesKit17HUDElementContentO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SingleGreenGlassesKit.HUDElementContent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.HUDElementContent.Type) -> (SingleGreenGlassesKit.HUDRuleOrientation, Swift.Double) -> SingleGreenGlassesKit.HUDElementContent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit17HUDElementContentO4ruleyAcA18HUDRuleOrientationO_SdtcACmF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "rule",
+            "printedName": "rule",
+            "usr": "s:21SingleGreenGlassesKit17HUDElementContentO4ruleyAcA18HUDRuleOrientationO_SdtcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "HUDElementContent",
+                    "printedName": "SingleGreenGlassesKit.HUDElementContent",
+                    "usr": "s:21SingleGreenGlassesKit17HUDElementContentO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "HUDElementContent",
+                        "printedName": "SingleGreenGlassesKit.HUDElementContent",
+                        "usr": "s:21SingleGreenGlassesKit17HUDElementContentO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SingleGreenGlassesKit.HUDElementContent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.HUDElementContent.Type) -> SingleGreenGlassesKit.HUDElementContent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit17HUDElementContentO17activityIndicatoryA2CmF",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "activityIndicator",
+            "printedName": "activityIndicator",
+            "usr": "s:21SingleGreenGlassesKit17HUDElementContentO17activityIndicatoryA2CmF"
           },
           {
             "children": [
@@ -22527,6 +23648,190 @@
             "usr": "s:21SingleGreenGlassesKit10HUDElementV7contentAA0E7ContentOvp"
           },
           {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit10HUDElementV7opacitySdvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit10HUDElementV7opacitySdvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Double",
+                "printedName": "Swift.Double",
+                "usr": "s:Sd"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit10HUDElementV7opacitySdvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "opacity",
+            "printedName": "opacity",
+            "usr": "s:21SingleGreenGlassesKit10HUDElementV7opacitySdvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit10HUDElementV5scaleSdvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit10HUDElementV5scaleSdvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Double",
+                "printedName": "Swift.Double",
+                "usr": "s:Sd"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit10HUDElementV5scaleSdvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "scale",
+            "printedName": "scale",
+            "usr": "s:21SingleGreenGlassesKit10HUDElementV5scaleSdvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "HUDContentAlignment",
+                    "printedName": "SingleGreenGlassesKit.HUDContentAlignment",
+                    "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit10HUDElementV9alignmentAA19HUDContentAlignmentOvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit10HUDElementV9alignmentAA19HUDContentAlignmentOvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "HUDContentAlignment",
+                "printedName": "SingleGreenGlassesKit.HUDContentAlignment",
+                "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit10HUDElementV9alignmentAA19HUDContentAlignmentOvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "alignment",
+            "printedName": "alignment",
+            "usr": "s:21SingleGreenGlassesKit10HUDElementV9alignmentAA19HUDContentAlignmentOvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "HUDSemanticRole",
+                    "printedName": "SingleGreenGlassesKit.HUDSemanticRole",
+                    "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit10HUDElementV12semanticRoleAA011HUDSemanticG0Ovg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit10HUDElementV12semanticRoleAA011HUDSemanticG0Ovg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "HUDSemanticRole",
+                "printedName": "SingleGreenGlassesKit.HUDSemanticRole",
+                "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit10HUDElementV12semanticRoleAA011HUDSemanticG0Ovp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "semanticRole",
+            "printedName": "semanticRole",
+            "usr": "s:21SingleGreenGlassesKit10HUDElementV12semanticRoleAA011HUDSemanticG0Ovp"
+          },
+          {
             "children": [
               {
                 "kind": "TypeNominal",
@@ -22561,6 +23866,69 @@
             "name": "init",
             "printedName": "init(id:frame:content:)",
             "usr": "s:21SingleGreenGlassesKit10HUDElementV2id5frame7contentACSS_AA14NormalizedRectVAA0E7ContentOtcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "HUDElement",
+                "printedName": "SingleGreenGlassesKit.HUDElement",
+                "usr": "s:21SingleGreenGlassesKit10HUDElementV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "NormalizedRect",
+                "printedName": "SingleGreenGlassesKit.NormalizedRect",
+                "usr": "s:21SingleGreenGlassesKit14NormalizedRectV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "HUDElementContent",
+                "printedName": "SingleGreenGlassesKit.HUDElementContent",
+                "usr": "s:21SingleGreenGlassesKit17HUDElementContentO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Double",
+                "printedName": "Swift.Double",
+                "usr": "s:Sd"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Double",
+                "printedName": "Swift.Double",
+                "usr": "s:Sd"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "HUDContentAlignment",
+                "printedName": "SingleGreenGlassesKit.HUDContentAlignment",
+                "usr": "s:21SingleGreenGlassesKit19HUDContentAlignmentO"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "HUDSemanticRole",
+                "printedName": "SingleGreenGlassesKit.HUDSemanticRole",
+                "usr": "s:21SingleGreenGlassesKit15HUDSemanticRoleO"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s21SingleGreenGlassesKit10HUDElementV2id5frame7content7opacity5scale9alignment12semanticRoleACSS_AA14NormalizedRectVAA0E7ContentOS2dAA19HUDContentAlignmentOAA011HUDSemanticM0Otcfc",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "init",
+            "printedName": "init(id:frame:content:opacity:scale:alignment:semanticRole:)",
+            "usr": "s:21SingleGreenGlassesKit10HUDElementV2id5frame7content7opacity5scale9alignment12semanticRoleACSS_AA14NormalizedRectVAA0E7ContentOS2dAA19HUDContentAlignmentOAA011HUDSemanticM0Otcfc"
           },
           {
             "children": [

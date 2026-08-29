@@ -23,7 +23,11 @@ struct CredentialRefreshingLLMChatTransport: LLMChatTransport {
         scope: AgentProviderScope,
         credentialProvider: any ConversationCredentialProvider,
         makeTransport: @escaping Factory = { credential, model in
-            LLMChatClient(config: .init(apiKey: credential, model: model))
+            LLMChatClient(config: .init(
+                apiKey: credential,
+                model: model,
+                thinking: .enabled(effort: .high)
+            ))
         },
         onStreamingOperationFinished: @escaping @Sendable () -> Void = {}
     ) {

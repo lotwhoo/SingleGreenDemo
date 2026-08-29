@@ -58,6 +58,7 @@ final class LLMChatClientTests: XCTestCase {
         let config = LLMChatClient.Config(apiKey: "sk-test")
         XCTAssertEqual(config.model, "deepseek-v4-flash")
         XCTAssertEqual(config.baseURL.absoluteString, "https://api.deepseek.com/v1")
+        XCTAssertNil(config.thinking)
     }
 
     func testSSEChunkDecoding() throws {
@@ -73,5 +74,33 @@ final class LLMChatClientTests: XCTestCase {
         let data = try JSONEncoder().encode(req)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
         XCTAssertEqual(json["stream"] as? Bool, true)
+    }
+
+    func testThinkingRequestEncodesDeepSeekFieldsExactly() throws {
+        let request = LLMChatRequest(
+            model: "reasoning-model",
+            messages: [.init(role: .user, content: "hi")],
+            stream: true,
+            thinking: .enabled(effort: .maximum)
+        )
+
+        let data = try JSONEncoder().encode(request)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let thinking = try XCTUnwrap(json["thinking"] as? [String: Any])
+        XCTAssertEqual(thinking as NSDictionary, ["type": "enabled"] as NSDictionary)
+        XCTAssertEqual(json["reasoning_effort"] as? String, "max")
+    }
+
+    func testDisabledThinkingOmitsReasoningEffort() throws {
+        let request = LLMChatRequest(
+            model: "reasoning-model",
+            messages: [.init(role: .user, content: "hi")],
+            thinking: .disabled
+        )
+
+        let data = try JSONEncoder().encode(request)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertEqual((json["thinking"] as? [String: Any])?["type"] as? String, "disabled")
+        XCTAssertNil(json["reasoning_effort"])
     }
 }

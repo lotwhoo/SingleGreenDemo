@@ -1,6 +1,10 @@
 import SingleGreenGlassesKit
 import SwiftUI
 
+enum AppShellLayout {
+    static let headerTopPadding: CGFloat = 0
+}
+
 struct AppShellView: View {
     @EnvironmentObject private var cameraController: CameraSessionController
     @EnvironmentObject private var runtime: ExperienceRuntime
@@ -41,7 +45,7 @@ struct AppShellView: View {
                     ControlPanelView(debugMode: $debugMode)
                 }
                 .padding(.horizontal, 14)
-                .padding(.top, proxy.safeAreaInsets.top + 8)
+                .padding(.top, AppShellLayout.headerTopPadding)
                 .padding(.bottom, max(proxy.safeAreaInsets.bottom, 10))
                 .zIndex(10)
             }
@@ -121,7 +125,7 @@ private struct FloatingHeaderView: View {
     var body: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 3) {
-                Text("单绿显示实验室")
+                Text("单绿测试平台")
                     .font(.headline)
 
                 HStack(spacing: 6) {

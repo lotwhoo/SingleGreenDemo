@@ -69,6 +69,61 @@ final class LLMChatClientNetworkTests: XCTestCase {
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
         XCTAssertEqual(json["model"] as? String, "deepseek-v4-flash")
         XCTAssertEqual(json["max_tokens"] as? Int, 256)
+        XCTAssertNil(json["thinking"])
+        XCTAssertNil(json["reasoning_effort"])
+    }
+
+    func testThinkingConfigControlsOutgoingRequestAndOmitsTemperatureWhenEnabled() async throws {
+        var captured: URLRequest?
+        MockURLProtocol.requestHandler = { request in
+            captured = request
+            let json = #"{ "choices": [ { "message": { "role": "assistant", "content": "answer", "reasoning_content": "private" } } ] }"#
+            return (self.httpResponse(200), Data(json.utf8))
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
+        let client = LLMChatClient(
+            config: .init(
+                apiKey: "sk-test",
+                thinking: .enabled(effort: .high)
+            ),
+            session: makeSession()
+        )
+        let message = try await client.completeMessage(
+            messages: [.init(role: .user, content: "hi")],
+            temperature: 0.7
+        )
+
+        XCTAssertEqual(message.reasoningContent, "private")
+        let body = try XCTUnwrap(Self.requestBodyData(try XCTUnwrap(captured)))
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
+        XCTAssertEqual((json["thinking"] as? [String: Any])?["type"] as? String, "enabled")
+        XCTAssertEqual(json["reasoning_effort"] as? String, "high")
+        XCTAssertNil(json["temperature"])
+    }
+
+    func testDisabledThinkingKeepsTemperatureInOutgoingRequest() async throws {
+        var captured: URLRequest?
+        MockURLProtocol.requestHandler = { request in
+            captured = request
+            let json = #"{ "choices": [ { "message": { "role": "assistant", "content": "answer" } } ] }"#
+            return (self.httpResponse(200), Data(json.utf8))
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
+        let client = LLMChatClient(
+            config: .init(apiKey: "sk-test", thinking: .disabled),
+            session: makeSession()
+        )
+        _ = try await client.completeMessage(
+            messages: [.init(role: .user, content: "hi")],
+            temperature: 0.7
+        )
+
+        let body = try XCTUnwrap(Self.requestBodyData(try XCTUnwrap(captured)))
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
+        XCTAssertEqual((json["thinking"] as? [String: Any])?["type"] as? String, "disabled")
+        XCTAssertEqual(json["temperature"] as? Double, 0.7)
     }
 
     /// URLProtocol 拦截时 httpBody 可能已被转成 httpBodyStream，需要两者都处理。
@@ -265,6 +320,43 @@ final class LLMChatClientNetworkTests: XCTestCase {
             .contentDelta("你好"),
             .contentDelta("👋"),
             .completed(.init(role: .assistant, content: "你好👋"))
+        ])
+    }
+
+    func testMessageStreamingAccumulatesReasoningWithoutPublishingReasoningDeltas() async throws {
+        MockURLProtocol.requestHandler = { _ in
+            let sse = """
+            data: {"choices":[{"index":0,"delta":{"reasoning_content":"internal "}}]}
+
+            data: {"choices":[{"index":0,"delta":{"reasoning_content":"thought"}}]}
+
+            data: {"choices":[{"index":0,"delta":{"content":"answer"},"finish_reason":"stop"}]}
+
+            data: [DONE]
+
+            """
+            return (self.httpResponse(200), Data(sse.utf8))
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
+        let client = LLMChatClient(
+            config: .init(apiKey: "sk-test", thinking: .enabled(effort: .low)),
+            session: makeSession()
+        )
+        var events: [LLMStreamingEvent] = []
+        for try await event in client.completeMessageStreaming(
+            messages: [.init(role: .user, content: "hi")]
+        ) {
+            events.append(event)
+        }
+
+        XCTAssertEqual(events, [
+            .contentDelta("answer"),
+            .completed(.init(
+                role: .assistant,
+                content: "answer",
+                reasoningContent: "internal thought"
+            ))
         ])
     }
 

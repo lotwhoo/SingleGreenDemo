@@ -50,6 +50,15 @@ final class ChatContextTokenBudgetTests: XCTestCase {
         context.appendUser("两条")
         XCTAssertEqual(context.chatMessages.count, 2)
     }
+
+    func testToolReasoningCountsTowardContextBudget() {
+        var context = LLMChatContext(maxMessages: 20, maxTokens: 6)
+        context.appendAssistant("旧", reasoningContent: "需要很多推理内容")
+        context.appendUser("新")
+
+        let chat = context.chatMessages
+        XCTAssertEqual(chat.map(\.content), ["新"])
+    }
 }
 
 final class RetryConfigTests: XCTestCase {

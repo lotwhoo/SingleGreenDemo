@@ -1,4 +1,4 @@
-# 单绿显示实验室
+# 单绿测试平台
 
 原生 SwiftUI iOS Demo，用 iPhone 后摄画面模拟环境透视，并叠加可扩展的单绿 HUD Experience。
 
@@ -19,13 +19,13 @@
 - 使用 SwiftUI 原生 Material 与 iOS 26 Liquid Glass：普通内容容器使用标准材质，关键交互按钮使用可交互玻璃效果。
 - 原生场景 Menu、悬浮诊断条、三个手势按钮与紧凑的 HUD 显示控制。
 - HUD 开关、模拟强度、上滑、点击、下滑和体验重置。
-- HUD 模拟显示区域使用约 8:3 可见长宽比并在预览区中心对齐。
+- HUD 模拟显示区域使用约 8:3 可见长宽比，保持水平居中并相对屏幕中心上移 `0.20` 屏高，使其落在顶部栏与下方诊断条之间的视觉中心；顶部标题、设置与 Debug 按钮直接从宿主已提供的安全区起点布局，不重复叠加安全区高度。
 - 相机配置与启停在专用队列执行，首屏先显示、后摄异步预热。
 - 调试模式显示本次冷启动的相机 Session 启动耗时。
 
 ## 长程开发路线
 
-项目按产品设计、架构、实现、测试、评审、文档和发布的完整流程推进。当前 M1–M7 的自动化基础已按下表推进：
+项目按产品设计、架构、实现、测试、评审、文档和发布的完整流程推进。当前 M1–M9 的自动化基础已按下表推进：
 
 | 里程碑 | 目标 | 状态 |
 | --- | --- | --- |
@@ -37,6 +37,7 @@
 | M6 | Local VAD / Automatic Endpointing：本地检测、自动端点和 ASR 门控 | WebRTC production detector 已集成并通过本地回归；真机/真实服务门禁待完成 |
 | M7 | 纯代码质量：架构边界、工具链、公开 API、生命周期与复用契约 | PR1–PR5 已在本地完成；本检查点完成 |
 | M8 | Dependency & Composition Refinement：分组核心依赖、收口 App Composition Root、验证装配隔离 | PR1–PR4 已在本地完成；真机与真实服务门禁待完成 |
+| M9 | Runtime State Decomposition：拆分 Controller generation 状态、音频运行态和 VAD/ASR 每轮缓冲状态 | 已实现；受影响 Package 与静态契约已复核，App/真机门禁待完成 |
 
 M7 PR1 的本地证据为六个 Package 严格并发 **377/377**、App XCTest **62/62**、架构边界 10 个负例和 14 个公开 API snapshot 门禁通过；该记录属于历史快照，见 [M7 PR1 任务卡](./docs/tasks/2026-08-28-m7-pr1-quality-baseline.md)。
 
@@ -44,7 +45,7 @@ M7 PR1 的本地证据为六个 Package 严格并发 **377/377**、App XCTest **
 
 M7 PR3 已完成对话适配器的可复用边界；其 **414/414**、适配器 **24/24** 和 **100/100** 重复结果均为历史证据，详见 [M7 PR3 任务卡](./docs/tasks/2026-08-28-m7-pr3-public-reuse-contract.md)。
 
-PR3+PR4 历史合并质量门禁为七个 Package **438/438**（7、16、43、174、24、70、104）、App **55/55**；适配器关键用例重复 **480** 次，终态生命周期用例重复 **380** 次。`ExperienceRuntime.init(validating:)` 为本轮新增的兼容性审查 API。Debug 与严格 universal Release Simulator（arm64+x86_64）构建通过。完整记录见 [M7 PR4 任务卡](./docs/tasks/2026-08-28-m7-pr4-terminal-lifecycle.md)。这是 PR5 之前的历史合并快照；历史记录中 M7 PR1、PR2、PR3、PR4 已在本地完成；当前检查点以 PR5 证据为准。
+PR3+PR4 历史合并质量门禁为七个 Package **438/438**（7、16、43、174、24、70、104）、App **55/55**；适配器关键用例重复 **480** 次，终态生命周期用例重复 **380** 次。`ExperienceRuntime.init(validating:)` 为本轮新增的兼容性审查 API。Debug 与严格 universal Release Simulator（arm64+x86_64）构建通过。完整记录见 [M7 PR4 任务卡](./docs/tasks/2026-08-28-m7-pr4-terminal-lifecycle.md)。这是 PR5 之前的历史合并快照；M7 历史序列随后由 PR5 证据补充，当前整体代码检查点则以 M9 为准。
 
 历史兼容标记：PR1、PR2、PR3、PR4 已在本地完成；本检查点完成
 
@@ -60,9 +61,15 @@ App 的 `ConversationDependencies.swift` 现在只保留 live 入口；其余职
 
 M8 本地证据：`SingleGreenGlassesKit` **178/178**；App XCTest **58/58**；聚焦 `ConversationPreparation` **17/17**；Controller + dependency 回归 **99/99**。八个模块的 16 份 API snapshot 已审查：仅 `SingleGreenGlassesKit` 的 macOS arm64 与 iOS Simulator arm64 两份发生变化，各 **39 additions / 0 removals**。架构门禁覆盖七个 Package 与 11 个负例；Debug/Release generic Simulator build 通过。首次全局 `SWIFT_TREAT_WARNINGS_AS_ERRORS` 与 Package `-suppress-warnings` 的冲突属于工具链证据，非源代码失败。该轮未执行真机、安装/启动或真实服务验证。完整任务记录见 [M8 任务卡](./docs/tasks/2026-08-29-m8-dependency-composition-refinement.md)。
 
+### M9 Runtime State Decomposition（当前代码检查点，2026-08-29）
+
+提交 `8abce82323b58a80f4e6d9c3b79bef92e6150008` 将三类高频可变状态拆为独立、可测试的运行态：`ConversationControllerExecutionState` 管理对话操作、宿主生命周期与连续免按激活 generation；`AudioCaptureRunState` 管理一次采集的 callback token、分块缓冲和停止快照；`VoiceActivatedASRRunState` 管理 VAD/ASR 每轮帧队列、待上传/上传中帧和终态事实。Controller、actor 和音频采集对象仍持有所有 Task、transport 与副作用，拆出的状态对象没有成为第二个并发 owner。
+
+当前复核证据：`SingleGreenGlassesKit` **184/184**、`VoiceChatCore` **109/109**；七 Package 架构边界、Package inventory、repository hygiene、secret scan 与 `git diff --check` 通过；八个公开模块在 macOS arm64 与 iOS Simulator arm64 的 **16** 份 API baseline 通过。该复核没有执行 App-hosted XCTest、App Simulator build、签名构建、真机安装/启动或真实 ASR/LLM/Search 调用，不能替代历史 M8 或设备证据。完整范围见 [M9 任务记录](./docs/tasks/2026-08-29-runtime-state-decomposition.md)。
+
 M1 的首次完整 QA 为五个 Package 150 项 + App-hosted 13 项，共 **163/0**；两项 P2 修复后的受影响复测为 SingleGreenGlassesKit 46 项 + App-hosted 13 项，共 **59/0**。两次均通过通用 Simulator build。详细验收清单和残余人工检查见[架构与升级报告](./docs/PROJECT_ARCHITECTURE_AND_UPGRADE_REPORT.md)及[M1 任务卡](./docs/tasks/2026-08-28-long-term-roadmap.md)。
 
-M2 的默认 Profile 为 `simulator.default.v2`：可见区域 8:3、宽度 `0.90`、中心对齐、垂直偏移 `-0.035`。中立 Profile 位于眼镜核心包，SwiftUI/CoreGraphics 转换器和内存中的宿主选择器留在 `SingleGreenDemo`；非生产标定 Fixture 不代表真实眼镜标定结果。
+M2 的默认 Profile 为 `simulator.default.v2`：可见区域 8:3、宽度 `0.90`、中心对齐；初始垂直偏移为 `-0.035`，当前宿主视觉调整为 `-0.20`。中立 Profile 位于眼镜核心包，SwiftUI/CoreGraphics 转换器和内存中的宿主选择器留在 `SingleGreenDemo`；非生产标定 Fixture 不代表真实眼镜标定结果。
 
 M3 已将 Experience 元数据和动作目录化。宿主控制面板只消费 Runtime 的 descriptor、active actions 和统一事件入口，不再按 `ExperienceKind` 写分支；能力是声明式元数据，不自动承担权限 gating。当前五个稳定 raw ID 和顺序为 `conversation`、`systemStatus`、`navigation`、`notification`、`caption`。AI 对话声明 network、microphone、backgroundUpdates；其余四个内建本地体验当前无外部能力声明。M3 的事件来源与旧异步更新隔离规则见[架构报告](./docs/PROJECT_ARCHITECTURE_AND_UPGRADE_REPORT.md)。
 
@@ -174,8 +181,8 @@ xcodebuild \
 
 ## 验证边界
 
-当前的离线验证边界包括七个本地 Package、iOS Simulator App-hosted XCTest 和 Simulator 构建。M8 的最新证据与边界见 [M8 任务卡](./docs/tasks/2026-08-29-m8-dependency-composition-refinement.md)；此前 PR5 证据属于历史快照。真机部署/启动与用户观察验收也属于历史证据，不代表当前检查点的重新验证，也不代表完整脚本化 VAD/服务矩阵。
-历史 M7 PR5 验证证据为七 Package **438/438**、App-hosted **55/55**、关键生命周期用例 **340/340**，结果包为 `/private/tmp/SingleGreenDemo-M7-PR5-AppTests-Retry/Logs/Test/Test-SingleGreenDemo-2026.08.28_19-46-03-+0800.xcresult`；该证据仅用于历史兼容标记，不覆盖 M8 当前证据，也不代表本轮重新执行。
+当前代码检查点是 M9 runtime-state decomposition。M9 的新鲜证据仅覆盖 `SingleGreenGlassesKit`、`VoiceChatCore` 与静态架构/API/仓库门禁，见 [M9 任务记录](./docs/tasks/2026-08-29-runtime-state-decomposition.md)。M8 的七 Package、App XCTest 与 Simulator build 结果以及此前 PR5 结果均为历史快照；真机部署/启动与用户观察验收同样不是 M9 的重新验证，也不代表完整脚本化 VAD/服务矩阵。
+历史 M7 PR5 验证证据为七 Package **438/438**、App-hosted **55/55**、关键生命周期用例 **340/340**，结果包为 `/private/tmp/SingleGreenDemo-M7-PR5-AppTests-Retry/Logs/Test/Test-SingleGreenDemo-2026.08.28_19-46-03-+0800.xcresult`；该证据仅用于历史兼容标记，不覆盖 M9 当前复核，也不代表本轮重新执行。
 历史真机基线曾确认首页可运行且主要控件无截断；这不是 M1 的重新验证结果。不同环境光下的 HUD 可读性、连续交互与前后台恢复仍需继续验证。
 iPhone 叠加效果不等同于真实眼镜 OST 光学效果。
 
@@ -197,6 +204,8 @@ iPhone 叠加效果不等同于真实眼镜 OST 光学效果。
 - [M7 PR4 terminal lifecycle](./docs/tasks/2026-08-28-m7-pr4-terminal-lifecycle.md)
 - [M7 PR5 mechanical decomposition](./docs/tasks/2026-08-28-m7-pr5-mechanical-decomposition.md)
 - [M8 dependency and composition refinement](./docs/tasks/2026-08-29-m8-dependency-composition-refinement.md)
+- [M9 runtime state decomposition](./docs/tasks/2026-08-29-runtime-state-decomposition.md)
+- [AI 对话单绿 HUD 重设计 PRD](./docs/tasks/2026-08-29-ai-conversation-hud-reasoning-prd.md)
 - [发布检查单](./docs/RELEASE_CHECKLIST.md)
 - [覆盖率基线](./docs/COVERAGE_BASELINE.md)
 - [第三方声明与许可证状态](./NOTICE.md)

@@ -1,8 +1,8 @@
-# 单绿显示实验室：项目架构、质量与模块化升级报告
+# 单绿测试平台：项目架构、质量与模块化升级报告
 
 > 文档状态：当前实现基线
 >
-> 最后审查：2026-08-28
+> 最后审查：2026-08-29（`8abce82323b58a80f4e6d9c3b79bef92e6150008`）
 >
 > 适用工程：`SingleGreenDemo.xcodeproj`
 >
@@ -10,7 +10,7 @@
 
 ## 1. 执行摘要
 
-本项目已经从单页演示程序演进为两层结构：`SingleGreenDemo` 是相机模拟与调试宿主，`SingleGreenGlassesKit` 是可独立迭代的眼镜核心。核心包负责统一交互事件、Experience 生命周期、HUD 语义模型和 AI 对话编排；模拟器宿主负责相机、显示 Profile、SwiftUI 渲染、设置与生产适配器。
+本项目已经从单页演示程序演进为“宿主 + 七个本地 Package”的模块化结构：`SingleGreenDemo` 是相机模拟、SwiftUI 渲染、设置和生产组合宿主；`SingleGreenGlassesKit` 是设备无关的眼镜行为核心；其余 Package 分别承接会话领域、音频/ASR、VAD、LLM、流式文字和语义适配。核心依赖方向由静态架构门禁固定，供应商和系统框架不会反向进入眼镜核心。
 
 当前架构整体评分为 **8.6 / 10**，生产就绪度为 **7.2 / 10**。核心边界、Runtime 快照契约、Ports/Adapters、Swift 6 严格并发与自动化发布门禁已建立；主要限制改为：GitHub-hosted CI 尚未实际执行、服务端短期凭证端点仍是 fail-closed 契约桩、尚未完成真实服务/VAD/麦克风功能回归，以及外部分发前仍需选定仓库许可证。最终 P2 真机证据仅证明部署/启动稳定性，不等同于功能验收。
 
@@ -25,7 +25,7 @@
 
 ## 1.1 长程开发路线与任务状态
 
-本项目按“产品设计 → 架构 → 实现 → 测试 → 评审 → 文档 → 发布”的完整流程推进。M1–M4 已完成当前自动化验证；M5 的自动化基础已完成，但不代表生产发布已批准：
+本项目按“产品设计 → 架构 → 实现 → 测试 → 评审 → 文档 → 发布”的完整流程推进。M1–M9 的代码和自动化基础按下表推进；其中本地通过不代表生产发布已批准：
 
 | 里程碑 | 目标 | 状态 |
 | --- | --- | --- |
@@ -34,6 +34,10 @@
 | M3 Experience Capability Catalog | 让 Experience 声明网络、麦克风、相机、后台更新和可用操作，减少宿主对类型的硬编码 | 已实现并完成自动化验证 |
 | M4 Controller Decomposition / Strict Concurrency | 拆分对话控制器内部职责，消除不必要的 `@unchecked Sendable`，开启更严格并发检查 | 已实现并完成自动化验证 |
 | M5 Production Readiness / Release System | 建立 CI、真实设备回归、短期凭证、结构化观测、版本迁移与发布检查 | 自动化基础已实现；hosted CI、真机/真服务与发布人工门禁待完成 |
+| M6 Local VAD / Automatic Endpointing | 以 WebRTC VAD 在本地确认起音、控制上传和自动端点 | 已集成并通过本地回归；当前代码检查点仍待真机/真服务复验 |
+| M7 Code Quality Baseline | 固化工具链、架构边界、公开 API、生命周期与复用契约 | PR1–PR5 已完成并保留历史证据 |
+| M8 Dependency & Composition Refinement | 分组核心依赖并收口 App composition root | 已完成并保留历史证据 |
+| M9 Runtime State Decomposition | 抽取 Controller、音频采集和 VAD/ASR 每轮运行态，同时保留原 owner | 当前代码检查点；受影响 Package 与静态契约已复核 |
 
 ### M7 PR1 quality baseline（本地完成，2026-08-28）
 
@@ -79,13 +83,19 @@ App composition 现在由小型 `ConversationDependencies.swift` live entry 触�
 
 M8 本地证据：`SingleGreenGlassesKit` **178/178**；App XCTest **58/58**；focused `ConversationPreparation` **17/17**；controller + dependency regression **99/99**。八个模块、macOS arm64 与 iOS Simulator arm64 共 **16 snapshots** 已人工审查：仅 `SingleGreenGlassesKit` 两份 snapshot 变化，各 **39 additions / 0 removals**。架构门禁覆盖七个 Package 与 **11** 个 negative fixtures；Debug 与 Release generic Simulator builds passed。首次全局 `SWIFT_TREAT_WARNINGS_AS_ERRORS` 与 package `-suppress-warnings` 的冲突记录为 tooling evidence，不是 source failure。该轮没有执行 physical-device build/install/launch 或 real-service validation。
 
+### M9 Runtime State Decomposition（当前代码检查点，2026-08-29）
+
+提交 `8abce82323b58a80f4e6d9c3b79bef92e6150008` 继续做行为中性的机械拆分。`ConversationControllerExecutionState` 保存对话操作、宿主生命周期、连续免按激活与 shutdown admission 的纯 generation/value state；`AudioCaptureRunState` 保存一次采集的 callback identity、处理器、分块缓冲和停止快照；`VoiceActivatedASRRunState` 保存一次 VAD/ASR run 的帧队列、待上传/上传中计数和终态 admission。`VoiceConversationController`、`AudioCaptureSession`/平台音频路径与 `VoiceActivatedASRSession` actor 仍分别拥有 Task、transport、系统资源和异步清理，不存在第二个运行时 owner。
+
+当前复核证据为 `SingleGreenGlassesKit` **184/184**、`VoiceChatCore` **109/109**；七 Package 架构边界、Package inventory、repository hygiene、secret scan、`git diff --check` 通过；八个公开模块在 macOS arm64 与 iOS Simulator arm64 的 **16 snapshots** 通过。该复核没有执行 App-hosted XCTest、App Simulator build、签名构建、真机安装/启动或真实 ASR/LLM/Search，因此 M8 的 App/build 结果与更早的设备结果仍只能作为历史证据。详细范围见 [M9 任务记录](./tasks/2026-08-29-runtime-state-decomposition.md)。
+
 ### M1 已实现的契约
 
 - `ExperienceSession` 以 `currentSnapshot(eventDescription:)` 提供同步兼容入口，以 `updates()` 提供后台变化流。
 - `ExperienceRuntime` 持有唯一公开快照，激活、事件和后台更新都汇入同一个 `ExperienceSnapshot` 发布路径。
 - Runtime 通过 command generation 和当前 Session 身份校验隔离迟到更新；相同快照不会重复传播。
 - `AIConversationExperience` 从 Controller 的 canonical snapshot 转发状态，不再分别拼装 scene、action 和 control state。
-- 已保留本轮 UX 契约：HUD 约 8:3、宽度 `0.90`、垂直偏移 `-0.035`、打字节奏 `150ms`。
+- 已保留 HUD 约 8:3、宽度 `0.90` 和打字节奏 `150ms`；当前宿主视觉调整将垂直偏移由 `-0.035` 更新为 `-0.20`，使 HUD 落在顶部栏与诊断条之间的视觉中心；顶部标题与设置/Debug 按钮不再重复叠加宿主已经提供的安全区高度。
 
 M1 的自动化证据与残余人工检查见第 7 节以及 [M1 任务卡](./tasks/2026-08-28-long-term-roadmap.md)。
 
@@ -95,7 +105,7 @@ M1 的自动化证据与残余人工检查见第 7 节以及 [M1 任务卡](./ta
 
 初始化时执行类型化校验：空标识、非有限数值、非正值、宽度/偏移范围、viewport 越界、负 safe-area 边缘、safe-area 横纵向塌缩、颜色分量范围，以及派生 presentation aspect ratio 的浮点 overflow/underflow 均有明确的 `DisplayProfileValidationError`。这使错误在进入渲染层前被拒绝。
 
-默认 `simulator.default.v2` 精确值为：可见区域 `8:3`、宽度 `0.90`、`center` 对齐、垂直偏移 `-0.035`；viewport 为 `(0.08, 0.12, 0.84, 0.60)`，safe area 为上/左/下/右 `(0.10, 0.08, 0.10, 0.08)`。`calibration.fixture.non-production.v1` 是用于几何和 UI 测试的非生产标定 Fixture，不代表真实眼镜的光学参数。
+默认 `simulator.default.v2` 当前精确值为：可见区域 `8:3`、宽度 `0.90`、`center` 对齐、垂直偏移 `-0.20`；viewport 为 `(0.08, 0.12, 0.84, 0.60)`，safe area 为上/左/下/右 `(0.10, 0.08, 0.10, 0.08)`。`calibration.fixture.non-production.v1` 是用于几何和 UI 测试的非生产标定 Fixture，不代表真实眼镜的光学参数。
 
 核心包不依赖 SwiftUI 或 CoreGraphics。`SingleGreenDemo` 仅在宿主侧提供 SwiftUI/CoreGraphics 投影、颜色和矩形转换器，以及进程内 `DisplayProfileStore` 选择器；Profile 选择不会进入 Runtime、Experience 状态或活动 AI 流，切换 Profile 只改变宿主渲染配置。
 
@@ -113,13 +123,13 @@ M3 保持 M1 的 canonical `ExperienceSnapshot` 不变。异步更新通过带 p
 
 ### M4 已实现的 Controller 与并发边界
 
-`VoiceConversationController` 仍是公开的 `@MainActor` sole state/snapshot façade；调用方继续通过它读取会话状态和 canonical `ExperienceSnapshot`。内部职责已提取为 `ConversationInputCoordinator`、`ConversationReplyPipeline`、`ConversationDisplayScheduler` 和 `ConversationLifecycleProjection`。初次抽取曾将 Controller 从 590 行降至 373 行；当前 620 行包含 M5 的凭证等待 generation、宿主生命周期串行化和单终态遥测收口。内部边界仍保持拆分；行数本身不作为发布质量门禁。
+`VoiceConversationController` 仍是公开的 `@MainActor` sole state/snapshot façade；调用方继续通过它读取会话状态和 canonical `ExperienceSnapshot`。内部职责已提取为 `ConversationInputCoordinator`、`ConversationReplyPipeline`、`ConversationDisplayScheduler`、`ConversationLifecycleProjection`、`ConversationTelemetryTracker` 和纯值类型 `ConversationControllerExecutionState`。当前 Controller 为 824 行，增长主要来自宿主生命周期、shutdown join、连续免按 rearm 和显式任务跟踪；Task 与副作用所有权仍集中在 Controller。行数本身不是发布门禁，但该文件仍是后续改动需要重点做竞态审查的复杂度中心。
 
 LLM Agent 现在支持 staged transaction：回复先产生候选事务和 token，只有显示追平且领域接受后才显式 `commit`；取消、失败、显示追平失败、领域拒绝或 commit 失败均显式 `abort`，不得把候选上下文当作已提交历史。输入操作使用 generation，取消时立即失效旧 generation，并清理旧 ASR start；Controller 提供公开 `shutdown()`，deinit 也负责取消活动输入、回复和显示任务。Runtime 的 observation shutdown 会停止各 Session 更新任务并关闭下游资源。
 
 `ASRSession` 修复了 event-cycle 与生命周期串行化问题，start/finish/cancel 不再交叉发出重复或迟到事件。生产语音适配器改为 actor。音频转换使用精确的 PCM snapshot，保留 ASBD、channel layout、channel count、interleaving 等信息，诊断只输出经过清洗的类别，不泄露 framework 原文或录音数据。`ObservationBox` 已移除。
 
-M4 当时的五个 Package manifest 均启用 Swift 6；当前新增的第六个 `VoiceActivityDetectionKit` 也纳入相同 complete concurrency 与 warnings-as-errors 门禁。App 和测试 Target 的 Debug/Release 保持 Swift 6 complete/WAE。当前生产代码的 `@unchecked Sendable` 仅存在于五个有明确同步理由的边界：`VoiceChatCore.ASRSession`、`LegacyAudioCaptureCallbacks`、`AudioCaptureRunState`、`PCMFrameSourceRelay` 和 App 的 `CameraSessionPipeline`；不应重新扩大该边界。
+当前七个 Package、App 和测试 Target 的 Debug/Release 均启用 Swift 6 complete concurrency 与 warnings-as-errors。生产代码的 `@unchecked Sendable` 边界当前包括 `ASRSession`、`LegacyAudioCaptureCallbacks`、`AudioCaptureRunState`、`AudioCaptureAudioSystemEventBridge`、`PlatformAudioSystemEventSource.ObserverTokens`、`PlatformAudioSystemEventSource`、`PCMFrameSourceRelay`、`CameraSessionPipeline`、`WebRTCVADAPI` 和 `WebRTCVADHandle`；这些对象分别依靠 actor、锁、串行音频队列、不可变函数表或受控 C handle 生命周期保证同步。新增此类边界必须同时记录同步依据和确定性测试。
 
 ## 2. 产品定位与边界
 
@@ -483,7 +493,7 @@ M1 快照契约硬化于 2026-08-28 完成。实现后的首次完整 QA 为五�
 - [x] `currentSnapshot` 兼容入口和 `updates()` 后台流均可用。
 - [x] 激活、事件和后台更新共用 generation / Session identity 隔离。
 - [x] 相同快照不重复传播；快照字段保持原子一致。
-- [x] 8:3、`0.90`、`-0.035` 和 `150ms` UX 值保持不变。
+- [x] 8:3、`0.90` 和 `150ms` 契约保持不变；当前视觉调整将宿主垂直偏移更新为 `-0.20`，并消除顶部悬浮栏重复应用安全区的问题。
 - [x] M1 首次完整 QA 163/0，P2 修复后影响范围 59/0。
 - [x] 通用 Simulator build 通过，最终评审未发现 P0–P2 问题。
 
@@ -611,7 +621,7 @@ Packages/SingleGreenConversationAdapters
 1. **Hosted CI 证据**：工作流、最小权限和本地语法检查已经建立，但尚未在 GitHub-hosted runner 实际执行；首次执行需要保留测试、覆盖率和 Release 构建 artifacts。
 2. **生产凭证后端**：Release 已 fail closed 并只暴露服务端短期凭证合约；真实的已认证签发服务、吊销、限流和监控仍未实现。
 3. **许可证**：`NOTICE.md` 已记录当前状态，但仓库级 LICENSE 与 vendored Package 的再分发授权仍需发布负责人确认。
-4. **发布证据**：当前 throwing-VAD 工作树已完成签名 Debug iphoneos arm64 build、codesign 和安装，但启动因设备锁定被拒绝（iPhone 17 Pro Max / iOS 26.6.1；xcresult `/private/tmp/SingleGreenDemo-ThrowingVAD-DeviceBuild.xcresult`），没有当前 PID 或运行时证据。此前 PID 稳定的 Final-P2 证据早于本次 App contract 变更，仅证明旧版本部署/启动稳定性；真实服务与演练回滚仍未完成。这些门禁必须分别记录，不能由 Simulator build 推断。
+4. **发布证据**：当前 M9 检查点仅重新执行两个受影响 Package 与静态契约门禁，没有 App build、签名构建、安装或启动证据。M8 及更早的 Simulator/真机结果均早于当前运行态拆分，只能作为历史记录；真实服务与演练回滚仍未完成。build、install、launch 和功能验收必须分别记录，不能相互推断。
 
 ### P1：设备与体验质量
 
@@ -629,7 +639,7 @@ Packages/SingleGreenConversationAdapters
 
 ### M4 并发状态
 
-七个 Package manifest、App 和测试 Target 已启用 Swift 6；Debug/Release 均启用 complete strict concurrency 与 warnings-as-errors。`scripts/strict_concurrency_gate.sh` 提供统一门禁。生产代码仅保留已记录的 `VoiceChatCore.ASRSession`、`LegacyAudioCaptureCallbacks`、`AudioCaptureRunState`、`PCMFrameSourceRelay` 与 `CameraSessionPipeline` 五个 `@unchecked Sendable` 框架边界；此前 AudioCapture/测试的过时 warning 描述不再适用。Stage 2A 的 `ASRFailure` typed payload 与 payload-free `CaptureError.engineFailed` 属于有意的本地 Package source migrations。
+七个 Package manifest、App 和测试 Target 已启用 Swift 6；Debug/Release 均启用 complete strict concurrency 与 warnings-as-errors。`scripts/strict_concurrency_gate.sh` 提供统一门禁。当前生产 `@unchecked Sendable` 清单以第 1.1 节 M4/M9 状态中的十个已审计声明为准；此前“五个边界”的描述已被 M9 文件拆分与 WebRTC wrapper 接入取代。Stage 2A 的 `ASRFailure` typed payload 与 payload-free `CaptureError.engineFailed` 属于有意的本地 Package source migrations。
 
 ## 11. 推荐演进路线
 
@@ -638,7 +648,7 @@ Packages/SingleGreenConversationAdapters
 - 在首个 Git 基线上继续使用小步提交和版本 Tag。
 - 为 vendored Packages 建立来源提交和升级记录。
 - 在 GitHub-hosted runner 实际执行并留存现有 CI、一键测试、覆盖率和 Release artifacts。
-- 保持 Swift 6 complete concurrency 门禁和两处受控框架边界。
+- 保持 Swift 6 complete concurrency 门禁，并审查所有已记录的 `@unchecked Sendable` 框架/C 边界。
 
 完成标准：任意新 Mac 克隆后，不依赖手工目录摆放即可构建并跑完离线测试。
 

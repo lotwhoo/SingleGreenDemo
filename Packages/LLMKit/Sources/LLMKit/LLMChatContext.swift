@@ -35,10 +35,25 @@ public struct LLMChatContext: Sendable, Equatable {
         append(.assistant, text)
     }
 
+    mutating func appendAssistant(_ text: String, reasoningContent: String?) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        messages.append(LLMMessage(
+            role: .assistant,
+            content: trimmed,
+            reasoningContent: reasoningContent
+        ))
+        trimToMessageLimit()
+    }
+
     public mutating func append(_ role: LLMMessage.Role, _ content: String) {
         let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         messages.append(LLMMessage(role: role, content: trimmed))
+        trimToMessageLimit()
+    }
+
+    private mutating func trimToMessageLimit() {
         if messages.count > maxMessages {
             messages.removeFirst(messages.count - maxMessages)
         }
@@ -60,17 +75,22 @@ public struct LLMChatContext: Sendable, Equatable {
 
         // token 预算裁剪：从最旧消息开始丢弃，直到总估算 ≤ maxTokens
         if maxTokens > 0 {
-            let recentTokens = recent.reduce(0) { $0 + LLMTokenEstimator.estimate($1.content ?? "") }
-            var total = result.reduce(0) { $0 + LLMTokenEstimator.estimate($1.content ?? "") } + recentTokens
+            let recentTokens = recent.reduce(0) { $0 + estimatedTokens(for: $1) }
+            var total = result.reduce(0) { $0 + estimatedTokens(for: $1) } + recentTokens
             var kept = recent
             while kept.count > 0, total > maxTokens {
                 let removed = kept.removeFirst()
-                total -= LLMTokenEstimator.estimate(removed.content ?? "")
+                total -= estimatedTokens(for: removed)
             }
             result += kept
         } else {
             result += recent
         }
         return result
+    }
+
+    private func estimatedTokens(for message: LLMMessage) -> Int {
+        LLMTokenEstimator.estimate(message.content ?? "")
+            + LLMTokenEstimator.estimate(message.reasoningContent ?? "")
     }
 }

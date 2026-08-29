@@ -2011,8 +2011,13 @@ final class VoiceConversationControllerTests: XCTestCase {
         XCTAssertTrue(controller.assistantReply.isEmpty)
         XCTAssertEqual(controller.messages.map(\.text), ["混合响应"])
         XCTAssertFalse(controller.scene.elements.contains { element in
-            guard case .flowingText(let text, _, _) = element.content else { return false }
-            return text.contains("伪正文")
+            switch element.content {
+            case .flowingText(let text, _, _),
+                 .styledFlowingText(let text, _, _, _):
+                text.contains("伪正文")
+            default:
+                false
+            }
         })
     }
 
@@ -2177,15 +2182,177 @@ final class VoiceConversationControllerTests: XCTestCase {
         )
         let reply = scene.elements.first { $0.id == "assistant_reply" }
 
-        XCTAssertEqual(reply?.frame.height, 0.61)
-        XCTAssertGreaterThanOrEqual(reply?.frame.height ?? 0, 0.55)
+        XCTAssertEqual(reply?.frame.height, 0.53)
+        XCTAssertGreaterThanOrEqual(reply?.frame.height ?? 0, 0.50)
         guard let content = reply?.content,
-              case .flowingText(let text, let isStreaming, let footer) = content else {
+              case .styledFlowingText(
+                let text,
+                let isStreaming,
+                let footer,
+                let style
+              ) = content else {
             return XCTFail("应使用 AI 专用流式文本")
         }
         XCTAssertEqual(text, "回答")
         XCTAssertTrue(isStreaming)
         XCTAssertNil(footer)
+        XCTAssertEqual(style, .answer)
+        XCTAssertEqual(reply?.alignment, .leading)
+    }
+
+    func testConversationHUDThinkingAndSearchingKeepStatusCenteredInDivider() throws {
+        let thinking = ConversationHUDMapper.makeScene(
+            revision: 1,
+            state: .thinking,
+            transcript: "为什么天空是蓝色",
+            assistantReply: "",
+            audioLevel: 0,
+            error: nil
+        )
+        let searching = ConversationHUDMapper.makeScene(
+            revision: 2,
+            state: .searching,
+            transcript: "为什么天空是蓝色",
+            assistantReply: "",
+            audioLevel: 0,
+            error: nil
+        )
+
+        let thinkingMain = try XCTUnwrap(thinking.elements.first { $0.id == "assistant_reply" })
+        let searchingMain = try XCTUnwrap(searching.elements.first { $0.id == "assistant_reply" })
+        XCTAssertEqual(thinkingMain.frame, searchingMain.frame)
+        XCTAssertEqual(thinkingMain.content, .activityIndicator)
+        XCTAssertEqual(searchingMain.content, .activityIndicator)
+        XCTAssertEqual(thinking.elements.map(\.id), searching.elements.map(\.id))
+
+        let thinkingStatus = try XCTUnwrap(thinking.elements.first { $0.id == "state_title" })
+        let searchingStatus = try XCTUnwrap(searching.elements.first { $0.id == "state_title" })
+        XCTAssertEqual(thinkingStatus.content, .text("正在思考", .caption))
+        XCTAssertEqual(searchingStatus.content, .text("正在联网搜索", .caption))
+        XCTAssertEqual(thinkingStatus.alignment, .center)
+        XCTAssertEqual(thinkingStatus.semanticRole, .status)
+        XCTAssertFalse(thinking.elements.contains { $0.id.hasPrefix("stage_") })
+        XCTAssertEqual(thinking.elements.count, 6)
+    }
+
+    func testConversationHUDAnswerKeepsReferenceQuestionDividerAndAnswerHierarchy() throws {
+        let scene = ConversationHUDMapper.makeScene(
+            revision: 1,
+            state: .streaming,
+            transcript: "问题",
+            assistantReply: "回答",
+            audioLevel: 0,
+            error: nil
+        )
+
+        let question = try XCTUnwrap(scene.elements.first { $0.id == "user_transcript" })
+        XCTAssertEqual(question.content, .text("问题", .question))
+        XCTAssertEqual(question.frame, NormalizedRect(x: 0.14, y: 0.06, width: 0.82, height: 0.20))
+        XCTAssertEqual(question.opacity, 0.72)
+        XCTAssertEqual(question.alignment, .leading)
+
+        let divider = try XCTUnwrap(scene.elements.first {
+            $0.id == "conversation_divider_leading"
+        })
+        XCTAssertEqual(divider.content, .rule(.horizontal, progress: 1))
+        XCTAssertEqual(divider.frame, NormalizedRect(x: 0.04, y: 0.345, width: 0.30, height: 0.01))
+        XCTAssertEqual(divider.opacity, 0.52)
+
+        let trailingDivider = try XCTUnwrap(scene.elements.first {
+            $0.id == "conversation_divider_trailing"
+        })
+        XCTAssertEqual(
+            trailingDivider.frame,
+            NormalizedRect(x: 0.66, y: 0.345, width: 0.30, height: 0.01)
+        )
+
+        let status = try XCTUnwrap(scene.elements.first { $0.id == "state_title" })
+        XCTAssertEqual(status.content, .text("正在回答", .caption))
+        XCTAssertEqual(status.frame, NormalizedRect(x: 0.36, y: 0.295, width: 0.28, height: 0.11))
+        XCTAssertEqual(status.alignment, .center)
+
+        let reply = try XCTUnwrap(scene.elements.first { $0.id == "assistant_reply" })
+        XCTAssertEqual(reply.frame, NormalizedRect(x: 0.04, y: 0.43, width: 0.92, height: 0.53))
+        XCTAssertFalse(scene.elements.contains { $0.id.hasPrefix("stage_") })
+    }
+
+    func testConversationHUDVoiceWaveformIsActiveAndClampsAudioLevel() throws {
+        let quiet = ConversationHUDMapper.makeScene(
+            revision: 1,
+            state: .listening,
+            transcript: "",
+            assistantReply: "",
+            audioLevel: -1,
+            error: nil
+        )
+        let loud = ConversationHUDMapper.makeScene(
+            revision: 2,
+            state: .listening,
+            transcript: "",
+            assistantReply: "",
+            audioLevel: 2,
+            error: nil
+        )
+        let completed = ConversationHUDMapper.makeScene(
+            revision: 3,
+            state: .completed,
+            transcript: "问题",
+            assistantReply: "回答",
+            audioLevel: 1,
+            error: nil
+        )
+
+        let quietWave = try XCTUnwrap(quiet.elements.first { $0.id == "voice_activity" })
+        let loudWave = try XCTUnwrap(loud.elements.first { $0.id == "voice_activity" })
+        let completedWave = try XCTUnwrap(completed.elements.first { $0.id == "voice_activity" })
+        let listeningStatus = try XCTUnwrap(quiet.elements.first { $0.id == "state_title" })
+        XCTAssertEqual(quietWave.content, .voiceWaveform(level: 0, isActive: true))
+        XCTAssertEqual(loudWave.content, .voiceWaveform(level: 1, isActive: true))
+        XCTAssertEqual(completedWave.content, .voiceWaveform(level: 1, isActive: false))
+        XCTAssertEqual(listeningStatus.content, .text("正在聆听", .caption))
+        XCTAssertEqual(listeningStatus.alignment, .center)
+        XCTAssertEqual(quietWave.semanticRole, .decorative)
+    }
+
+    func testConversationHUDFailureUsesSimplifiedLayoutWithCenteredStatus() throws {
+        let scene = ConversationHUDMapper.makeScene(
+            revision: 1,
+            state: .failed,
+            transcript: "",
+            assistantReply: "",
+            audioLevel: 0,
+            error: "暂时无法准备对话服务，请稍后重试。"
+        )
+
+        let main = try XCTUnwrap(scene.elements.first {
+            $0.id == "assistant_reply"
+        })
+
+        XCTAssertEqual(main.frame.x, 0.04)
+        XCTAssertEqual(main.alignment, .leading)
+        XCTAssertEqual(
+            main.content,
+            .text("暂时无法准备对话服务，请稍后重试。", .detail)
+        )
+        let status = try XCTUnwrap(scene.elements.first { $0.id == "state_title" })
+        XCTAssertEqual(status.content, .text("对话失败", .caption))
+        XCTAssertEqual(status.alignment, .center)
+        XCTAssertEqual(scene.elements.count, 6)
+    }
+
+    func testHUDElementClampsGenericVisualParameters() {
+        let element = HUDElement(
+            id: "clamped",
+            frame: NormalizedRect(x: 0, y: 0, width: 1, height: 1),
+            content: .activityIndicator,
+            opacity: 2,
+            scale: -1,
+            alignment: .trailing
+        )
+
+        XCTAssertEqual(element.opacity, 1)
+        XCTAssertEqual(element.scale, 0)
+        XCTAssertEqual(element.alignment, .trailing)
     }
 
     func testBackgroundSuspendsInputAndForegroundDoesNotAutoResume() async {

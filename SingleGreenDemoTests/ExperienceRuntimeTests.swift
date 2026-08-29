@@ -1,5 +1,6 @@
 import Foundation
 import SingleGreenGlassesKit
+import SwiftUI
 import XCTest
 @testable import SingleGreenDemo
 
@@ -186,7 +187,7 @@ final class ExperienceRuntimeTests: XCTestCase {
         XCTAssertEqual(profile.visibleAspectRatio, 8.0 / 3.0, accuracy: 0.000_001)
         XCTAssertEqual(profile.surfaceWidthFraction, 0.90)
         XCTAssertEqual(profile.alignment, .center)
-        XCTAssertEqual(profile.verticalOffsetFraction, -0.035)
+        XCTAssertEqual(profile.verticalOffsetFraction, -0.20)
         XCTAssertEqual(profile.viewport, NormalizedRect(x: 0.08, y: 0.12, width: 0.84, height: 0.60))
         XCTAssertEqual(
             profile.safeArea,
@@ -351,11 +352,152 @@ final class ExperienceRuntimeTests: XCTestCase {
         XCTAssertEqual(projection.surfaceWidthFraction, 0.90)
         XCTAssertEqual(projection.containerAspectRatio, profile.presentationContainerAspectRatio)
         XCTAssertEqual(projection.alignment, .center)
-        XCTAssertEqual(projection.verticalOffsetFraction, -0.035)
+        XCTAssertEqual(projection.verticalOffsetFraction, -0.20)
         XCTAssertEqual(surface.width, 900)
         XCTAssertEqual(surface.height, 900 / profile.presentationContainerAspectRatio, accuracy: 0.000_001)
-        XCTAssertEqual(projection.verticalOffset(in: container), -70)
+        XCTAssertEqual(projection.verticalOffset(in: container), -400)
         XCTAssertEqual(visibleAspectRatio, 8.0 / 3.0, accuracy: 0.000_001)
+    }
+
+    func testFloatingHeaderDoesNotDoubleApplySafeAreaInset() {
+        XCTAssertEqual(AppShellLayout.headerTopPadding, 0)
+    }
+
+    func testThinkingMotionPolicyUsesApprovedTimingAndReduceMotionFallback() {
+        XCTAssertEqual(
+            HUDMotionPolicy.thinkingDotOpacities(elapsed: 10, reduceMotion: true),
+            [0.70, 0.70, 0.70]
+        )
+        XCTAssertEqual(
+            HUDMotionPolicy.thinkingGroupOpacity(elapsed: 0, reduceMotion: false),
+            0
+        )
+        XCTAssertEqual(
+            HUDMotionPolicy.thinkingGroupOpacity(elapsed: 0.22, reduceMotion: false),
+            1,
+            accuracy: 0.000_001
+        )
+
+        let firstPeak = HUDMotionPolicy.thinkingDotOpacities(
+            elapsed: HUDMotionPolicy.thinkingLoopStartDelay
+                + HUDMotionPolicy.thinkingCycleDuration / 2,
+            reduceMotion: false
+        )
+        XCTAssertEqual(firstPeak[0], 0.90, accuracy: 0.000_001)
+        XCTAssertLessThan(firstPeak[1], firstPeak[0])
+        XCTAssertLessThan(firstPeak[2], firstPeak[1])
+
+        let secondPeak = HUDMotionPolicy.thinkingDotOpacities(
+            elapsed: HUDMotionPolicy.thinkingLoopStartDelay
+                + HUDMotionPolicy.thinkingCycleDuration / 2
+                + HUDMotionPolicy.thinkingPhaseOffset,
+            reduceMotion: false
+        )
+        XCTAssertEqual(secondPeak[1], 0.90, accuracy: 0.000_001)
+        XCTAssertEqual(
+            HUDMotionPolicy.cursorOpacity(elapsed: 10, reduceMotion: true),
+            0.75
+        )
+        XCTAssertEqual(
+            HUDMotionPolicy.transition(for: .rule(.vertical, progress: 1)),
+            .init(duration: 0.20, curve: .linear)
+        )
+        XCTAssertEqual(
+            HUDMotionPolicy.transition(for: .text("正在思考", .caption)),
+            .init(duration: 0.12, curve: .easeInOut)
+        )
+        XCTAssertEqual(
+            HUDMotionPolicy.transition(for: .styledFlowingText(
+                "回答",
+                isStreaming: true,
+                footer: nil,
+                style: .title
+            )),
+            .init(duration: 0.12, curve: .easeOut)
+        )
+    }
+
+    func testMinimalConversationHUDRendersReferenceStateAtEightToThree() async throws {
+        let scene = ConversationHUDMapper.makeScene(
+            revision: 1,
+            state: .streaming,
+            transcript: "如何安排一次产品评审？",
+            assistantReply: "先明确目标，再聚焦关键流程，最后记录结论与下一步。",
+            audioLevel: 0.58,
+            error: nil
+        )
+        let profile = DisplayProfileCatalog.builtIn.defaultProfile
+        let projection = HUDPreviewProjection(profile: profile)
+        let width: CGFloat = 400
+        let height = (width / projection.containerAspectRatio).rounded(.up)
+        let image = try await renderConversationHUD(
+            scene: scene,
+            filename: "SingleGreenDemo-MinimalHUD-implementation.png"
+        )
+
+        XCTAssertEqual(image.size.width, width, accuracy: 0.5)
+        XCTAssertEqual(image.size.height, height, accuracy: 0.5)
+        XCTAssertEqual(image.cgImage?.width, 1_600)
+        XCTAssertEqual(
+            profile.visibleAspectRatio,
+            8.0 / 3.0,
+            accuracy: 0.000_001
+        )
+    }
+
+    func testAnswerViewportUsesExactlyTwoCompleteLineHeights() {
+        XCTAssertEqual(HUDFlowingTextViewportPolicy.answerVisibleLineCount, 2)
+        XCTAssertEqual(
+            HUDFlowingTextViewportPolicy.answerOverflowAnimationDuration,
+            0.30,
+            accuracy: 0.000_001
+        )
+        XCTAssertEqual(
+            HUDFlowingTextViewportPolicy.viewportHeight(
+                availableHeight: 80,
+                visibleLineCount: 2,
+                lineHeight: 24
+            ),
+            48,
+            accuracy: 0.000_001
+        )
+        XCTAssertEqual(
+            HUDFlowingTextViewportPolicy.viewportHeight(
+                availableHeight: 40,
+                visibleLineCount: 2,
+                lineHeight: 24
+            ),
+            40,
+            accuracy: 0.000_001
+        )
+        XCTAssertEqual(
+            HUDFlowingTextViewportPolicy.viewportHeight(
+                availableHeight: 80,
+                visibleLineCount: nil,
+                lineHeight: nil
+            ),
+            80,
+            accuracy: 0.000_001
+        )
+    }
+
+    func testConversationHUDRendersLongStreamingAnswerInsideTwoLineViewport() async throws {
+        let finalReply = "先明确目标，再聚焦关键流程，然后邀请关键角色评审，最后记录结论、负责人和下一步安排。"
+        let model = ConversationHUDStreamingTestModel(
+            reply: "先明确目标，再聚焦关键流程。"
+        )
+        let image = try await renderHUDView(
+            ConversationHUDStreamingTestHarness(model: model),
+            filename: "SingleGreenDemo-TwoLineHUD-implementation.png",
+            settleMilliseconds: 480,
+            updateBeforeCapture: { model.reply = finalReply }
+        )
+        let profile = DisplayProfileCatalog.builtIn.defaultProfile
+        let projection = HUDPreviewProjection(profile: profile)
+        let expectedHeight = (400 / projection.containerAspectRatio).rounded(.up) * 4
+
+        XCTAssertEqual(image.cgImage?.width, 1_600)
+        XCTAssertEqual(image.cgImage?.height, Int(expectedHeight))
     }
 
     func testHostProjectsNormalizedViewportAndAsymmetricSafeAreaIntoCGRect() throws {
@@ -633,6 +775,64 @@ final class ExperienceRuntimeTests: XCTestCase {
         )
     }
 
+    private func renderConversationHUD(
+        scene: HUDScene,
+        filename: String
+    ) async throws -> UIImage {
+        let profile = DisplayProfileCatalog.builtIn.defaultProfile
+        return try await renderHUDView(
+            HUDOverlayView(
+                scene: scene,
+                profile: profile,
+                intensity: 1,
+                showsSafeArea: false
+            ),
+            filename: filename
+        )
+    }
+
+    private func renderHUDView<Content: View>(
+        _ content: Content,
+        filename: String,
+        settleMilliseconds: Int64 = 180,
+        updateBeforeCapture: (() -> Void)? = nil
+    ) async throws -> UIImage {
+        let profile = DisplayProfileCatalog.builtIn.defaultProfile
+        let projection = HUDPreviewProjection(profile: profile)
+        let width: CGFloat = 400
+        let height = (width / projection.containerAspectRatio).rounded(.up)
+        let view = content
+            .frame(width: width, height: height)
+            .background(Color.black)
+
+        let host = UIHostingController(rootView: view)
+        host.view.frame = CGRect(x: 0, y: 0, width: width, height: height)
+        host.view.backgroundColor = .black
+        host.view.setNeedsLayout()
+        host.view.layoutIfNeeded()
+        if let updateBeforeCapture {
+            try await Task.sleep(for: .milliseconds(80))
+            updateBeforeCapture()
+        }
+        try await Task.sleep(for: .milliseconds(settleMilliseconds))
+
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 4
+        let renderer = UIGraphicsImageRenderer(size: host.view.bounds.size, format: format)
+        let image = renderer.image { _ in
+            host.view.drawHierarchy(in: host.view.bounds, afterScreenUpdates: true)
+        }
+        let data = try XCTUnwrap(image.pngData())
+        let outputURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(filename)
+        try data.write(to: outputURL, options: .atomic)
+        let attachment = XCTAttachment(image: image)
+        attachment.name = filename
+        attachment.lifetime = .keepAlways
+        add(attachment)
+        return image
+    }
+
     private func activeStreamDependencies(
         session: ProfileSelectionSpeechSession,
         agent: ProfileSelectionControlledAgent
@@ -685,6 +885,35 @@ final class ExperienceRuntimeTests: XCTestCase {
             await Task.yield()
         }
         XCTFail("等待异步状态超时")
+    }
+}
+
+private struct ConversationHUDStreamingTestHarness: View {
+    @ObservedObject var model: ConversationHUDStreamingTestModel
+
+    var body: some View {
+        HUDOverlayView(
+            scene: ConversationHUDMapper.makeScene(
+                revision: 1,
+                state: .streaming,
+                transcript: "如何安排一次产品评审？",
+                assistantReply: model.reply,
+                audioLevel: 0.58,
+                error: nil
+            ),
+            profile: DisplayProfileCatalog.builtIn.defaultProfile,
+            intensity: 1,
+            showsSafeArea: false
+        )
+    }
+}
+
+@MainActor
+private final class ConversationHUDStreamingTestModel: ObservableObject {
+    @Published var reply: String
+
+    init(reply: String) {
+        self.reply = reply
     }
 }
 

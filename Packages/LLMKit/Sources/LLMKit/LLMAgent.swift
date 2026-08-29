@@ -80,7 +80,9 @@ public actor LLMAgent {
                 messages.append(reply)
 
                 if let toolCalls = reply.toolCalls, !toolCalls.isEmpty {
-                    try validateToolRound(toolCalls, content: reply.content)
+                    // Non-streaming tool preambles are provider protocol data.
+                    // They were never published, so discard them and execute the tools.
+                    try validateToolRound(toolCalls, content: nil)
                     // 执行所有工具调用，结果作为 tool 消息回传
                     for call in toolCalls {
                         try Task.checkCancellation()
@@ -96,7 +98,10 @@ public actor LLMAgent {
                 // 无工具调用 → 最终回答
                 let answer = (reply.content ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !answer.isEmpty else { throw LLMAgentError.emptyResponse }
-                workingContext.appendAssistant(answer)
+                workingContext.appendAssistant(
+                    answer,
+                    reasoningContent: tools == nil ? nil : reply.reasoningContent
+                )
                 try commit(workingContext, transaction: transaction)
                 return answer
             }
@@ -156,7 +161,17 @@ public actor LLMAgent {
     }
 
     /// 最近对话历史（不含 system）。
-    public var chatMessages: [LLMMessage] { context.chatMessages }
+    ///
+    /// Provider-only reasoning is intentionally redacted from the public projection.
+    /// Internal requests continue to use `context.chatMessages` so tool-enabled
+    /// thinking turns can replay the provider protocol without leaking it to UI or logs.
+    public var chatMessages: [LLMMessage] {
+        context.chatMessages.map { message in
+            var redacted = message
+            redacted.reasoningContent = nil
+            return redacted
+        }
+    }
 
     /// 重置上下文（保留 system prompt）。
     public func clearContext() {
@@ -222,7 +237,7 @@ public actor LLMAgent {
                     guard roundContent.isEmpty else {
                         throw LLMAgentStreamError.discardPartialMixedContentAndToolCall
                     }
-                    try validateToolRound(toolCalls, content: reply.content)
+                    try validateToolRound(toolCalls, content: roundContent)
                     for call in toolCalls {
                         try Task.checkCancellation()
                         try ensureActive(transaction)
@@ -238,7 +253,10 @@ public actor LLMAgent {
                 guard !answer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                     throw LLMAgentError.emptyResponse
                 }
-                workingContext.appendAssistant(answer)
+                workingContext.appendAssistant(
+                    answer,
+                    reasoningContent: tools == nil ? nil : reply.reasoningContent
+                )
                 try stageCompletion(workingContext, transaction: transaction)
                 continuation.yield(.completed(answer))
                 continuation.finish()

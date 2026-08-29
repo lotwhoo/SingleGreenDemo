@@ -53,7 +53,7 @@ struct DisplayProfileCatalog {
                 visibleAspectRatio: 8.0 / 3.0,
                 surfaceWidthFraction: 0.90,
                 alignment: .center,
-                verticalOffsetFraction: -0.035,
+                verticalOffsetFraction: -0.20,
                 viewport: NormalizedRect(x: 0.08, y: 0.12, width: 0.84, height: 0.60),
                 safeArea: NormalizedEdgeInsets(
                     top: 0.10,

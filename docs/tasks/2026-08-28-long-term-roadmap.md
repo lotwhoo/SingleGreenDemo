@@ -23,7 +23,7 @@
 - `ExperienceRuntime`、AI Experience 和 `VoiceConversationController` 通过统一 `ExperienceSnapshot` 传递 scene、primary action、event description 和 control state。
 - Runtime 的激活、普通事件和后台更新共用 generation 与 Session identity 校验。
 - 相同快照不重复传播，快照字段以单次赋值保持原子一致。
-- 保留已验收 UX 参数：HUD 8:3、宽度 `0.90`、垂直偏移 `-0.035`、文字节奏 `150ms`。
+- 保留 HUD 8:3、宽度 `0.90` 和文字节奏 `150ms`；初始垂直偏移 `-0.035` 在后续宿主视觉调整中更新为 `-0.20`。
 
 ### 验证证据
 
@@ -42,7 +42,7 @@
 - `SingleGreenGlassesKit.DisplayProfile` 已成为不可变、`Sendable` 的设备无关值模型，包含可见区域长宽比、surface width、九宫格对齐、垂直偏移、viewport、不对称 safe area、文字/行缩放和 RGB 颜色。
 - 初始化已加入类型化校验，覆盖非有限/非正值、viewport 越界、safe-area 边缘和横纵向塌缩、颜色范围，以及派生 presentation aspect ratio 的 overflow/underflow。
 - 宿主保留 SwiftUI/CoreGraphics 投影与颜色/矩形转换器；Profile 选择使用进程内 `DisplayProfileStore`，与 Runtime、Experience 状态和活动 AI stream 隔离。
-- 默认 Profile 为 `simulator.default.v2`：8:3、宽度 `0.90`、中心对齐、垂直偏移 `-0.035`。另有 `calibration.fixture.non-production.v1`，仅用于测试，不代表生产/真实光学标定。
+- 默认 Profile 为 `simulator.default.v2`：8:3、宽度 `0.90`、中心对齐，当前垂直偏移 `-0.20`。另有 `calibration.fixture.non-production.v1`，仅用于测试，不代表生产/真实光学标定。
 
 ### M2 验证证据
 
@@ -97,11 +97,11 @@
 
 ## M4：Controller Decomposition / Strict Concurrency（已实现并完成自动化验证）
 
-- `VoiceConversationController` 保留公开 `@MainActor` sole state/snapshot façade；内部拆分 InputCoordinator、ReplyPipeline、DisplayScheduler 和 LifecycleProjection。初次抽取由 590 行降至 373 行，当前 Controller 为 403 行（后续生命周期与兼容 façade 代码已计入）。
+- `VoiceConversationController` 保留公开 `@MainActor` sole state/snapshot façade；内部拆分 InputCoordinator、ReplyPipeline、DisplayScheduler、LifecycleProjection、TelemetryTracker 和纯值 `ConversationControllerExecutionState`。初次抽取曾由 590 行降至 373 行；当前 M9 Controller 为 824 行，Task/副作用所有权仍集中在 Controller，行数不作为发布门禁。
 - LLMAgent 使用 staged transaction candidate 与显式 commit/abort；仅在显示追平且领域接受后提交，提交失败或下游失效时 abort。
 - 输入 generation、迟到 ASR start 清理、公开 shutdown/deallocation、Runtime observation shutdown、ASR event-cycle/lifecycle serialization 已完成。
 - PCM snapshot 保留精确 ASBD/channel layout/channel count/interleaving；诊断已清洗；宿主 speech adapter 为 actor；ObservationBox 已移除。
-- 六个 Package、App 和测试 Target 使用 Swift 6 complete/WAE；统一门禁为 `scripts/strict_concurrency_gate.sh`。当前记录在案的 `@unchecked Sendable` 框架边界为 `ASRSession`、`LegacyAudioCaptureCallbacks`、`AudioCaptureRunState`、`PCMFrameSourceRelay` 和 `CameraSessionPipeline`；每一处均有同步边界、理由和测试覆盖。
+- 七个 Package、App 和测试 Target 使用 Swift 6 complete/WAE；统一门禁为 `scripts/strict_concurrency_gate.sh`。当前生产 `@unchecked Sendable` 声明为 `ASRSession`、`LegacyAudioCaptureCallbacks`、`AudioCaptureRunState`、`AudioCaptureAudioSystemEventBridge`、`PlatformAudioSystemEventSource.ObserverTokens`、`PlatformAudioSystemEventSource`、`PCMFrameSourceRelay`、`CameraSessionPipeline`、`WebRTCVADAPI` 和 `WebRTCVADHandle`；每处都必须保留明确同步依据和测试。
 
 ### M4 验证证据
 
@@ -130,18 +130,18 @@
 - 已建立 release evidence schema/生成/校验脚本、发布检查单、设备/服务矩阵、回滚流程和 NOTICE/license 状态。
 - 详细完成项和待验证项见 [M5 Production Readiness evidence record](./2026-08-28-production-readiness.md)。在真机、真实服务、GitHub runner、签名与回滚证据完成前，不视为生产发布批准。
 
-## M6：Local VAD / Automatic Endpointing（Stage 2A 已实现，生产 detector 待接入）
+## M6：Local VAD / Automatic Endpointing（WebRTC production detector 已集成）
 
 - 新增独立 Swift 6 `VoiceActivityDetectionKit`，生产库无第三方依赖，不导入录音、网络、UI 或供应商框架。
 - 固定 `VADPCMFrame` 为 16 kHz、mono、Int16 little-endian、20 ms、320 samples / 640 bytes，并用严格递增 sequence 隔离重复与回退帧。
 - `VoiceActivityDetecting` 为 actor-bound 检测协议；`VADSegmenter` 为确定性值类型，负责有界 pre-roll、N-of-M 起音、内部/尾部静音转发、恢复说话、静音/最长时长单终点和 reset。
 - `VoiceActivityDetectionPipeline` 对完整 detect → consume 操作执行 FIFO 串行化；reset 通过 generation 立即丢弃挂起的旧检测并在 detector reset 完成前阻止新一代消费，取消后的迟到检测也不能修改分段状态。
 - 简单能量检测器只存在于不可作为库产品选择的 benchmark/test-support target；benchmark 只报告帧数、分段数、终点数和耗时，不记录 PCM 或内容。
-- Stage 2A 已将 `VoiceChatCore` 音频帧源、VAD 门控 ASR 会话、眼镜核心 port 和 App adapter 串起来；production detector factory 仍为空。设置页因此 fail closed，不回退到旧 amplitude timer 或 benchmark energy detector；PTT 保持兼容。
+- Stage 2A 已将 `VoiceChatCore` 音频帧源、VAD 门控 ASR 会话、眼镜核心 port 和 App adapter 串起来；获批准的 WebRTC production detector 仅在 `SingleGreenDemo` composition root 注入，构造时保持 inert，直到 session `arm()` 才启动采集。设置页和独立 fixture 仍 fail closed，不回退到旧 amplitude timer 或 benchmark energy detector；PTT 保持兼容。
 - 策略固定为 20ms 帧、300ms pre-roll、3-of-5 起音、800ms 尾部静音、20s 最长段、15s 无起音超时；source/pending-upload 队列均有界，起音确认前不打开 ASR transport。
 - `ASRFailure` typed payload 与无 payload `CaptureError.engineFailed` 是有意的本地 Package source migrations，调用方必须使用结构化 code，不传播动态错误描述。
 - WebRTC 的具体发行物、来源、许可证、架构、体积和隐私边界已按 ADR 获用户批准并纳入 production detector 阶段。
-- WebRTC 接入前的固定 commit、11 upstream C + 1 local compatibility C + 12 upstream headers 闭包、14-vs-11 reconciliation、三架构 compile probe、provenance/hash 清单、性能/语料/真机门禁和未勾选审批框见 [WebRTC VAD 依赖审批 ADR](./2026-08-28-webrtc-vad-approval-adr.md)。该 ADR 不表示已添加依赖或已验证 VAD 质量。
+- WebRTC 的固定 commit、11 upstream C + 1 local compatibility C + 12 upstream headers 闭包、14-vs-11 reconciliation、三架构 compile probe、provenance/hash 清单和剩余性能/语料/真机门禁见 [WebRTC VAD 依赖审批 ADR](./2026-08-28-webrtc-vad-approval-adr.md)。依赖已完成批准与集成，但 ADR 和本地自动化仍不等于当前 M9 的真实麦克风/VAD/服务复验。
 
 ### M6 Stage 1 当前验证证据
 
@@ -153,7 +153,7 @@
 - 包清单、VAD 隐私/依赖边界、覆盖率 scope、仓库卫生、隐私日志、secret scan 和 diff whitespace 门禁通过。
 - 上一轮 provider-neutral 回归的六包严格门禁 **349/349**（7、16、23、148、70、85）与 App-hosted **48/48**（`/private/tmp/SingleGreenDemo-ProviderNeutral-OwnerApp.xcresult`）现保留为历史快照。其 provider-neutral 边界仍是：API keys、provider model/resource 配置、credential leasing、validation copy 和 raw `web_search` mapping 均留在 App resolver/adapters；核心只消费准备好的 PTT/VAD sessions、opaque Agent context identity 和 semantic external-information activity，并丢弃 stale preparation。Experience ID 遵循 `[A-Za-z0-9][A-Za-z0-9._-]*`。
 - （历史 FinalQA2 快照）六包严格门禁 **351/351**、App-hosted **58/58**；具体 detector 尚未实现。当前集成证据见文末 superseding status。
-- 当前 throwing-VAD 工作树已完成签名 Debug `iphoneos arm64` build、codesign 和安装，但启动因设备锁定被拒绝；xcresult 为 `/private/tmp/SingleGreenDemo-ThrowingVAD-DeviceBuild.xcresult`，没有当前 PID/运行时证据。此前 Final-P2 PID 稳定的部署证据早于本次 App contract 变更，仅作历史记录。生产 detector factory 仍为空、无 WebRTC；Release backend、GitHub CI、真实服务、许可证和回滚仍待完成。
+- 历史 throwing-VAD 检查点曾完成签名 Debug `iphoneos arm64` build、codesign 和安装，但当次启动因设备锁定被拒绝；该记录已被下方 WebRTC 集成状态补充。当前 M9 没有重新执行设备或真实服务矩阵；Release backend、GitHub CI、真实服务和回滚仍待完成。
 
 ## 通用流程与门禁
 
@@ -204,3 +204,18 @@ The approved minimal WebRTC detector is integrated only at the `SingleGreenDemo`
 - 隔离复测：`SingleGreenGlassesKit` **174/174**，关键用例 **17×20=340/340**，App **55/55**；SGK 覆盖率 **93.91%**，适配器 **98.02%**；八模块两架构 **16** 个 API snapshots byte-identical；架构负例 **11**。
 - Debug 与 universal Release Simulator（arm64+x86_64）构建及独立评审 GO 均已通过。并发 simulator 仅产生 timing warning；已完成隔离的 55/55 重跑。
 - PR5 未执行真机、真实服务、GitHub CI、commit 或 push。详见 [M7 PR5 任务卡](./2026-08-28-m7-pr5-mechanical-decomposition.md)。
+
+## M8：Dependency & Composition Refinement（历史检查点，2026-08-29）
+
+- `VoiceConversationDependencies` 分为 input、agent、presentation、observability 四个 immutable groups；flat initializer 与 11 个 accessors 保留 source-package compatibility。
+- App live composition 通过一个共享 `ConversationPreparationResolver` 派生 input、ASR 和 Agent 行为，避免 settings/resolver A/B 错配；不引入 Service Locator、global registry 或 runtime hot swap。
+- M8 历史证据为 `SingleGreenGlassesKit` 178/178、App 58/58、focused preparation 17/17、controller/dependency 99/99、16 个 API snapshots、七 Package/11 negative fixtures 和 Debug/Release Simulator builds。
+- M8 未执行真机安装/启动或真实服务；详见 [M8 任务记录](./2026-08-29-m8-dependency-composition-refinement.md)。
+
+## M9：Runtime State Decomposition（当前代码检查点，2026-08-29）
+
+- `ConversationControllerExecutionState` 抽取纯 generation、宿主 active/background、连续免按 activation 和 shutdown admission；Controller 继续拥有所有 Task 与清理。
+- `AudioCaptureRunState`、`AudioCaptureSession`、`AudioCaptureSystemEvents` 和 `PCMBufferSnapshot` 拆分采集运行态、平台会话/事件和 PCM 值快照。
+- `VoiceActivatedASRRunState` 抽取一次 run 的 FIFO 队列、pending/in-flight upload 与 finalization facts；`VoiceActivatedASRSession` actor 继续拥有 source、VAD、transport、watchdog 和 generation。
+- 当前复核为 `SingleGreenGlassesKit` 184/184、`VoiceChatCore` 109/109；架构、inventory、16 API baselines、repository hygiene、secret scan 和 diff check 通过。
+- 当前未重新运行 App XCTest/build、真机、真实服务或人工体验矩阵；详见 [M9 任务记录](./2026-08-29-runtime-state-decomposition.md)。

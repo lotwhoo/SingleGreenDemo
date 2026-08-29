@@ -11,17 +11,36 @@ public actor LLMChatClient {
         public var model: String
         public var timeoutInterval: TimeInterval
         public var retryConfig: LLMRetryConfig
+        /// Nil keeps the payload compatible with generic OpenAI-style providers.
+        public var thinking: LLMThinkingConfiguration?
 
         public init(baseURL: URL = URL(string: "https://api.deepseek.com/v1")!,
                     apiKey: String,
                     model: String = "deepseek-v4-flash",
                     timeoutInterval: TimeInterval = 60,
                     retryConfig: LLMRetryConfig = .init()) {
+            self.init(
+                baseURL: baseURL,
+                apiKey: apiKey,
+                model: model,
+                timeoutInterval: timeoutInterval,
+                retryConfig: retryConfig,
+                thinking: nil
+            )
+        }
+
+        public init(baseURL: URL = URL(string: "https://api.deepseek.com/v1")!,
+                    apiKey: String,
+                    model: String = "deepseek-v4-flash",
+                    timeoutInterval: TimeInterval = 60,
+                    retryConfig: LLMRetryConfig = .init(),
+                    thinking: LLMThinkingConfiguration?) {
             self.baseURL = baseURL
             self.apiKey = apiKey
             self.model = model
             self.timeoutInterval = timeoutInterval
             self.retryConfig = retryConfig
+            self.thinking = thinking
         }
     }
 
@@ -51,16 +70,20 @@ public actor LLMChatClient {
                                 temperature: Double? = nil,
                                 maxTokens: Int? = nil,
                                 tools: [LLMTool]? = nil) async throws -> LLMMessage {
-        let body = LLMChatRequest(model: config.model, messages: messages,
-                                  temperature: temperature, maxTokens: maxTokens,
-                                  stream: false, tools: tools)
+        let body = makeChatRequest(
+            messages: messages,
+            temperature: temperature,
+            maxTokens: maxTokens,
+            stream: false,
+            tools: tools
+        )
         let data = try await send(body: body)
 
         let chat = try JSONDecoder().decode(LLMChatResponse.self, from: data)
         guard let message = chat.choices.first?.message else {
             throw LLMAPIError(statusCode: 200, message: "响应中没有消息")
         }
-        return message
+        return normalizedForThinkingReplay(message)
     }
 
     /// 流式对话：返回增量文本流（SSE），逐段 yield，结束 finish。
@@ -99,8 +122,7 @@ public actor LLMChatClient {
     ) -> AsyncThrowingStream<LLMStreamingEvent, Error> {
         AsyncThrowingStream { continuation in
             let task = Task {
-                let body = LLMChatRequest(
-                    model: config.model,
+                let body = makeChatRequest(
                     messages: messages,
                     temperature: temperature,
                     maxTokens: maxTokens,
@@ -140,10 +162,15 @@ public actor LLMChatClient {
                             }
                             for choice in chunk.choices where (choice.index ?? 0) == targetChoiceIndex {
                                 if let delta = choice.delta {
+                                    if let reasoning = delta.reasoningContent, !reasoning.isEmpty {
+                                        accumulator.reasoningContent += reasoning
+                                    }
                                     if let content = delta.content, !content.isEmpty {
                                         emitted = true
                                         accumulator.content += content
-                                        continuation.yield(.contentDelta(content))
+                                        if (delta.toolCalls ?? []).isEmpty {
+                                            continuation.yield(.contentDelta(content))
+                                        }
                                     }
                                     for toolDelta in delta.toolCalls ?? [] {
                                         emitted = true
@@ -167,7 +194,9 @@ public actor LLMChatClient {
                         guard targetFinished || reachedDone else {
                             throw LLMStreamingError.incompleteStream
                         }
-                        continuation.yield(.completed(try accumulator.message()))
+                        continuation.yield(.completed(try accumulator.message(
+                            requiresNonNullToolContent: config.thinking?.mode == .enabled
+                        )))
                         continuation.finish()
                         return
                     } catch {
@@ -186,6 +215,35 @@ public actor LLMChatClient {
     }
 
     // MARK: - 内部
+
+    private nonisolated func makeChatRequest(
+        messages: [LLMMessage],
+        temperature: Double?,
+        maxTokens: Int?,
+        stream: Bool,
+        tools: [LLMTool]?
+    ) -> LLMChatRequest {
+        LLMChatRequest(
+            model: config.model,
+            messages: messages,
+            temperature: config.thinking?.mode == .enabled ? nil : temperature,
+            maxTokens: maxTokens,
+            stream: stream,
+            tools: tools,
+            thinking: config.thinking
+        )
+    }
+
+    private nonisolated func normalizedForThinkingReplay(_ message: LLMMessage) -> LLMMessage {
+        guard config.thinking?.mode == .enabled,
+              !(message.toolCalls ?? []).isEmpty,
+              message.content == nil else {
+            return message
+        }
+        var normalized = message
+        normalized.content = ""
+        return normalized
+    }
 
     /// 构造标准 POST 请求。
     private nonisolated func makeRequest(body: LLMChatRequest) throws -> URLRequest {
@@ -239,6 +297,7 @@ private struct StreamingMessageAccumulator {
     }
 
     var content = ""
+    var reasoningContent = ""
     var toolCalls: [Int: PartialToolCall] = [:]
 
     mutating func append(_ delta: LLMSSEChunk.Choice.ToolCallDelta) {
@@ -250,7 +309,7 @@ private struct StreamingMessageAccumulator {
         toolCalls[delta.index] = value
     }
 
-    func message() throws -> LLMMessage {
+    func message(requiresNonNullToolContent: Bool) throws -> LLMMessage {
         let completedTools = try toolCalls.keys.sorted().map { index -> LLMToolCall in
             guard let value = toolCalls[index] else {
                 throw LLMStreamingError.incompleteToolCall(index: index)
@@ -271,7 +330,10 @@ private struct StreamingMessageAccumulator {
         }
         return LLMMessage(
             role: .assistant,
-            content: content.isEmpty ? nil : content,
+            content: content.isEmpty
+                ? (requiresNonNullToolContent && !completedTools.isEmpty ? "" : nil)
+                : content,
+            reasoningContent: reasoningContent.isEmpty ? nil : reasoningContent,
             toolCalls: completedTools.isEmpty ? nil : completedTools
         )
     }
