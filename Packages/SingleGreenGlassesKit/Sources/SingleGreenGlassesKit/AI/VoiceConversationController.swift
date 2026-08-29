@@ -20,9 +20,7 @@ public final class VoiceConversationController: ObservableObject {
     private let displayScheduler: ConversationDisplayScheduler
     private let replyPipeline: ConversationReplyPipeline
     private let telemetryTracker: ConversationTelemetryTracker
-    private var operationGeneration = 0
-    private var lifecycleGeneration = 0
-    private var isHostActive = true
+    private var executionState = ConversationControllerExecutionState()
     private var lifecycleTasks: [Int: Task<Void, Never>] = [:]
     private var latestLifecycleTask: Task<Void, Never>?
     private var inputStartTaskGeneration = 0
@@ -31,10 +29,7 @@ public final class VoiceConversationController: ObservableObject {
     private var inputFinishTasks: [Int: Task<Void, Never>] = [:]
     private var resetTaskGeneration = 0
     private var resetTasks: [Int: Task<Void, Never>] = [:]
-    private var continuousVoiceActivationGeneration = 0
-    private var activeContinuousVoiceActivation: Int?
     private var automaticRearmTask: Task<Void, Never>?
-    private var isShutdown = false
     private var shutdownTask: Task<Void, Never>?
 
     public init(
@@ -127,7 +122,7 @@ public final class VoiceConversationController: ObservableObject {
     public var controlState: ExperienceControlState? { snapshot.controlState }
 
     public func toggleConversation() async {
-        guard !isShutdown else { return }
+        guard !executionState.isShutdown else { return }
         switch state {
         case .idle, .failed, .completed, .thinking, .searching, .streaming:
             await startListening(trigger: .explicit)
@@ -142,7 +137,7 @@ public final class VoiceConversationController: ObservableObject {
     /// Backgrounding discards incomplete input/reply/display work but preserves
     /// successfully committed conversation history.
     public func suspendForBackground() async {
-        guard !isShutdown else { return }
+        guard !executionState.isShutdown else { return }
         let transition = beginHostLifecycleTransition(.background)
         let task = scheduleHostLifecycleTransition(transition)
         await task.value
@@ -152,7 +147,7 @@ public final class VoiceConversationController: ObservableObject {
     /// cleanup through a generation check. A delayed background task therefore
     /// cannot cancel work created after a newer foreground transition.
     public func updateHostLifecycle(_ state: ConversationHostLifecycleState) {
-        guard !isShutdown else { return }
+        guard !executionState.isShutdown else { return }
         let transition = beginHostLifecycleTransition(state)
         scheduleHostLifecycleTransition(transition)
     }
@@ -168,7 +163,7 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     public func resetConversation() async {
-        guard !isShutdown else { return }
+        guard !executionState.isShutdown else { return }
         resetTaskGeneration += 1
         let generation = resetTaskGeneration
         let task = Task { [weak self] in
@@ -181,7 +176,7 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     private func performResetConversation() async {
-        guard !isShutdown else { return }
+        guard !executionState.isShutdown else { return }
         disableContinuousVoiceActivation()
         let controllerOperation = beginConversationOperation()
         telemetryTracker.terminateActiveWork(outcome: .cancelled)
@@ -208,10 +203,7 @@ public final class VoiceConversationController: ObservableObject {
             await shutdownTask.value
             return
         }
-        guard !isShutdown else { return }
-        isShutdown = true
-        isHostActive = false
-        lifecycleGeneration += 1
+        guard executionState.beginShutdown() else { return }
         let inputCancellation = inputCoordinator.reserveCancellation()
         let pendingLifecycleTasks = Array(lifecycleTasks.values)
         lifecycleTasks.removeAll()
@@ -224,12 +216,10 @@ public final class VoiceConversationController: ObservableObject {
         resetTasks.removeAll()
         let pendingAutomaticRearmTask = automaticRearmTask
         automaticRearmTask = nil
-        disableContinuousVoiceActivation()
         for startTask in pendingInputStartTasks {
             startTask.cancel()
         }
         pendingAutomaticRearmTask?.cancel()
-        _ = beginConversationOperation()
         telemetryTracker.terminateActiveWork(outcome: .cancelled)
         let replyCleanup = replyPipeline.beginInvalidation()
         _ = conversation.abortUncommittedTurn()
@@ -263,7 +253,7 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     private func startListening(trigger: VoiceInputStartTrigger) async {
-        guard !isShutdown else { return }
+        guard !executionState.isShutdown else { return }
         inputStartTaskGeneration += 1
         let generation = inputStartTaskGeneration
         let task = Task { [weak self] in
@@ -276,7 +266,7 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     private func performStartListening(trigger: VoiceInputStartTrigger) async {
-        guard !isShutdown else { return }
+        guard !executionState.isShutdown else { return }
         switch trigger {
         case .explicit:
             disableContinuousVoiceActivation()
@@ -379,7 +369,7 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     private func stopRecognition() async {
-        guard !isShutdown else { return }
+        guard !executionState.isShutdown else { return }
         inputFinishTaskGeneration += 1
         let generation = inputFinishTaskGeneration
         let task = Task { [weak self] in
@@ -392,7 +382,7 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     private func performStopRecognition() async {
-        guard !isShutdown else { return }
+        guard !executionState.isShutdown else { return }
         guard conversation.inputState == .armed || conversation.inputState == .recording else { return }
         await inputCoordinator.finishCurrent()
     }
@@ -522,14 +512,14 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     private func handleVisibleTextChanged(_ text: String, operation: ReplyOperation) {
-        guard !isShutdown,
+        guard !executionState.isShutdown,
               replyPipeline.isCurrent(operation),
               conversation.activeReplyID == operation.id else { return }
         refreshSnapshot()
     }
 
     private func acceptAcknowledgedReply(operation: ReplyOperation) -> Bool {
-        guard !isShutdown,
+        guard !executionState.isShutdown,
               replyPipeline.isCurrent(operation),
               conversation.activeReplyID == operation.id,
               conversation.completeReply(id: operation.id) else { return false }
@@ -542,7 +532,7 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     private func failReplyContextAcknowledgement(operation: ReplyOperation) {
-        guard !isShutdown,
+        guard !executionState.isShutdown,
               replyPipeline.isCurrent(operation),
               conversation.activeReplyID == operation.id,
               displayScheduler.settleFailure(
@@ -563,7 +553,7 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     private func handleReplyPipelineEvent(_ event: ReplyPipelineEvent) throws {
-        guard !isShutdown else { return }
+        guard !executionState.isShutdown else { return }
         switch event {
         case .searching(let operation):
             markReplySearching(operation: operation)
@@ -603,7 +593,7 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     private func handleInputCoordinatorEvent(_ event: InputCoordinatorEvent) async {
-        guard !isShutdown else { return }
+        guard !executionState.isShutdown else { return }
         switch event {
         case .preparing(let operation):
             guard inputCoordinator.isCurrent(operation) else { return }
@@ -656,7 +646,7 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     private func refreshSnapshot() {
-        guard !isShutdown else { return }
+        guard !executionState.isShutdown else { return }
         let capturedState = state
         let capturedTranscript = transcript
         let capturedAssistantReply = assistantReply
@@ -684,25 +674,23 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     private func beginConversationOperation() -> Int {
-        operationGeneration += 1
-        return operationGeneration
+        executionState.beginConversationOperation()
     }
 
     private func isCurrent(
         _ operation: Int,
         requiresActiveHost: Bool = true
     ) -> Bool {
-        !isShutdown
-            && operation == operationGeneration
-            && (!requiresActiveHost || isHostActive)
+        executionState.isConversationOperationCurrent(
+            operation,
+            requiresActiveHost: requiresActiveHost
+        )
     }
 
     private func beginHostLifecycleTransition(
         _ state: ConversationHostLifecycleState
     ) -> HostLifecycleTransition {
-        lifecycleGeneration += 1
-        isHostActive = state == .active
-        _ = beginConversationOperation()
+        let executionTransition = executionState.beginHostLifecycleTransition(state)
         let inputCancellation = state == .background
             ? inputCoordinator.reserveCancellation()
             : nil
@@ -710,7 +698,7 @@ public final class VoiceConversationController: ObservableObject {
             ? replyPipeline.beginInvalidation()
             : nil
         if state == .background {
-            disableContinuousVoiceActivation()
+            cancelAutomaticRearmTask()
             telemetryTracker.terminateActiveWork(outcome: .suspended)
             _ = conversation.abortUncommittedTurn()
             displayScheduler.reset()
@@ -722,7 +710,7 @@ public final class VoiceConversationController: ObservableObject {
             refreshSnapshot()
         }
         return HostLifecycleTransition(
-            generation: lifecycleGeneration,
+            generation: executionTransition.generation,
             state: state,
             inputCancellation: inputCancellation,
             replyCleanup: replyCleanup
@@ -751,8 +739,7 @@ public final class VoiceConversationController: ObservableObject {
             task = Task { [weak self] in
                 guard let self else { return }
                 defer { self.lifecycleTasks.removeValue(forKey: generation) }
-                guard !self.isShutdown,
-                      generation == self.lifecycleGeneration else { return }
+                guard self.executionState.isHostLifecycleCurrent(generation) else { return }
                 self.telemetryTracker.record(.lifecycle, outcome: .succeeded)
             }
         }
@@ -762,23 +749,21 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     private func beginContinuousVoiceActivation() -> Int {
-        continuousVoiceActivationGeneration += 1
-        activeContinuousVoiceActivation = continuousVoiceActivationGeneration
-        return continuousVoiceActivationGeneration
+        executionState.beginContinuousVoiceActivation()
     }
 
     private func disableContinuousVoiceActivation() {
-        continuousVoiceActivationGeneration += 1
-        activeContinuousVoiceActivation = nil
+        executionState.disableContinuousVoiceActivation()
+        cancelAutomaticRearmTask()
+    }
+
+    private func cancelAutomaticRearmTask() {
         automaticRearmTask?.cancel()
         automaticRearmTask = nil
     }
 
     private func isContinuousVoiceActivationCurrent(_ generation: Int) -> Bool {
-        !isShutdown
-            && activeContinuousVoiceActivation == generation
-            && continuousVoiceActivationGeneration == generation
-            && isHostActive
+        executionState.isContinuousVoiceActivationCurrent(generation)
     }
 
     private func isInputStartCurrent(
@@ -794,8 +779,8 @@ public final class VoiceConversationController: ObservableObject {
     }
 
     private func scheduleAutomaticRearmIfNeeded() {
-        guard !isShutdown,
-              let generation = activeContinuousVoiceActivation,
+        guard !executionState.isShutdown,
+              let generation = executionState.activeContinuousVoiceActivation,
               isContinuousVoiceActivationCurrent(generation) else { return }
         automaticRearmTask?.cancel()
         automaticRearmTask = Task { [weak self] in
