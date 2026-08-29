@@ -36,6 +36,7 @@
 | M5 | Production Readiness / Release System：CI、设备回归、短期凭证、观测和发布流程 | 自动化基础已实现，人工门禁待完成 |
 | M6 | Local VAD / Automatic Endpointing：本地检测、自动端点和 ASR 门控 | WebRTC production detector 已集成并通过本地回归；真机/真实服务门禁待完成 |
 | M7 | 纯代码质量：架构边界、工具链、公开 API、生命周期与复用契约 | PR1–PR5 已在本地完成；本检查点完成 |
+| M8 | Dependency & Composition Refinement：分组核心依赖、收口 App Composition Root、验证装配隔离 | PR1–PR4 已在本地完成；真机与真实服务门禁待完成 |
 
 M7 PR1 的本地证据为六个 Package 严格并发 **377/377**、App XCTest **62/62**、架构边界 10 个负例和 14 个公开 API snapshot 门禁通过；该记录属于历史快照，见 [M7 PR1 任务卡](./docs/tasks/2026-08-28-m7-pr1-quality-baseline.md)。
 
@@ -50,6 +51,14 @@ PR3+PR4 历史合并质量门禁为七个 Package **438/438**（7、16、43、17
 M7 PR5 已完成机械拆分：新增内部 `ConversationTelemetryTracker`，并将 `VoiceConversationController` 的测试支持移入独立文件；控制器的任务、generation 和并发所有权保持不变。PR5 四文件隔离复测为 SGK **174/174**、关键用例 **17×20=340/340**、App **55/55**；SGK 覆盖率 **93.91%**，适配器 **98.02%**，16 个 API snapshots byte-identical。完整范围和剩余验证边界见 [M7 PR5 任务卡](./docs/tasks/2026-08-28-m7-pr5-mechanical-decomposition.md)。
 
 为兼容既有文档回归门禁，历史标记保留（已由 PR5 supersede）：最新 PR3+PR4 合并严格证据为七 Package **438/438**；该快照已由本段 PR5 隔离复测补充。
+
+### M8 Dependency & Composition Refinement（本地完成，2026-08-29）
+
+M8 将 `VoiceConversationDependencies` 分为四个公开、不可变依赖组：`input`、`agent`、`presentation` 和 `observability`。原有扁平初始化器与 11 个访问器继续保留，保证 source-package 兼容；这不是对 Swift struct 的二进制布局或 ABI 承诺。`VoiceConversationController` 的 Task、generation、取消、session、reply 和 display 所有权没有改变。
+
+App 的 `ConversationDependencies.swift` 现在只保留 live 入口；其余职责位于五个专门文件。内部 `VoiceConversationComposition` 接收一个共享 `ConversationPreparationResolver`，由 resolver 独占 settings 派生的 input、ASR 和 Agent 行为，避免 A/B 组合误装配。`AgentFactory` 仅是内部测试 seam，不是公共扩展点；当前不引入 Service Locator、全局 Registry 或运行时热切换。
+
+M8 本地证据：`SingleGreenGlassesKit` **178/178**；App XCTest **58/58**；聚焦 `ConversationPreparation` **17/17**；Controller + dependency 回归 **99/99**。八个模块的 16 份 API snapshot 已审查：仅 `SingleGreenGlassesKit` 的 macOS arm64 与 iOS Simulator arm64 两份发生变化，各 **39 additions / 0 removals**。架构门禁覆盖七个 Package 与 11 个负例；Debug/Release generic Simulator build 通过。首次全局 `SWIFT_TREAT_WARNINGS_AS_ERRORS` 与 Package `-suppress-warnings` 的冲突属于工具链证据，非源代码失败。该轮未执行真机、安装/启动或真实服务验证。完整任务记录见 [M8 任务卡](./docs/tasks/2026-08-29-m8-dependency-composition-refinement.md)。
 
 M1 的首次完整 QA 为五个 Package 150 项 + App-hosted 13 项，共 **163/0**；两项 P2 修复后的受影响复测为 SingleGreenGlassesKit 46 项 + App-hosted 13 项，共 **59/0**。两次均通过通用 Simulator build。详细验收清单和残余人工检查见[架构与升级报告](./docs/PROJECT_ARCHITECTURE_AND_UPGRADE_REPORT.md)及[M1 任务卡](./docs/tasks/2026-08-28-long-term-roadmap.md)。
 
@@ -165,7 +174,8 @@ xcodebuild \
 
 ## 验证边界
 
-当前的离线验证边界包括七个本地 Package、iOS Simulator App-hosted XCTest 和 Simulator 构建。当前 PR5 隔离证据为七 Package **438/438**（7、16、43、174、24、70、104）、App-hosted **55/55**（`/private/tmp/SingleGreenDemo-M7-PR5-AppTests-Retry/Logs/Test/Test-SingleGreenDemo-2026.08.28_19-46-03-+0800.xcresult`），关键生命周期用例重复 **340/340**；覆盖率与各包基线见 [覆盖率基线](./docs/COVERAGE_BASELINE.md)。Debug/严格 universal Release Simulator 和静态门禁通过。此前 PR3+PR4 合并证据属于历史快照；真机部署/启动与用户观察验收也属于历史证据，不代表当前检查点的重新验证，也不代表完整脚本化 VAD/服务矩阵。
+当前的离线验证边界包括七个本地 Package、iOS Simulator App-hosted XCTest 和 Simulator 构建。M8 的最新证据与边界见 [M8 任务卡](./docs/tasks/2026-08-29-m8-dependency-composition-refinement.md)；此前 PR5 证据属于历史快照。真机部署/启动与用户观察验收也属于历史证据，不代表当前检查点的重新验证，也不代表完整脚本化 VAD/服务矩阵。
+历史 M7 PR5 验证证据为七 Package **438/438**、App-hosted **55/55**、关键生命周期用例 **340/340**，结果包为 `/private/tmp/SingleGreenDemo-M7-PR5-AppTests-Retry/Logs/Test/Test-SingleGreenDemo-2026.08.28_19-46-03-+0800.xcresult`；该证据仅用于历史兼容标记，不覆盖 M8 当前证据，也不代表本轮重新执行。
 历史真机基线曾确认首页可运行且主要控件无截断；这不是 M1 的重新验证结果。不同环境光下的 HUD 可读性、连续交互与前后台恢复仍需继续验证。
 iPhone 叠加效果不等同于真实眼镜 OST 光学效果。
 
@@ -186,6 +196,7 @@ iPhone 叠加效果不等同于真实眼镜 OST 光学效果。
 - [M7 PR3 public reuse contract](./docs/tasks/2026-08-28-m7-pr3-public-reuse-contract.md)
 - [M7 PR4 terminal lifecycle](./docs/tasks/2026-08-28-m7-pr4-terminal-lifecycle.md)
 - [M7 PR5 mechanical decomposition](./docs/tasks/2026-08-28-m7-pr5-mechanical-decomposition.md)
+- [M8 dependency and composition refinement](./docs/tasks/2026-08-29-m8-dependency-composition-refinement.md)
 - [发布检查单](./docs/RELEASE_CHECKLIST.md)
 - [覆盖率基线](./docs/COVERAGE_BASELINE.md)
 - [第三方声明与许可证状态](./NOTICE.md)

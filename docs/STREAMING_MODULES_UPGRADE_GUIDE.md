@@ -2,7 +2,7 @@
 
 > 状态：当前可复用基线
 >
-> 更新日期：2026-08-27
+> 更新日期：2026-08-29
 > 适用范围：`StreamingTextKit`、`LLMKit`、AI Conversation App Adapter
 
 ## 1. 本次审阅结论
@@ -113,12 +113,26 @@ let agent = LLMAgent(
 | 文件 | 职责 |
 | --- | --- |
 | `ConversationPorts.swift` | App 端 ASR/Agent 稳定合同与配置快照 |
-| `ConversationDependencies.swift` | 依赖集合与 Composition Root 默认装配 |
+| `ConversationDependencies.swift` | App live entry；调用共享 resolver/composition，不承载 provider 细节 |
+| `VoiceConversationComposition.swift` | App-internal composition；接收一个 shared resolver，输出四组核心依赖 |
+| `ConversationPreparationResolver.swift` | 独占 settings-derived input、ASR 与 Agent preparation；`AgentFactory` 仅 internal test seam |
+| `ConversationCredentialProvider.swift` | credential lease/provider 与 fail-closed server boundary |
+| `ConversationPresentationPolicy.swift` | App presentation copy policy |
+| `ConversationTelemetryStore.swift` | App telemetry sink/store |
+| `ProductionVoiceActivatedSessionFactory.swift` | App-owned inactive VAD/ASR production factory |
 | `ConversationLiveAdapters.swift` | VoiceChatCore / LLMKit 生产适配 |
 | `VoiceConversationController.swift` | 会话状态与取消编排 |
 | `HUDFlowingTextView.swift` | SwiftUI 测量、样式、尾部 anchor 执行 |
 
 Controller 不得直接 import `LLMKit` 或 `VoiceChatCore`；Live Adapter 不得修改 Domain/HUD 状态。
+
+## 5.1 M8 dependency and composition contract
+
+`VoiceConversationDependencies` now groups four public immutable values: `input`, `agent`, `presentation`, and `observability`. New callers should use the grouped initializer. The previous flat initializer and its 11 accessors remain for source-package compatibility; they do not promise binary layout or ABI stability. The Controller still owns its Task handles, generation checks, cancellation, session lifecycle, reply identity, and display scheduling.
+
+The App composition root keeps `ConversationDependencies.swift` intentionally small. `VoiceConversationComposition` receives one shared `ConversationPreparationResolver`; that resolver exclusively derives settings-dependent input mode, ASR preparation, and Agent behavior. This makes an A/B misassembly (for example, settings from one composition with an Agent from another) structurally harder and is covered by composition tests. The internal `AgentFactory` exists only as a deterministic test seam and must not become a public extension point.
+
+Do not introduce a Service Locator, global registry, or runtime hot swap for this boundary. Consider splitting LLMKit only when a second independently shipped transport/provider SDK/platform consumer creates a stable ownership boundary. Consider an Experience/Provider Registry only after a real runtime switching requirement exists, at least two production implementations are available, and lifecycle/context semantics are specified.
 
 ## 6. 后续升级检查表
 

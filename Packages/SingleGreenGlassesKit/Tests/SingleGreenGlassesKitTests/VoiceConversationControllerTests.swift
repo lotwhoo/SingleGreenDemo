@@ -1415,6 +1415,39 @@ final class VoiceConversationControllerTests: XCTestCase {
         XCTAssertEqual(credentialRequestCount, 0)
     }
 
+    func testPreparedSpeechInputModeMismatchCancelsPreparedSessionAndFailsClosed() async {
+        let mismatchedSession = FakeVoiceActivatedSpeechSession()
+        let telemetry = RecordingTelemetry()
+        var permissionRequestCount = 0
+        let dependencies = VoiceConversationDependencies(
+            inputMode: { .pushToTalk },
+            voiceActivatedInputAvailable: { true },
+            prepareSpeechInput: { _ in .voiceActivated(mismatchedSession) },
+            prepareAgent: { throw TestFailure.agent },
+            requestMicrophonePermission: {
+                permissionRequestCount += 1
+                return true
+            },
+            sleep: { _ in },
+            telemetry: telemetry,
+            presentationCopy: Self.testPresentationCopy,
+            monotonicNow: { 0 }
+        )
+        let controller = VoiceConversationController(dependencies: dependencies)
+
+        await controller.toggleConversation()
+
+        XCTAssertEqual(controller.state, .failed)
+        XCTAssertEqual(controller.lastError, Self.testPresentationCopy.speechRecognitionUnavailable)
+        XCTAssertEqual(mismatchedSession.cancelCount, 1)
+        XCTAssertEqual(mismatchedSession.armCount, 0)
+        XCTAssertEqual(permissionRequestCount, 0)
+        XCTAssertEqual(
+            telemetry.terminals(for: .preparation).map(\.failureCode),
+            [.protocolFailure]
+        )
+    }
+
     func testVoiceActivatedModeSelectsDedicatedFactoryAndProjectsArmedState() async {
         let pushToTalkSession = FakeSpeechSession()
         let voiceSession = FakeVoiceActivatedSpeechSession()

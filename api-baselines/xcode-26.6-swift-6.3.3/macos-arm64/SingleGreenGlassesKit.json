@@ -8946,11 +8946,11 @@
                 "declKind": "Accessor",
                 "implicit": true,
                 "kind": "Accessor",
-                "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV9inputModeAA011SpeechInputI0Oycvg",
+                "mangledName": "$s21SingleGreenGlassesKit34VoiceConversationInputDependenciesV9inputModeAA06SpeechgJ0Oycvg",
                 "moduleName": "SingleGreenGlassesKit",
                 "name": "Get",
                 "printedName": "Get()",
-                "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV9inputModeAA011SpeechInputI0Oycvg"
+                "usr": "s:21SingleGreenGlassesKit34VoiceConversationInputDependenciesV9inputModeAA06SpeechgJ0Oycvg"
               }
             ],
             "children": [
@@ -8980,11 +8980,11 @@
             "hasStorage": true,
             "isLet": true,
             "kind": "Var",
-            "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV9inputModeAA011SpeechInputI0Oycvp",
+            "mangledName": "$s21SingleGreenGlassesKit34VoiceConversationInputDependenciesV9inputModeAA06SpeechgJ0Oycvp",
             "moduleName": "SingleGreenGlassesKit",
             "name": "inputMode",
             "printedName": "inputMode",
-            "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV9inputModeAA011SpeechInputI0Oycvp"
+            "usr": "s:21SingleGreenGlassesKit34VoiceConversationInputDependenciesV9inputModeAA06SpeechgJ0Oycvp"
           },
           {
             "accessors": [
@@ -9016,11 +9016,11 @@
                 "declKind": "Accessor",
                 "implicit": true,
                 "kind": "Accessor",
-                "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV28voiceActivatedInputAvailableSbycvg",
+                "mangledName": "$s21SingleGreenGlassesKit34VoiceConversationInputDependenciesV014voiceActivatedG9AvailableSbycvg",
                 "moduleName": "SingleGreenGlassesKit",
                 "name": "Get",
                 "printedName": "Get()",
-                "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV28voiceActivatedInputAvailableSbycvg"
+                "usr": "s:21SingleGreenGlassesKit34VoiceConversationInputDependenciesV014voiceActivatedG9AvailableSbycvg"
               }
             ],
             "children": [
@@ -9050,11 +9050,11 @@
             "hasStorage": true,
             "isLet": true,
             "kind": "Var",
-            "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV28voiceActivatedInputAvailableSbycvp",
+            "mangledName": "$s21SingleGreenGlassesKit34VoiceConversationInputDependenciesV014voiceActivatedG9AvailableSbycvp",
             "moduleName": "SingleGreenGlassesKit",
             "name": "voiceActivatedInputAvailable",
             "printedName": "voiceActivatedInputAvailable",
-            "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV28voiceActivatedInputAvailableSbycvp"
+            "usr": "s:21SingleGreenGlassesKit34VoiceConversationInputDependenciesV014voiceActivatedG9AvailableSbycvp"
           },
           {
             "accessors": [
@@ -9087,11 +9087,11 @@
                 "declKind": "Accessor",
                 "implicit": true,
                 "kind": "Accessor",
-                "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV18prepareSpeechInputyAA08PreparediJ7SessionOAA0iJ4ModeOYaKcvg",
+                "mangledName": "$s21SingleGreenGlassesKit34VoiceConversationInputDependenciesV013prepareSpeechG0yAA08PreparedjG7SessionOAA0jG4ModeOYaKcvg",
                 "moduleName": "SingleGreenGlassesKit",
                 "name": "Get",
                 "printedName": "Get()",
-                "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV18prepareSpeechInputyAA08PreparediJ7SessionOAA0iJ4ModeOYaKcvg"
+                "usr": "s:21SingleGreenGlassesKit34VoiceConversationInputDependenciesV013prepareSpeechG0yAA08PreparedjG7SessionOAA0jG4ModeOYaKcvg"
               }
             ],
             "children": [
@@ -9122,81 +9122,11 @@
             "hasStorage": true,
             "isLet": true,
             "kind": "Var",
-            "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV18prepareSpeechInputyAA08PreparediJ7SessionOAA0iJ4ModeOYaKcvp",
+            "mangledName": "$s21SingleGreenGlassesKit34VoiceConversationInputDependenciesV013prepareSpeechG0yAA08PreparedjG7SessionOAA0jG4ModeOYaKcvp",
             "moduleName": "SingleGreenGlassesKit",
             "name": "prepareSpeechInput",
             "printedName": "prepareSpeechInput",
-            "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV18prepareSpeechInputyAA08PreparediJ7SessionOAA0iJ4ModeOYaKcvp"
-          },
-          {
-            "accessors": [
-              {
-                "accessorKind": "get",
-                "children": [
-                  {
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "PreparedConversationAgent",
-                        "printedName": "SingleGreenGlassesKit.PreparedConversationAgent",
-                        "usr": "s:21SingleGreenGlassesKit25PreparedConversationAgentV"
-                      },
-                      {
-                        "kind": "TypeNominal",
-                        "name": "Void",
-                        "printedName": "()"
-                      }
-                    ],
-                    "kind": "TypeFunc",
-                    "name": "Function",
-                    "printedName": "() async throws -> SingleGreenGlassesKit.PreparedConversationAgent"
-                  }
-                ],
-                "declAttributes": [
-                  "Transparent"
-                ],
-                "declKind": "Accessor",
-                "implicit": true,
-                "kind": "Accessor",
-                "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV12prepareAgentAA08PreparedfI0VyYaKcvg",
-                "moduleName": "SingleGreenGlassesKit",
-                "name": "Get",
-                "printedName": "Get()",
-                "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV12prepareAgentAA08PreparedfI0VyYaKcvg"
-              }
-            ],
-            "children": [
-              {
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "PreparedConversationAgent",
-                    "printedName": "SingleGreenGlassesKit.PreparedConversationAgent",
-                    "usr": "s:21SingleGreenGlassesKit25PreparedConversationAgentV"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  }
-                ],
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "() async throws -> SingleGreenGlassesKit.PreparedConversationAgent"
-              }
-            ],
-            "declAttributes": [
-              "HasStorage"
-            ],
-            "declKind": "Var",
-            "hasStorage": true,
-            "isLet": true,
-            "kind": "Var",
-            "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV12prepareAgentAA08PreparedfI0VyYaKcvp",
-            "moduleName": "SingleGreenGlassesKit",
-            "name": "prepareAgent",
-            "printedName": "prepareAgent",
-            "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV12prepareAgentAA08PreparedfI0VyYaKcvp"
+            "usr": "s:21SingleGreenGlassesKit34VoiceConversationInputDependenciesV013prepareSpeechG0yAA08PreparedjG7SessionOAA0jG4ModeOYaKcvp"
           },
           {
             "accessors": [
@@ -9228,11 +9158,11 @@
                 "declKind": "Accessor",
                 "implicit": true,
                 "kind": "Accessor",
-                "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV27requestMicrophonePermissionSbyYacvg",
+                "mangledName": "$s21SingleGreenGlassesKit34VoiceConversationInputDependenciesV27requestMicrophonePermissionSbyYacvg",
                 "moduleName": "SingleGreenGlassesKit",
                 "name": "Get",
                 "printedName": "Get()",
-                "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV27requestMicrophonePermissionSbyYacvg"
+                "usr": "s:21SingleGreenGlassesKit34VoiceConversationInputDependenciesV27requestMicrophonePermissionSbyYacvg"
               }
             ],
             "children": [
@@ -9261,6 +9191,1283 @@
             "declKind": "Var",
             "hasStorage": true,
             "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit34VoiceConversationInputDependenciesV27requestMicrophonePermissionSbyYacvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "requestMicrophonePermission",
+            "printedName": "requestMicrophonePermission",
+            "usr": "s:21SingleGreenGlassesKit34VoiceConversationInputDependenciesV27requestMicrophonePermissionSbyYacvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceConversationInputDependencies",
+                "printedName": "SingleGreenGlassesKit.VoiceConversationInputDependencies",
+                "usr": "s:21SingleGreenGlassesKit34VoiceConversationInputDependenciesV"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "SpeechInputMode",
+                    "printedName": "SingleGreenGlassesKit.SpeechInputMode",
+                    "usr": "s:21SingleGreenGlassesKit15SpeechInputModeO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "() -> SingleGreenGlassesKit.SpeechInputMode"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "() -> Swift.Bool"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "PreparedSpeechInputSession",
+                    "printedName": "SingleGreenGlassesKit.PreparedSpeechInputSession",
+                    "usr": "s:21SingleGreenGlassesKit26PreparedSpeechInputSessionO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "SpeechInputMode",
+                    "printedName": "SingleGreenGlassesKit.SpeechInputMode",
+                    "usr": "s:21SingleGreenGlassesKit15SpeechInputModeO"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.SpeechInputMode) async throws -> SingleGreenGlassesKit.PreparedSpeechInputSession"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "() async -> Swift.Bool"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s21SingleGreenGlassesKit34VoiceConversationInputDependenciesV9inputMode014voiceActivatedG9Available013prepareSpeechG027requestMicrophonePermissionAcA0ogJ0Oyc_SbycAA08PreparedoG7SessionOAIYaKcSbyYactcfc",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "init",
+            "printedName": "init(inputMode:voiceActivatedInputAvailable:prepareSpeechInput:requestMicrophonePermission:)",
+            "usr": "s:21SingleGreenGlassesKit34VoiceConversationInputDependenciesV9inputMode014voiceActivatedG9Available013prepareSpeechG027requestMicrophonePermissionAcA0ogJ0Oyc_SbycAA08PreparedoG7SessionOAIYaKcSbyYactcfc"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s21SingleGreenGlassesKit34VoiceConversationInputDependenciesV",
+        "moduleName": "SingleGreenGlassesKit",
+        "name": "VoiceConversationInputDependencies",
+        "printedName": "VoiceConversationInputDependencies",
+        "usr": "s:21SingleGreenGlassesKit34VoiceConversationInputDependenciesV"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "PreparedConversationAgent",
+                        "printedName": "SingleGreenGlassesKit.PreparedConversationAgent",
+                        "usr": "s:21SingleGreenGlassesKit25PreparedConversationAgentV"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "() async throws -> SingleGreenGlassesKit.PreparedConversationAgent"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit34VoiceConversationAgentDependenciesV07prepareG0AA08PreparedfG0VyYaKcvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit34VoiceConversationAgentDependenciesV07prepareG0AA08PreparedfG0VyYaKcvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "PreparedConversationAgent",
+                    "printedName": "SingleGreenGlassesKit.PreparedConversationAgent",
+                    "usr": "s:21SingleGreenGlassesKit25PreparedConversationAgentV"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "() async throws -> SingleGreenGlassesKit.PreparedConversationAgent"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit34VoiceConversationAgentDependenciesV07prepareG0AA08PreparedfG0VyYaKcvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "prepareAgent",
+            "printedName": "prepareAgent",
+            "usr": "s:21SingleGreenGlassesKit34VoiceConversationAgentDependenciesV07prepareG0AA08PreparedfG0VyYaKcvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceConversationAgentDependencies",
+                "printedName": "SingleGreenGlassesKit.VoiceConversationAgentDependencies",
+                "usr": "s:21SingleGreenGlassesKit34VoiceConversationAgentDependenciesV"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "PreparedConversationAgent",
+                    "printedName": "SingleGreenGlassesKit.PreparedConversationAgent",
+                    "usr": "s:21SingleGreenGlassesKit25PreparedConversationAgentV"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "() async throws -> SingleGreenGlassesKit.PreparedConversationAgent"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s21SingleGreenGlassesKit34VoiceConversationAgentDependenciesV07prepareG0AcA08PreparedfG0VyYaKc_tcfc",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "init",
+            "printedName": "init(prepareAgent:)",
+            "usr": "s:21SingleGreenGlassesKit34VoiceConversationAgentDependenciesV07prepareG0AcA08PreparedfG0VyYaKc_tcfc"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s21SingleGreenGlassesKit34VoiceConversationAgentDependenciesV",
+        "moduleName": "SingleGreenGlassesKit",
+        "name": "VoiceConversationAgentDependencies",
+        "printedName": "VoiceConversationAgentDependencies",
+        "usr": "s:21SingleGreenGlassesKit34VoiceConversationAgentDependenciesV"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Void",
+                            "printedName": "()"
+                          }
+                        ],
+                        "kind": "TypeNameAlias",
+                        "name": "Void",
+                        "printedName": "Swift.Void"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Duration",
+                        "printedName": "Swift.Duration",
+                        "usr": "s:s8DurationV"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Duration) async throws -> Swift.Void"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV5sleepyys8DurationVYaKcvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV5sleepyys8DurationVYaKcvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      }
+                    ],
+                    "kind": "TypeNameAlias",
+                    "name": "Void",
+                    "printedName": "Swift.Void"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Duration",
+                    "printedName": "Swift.Duration",
+                    "usr": "s:s8DurationV"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(Swift.Duration) async throws -> Swift.Void"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV5sleepyys8DurationVYaKcvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "sleep",
+            "printedName": "sleep",
+            "usr": "s:21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV5sleepyys8DurationVYaKcvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Bool",
+                        "printedName": "Swift.Bool",
+                        "usr": "s:Sb"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "() -> Swift.Bool"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV12reduceMotionSbycvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV12reduceMotionSbycvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "() -> Swift.Bool"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV12reduceMotionSbycvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "reduceMotion",
+            "printedName": "reduceMotion",
+            "usr": "s:21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV12reduceMotionSbycvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "TypewriterPolicy",
+                    "printedName": "StreamingTextKit.TypewriterPolicy",
+                    "usr": "s:16StreamingTextKit16TypewriterPolicyV"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV19streamingTextPolicy09StreamingjD0010TypewriterK0Vvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV19streamingTextPolicy09StreamingjD0010TypewriterK0Vvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "TypewriterPolicy",
+                "printedName": "StreamingTextKit.TypewriterPolicy",
+                "usr": "s:16StreamingTextKit16TypewriterPolicyV"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV19streamingTextPolicy09StreamingjD0010TypewriterK0Vvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "streamingTextPolicy",
+            "printedName": "streamingTextPolicy",
+            "usr": "s:21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV19streamingTextPolicy09StreamingjD0010TypewriterK0Vvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ConversationPresentationCopy",
+                    "printedName": "SingleGreenGlassesKit.ConversationPresentationCopy",
+                    "usr": "s:21SingleGreenGlassesKit28ConversationPresentationCopyV"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV4copyAA0fG4CopyVvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV4copyAA0fG4CopyVvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "ConversationPresentationCopy",
+                "printedName": "SingleGreenGlassesKit.ConversationPresentationCopy",
+                "usr": "s:21SingleGreenGlassesKit28ConversationPresentationCopyV"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV4copyAA0fG4CopyVvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "copy",
+            "printedName": "copy",
+            "usr": "s:21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV4copyAA0fG4CopyVvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceConversationPresentationDependencies",
+                "printedName": "SingleGreenGlassesKit.VoiceConversationPresentationDependencies",
+                "usr": "s:21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      }
+                    ],
+                    "kind": "TypeNameAlias",
+                    "name": "Void",
+                    "printedName": "Swift.Void"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Duration",
+                    "printedName": "Swift.Duration",
+                    "usr": "s:s8DurationV"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(Swift.Duration) async throws -> Swift.Void"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "() -> Swift.Bool"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "TypewriterPolicy",
+                "printedName": "StreamingTextKit.TypewriterPolicy",
+                "usr": "s:16StreamingTextKit16TypewriterPolicyV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ConversationPresentationCopy",
+                "printedName": "SingleGreenGlassesKit.ConversationPresentationCopy",
+                "usr": "s:21SingleGreenGlassesKit28ConversationPresentationCopyV"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV5sleep12reduceMotion19streamingTextPolicy4copyACys8DurationVYaKc_Sbyc09StreamingmD0010TypewriterN0VAA0fG4CopyVtcfc",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "init",
+            "printedName": "init(sleep:reduceMotion:streamingTextPolicy:copy:)",
+            "usr": "s:21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV5sleep12reduceMotion19streamingTextPolicy4copyACys8DurationVYaKc_Sbyc09StreamingmD0010TypewriterN0VAA0fG4CopyVtcfc"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV",
+        "moduleName": "SingleGreenGlassesKit",
+        "name": "VoiceConversationPresentationDependencies",
+        "printedName": "VoiceConversationPresentationDependencies",
+        "usr": "s:21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ConversationTelemetrySink",
+                    "printedName": "any SingleGreenGlassesKit.ConversationTelemetrySink",
+                    "usr": "s:21SingleGreenGlassesKit25ConversationTelemetrySinkP"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit42VoiceConversationObservabilityDependenciesV9telemetryAA0F13TelemetrySink_pvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit42VoiceConversationObservabilityDependenciesV9telemetryAA0F13TelemetrySink_pvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "ConversationTelemetrySink",
+                "printedName": "any SingleGreenGlassesKit.ConversationTelemetrySink",
+                "usr": "s:21SingleGreenGlassesKit25ConversationTelemetrySinkP"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit42VoiceConversationObservabilityDependenciesV9telemetryAA0F13TelemetrySink_pvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "telemetry",
+            "printedName": "telemetry",
+            "usr": "s:21SingleGreenGlassesKit42VoiceConversationObservabilityDependenciesV9telemetryAA0F13TelemetrySink_pvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "UInt64",
+                        "printedName": "Swift.UInt64",
+                        "usr": "s:s6UInt64V"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "() -> Swift.UInt64"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit42VoiceConversationObservabilityDependenciesV12monotonicNows6UInt64Vycvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit42VoiceConversationObservabilityDependenciesV12monotonicNows6UInt64Vycvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UInt64",
+                    "printedName": "Swift.UInt64",
+                    "usr": "s:s6UInt64V"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "() -> Swift.UInt64"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit42VoiceConversationObservabilityDependenciesV12monotonicNows6UInt64Vycvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "monotonicNow",
+            "printedName": "monotonicNow",
+            "usr": "s:21SingleGreenGlassesKit42VoiceConversationObservabilityDependenciesV12monotonicNows6UInt64Vycvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceConversationObservabilityDependencies",
+                "printedName": "SingleGreenGlassesKit.VoiceConversationObservabilityDependencies",
+                "usr": "s:21SingleGreenGlassesKit42VoiceConversationObservabilityDependenciesV"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "ConversationTelemetrySink",
+                "printedName": "any SingleGreenGlassesKit.ConversationTelemetrySink",
+                "usr": "s:21SingleGreenGlassesKit25ConversationTelemetrySinkP"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UInt64",
+                    "printedName": "Swift.UInt64",
+                    "usr": "s:s6UInt64V"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "() -> Swift.UInt64"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s21SingleGreenGlassesKit42VoiceConversationObservabilityDependenciesV9telemetry12monotonicNowAcA0F13TelemetrySink_p_s6UInt64Vyctcfc",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "init",
+            "printedName": "init(telemetry:monotonicNow:)",
+            "usr": "s:21SingleGreenGlassesKit42VoiceConversationObservabilityDependenciesV9telemetry12monotonicNowAcA0F13TelemetrySink_p_s6UInt64Vyctcfc"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s21SingleGreenGlassesKit42VoiceConversationObservabilityDependenciesV",
+        "moduleName": "SingleGreenGlassesKit",
+        "name": "VoiceConversationObservabilityDependencies",
+        "printedName": "VoiceConversationObservabilityDependencies",
+        "usr": "s:21SingleGreenGlassesKit42VoiceConversationObservabilityDependenciesV"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceConversationInputDependencies",
+                    "printedName": "SingleGreenGlassesKit.VoiceConversationInputDependencies",
+                    "usr": "s:21SingleGreenGlassesKit34VoiceConversationInputDependenciesV"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV5inputAA0ef5InputG0Vvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV5inputAA0ef5InputG0Vvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceConversationInputDependencies",
+                "printedName": "SingleGreenGlassesKit.VoiceConversationInputDependencies",
+                "usr": "s:21SingleGreenGlassesKit34VoiceConversationInputDependenciesV"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV5inputAA0ef5InputG0Vvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "input",
+            "printedName": "input",
+            "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV5inputAA0ef5InputG0Vvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceConversationAgentDependencies",
+                    "printedName": "SingleGreenGlassesKit.VoiceConversationAgentDependencies",
+                    "usr": "s:21SingleGreenGlassesKit34VoiceConversationAgentDependenciesV"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV5agentAA0ef5AgentG0Vvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV5agentAA0ef5AgentG0Vvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceConversationAgentDependencies",
+                "printedName": "SingleGreenGlassesKit.VoiceConversationAgentDependencies",
+                "usr": "s:21SingleGreenGlassesKit34VoiceConversationAgentDependenciesV"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV5agentAA0ef5AgentG0Vvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "agent",
+            "printedName": "agent",
+            "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV5agentAA0ef5AgentG0Vvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceConversationPresentationDependencies",
+                    "printedName": "SingleGreenGlassesKit.VoiceConversationPresentationDependencies",
+                    "usr": "s:21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV12presentationAA0ef12PresentationG0Vvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV12presentationAA0ef12PresentationG0Vvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceConversationPresentationDependencies",
+                "printedName": "SingleGreenGlassesKit.VoiceConversationPresentationDependencies",
+                "usr": "s:21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV12presentationAA0ef12PresentationG0Vvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "presentation",
+            "printedName": "presentation",
+            "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV12presentationAA0ef12PresentationG0Vvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceConversationObservabilityDependencies",
+                    "printedName": "SingleGreenGlassesKit.VoiceConversationObservabilityDependencies",
+                    "usr": "s:21SingleGreenGlassesKit42VoiceConversationObservabilityDependenciesV"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV13observabilityAA0ef13ObservabilityG0Vvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV13observabilityAA0ef13ObservabilityG0Vvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceConversationObservabilityDependencies",
+                "printedName": "SingleGreenGlassesKit.VoiceConversationObservabilityDependencies",
+                "usr": "s:21SingleGreenGlassesKit42VoiceConversationObservabilityDependenciesV"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV13observabilityAA0ef13ObservabilityG0Vvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "observability",
+            "printedName": "observability",
+            "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV13observabilityAA0ef13ObservabilityG0Vvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "SpeechInputMode",
+                        "printedName": "SingleGreenGlassesKit.SpeechInputMode",
+                        "usr": "s:21SingleGreenGlassesKit15SpeechInputModeO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "() -> SingleGreenGlassesKit.SpeechInputMode"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV9inputModeAA011SpeechInputI0Oycvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV9inputModeAA011SpeechInputI0Oycvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "SpeechInputMode",
+                    "printedName": "SingleGreenGlassesKit.SpeechInputMode",
+                    "usr": "s:21SingleGreenGlassesKit15SpeechInputModeO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "() -> SingleGreenGlassesKit.SpeechInputMode"
+              }
+            ],
+            "declKind": "Var",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV9inputModeAA011SpeechInputI0Oycvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "inputMode",
+            "printedName": "inputMode",
+            "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV9inputModeAA011SpeechInputI0Oycvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Bool",
+                        "printedName": "Swift.Bool",
+                        "usr": "s:Sb"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "() -> Swift.Bool"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV28voiceActivatedInputAvailableSbycvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV28voiceActivatedInputAvailableSbycvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "() -> Swift.Bool"
+              }
+            ],
+            "declKind": "Var",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV28voiceActivatedInputAvailableSbycvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "voiceActivatedInputAvailable",
+            "printedName": "voiceActivatedInputAvailable",
+            "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV28voiceActivatedInputAvailableSbycvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "PreparedSpeechInputSession",
+                        "printedName": "SingleGreenGlassesKit.PreparedSpeechInputSession",
+                        "usr": "s:21SingleGreenGlassesKit26PreparedSpeechInputSessionO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "SpeechInputMode",
+                        "printedName": "SingleGreenGlassesKit.SpeechInputMode",
+                        "usr": "s:21SingleGreenGlassesKit15SpeechInputModeO"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(SingleGreenGlassesKit.SpeechInputMode) async throws -> SingleGreenGlassesKit.PreparedSpeechInputSession"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV18prepareSpeechInputyAA08PreparediJ7SessionOAA0iJ4ModeOYaKcvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV18prepareSpeechInputyAA08PreparediJ7SessionOAA0iJ4ModeOYaKcvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "PreparedSpeechInputSession",
+                    "printedName": "SingleGreenGlassesKit.PreparedSpeechInputSession",
+                    "usr": "s:21SingleGreenGlassesKit26PreparedSpeechInputSessionO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "SpeechInputMode",
+                    "printedName": "SingleGreenGlassesKit.SpeechInputMode",
+                    "usr": "s:21SingleGreenGlassesKit15SpeechInputModeO"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SingleGreenGlassesKit.SpeechInputMode) async throws -> SingleGreenGlassesKit.PreparedSpeechInputSession"
+              }
+            ],
+            "declKind": "Var",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV18prepareSpeechInputyAA08PreparediJ7SessionOAA0iJ4ModeOYaKcvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "prepareSpeechInput",
+            "printedName": "prepareSpeechInput",
+            "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV18prepareSpeechInputyAA08PreparediJ7SessionOAA0iJ4ModeOYaKcvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "PreparedConversationAgent",
+                        "printedName": "SingleGreenGlassesKit.PreparedConversationAgent",
+                        "usr": "s:21SingleGreenGlassesKit25PreparedConversationAgentV"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "() async throws -> SingleGreenGlassesKit.PreparedConversationAgent"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV12prepareAgentAA08PreparedfI0VyYaKcvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV12prepareAgentAA08PreparedfI0VyYaKcvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "PreparedConversationAgent",
+                    "printedName": "SingleGreenGlassesKit.PreparedConversationAgent",
+                    "usr": "s:21SingleGreenGlassesKit25PreparedConversationAgentV"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "() async throws -> SingleGreenGlassesKit.PreparedConversationAgent"
+              }
+            ],
+            "declKind": "Var",
+            "kind": "Var",
+            "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV12prepareAgentAA08PreparedfI0VyYaKcvp",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "prepareAgent",
+            "printedName": "prepareAgent",
+            "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV12prepareAgentAA08PreparedfI0VyYaKcvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Bool",
+                        "printedName": "Swift.Bool",
+                        "usr": "s:Sb"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "() async -> Swift.Bool"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV27requestMicrophonePermissionSbyYacvg",
+                "moduleName": "SingleGreenGlassesKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV27requestMicrophonePermissionSbyYacvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "() async -> Swift.Bool"
+              }
+            ],
+            "declKind": "Var",
             "kind": "Var",
             "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV27requestMicrophonePermissionSbyYacvp",
             "moduleName": "SingleGreenGlassesKit",
@@ -9299,11 +10506,7 @@
                     "printedName": "(Swift.Duration) async throws -> Swift.Void"
                   }
                 ],
-                "declAttributes": [
-                  "Transparent"
-                ],
                 "declKind": "Accessor",
-                "implicit": true,
                 "kind": "Accessor",
                 "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV5sleepyys8DurationVYaKcvg",
                 "moduleName": "SingleGreenGlassesKit",
@@ -9339,12 +10542,7 @@
                 "printedName": "(Swift.Duration) async throws -> Swift.Void"
               }
             ],
-            "declAttributes": [
-              "HasStorage"
-            ],
             "declKind": "Var",
-            "hasStorage": true,
-            "isLet": true,
             "kind": "Var",
             "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV5sleepyys8DurationVYaKcvp",
             "moduleName": "SingleGreenGlassesKit",
@@ -9376,11 +10574,7 @@
                     "printedName": "() -> Swift.Bool"
                   }
                 ],
-                "declAttributes": [
-                  "Transparent"
-                ],
                 "declKind": "Accessor",
-                "implicit": true,
                 "kind": "Accessor",
                 "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV12reduceMotionSbycvg",
                 "moduleName": "SingleGreenGlassesKit",
@@ -9409,12 +10603,7 @@
                 "printedName": "() -> Swift.Bool"
               }
             ],
-            "declAttributes": [
-              "HasStorage"
-            ],
             "declKind": "Var",
-            "hasStorage": true,
-            "isLet": true,
             "kind": "Var",
             "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV12reduceMotionSbycvp",
             "moduleName": "SingleGreenGlassesKit",
@@ -9434,11 +10623,7 @@
                     "usr": "s:16StreamingTextKit16TypewriterPolicyV"
                   }
                 ],
-                "declAttributes": [
-                  "Transparent"
-                ],
                 "declKind": "Accessor",
-                "implicit": true,
                 "kind": "Accessor",
                 "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV19streamingTextPolicy09StreamingiD0010TypewriterJ0Vvg",
                 "moduleName": "SingleGreenGlassesKit",
@@ -9455,12 +10640,7 @@
                 "usr": "s:16StreamingTextKit16TypewriterPolicyV"
               }
             ],
-            "declAttributes": [
-              "HasStorage"
-            ],
             "declKind": "Var",
-            "hasStorage": true,
-            "isLet": true,
             "kind": "Var",
             "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV19streamingTextPolicy09StreamingiD0010TypewriterJ0Vvp",
             "moduleName": "SingleGreenGlassesKit",
@@ -9480,11 +10660,7 @@
                     "usr": "s:21SingleGreenGlassesKit25ConversationTelemetrySinkP"
                   }
                 ],
-                "declAttributes": [
-                  "Transparent"
-                ],
                 "declKind": "Accessor",
-                "implicit": true,
                 "kind": "Accessor",
                 "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV9telemetryAA0F13TelemetrySink_pvg",
                 "moduleName": "SingleGreenGlassesKit",
@@ -9501,12 +10677,7 @@
                 "usr": "s:21SingleGreenGlassesKit25ConversationTelemetrySinkP"
               }
             ],
-            "declAttributes": [
-              "HasStorage"
-            ],
             "declKind": "Var",
-            "hasStorage": true,
-            "isLet": true,
             "kind": "Var",
             "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV9telemetryAA0F13TelemetrySink_pvp",
             "moduleName": "SingleGreenGlassesKit",
@@ -9526,11 +10697,7 @@
                     "usr": "s:21SingleGreenGlassesKit28ConversationPresentationCopyV"
                   }
                 ],
-                "declAttributes": [
-                  "Transparent"
-                ],
                 "declKind": "Accessor",
-                "implicit": true,
                 "kind": "Accessor",
                 "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV16presentationCopyAA0f12PresentationI0Vvg",
                 "moduleName": "SingleGreenGlassesKit",
@@ -9547,12 +10714,7 @@
                 "usr": "s:21SingleGreenGlassesKit28ConversationPresentationCopyV"
               }
             ],
-            "declAttributes": [
-              "HasStorage"
-            ],
             "declKind": "Var",
-            "hasStorage": true,
-            "isLet": true,
             "kind": "Var",
             "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV16presentationCopyAA0f12PresentationI0Vvp",
             "moduleName": "SingleGreenGlassesKit",
@@ -9584,11 +10746,7 @@
                     "printedName": "() -> Swift.UInt64"
                   }
                 ],
-                "declAttributes": [
-                  "Transparent"
-                ],
                 "declKind": "Accessor",
-                "implicit": true,
                 "kind": "Accessor",
                 "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV12monotonicNows6UInt64Vycvg",
                 "moduleName": "SingleGreenGlassesKit",
@@ -9617,18 +10775,56 @@
                 "printedName": "() -> Swift.UInt64"
               }
             ],
-            "declAttributes": [
-              "HasStorage"
-            ],
             "declKind": "Var",
-            "hasStorage": true,
-            "isLet": true,
             "kind": "Var",
             "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV12monotonicNows6UInt64Vycvp",
             "moduleName": "SingleGreenGlassesKit",
             "name": "monotonicNow",
             "printedName": "monotonicNow",
             "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV12monotonicNows6UInt64Vycvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceConversationDependencies",
+                "printedName": "SingleGreenGlassesKit.VoiceConversationDependencies",
+                "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceConversationInputDependencies",
+                "printedName": "SingleGreenGlassesKit.VoiceConversationInputDependencies",
+                "usr": "s:21SingleGreenGlassesKit34VoiceConversationInputDependenciesV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceConversationAgentDependencies",
+                "printedName": "SingleGreenGlassesKit.VoiceConversationAgentDependencies",
+                "usr": "s:21SingleGreenGlassesKit34VoiceConversationAgentDependenciesV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceConversationPresentationDependencies",
+                "printedName": "SingleGreenGlassesKit.VoiceConversationPresentationDependencies",
+                "usr": "s:21SingleGreenGlassesKit41VoiceConversationPresentationDependenciesV"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "VoiceConversationObservabilityDependencies",
+                "printedName": "SingleGreenGlassesKit.VoiceConversationObservabilityDependencies",
+                "usr": "s:21SingleGreenGlassesKit42VoiceConversationObservabilityDependenciesV"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s21SingleGreenGlassesKit29VoiceConversationDependenciesV5input5agent12presentation13observabilityAcA0ef5InputG0V_AA0ef5AgentG0VAA0ef12PresentationG0VAA0ef13ObservabilityG0Vtcfc",
+            "moduleName": "SingleGreenGlassesKit",
+            "name": "init",
+            "printedName": "init(input:agent:presentation:observability:)",
+            "usr": "s:21SingleGreenGlassesKit29VoiceConversationDependenciesV5input5agent12presentation13observabilityAcA0ef5InputG0V_AA0ef5AgentG0VAA0ef12PresentationG0VAA0ef13ObservabilityG0Vtcfc"
           },
           {
             "children": [

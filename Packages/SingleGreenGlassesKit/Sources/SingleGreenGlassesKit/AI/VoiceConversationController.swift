@@ -49,13 +49,13 @@ public final class VoiceConversationController: ObservableObject {
         _ = silenceTimeout
         self.inputCoordinator = ConversationInputCoordinator()
         self.telemetryTracker = ConversationTelemetryTracker(
-            sink: dependencies.telemetry,
-            monotonicNow: dependencies.monotonicNow
+            sink: dependencies.observability.telemetry,
+            monotonicNow: dependencies.observability.monotonicNow
         )
         self.displayScheduler = ConversationDisplayScheduler(
-            policy: dependencies.streamingTextPolicy,
-            sleep: dependencies.sleep,
-            reduceMotion: dependencies.reduceMotion
+            policy: dependencies.presentation.streamingTextPolicy,
+            sleep: dependencies.presentation.sleep,
+            reduceMotion: dependencies.presentation.reduceMotion
         )
         self.replyPipeline = ConversationReplyPipeline()
         snapshot = ConversationLifecycleProjection.makeSnapshot(
@@ -292,7 +292,7 @@ public final class VoiceConversationController: ObservableObject {
         guard isCurrent(controllerOperation), inputCoordinator.isCurrent(operation) else { return }
 
         telemetryTracker.begin(.input)
-        let inputMode = dependencies.inputMode()
+        let inputMode = dependencies.input.inputMode()
         let continuousGeneration: Int?
         switch trigger {
         case .explicit:
@@ -309,10 +309,10 @@ public final class VoiceConversationController: ObservableObject {
             continuousGeneration = generation
         }
         guard inputMode != .voiceActivated
-                || dependencies.voiceActivatedInputAvailable() else {
+                || dependencies.input.voiceActivatedInputAvailable() else {
             disableContinuousVoiceActivation()
             await inputCoordinator.fail(
-                dependencies.presentationCopy.voiceActivatedUnavailable,
+                dependencies.presentation.copy.voiceActivatedUnavailable,
                 failureCode: .configurationMissing
             )
             return
@@ -320,7 +320,7 @@ public final class VoiceConversationController: ObservableObject {
         let preparedInput: PreparedSpeechInputSession
         telemetryTracker.begin(.preparation)
         do {
-            preparedInput = try await dependencies.prepareSpeechInput(inputMode)
+            preparedInput = try await dependencies.input.prepareSpeechInput(inputMode)
             guard isInputStartCurrent(
                 controllerOperation,
                 inputOperation: operation,
@@ -333,7 +333,7 @@ public final class VoiceConversationController: ObservableObject {
                 await preparedInput.cancel()
                 telemetryTracker.recordIfActive(.preparation, outcome: .failed, failure: .protocolFailure)
                 await inputCoordinator.fail(
-                    dependencies.presentationCopy.speechRecognitionUnavailable,
+                    dependencies.presentation.copy.speechRecognitionUnavailable,
                     failureCode: .protocolFailure
                 )
                 return
@@ -352,7 +352,7 @@ public final class VoiceConversationController: ObservableObject {
                 failure: failure?.failureCode ?? .preparationUnavailable
             )
             await inputCoordinator.fail(
-                failure?.userSafeMessage ?? dependencies.presentationCopy.speechRecognitionUnavailable,
+                failure?.userSafeMessage ?? dependencies.presentation.copy.speechRecognitionUnavailable,
                 failureCode: failure?.failureCode ?? .preparationUnavailable
             )
             return
@@ -372,9 +372,9 @@ public final class VoiceConversationController: ObservableObject {
             operation: operation,
             preparedInput: preparedInput,
             requestPermission: { [dependencies] in
-                await dependencies.requestMicrophonePermission()
+                await dependencies.input.requestMicrophonePermission()
             },
-            copy: dependencies.presentationCopy
+            copy: dependencies.presentation.copy
         )
     }
 
@@ -406,7 +406,7 @@ public final class VoiceConversationController: ObservableObject {
         liveText = ""
         guard !finalText.isEmpty else {
             disableContinuousVoiceActivation()
-            lastError = dependencies.presentationCopy.noSpeech
+            lastError = dependencies.presentation.copy.noSpeech
             refreshSnapshot()
             return
         }
@@ -425,7 +425,7 @@ public final class VoiceConversationController: ObservableObject {
         let preparedAgent: PreparedConversationAgent
         telemetryTracker.begin(.preparation)
         do {
-            preparedAgent = try await dependencies.prepareAgent()
+            preparedAgent = try await dependencies.agent.prepareAgent()
             guard isCurrent(controllerOperation) else {
                 await preparedAgent.discard()
                 return
@@ -440,7 +440,7 @@ public final class VoiceConversationController: ObservableObject {
                 failure: failure?.failureCode ?? .preparationUnavailable
             )
             failReplyConfiguration(
-                failure?.userSafeMessage ?? dependencies.presentationCopy.replyPreparationUnavailable,
+                failure?.userSafeMessage ?? dependencies.presentation.copy.replyPreparationUnavailable,
                 failureCode: failure?.failureCode ?? .preparationUnavailable
             )
             return
@@ -457,8 +457,8 @@ public final class VoiceConversationController: ObservableObject {
             replyID: replyID,
             userText: userText,
             preparedAgent: preparedAgent,
-            incompleteStreamMessage: dependencies.presentationCopy.incompleteReplyStream,
-            unexpectedFailureMessage: dependencies.presentationCopy.unexpectedReplyFailure
+            incompleteStreamMessage: dependencies.presentation.copy.incompleteReplyStream,
+            unexpectedFailureMessage: dependencies.presentation.copy.unexpectedReplyFailure
         )
         guard isCurrent(controllerOperation), replyPipeline.isCurrent(operation) else { return }
         displayScheduler.begin(operation)
@@ -493,7 +493,7 @@ public final class VoiceConversationController: ObservableObject {
         guard replyPipeline.isCurrent(operation),
               conversation.activeReplyID == operation.id else { return }
         guard !answer.trimmed.isEmpty else {
-            throw ConversationControllerError.invalidReply(dependencies.presentationCopy.emptyReply)
+            throw ConversationControllerError.invalidReply(dependencies.presentation.copy.emptyReply)
         }
 
         let accumulated = conversation.messages.first(where: { $0.id == operation.id })?.text ?? ""
@@ -508,7 +508,7 @@ public final class VoiceConversationController: ObservableObject {
             }
         } catch ConversationDisplaySchedulerError.inconsistentStream {
             throw ConversationControllerError.invalidReply(
-                dependencies.presentationCopy.inconsistentReplyStream
+                dependencies.presentation.copy.inconsistentReplyStream
             )
         }
     }
@@ -550,7 +550,7 @@ public final class VoiceConversationController: ObservableObject {
                 for: operation
               )?.preservesPartial == true else { return }
         disableContinuousVoiceActivation()
-        let message = dependencies.presentationCopy.contextCommitFailed
+        let message = dependencies.presentation.copy.contextCommitFailed
         _ = conversation.failReply(
             id: operation.id,
             message: message,
@@ -588,8 +588,8 @@ public final class VoiceConversationController: ObservableObject {
         disableContinuousVoiceActivation()
         let hasPartialReply = displayResult.preservesPartial
         let prefix = hasPartialReply
-            ? dependencies.presentationCopy.interruptedReplyPrefix
-            : dependencies.presentationCopy.failedReplyPrefix
+            ? dependencies.presentation.copy.interruptedReplyPrefix
+            : dependencies.presentation.copy.failedReplyPrefix
         let message = "\(prefix)\(failure.message)"
         _ = conversation.failReply(
             id: operation.id,

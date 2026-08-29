@@ -69,6 +69,16 @@ PR5 是行为中性的机械拆分，严格限定为四个文件：内部 `Conve
 
 非权威并发 timing-warning 结果：`/private/tmp/SingleGreenDemo-M7-PR5-AppTests.xcresult`。
 
+### M8 Dependency & Composition Refinement（本地完成，2026-08-29）
+
+M8 将核心 `VoiceConversationDependencies` 收敛为四个公开 immutable value groups：`VoiceConversationInputDependencies`、`VoiceConversationAgentDependencies`、`VoiceConversationPresentationDependencies` 与 `VoiceConversationObservabilityDependencies`。`VoiceConversationDependencies` 提供按组装配的 initializer；原有 flat initializer 与 11 个 accessor 仍保留，保证 source-package compatibility，但不承诺 Swift struct 的 binary layout 或 ABI。Controller 的 Task、generation、cancellation、session、reply 与 display ownership unchanged。
+
+App composition 现在由小型 `ConversationDependencies.swift` live entry 触发，职责拆到五个文件：`ConversationCredentialProvider.swift`（credential leases/providers）、`ConversationPreparationResolver.swift`（settings-derived input/ASR/Agent preparation）、`ConversationPresentationPolicy.swift`（reviewed copy）、`ConversationTelemetryStore.swift`（host telemetry）和 `ProductionVoiceActivatedSessionFactory.swift`（inactive production VAD/ASR factory）；`VoiceConversationComposition.swift` 负责把它们组装成一套依赖。Composition 接收同一个 resolver，resolver exclusively owns settings-derived input mode、ASR preparation 与 Agent behavior，避免 A/B misassembly。`AgentFactory` 仅是 internal test seam，不是公共扩展点。
+
+本轮明确不引入 Service Locator、global registry 或 runtime hot swap。LLMKit 是否拆分，延后到出现第二个 independently shipped transport/provider SDK/platform consumer 需求后再决定；Experience/Provider Registry 延后到有真实 runtime switching requirement、至少两个 production implementations，并明确 lifecycle/context semantics 后再设计。
+
+M8 本地证据：`SingleGreenGlassesKit` **178/178**；App XCTest **58/58**；focused `ConversationPreparation` **17/17**；controller + dependency regression **99/99**。八个模块、macOS arm64 与 iOS Simulator arm64 共 **16 snapshots** 已人工审查：仅 `SingleGreenGlassesKit` 两份 snapshot 变化，各 **39 additions / 0 removals**。架构门禁覆盖七个 Package 与 **11** 个 negative fixtures；Debug 与 Release generic Simulator builds passed。首次全局 `SWIFT_TREAT_WARNINGS_AS_ERRORS` 与 package `-suppress-warnings` 的冲突记录为 tooling evidence，不是 source failure。该轮没有执行 physical-device build/install/launch 或 real-service validation。
+
 ### M1 已实现的契约
 
 - `ExperienceSession` 以 `currentSnapshot(eventDescription:)` 提供同步兼容入口，以 `updates()` 提供后台变化流。
@@ -291,8 +301,8 @@ AI 回答布局使用专用 `flowingText` 元素，高度为 safeRect 的 61%，
 | `Platform/Rendering/` | 将 HUDScene 映射为视觉 | `HUDOverlayView` | 修改体验状态 |
 | `Platform/Profiles/` | 宿主 Profile 选择与 SwiftUI/CoreGraphics 投影 | `DisplayProfileStore`、`HUDPreviewProjection` | 中立 Profile 校验、体验内容 |
 | `Platform/Environment/` | 相机权限和 Session 生命周期 | `CameraSessionController` | HUD 或 AI 业务 |
-| `Packages/SingleGreenGlassesKit/AI/` | AI 用例、端口、对话编排 | ASR/Agent ports、`VoiceConversationController` | 生产 SDK、Keychain、App 页面布局 |
-| `SingleGreenDemo/Platform/AI/` | provider transports、credentials、factories、presentation policy、Debug/Release 组装与宿主遥测 | `VoiceConversationDependencies.live`、`ConversationLiveAdapters` | 眼镜核心状态机与可复用 semantic bridge |
+| `Packages/SingleGreenGlassesKit/AI/` | AI 用例、端口、对话编排与四组 immutable dependencies | ASR/Agent ports、`VoiceConversationController`、按组 initializer；flat initializer/11 accessors 为 source-package compatibility | 生产 SDK、Keychain、App 页面布局；不承诺 struct binary layout/ABI |
+| `SingleGreenDemo/Platform/AI/` | 小型 live entry 加五个职责文件：credentials、preparation resolver、presentation policy、telemetry、production VAD/ASR factory，以及共享 composition | `VoiceConversationDependencies.live`、`ConversationLiveAdapters` | 眼镜核心状态机与可复用 semantic bridge；不使用 Service Locator/global registry/hot swap |
 | `SingleGreenConversationAdapters` | VoiceChatCore/LLMKit 到眼镜核心 ports 的可复用语义桥接 | 四个 public adapter/policy 类型 | 凭证、provider 配置、UI、raw provider tool mapping |
 | `StreamingTextKit` | 打字节奏、字素缓冲、Unicode 对齐、自动尾随策略 | `TypewriterPolicy`、`TypewriterTextBuffer`、`StreamingTextReconciler` | 会话状态、SwiftUI 样式、网络 |
 | `VoiceChatDomain` | 消息和回复生命周期 | `ConversationState` | 音频、网络、UI |

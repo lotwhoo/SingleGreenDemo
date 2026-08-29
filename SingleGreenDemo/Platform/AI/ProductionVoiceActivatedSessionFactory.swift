@@ -1,0 +1,40 @@
+import SingleGreenConversationAdapters
+import SingleGreenGlassesKit
+import VoiceChatCore
+import WebRTCVoiceActivityDetection
+
+/// App-owned production composition for hands-free speech input. Constructing
+/// this graph is intentionally inert: microphone capture and ASR transport do
+/// not start until the returned session receives `arm()`.
+enum ProductionVoiceActivatedSessionFactory {
+    /// Mode 2 balances rejecting common mobile ambient noise against clipping
+    /// conversational speech. The choice remains an App policy rather than a
+    /// detector-package default or a glasses-core concern.
+    static let aggressiveness: WebRTCVADAggressiveness = .aggressive
+    static let policy: VoiceActivatedASRPolicy = .standard
+
+    static func make(
+        configuration: SpeechProviderConfiguration
+    ) throws -> any VoiceActivatedSpeechRecognitionSession {
+        let base = try makeCoreSession(configuration: configuration)
+        return VoiceChatVoiceActivatedSpeechRecognitionAdapter(session: base)
+    }
+
+    static func makeCoreSession(
+        configuration: SpeechProviderConfiguration
+    ) throws -> VoiceActivatedASRSession {
+        let detector = try WebRTCVoiceActivityDetector(
+            aggressiveness: aggressiveness
+        )
+        return VoiceActivatedASRSession(
+            config: ASRSession.Config(
+                apiKey: configuration.apiKey,
+                resourceID: configuration.resourceID,
+                language: configuration.language,
+                hotwords: configuration.hotwords
+            ),
+            detector: detector,
+            policy: policy
+        )
+    }
+}

@@ -170,6 +170,237 @@ final class ConversationPreparationTests: XCTestCase {
         await prepared.cancel()
     }
 
+    func testTypedCompositionsKeepResolversServicesAndPoliciesIsolated() async throws {
+        let settingsA = voiceActivatedSettings()
+        let settingsB = voiceActivatedSettings()
+
+        let providerA = CountingPreparationCredentialProvider()
+        let providerB = CountingPreparationCredentialProvider()
+        let sessionA = PreparationVoiceActivatedSession()
+        let sessionB = PreparationVoiceActivatedSession()
+        let agentA = PreparationConversationAgent(marker: "agent-a")
+        let agentB = PreparationConversationAgent(marker: "agent-b")
+        let resolverA = ConversationPreparationResolver(
+            settings: settingsA,
+            credentialProvider: providerA,
+            makeVoiceActivatedSession: { _ in sessionA },
+            makeAgent: { _ in agentA }
+        )
+        let resolverB = ConversationPreparationResolver(
+            settings: settingsB,
+            credentialProvider: providerB,
+            makeVoiceActivatedSession: { _ in sessionB },
+            makeAgent: { _ in agentB }
+        )
+        let telemetryA = ConversationTelemetryStore()
+        let telemetryB = ConversationTelemetryStore()
+        let dependenciesA = VoiceConversationComposition(
+            resolver: resolverA,
+            requestMicrophonePermission: { true },
+            sleep: { _ in },
+            reduceMotion: { false },
+            telemetry: telemetryA,
+            presentationCopy: compositionCopy(marker: "A"),
+            monotonicNow: { 101 }
+        ).dependencies
+        let dependenciesB = VoiceConversationComposition(
+            resolver: resolverB,
+            requestMicrophonePermission: { false },
+            sleep: { _ in },
+            reduceMotion: { true },
+            telemetry: telemetryB,
+            presentationCopy: compositionCopy(marker: "B"),
+            monotonicNow: { 202 }
+        ).dependencies
+
+        XCTAssertTrue(dependenciesA.voiceActivatedInputAvailable())
+        XCTAssertTrue(dependenciesB.voiceActivatedInputAvailable())
+        let preparedInputA = try await dependenciesA.prepareSpeechInput(.voiceActivated)
+        let preparedInputB = try await dependenciesB.prepareSpeechInput(.voiceActivated)
+        guard case .voiceActivated(let returnedSessionA) = preparedInputA,
+              case .voiceActivated(let returnedSessionB) = preparedInputB else {
+            return XCTFail("Expected isolated voice-activated sessions")
+        }
+        XCTAssertTrue((returnedSessionA as AnyObject) === sessionA)
+        XCTAssertTrue((returnedSessionB as AnyObject) === sessionB)
+
+        let preparedAgentA = try await dependenciesA.prepareAgent()
+        let preparedAgentB = try await dependenciesB.prepareAgent()
+        XCTAssertTrue((preparedAgentA.agent as AnyObject) === agentA)
+        XCTAssertTrue((preparedAgentB.agent as AnyObject) === agentB)
+        XCTAssertFalse((preparedAgentA.agent as AnyObject) === agentB)
+        XCTAssertFalse((preparedAgentB.agent as AnyObject) === agentA)
+
+        let permissionA = await dependenciesA.requestMicrophonePermission()
+        let permissionB = await dependenciesB.requestMicrophonePermission()
+        XCTAssertTrue(permissionA)
+        XCTAssertFalse(permissionB)
+        XCTAssertFalse(dependenciesA.reduceMotion())
+        XCTAssertTrue(dependenciesB.reduceMotion())
+        XCTAssertTrue((dependenciesA.telemetry as AnyObject) === telemetryA)
+        XCTAssertTrue((dependenciesB.telemetry as AnyObject) === telemetryB)
+        XCTAssertEqual(dependenciesA.presentationCopy.noSpeech, "A-no-speech")
+        XCTAssertEqual(dependenciesB.presentationCopy.noSpeech, "B-no-speech")
+        XCTAssertEqual(dependenciesA.monotonicNow(), 101)
+        XCTAssertEqual(dependenciesB.monotonicNow(), 202)
+        let providerARequestCount = await providerA.requestCount
+        let providerBRequestCount = await providerB.requestCount
+        XCTAssertEqual(providerARequestCount, 2)
+        XCTAssertEqual(providerBRequestCount, 2)
+        await preparedInputA.cancel()
+        await preparedInputB.cancel()
+    }
+
+    func testCompositionUsesResolverModeAndCreatesFreshVoiceSessionsAcrossModeSwitches() async throws {
+        let settings = voiceActivatedSettings()
+        let originalHandsFree = settings.handsFree
+        defer { settings.handsFree = originalHandsFree }
+        settings.handsFree = true
+        var createdVoiceSessions: [PreparationVoiceActivatedSession] = []
+        let resolver = ConversationPreparationResolver(
+            settings: settings,
+            credentialProvider: StaticPreparationCredentialProvider(),
+            makeVoiceActivatedSession: { _ in
+                let session = PreparationVoiceActivatedSession()
+                createdVoiceSessions.append(session)
+                return session
+            }
+        )
+        let dependencies = VoiceConversationComposition(
+            resolver: resolver,
+            requestMicrophonePermission: { true },
+            sleep: { _ in },
+            reduceMotion: { false },
+            telemetry: ConversationTelemetryStore(),
+            presentationCopy: .singleGreenDemo,
+            monotonicNow: { 0 }
+        ).dependencies
+
+        XCTAssertEqual(dependencies.inputMode(), resolver.requestedInputMode)
+        XCTAssertEqual(dependencies.inputMode(), .voiceActivated)
+        let first = try await dependencies.prepareSpeechInput(dependencies.inputMode())
+        guard case .voiceActivated(let firstSession) = first else {
+            return XCTFail("Expected the initial voice-activated session")
+        }
+        XCTAssertTrue((firstSession as AnyObject) === createdVoiceSessions[0])
+        XCTAssertEqual(createdVoiceSessions.count, 1)
+
+        XCTAssertTrue(settings.requestSpeechInputMode(.pushToTalk))
+        XCTAssertEqual(dependencies.inputMode(), resolver.requestedInputMode)
+        XCTAssertEqual(dependencies.inputMode(), .pushToTalk)
+        let second = try await dependencies.prepareSpeechInput(dependencies.inputMode())
+        XCTAssertEqual(second.mode, .pushToTalk)
+        XCTAssertEqual(createdVoiceSessions.count, 1)
+
+        XCTAssertTrue(settings.requestSpeechInputMode(.voiceActivated))
+        XCTAssertEqual(dependencies.inputMode(), resolver.requestedInputMode)
+        XCTAssertEqual(dependencies.inputMode(), .voiceActivated)
+        let third = try await dependencies.prepareSpeechInput(dependencies.inputMode())
+        guard case .voiceActivated(let thirdSession) = third else {
+            return XCTFail("Expected a fresh voice-activated session after switching back")
+        }
+        XCTAssertEqual(createdVoiceSessions.count, 2)
+        XCTAssertTrue((thirdSession as AnyObject) === createdVoiceSessions[1])
+        XCTAssertFalse((firstSession as AnyObject) === (thirdSession as AnyObject))
+
+        let firstArmCount = await createdVoiceSessions[0].armCount
+        let firstCancelCount = await createdVoiceSessions[0].cancelCount
+        let thirdArmCount = await createdVoiceSessions[1].armCount
+        XCTAssertEqual(firstArmCount, 0)
+        XCTAssertEqual(firstCancelCount, 0)
+        XCTAssertEqual(thirdArmCount, 0)
+
+        await first.cancel()
+        await second.cancel()
+        await third.cancel()
+        let explicitlyCancelledFirstCount = await createdVoiceSessions[0].cancelCount
+        let explicitlyCancelledThirdCount = await createdVoiceSessions[1].cancelCount
+        XCTAssertEqual(explicitlyCancelledFirstCount, 1)
+        XCTAssertEqual(explicitlyCancelledThirdCount, 1)
+    }
+
+    func testInjectedAgentFactoryObservesConfigurationAndCachesOnlyMatchingScope() async throws {
+        let settings = AISettings(buildPolicy: .serverManaged)
+        let originalModel = settings.llmModel
+        let originalSearch = settings.enableSearch
+        defer {
+            settings.llmModel = originalModel
+            settings.enableSearch = originalSearch
+        }
+        settings.llmModel = "fixture-model-a"
+        settings.enableSearch = false
+        let provider = SequentialPreparationCredentialProvider(leases: [
+            .fixture(llmCredential: "credential-one", account: "account-a"),
+            .fixture(llmCredential: "credential-two", account: "account-a"),
+            .fixture(llmCredential: "credential-three", account: "account-b"),
+            .fixture(llmCredential: "credential-four", account: "account-b"),
+            .fixture(llmCredential: "credential-five", account: "account-b")
+        ])
+        let recorder = PreparationAgentFactoryRecorder()
+        let resolver = ConversationPreparationResolver(
+            settings: settings,
+            credentialProvider: provider,
+            makeVoiceActivatedSession: nil,
+            makeAgent: { configuration in recorder.make(configuration: configuration) }
+        )
+
+        let first = try await resolver.prepareAgent()
+        let sameScope = try await resolver.prepareAgent()
+        XCTAssertEqual(first.contextIdentity, sameScope.contextIdentity)
+        XCTAssertTrue((first.agent as AnyObject) === (sameScope.agent as AnyObject))
+        XCTAssertEqual(recorder.configurations.count, 1)
+
+        let changedAccount = try await resolver.prepareAgent()
+        XCTAssertNotEqual(sameScope.contextIdentity, changedAccount.contextIdentity)
+
+        settings.llmModel = "fixture-model-b"
+        let changedModel = try await resolver.prepareAgent()
+        XCTAssertNotEqual(changedAccount.contextIdentity, changedModel.contextIdentity)
+
+        settings.enableSearch = true
+        let changedToolScope = try await resolver.prepareAgent()
+        XCTAssertNotEqual(changedModel.contextIdentity, changedToolScope.contextIdentity)
+
+        XCTAssertEqual(
+            recorder.configurations.map(\.scope),
+            [
+                AgentProviderScope(
+                    providerID: "openai-compatible",
+                    account: .init(opaqueID: "account-a"),
+                    model: "fixture-model-a",
+                    externalInformationLookupEnabled: false
+                ),
+                AgentProviderScope(
+                    providerID: "openai-compatible",
+                    account: .init(opaqueID: "account-b"),
+                    model: "fixture-model-a",
+                    externalInformationLookupEnabled: false
+                ),
+                AgentProviderScope(
+                    providerID: "openai-compatible",
+                    account: .init(opaqueID: "account-b"),
+                    model: "fixture-model-b",
+                    externalInformationLookupEnabled: false
+                ),
+                AgentProviderScope(
+                    providerID: "openai-compatible",
+                    account: .init(opaqueID: "account-b"),
+                    model: "fixture-model-b",
+                    externalInformationLookupEnabled: true
+                )
+            ]
+        )
+        XCTAssertTrue(recorder.configurations.allSatisfy {
+            ($0.credentialProvider as AnyObject) === provider
+                && !$0.systemPrompt.isEmpty
+        })
+        XCTAssertEqual(recorder.agents.count, 4)
+        XCTAssertTrue((first.agent as AnyObject) === recorder.agents[0])
+        XCTAssertTrue((changedAccount.agent as AnyObject) === recorder.agents[1])
+        XCTAssertTrue((changedModel.agent as AnyObject) === recorder.agents[2])
+        XCTAssertTrue((changedToolScope.agent as AnyObject) === recorder.agents[3])
+    }
+
     func testAgentContextIdentitySurvivesCredentialRotationButChangesWithStableScope() async throws {
         let settings = AISettings(buildPolicy: .serverManaged)
         let originalModel = settings.llmModel
@@ -430,6 +661,23 @@ final class ConversationPreparationTests: XCTestCase {
             )
         )
     }
+
+    private func compositionCopy(marker: String) -> ConversationPresentationCopy {
+        ConversationPresentationCopy(
+            voiceActivatedUnavailable: "\(marker)-voice-unavailable",
+            microphonePermissionDenied: "\(marker)-permission-denied",
+            speechRecognitionUnavailable: "\(marker)-speech-unavailable",
+            noSpeech: "\(marker)-no-speech",
+            replyPreparationUnavailable: "\(marker)-reply-unavailable",
+            emptyReply: "\(marker)-empty-reply",
+            inconsistentReplyStream: "\(marker)-inconsistent-stream",
+            incompleteReplyStream: "\(marker)-incomplete-stream",
+            unexpectedReplyFailure: "\(marker)-unexpected-failure",
+            interruptedReplyPrefix: "\(marker)-interrupted:",
+            failedReplyPrefix: "\(marker)-failed:",
+            contextCommitFailed: "\(marker)-commit-failed"
+        )
+    }
 }
 
 private actor CountingPreparationCredentialProvider: ConversationCredentialProvider {
@@ -507,6 +755,37 @@ private actor PreparationVoiceActivatedSession: VoiceActivatedSpeechRecognitionS
 
     func cancel() async {
         cancelCount += 1
+    }
+}
+
+@MainActor
+private final class PreparationConversationAgent: ConversationAgent {
+    let marker: String
+
+    init(marker: String) {
+        self.marker = marker
+    }
+
+    func stream(_ userText: String) async -> AsyncThrowingStream<ConversationAgentEvent, Error> {
+        AsyncThrowingStream { continuation in
+            continuation.yield(.completed(marker))
+            continuation.finish()
+        }
+    }
+
+    func clearContext() async {}
+}
+
+@MainActor
+private final class PreparationAgentFactoryRecorder {
+    private(set) var configurations: [AgentProviderConfiguration] = []
+    private(set) var agents: [PreparationConversationAgent] = []
+
+    func make(configuration: AgentProviderConfiguration) -> any ConversationAgent {
+        configurations.append(configuration)
+        let agent = PreparationConversationAgent(marker: "agent-\(agents.count)")
+        agents.append(agent)
+        return agent
     }
 }
 
