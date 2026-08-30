@@ -6,6 +6,7 @@ repository_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
 checker="$script_dir/check_ci_workflow.sh"
 source_workflow="$repository_root/.github/workflows/ci.yml"
 source_promotion_workflow="$repository_root/.github/workflows/promote-internal.yml"
+source_writer_workflow="$repository_root/.github/workflows/promote-authorized-internal.yml"
 fixture_root=$(mktemp -d "${TMPDIR:-/tmp}/single-green-ci-workflow.XXXXXX")
 trap 'rm -rf "$fixture_root"' EXIT HUP INT TERM
 
@@ -14,7 +15,7 @@ if [ ! -x "$checker" ]; then
     exit 1
 fi
 
-"$checker" "$source_workflow" "$source_promotion_workflow"
+"$checker" "$source_workflow" "$source_promotion_workflow" "$source_writer_workflow"
 
 mutation_count=0
 
@@ -24,11 +25,13 @@ expect_mutation_failure() {
     mutation_root="$fixture_root/$mutation_name"
     ci_fixture_path="$mutation_root/ci.yml"
     promotion_fixture_path="$mutation_root/promote-internal.yml"
+    writer_fixture_path="$mutation_root/promote-authorized-internal.yml"
     log_path="$fixture_root/$mutation_name.log"
 
     mkdir -p "$mutation_root"
     cp "$source_workflow" "$ci_fixture_path"
     cp "$source_promotion_workflow" "$promotion_fixture_path"
+    cp "$source_writer_workflow" "$writer_fixture_path"
 
     if [ "$target_workflow" = "ci" ]; then
         source_path=$source_workflow
@@ -36,6 +39,9 @@ expect_mutation_failure() {
     elif [ "$target_workflow" = "promotion" ]; then
         source_path=$source_promotion_workflow
         fixture_path=$promotion_fixture_path
+    elif [ "$target_workflow" = "writer" ]; then
+        source_path=$source_writer_workflow
+        fixture_path=$writer_fixture_path
     elif [ "$target_workflow" = "extra" ]; then
         source_path=$source_promotion_workflow
         fixture_path="$mutation_root/unauthorized-writer.yml"
@@ -201,6 +207,84 @@ when "promotion-missing-postcheck"
   text.sub!('          scripts/check_internal_branch_policy.sh "$APPROVED_SHA" "$post_main_sha" "$internal_sha"', '')
 when "promotion-secret-pat"
   text.sub!("        env:\n          APPROVED_SHA:", "        env:\n          DEPLOY_PAT: ${{ secrets.DEPLOY_PAT }}\n          APPROVED_SHA:")
+when "authorization-wrong-owner"
+  text.sub!("canonical_actor='lotwhoo'", "canonical_actor='attacker'")
+when "authorization-missing-triggering-actor"
+  text.sub!('$GITHUB_TRIGGERING_ACTOR', '$GITHUB_ACTOR')
+when "authorization-wrong-workflow-id"
+  text.sub!("canonical_workflow_id='345772544'", "canonical_workflow_id='1'")
+when "authorization-allows-rerun"
+  text.sub!(%q{[ "$GITHUB_RUN_ATTEMPT" != '1' ]}, %q{[ "$GITHUB_RUN_ATTEMPT" != '2' ]})
+when "authorization-missing-current-main-check"
+  text.sub!('          scripts/check_internal_branch_policy.sh "$main_sha" "$main_sha" "$main_sha"', '')
+when "authorization-adds-push"
+  text.sub!('          echo "Authorized current main', "          git push origin main\n          echo \"Authorized current main")
+when "authorization-job-condition"
+  text.sub!("    name: Internal promotion authorization\n", "    name: Internal promotion authorization\n    if: false\n")
+when "authorization-step-condition"
+  text.sub!("      - name: Authorize current main for internal delivery\n", "      - name: Authorize current main for internal delivery\n        if: false\n")
+when "authorization-extra-step"
+  marker = "      - name: Authorize current main for internal delivery\n"
+  text.sub!(marker, "      - run: echo unexpected\n#{marker}")
+when "writer-manual-trigger"
+  text.sub!("on:\n  workflow_run:\n", "on:\n  workflow_dispatch:\n  workflow_run:\n")
+when "writer-wrong-source-workflow"
+  text.sub!("      - Authorize Internal Delivery Pointer\n", "      - Untrusted Authorization\n")
+when "writer-wrong-event-type"
+  text.sub!("      - completed\n", "      - requested\n")
+when "writer-wrong-event-branch"
+  text.sub!("      - main\n", "      - develop\n")
+when "writer-verify-write"
+  text.sub!("      contents: read\n", "      contents: write\n")
+when "writer-emits-authorization-name"
+  text.sub!("    name: Verify completed internal authorization\n", "    name: Internal promotion authorization\n")
+when "writer-wrong-workflow-id"
+  text.sub!("authorization_workflow_id='345772544'", "authorization_workflow_id='1'")
+when "writer-wrong-owner"
+  text.sub!("owner_actor='lotwhoo'", "owner_actor='attacker'")
+when "writer-allows-rerun"
+  text.sub!(".run_attempt == 1", ".run_attempt >= 1")
+when "writer-missing-latest-authorization"
+  text.gsub!("latest_authorization_check_id", "ignored_authorization_check_id")
+when "writer-wrong-check-app"
+  text.sub!(".app.id == 15368", ".app.id == 99999")
+when "writer-missing-suite-link"
+  text.sub!(".check_suite.id == $suite_id", ".check_suite.id > 0")
+when "writer-missing-details-link"
+  text.sub!(".details_url == $details", ".details_url != null")
+when "writer-does-not-repeat-trust"
+  marker = "authorization_workflow_id='345772544'"
+  index = text.rindex(marker)
+  abort "second writer trust marker not found" unless index
+  text[index, marker.length] = "authorization_workflow_id='1'"
+  true
+when "writer-unvalidated-checkout"
+  text.sub!('          ref: ${{ steps.trust.outputs.validated_sha }}', '          ref: ${{ github.sha }}')
+when "writer-force-push"
+  text.sub!('          git push origin "$main_sha:refs/heads/codex/internal-debug"', '          git push --force origin "$main_sha:refs/heads/codex/internal-debug"')
+when "writer-missing-fast-forward"
+  text.sub!('            if ! git merge-base --is-ancestor "$previous_internal_sha" "$main_sha"; then', '            if [ "$previous_internal_sha" = "$main_sha" ]; then')
+when "writer-push-before-precheck"
+  precheck = '          scripts/check_internal_branch_policy.sh "$VALIDATED_SHA" "$main_sha" "$checkout_sha"'
+  push = '          git push origin "$main_sha:refs/heads/codex/internal-debug"'
+  abort "writer precheck or push not found" unless text.include?(precheck) && text.include?(push)
+  text.sub!(precheck, "          __WRITER_PRECHECK__")
+  text.sub!(push, precheck)
+  text.sub!("          __WRITER_PRECHECK__", push)
+  true
+when "writer-missing-postcheck"
+  text.sub!('          scripts/check_internal_branch_policy.sh "$VALIDATED_SHA" "$post_main_sha" "$internal_sha"', '')
+when "writer-job-condition"
+  text.sub!("    name: Promote verified internal pointer\n", "    name: Promote verified internal pointer\n    if: false\n")
+when "writer-step-condition"
+  text.sub!("      - name: Repeat authorization and CI trust checks\n", "      - name: Repeat authorization and CI trust checks\n        if: false\n")
+when "writer-step-custom-shell"
+  text.sub!("        id: trust\n", "        id: trust\n        shell: bash -c 'bash {0} || true'\n")
+when "writer-step-continue-on-error"
+  text.sub!("        id: trust\n", "        id: trust\n        continue-on-error: true\n")
+when "writer-extra-step"
+  marker = "      - name: Fast-forward the authorized internal pointer\n"
+  text.sub!(marker, "      - run: echo unexpected\n#{marker}")
 when "extra-top-level-writer"
   text = <<~YAML
     name: Unauthorized Writer
@@ -249,7 +333,7 @@ abort "mutation made no change: #{mutation}" unless changed
 File.write(destination_path, text)
 RUBY
 
-    if "$checker" "$ci_fixture_path" "$promotion_fixture_path" >"$log_path" 2>&1; then
+    if "$checker" "$ci_fixture_path" "$promotion_fixture_path" "$writer_fixture_path" >"$log_path" 2>&1; then
         echo "CI workflow fixture test failed: mutation unexpectedly passed: $mutation_name" >&2
         cat "$log_path" >&2
         exit 1
@@ -288,30 +372,41 @@ expect_mutation_failure failing-extra-ci-job
 expect_mutation_failure unreviewed-ci-step-action
 expect_mutation_failure promotion-dispatch-input promotion
 expect_mutation_failure promotion-top-level-write promotion
-expect_mutation_failure promotion-unstable-authorization-name promotion
-expect_mutation_failure promotion-authorize-write promotion
 expect_mutation_failure promotion-unpinned-checkout promotion
-expect_mutation_failure promotion-user-sha promotion
-expect_mutation_failure promotion-wrong-main-gate promotion
-expect_mutation_failure promotion-authorize-mutation promotion
-expect_mutation_failure promotion-authorize-job-continue-on-error promotion
-expect_mutation_failure promotion-authorize-step-continue-on-error promotion
-expect_mutation_failure promotion-extra-authorize-step promotion
-expect_mutation_failure promotion-extra-push-step promotion
-expect_mutation_failure promotion-job-condition promotion
-expect_mutation_failure promotion-step-condition promotion
-expect_mutation_failure promotion-step-custom-shell promotion
 expect_mutation_failure promotion-wrong-check-app promotion
-expect_mutation_failure promotion-check-not-exact-sha promotion
-expect_mutation_failure promotion-not-latest-run promotion
-expect_mutation_failure promotion-rejects-safe-reruns promotion
-expect_mutation_failure promotion-missing-authorization-dependency promotion
-expect_mutation_failure promotion-stale-authorization-allowed promotion
-expect_mutation_failure promotion-force-push promotion
-expect_mutation_failure promotion-missing-fast-forward-proof promotion
-expect_mutation_failure promotion-push-before-precheck promotion
-expect_mutation_failure promotion-missing-postcheck promotion
-expect_mutation_failure promotion-secret-pat promotion
+expect_mutation_failure authorization-wrong-owner promotion
+expect_mutation_failure authorization-missing-triggering-actor promotion
+expect_mutation_failure authorization-wrong-workflow-id promotion
+expect_mutation_failure authorization-allows-rerun promotion
+expect_mutation_failure authorization-missing-current-main-check promotion
+expect_mutation_failure authorization-adds-push promotion
+expect_mutation_failure authorization-job-condition promotion
+expect_mutation_failure authorization-step-condition promotion
+expect_mutation_failure authorization-extra-step promotion
+expect_mutation_failure writer-manual-trigger writer
+expect_mutation_failure writer-wrong-source-workflow writer
+expect_mutation_failure writer-wrong-event-type writer
+expect_mutation_failure writer-wrong-event-branch writer
+expect_mutation_failure writer-verify-write writer
+expect_mutation_failure writer-emits-authorization-name writer
+expect_mutation_failure writer-wrong-workflow-id writer
+expect_mutation_failure writer-wrong-owner writer
+expect_mutation_failure writer-allows-rerun writer
+expect_mutation_failure writer-missing-latest-authorization writer
+expect_mutation_failure writer-wrong-check-app writer
+expect_mutation_failure writer-missing-suite-link writer
+expect_mutation_failure writer-missing-details-link writer
+expect_mutation_failure writer-does-not-repeat-trust writer
+expect_mutation_failure writer-unvalidated-checkout writer
+expect_mutation_failure writer-force-push writer
+expect_mutation_failure writer-missing-fast-forward writer
+expect_mutation_failure writer-push-before-precheck writer
+expect_mutation_failure writer-missing-postcheck writer
+expect_mutation_failure writer-job-condition writer
+expect_mutation_failure writer-step-condition writer
+expect_mutation_failure writer-step-custom-shell writer
+expect_mutation_failure writer-step-continue-on-error writer
+expect_mutation_failure writer-extra-step writer
 expect_mutation_failure extra-top-level-writer extra
 expect_mutation_failure extra-job-level-writer extra
 expect_mutation_failure extra-omitted-permissions extra

@@ -37,8 +37,9 @@ both schemes, capability flags, source, tests, Packages, project definitions,
 and documentation. `codex/internal-debug` is retained as the owner's delivery
 pointer. It is a zero-delta pointer to an explicitly reviewed commit already on
 `main`; it is not a second development lane and must not carry tracked product
-differences. The local PR-03 checker and workflow guard are implemented; remote
-branch bootstrap and promotion remain separately authorized operations.
+differences. The local PR-03 checker and two-workflow authorization/writer
+design are implemented; remote pointer bootstrap remains separately authorized
+and pending hosted validation.
 
 ## Log privacy contract
 
@@ -73,13 +74,11 @@ Debug/Release matrix is implemented locally: Debug tests are followed by a
 separate clean App-only build because XCTest hosts embed XCTest support; both
 Debug and Release artifacts are scanned for their variant capabilities.
 
-GitHub remote enforcement is **BLOCKED / not complete** until an independently
-controlled ruleset or branch-protection configuration restricts updates to
-`codex/internal-debug` to the controlled promotion path, prohibits force-push,
-deletion, and a direct PR lane, and requires the current policy and complete
-matrix checks. The remote branch is absent; no ruleset or bootstrap was
-configured because it was not authorized. Local PR-03 implementation may be
-complete while remote enforcement remains disabled.
+The main ruleset `21847803` and internal integrity ruleset `21848414` are active
+with no bypass. A separate attempted GitHub Actions writer-bypass ruleset
+failed HTTP 422, so no exclusive writer identity is claimed. The remote branch
+is absent pending post-merge hosted validation and authorized bootstrap; no PAT
+or repository secret is used.
 
 The separate internal Bundle ID intentionally creates an isolated settings
 domain, App sandbox, and Keychain context. Internal first launch therefore

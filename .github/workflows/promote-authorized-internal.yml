@@ -1,0 +1,316 @@
+name: Promote Authorized Internal Pointer
+
+on:
+  workflow_run:
+    workflows:
+      - Authorize Internal Delivery Pointer
+    types:
+      - completed
+    branches:
+      - main
+
+permissions: {}
+
+concurrency:
+  group: promote-internal
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify completed internal authorization
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      checks: read
+      contents: read
+    steps:
+      - name: Verify authorization and current main
+        env:
+          AUTHORIZATION_RUN_ID: ${{ github.event.workflow_run.id }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          repository='lotwhoo/SingleGreenDemo'
+          authorization_name='Authorize Internal Delivery Pointer'
+          authorization_path='.github/workflows/promote-internal.yml'
+          authorization_workflow_id='345772544'
+          owner_actor='lotwhoo'
+
+          main_sha=$(gh api --method GET "/repos/$repository/git/ref/heads/main" --jq '.object.sha')
+          authorization_run=$(gh api --method GET "/repos/$repository/actions/runs/$AUTHORIZATION_RUN_ID")
+          if ! printf '%s' "$authorization_run" | jq -e \
+            --arg repository "$repository" \
+            --arg path "$authorization_path" \
+            --arg name "$authorization_name" \
+            --arg actor "$owner_actor" \
+            --arg sha "$main_sha" \
+            --argjson run_id "$AUTHORIZATION_RUN_ID" \
+            --argjson workflow_id "$authorization_workflow_id" '
+              .id == $run_id and .workflow_id == $workflow_id and
+              .name == $name and .path == $path and
+              .event == "workflow_dispatch" and
+              .status == "completed" and .conclusion == "success" and
+              .head_branch == "main" and .head_sha == $sha and
+              .run_attempt == 1 and
+              .repository.full_name == $repository and
+              .head_repository.full_name == $repository and
+              .actor.login == $actor and .triggering_actor.login == $actor' >/dev/null; then
+            echo 'Completed authorization is not canonical owner-approved current main.' >&2
+            exit 1
+          fi
+
+          authorization_suite_id=$(printf '%s' "$authorization_run" | jq -r '.check_suite_id')
+          authorization_jobs=$(gh api --method GET \
+            "/repos/$repository/actions/runs/$AUTHORIZATION_RUN_ID/attempts/1/jobs?per_page=100")
+          authorization_job=$(printf '%s' "$authorization_jobs" | jq '
+            [.jobs[] | select(.name == "Internal promotion authorization" and
+                              .status == "completed" and
+                              .conclusion == "success")]')
+          if [ "$(printf '%s' "$authorization_job" | jq 'length')" -ne 1 ]; then
+            echo 'Expected exactly one successful authorization job.' >&2
+            exit 1
+          fi
+          authorization_job_id=$(printf '%s' "$authorization_job" | jq -r '.[0].id')
+          authorization_check_id=$(printf '%s' "$authorization_job" | jq -r '.[0].check_run_url | split("/")[-1]')
+          authorization_details="https://github.com/$repository/actions/runs/$AUTHORIZATION_RUN_ID/job/$authorization_job_id"
+          authorization_checks=$(gh api --method GET \
+            "/repos/$repository/commits/$main_sha/check-runs?check_name=Internal%20promotion%20authorization&filter=latest&per_page=100")
+          linked_authorization_checks=$(printf '%s' "$authorization_checks" | jq \
+            --arg sha "$main_sha" --arg details "$authorization_details" \
+            --argjson suite_id "$authorization_suite_id" '
+              [.check_runs[] | select(.head_sha == $sha and
+                                      .name == "Internal promotion authorization" and
+                                      .app.id == 15368 and
+                                      .check_suite.id == $suite_id and
+                                      .details_url == $details and
+                                      .status == "completed" and
+                                      .conclusion == "success")]')
+          latest_authorization_check_id=$(printf '%s' "$authorization_checks" | jq -r --arg sha "$main_sha" '
+            [.check_runs[] | select(.head_sha == $sha and
+                                    .name == "Internal promotion authorization" and
+                                    .app.id == 15368 and
+                                    .status == "completed" and
+                                    .conclusion == "success")] |
+            sort_by(.completed_at, .id) | .[-1].id')
+          if [ "$(printf '%s' "$linked_authorization_checks" | jq 'length')" -ne 1 ] || \
+             [ "$(printf '%s' "$linked_authorization_checks" | jq -r '.[0].id')" != "$authorization_check_id" ] || \
+             [ "$latest_authorization_check_id" != "$authorization_check_id" ]; then
+            echo 'Authorization job/check/app/run/suite linkage is not exact and latest.' >&2
+            exit 1
+          fi
+
+          ci_runs=$(gh api --method GET \
+            "/repos/$repository/actions/workflows/ci.yml/runs?branch=main&event=push&status=completed&head_sha=$main_sha&per_page=100")
+          ci_run=$(printf '%s' "$ci_runs" | jq --arg sha "$main_sha" --arg repository "$repository" '
+            [.workflow_runs[] | select(.head_sha == $sha and
+                                       .head_branch == "main" and
+                                       .event == "push" and
+                                       .status == "completed" and
+                                       .conclusion == "success" and
+                                       .path == ".github/workflows/ci.yml" and
+                                       .repository.full_name == $repository and
+                                       .head_repository.full_name == $repository)] |
+            sort_by(.updated_at, .run_attempt, .id)')
+          if [ "$(printf '%s' "$ci_run" | jq 'length')" -lt 1 ]; then
+            echo 'No successful canonical main-push CI run exists for current main.' >&2
+            exit 1
+          fi
+          ci_run_id=$(printf '%s' "$ci_run" | jq -r '.[-1].id')
+          ci_attempt=$(printf '%s' "$ci_run" | jq -r '.[-1].run_attempt')
+          ci_suite_id=$(printf '%s' "$ci_run" | jq -r '.[-1].check_suite_id')
+          ci_jobs=$(gh api --method GET "/repos/$repository/actions/runs/$ci_run_id/attempts/$ci_attempt/jobs?per_page=100")
+          required_job=$(printf '%s' "$ci_jobs" | jq '
+            [.jobs[] | select(.name == "Required CI" and
+                              .status == "completed" and
+                              .conclusion == "success")]')
+          if [ "$(printf '%s' "$required_job" | jq 'length')" -ne 1 ]; then
+            echo 'Expected exactly one successful Required CI job.' >&2
+            exit 1
+          fi
+          required_job_id=$(printf '%s' "$required_job" | jq -r '.[0].id')
+          required_check_id=$(printf '%s' "$required_job" | jq -r '.[0].check_run_url | split("/")[-1]')
+          required_details="https://github.com/$repository/actions/runs/$ci_run_id/job/$required_job_id"
+          required_checks=$(gh api --method GET \
+            "/repos/$repository/commits/$main_sha/check-runs?check_name=Required%20CI&filter=latest&per_page=100")
+          linked_required_checks=$(printf '%s' "$required_checks" | jq \
+            --arg sha "$main_sha" --arg details "$required_details" --argjson suite_id "$ci_suite_id" '
+              [.check_runs[] | select(.head_sha == $sha and .name == "Required CI" and
+                                      .app.id == 15368 and .check_suite.id == $suite_id and
+                                      .details_url == $details and .status == "completed" and
+                                      .conclusion == "success")]')
+          latest_required_check_id=$(printf '%s' "$required_checks" | jq -r --arg sha "$main_sha" '
+            [.check_runs[] | select(.head_sha == $sha and .name == "Required CI" and
+                                    .app.id == 15368 and .status == "completed" and
+                                    .conclusion == "success")] |
+            sort_by(.completed_at, .id) | .[-1].id')
+          if [ "$(printf '%s' "$linked_required_checks" | jq 'length')" -ne 1 ] || \
+             [ "$(printf '%s' "$linked_required_checks" | jq -r '.[0].id')" != "$required_check_id" ] || \
+             [ "$latest_required_check_id" != "$required_check_id" ]; then
+            echo 'Required CI job/check/app/run/suite linkage is not exact.' >&2
+            exit 1
+          fi
+
+          echo "Verified authorization run $AUTHORIZATION_RUN_ID for current main $main_sha."
+
+  promote:
+    name: Promote verified internal pointer
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      checks: read
+      contents: write
+    steps:
+      - name: Repeat authorization and CI trust checks
+        id: trust
+        env:
+          AUTHORIZATION_RUN_ID: ${{ github.event.workflow_run.id }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          repository='lotwhoo/SingleGreenDemo'
+          authorization_name='Authorize Internal Delivery Pointer'
+          authorization_path='.github/workflows/promote-internal.yml'
+          authorization_workflow_id='345772544'
+          owner_actor='lotwhoo'
+
+          main_sha=$(gh api --method GET "/repos/$repository/git/ref/heads/main" --jq '.object.sha')
+          authorization_run=$(gh api --method GET "/repos/$repository/actions/runs/$AUTHORIZATION_RUN_ID")
+          if ! printf '%s' "$authorization_run" | jq -e \
+            --arg repository "$repository" --arg path "$authorization_path" \
+            --arg name "$authorization_name" --arg actor "$owner_actor" --arg sha "$main_sha" \
+            --argjson run_id "$AUTHORIZATION_RUN_ID" --argjson workflow_id "$authorization_workflow_id" '
+              .id == $run_id and .workflow_id == $workflow_id and
+              .name == $name and .path == $path and .event == "workflow_dispatch" and
+              .status == "completed" and .conclusion == "success" and
+              .head_branch == "main" and .head_sha == $sha and .run_attempt == 1 and
+              .repository.full_name == $repository and .head_repository.full_name == $repository and
+              .actor.login == $actor and .triggering_actor.login == $actor' >/dev/null; then
+            echo 'Repeated authorization metadata check failed.' >&2
+            exit 1
+          fi
+
+          authorization_suite_id=$(printf '%s' "$authorization_run" | jq -r '.check_suite_id')
+          authorization_jobs=$(gh api --method GET \
+            "/repos/$repository/actions/runs/$AUTHORIZATION_RUN_ID/attempts/1/jobs?per_page=100")
+          authorization_job=$(printf '%s' "$authorization_jobs" | jq '
+            [.jobs[] | select(.name == "Internal promotion authorization" and
+                              .status == "completed" and .conclusion == "success")]')
+          if [ "$(printf '%s' "$authorization_job" | jq 'length')" -ne 1 ]; then
+            echo 'Repeated authorization job check failed.' >&2
+            exit 1
+          fi
+          authorization_job_id=$(printf '%s' "$authorization_job" | jq -r '.[0].id')
+          authorization_check_id=$(printf '%s' "$authorization_job" | jq -r '.[0].check_run_url | split("/")[-1]')
+          authorization_details="https://github.com/$repository/actions/runs/$AUTHORIZATION_RUN_ID/job/$authorization_job_id"
+          authorization_checks=$(gh api --method GET \
+            "/repos/$repository/commits/$main_sha/check-runs?check_name=Internal%20promotion%20authorization&filter=latest&per_page=100")
+          linked_authorization_checks=$(printf '%s' "$authorization_checks" | jq \
+            --arg sha "$main_sha" --arg details "$authorization_details" \
+            --argjson suite_id "$authorization_suite_id" '
+              [.check_runs[] | select(.head_sha == $sha and
+                                      .name == "Internal promotion authorization" and
+                                      .app.id == 15368 and .check_suite.id == $suite_id and
+                                      .details_url == $details and .status == "completed" and
+                                      .conclusion == "success")]')
+          latest_authorization_check_id=$(printf '%s' "$authorization_checks" | jq -r --arg sha "$main_sha" '
+            [.check_runs[] | select(.head_sha == $sha and
+                                    .name == "Internal promotion authorization" and
+                                    .app.id == 15368 and .status == "completed" and
+                                    .conclusion == "success")] |
+            sort_by(.completed_at, .id) | .[-1].id')
+          if [ "$(printf '%s' "$linked_authorization_checks" | jq 'length')" -ne 1 ] || \
+             [ "$(printf '%s' "$linked_authorization_checks" | jq -r '.[0].id')" != "$authorization_check_id" ] || \
+             [ "$latest_authorization_check_id" != "$authorization_check_id" ]; then
+            echo 'Repeated authorization check linkage failed.' >&2
+            exit 1
+          fi
+
+          ci_runs=$(gh api --method GET \
+            "/repos/$repository/actions/workflows/ci.yml/runs?branch=main&event=push&status=completed&head_sha=$main_sha&per_page=100")
+          ci_run=$(printf '%s' "$ci_runs" | jq --arg sha "$main_sha" --arg repository "$repository" '
+            [.workflow_runs[] | select(.head_sha == $sha and .head_branch == "main" and
+                                       .event == "push" and .status == "completed" and
+                                       .conclusion == "success" and .path == ".github/workflows/ci.yml" and
+                                       .repository.full_name == $repository and
+                                       .head_repository.full_name == $repository)] |
+            sort_by(.updated_at, .run_attempt, .id)')
+          if [ "$(printf '%s' "$ci_run" | jq 'length')" -lt 1 ]; then
+            echo 'Repeated current-main CI check failed.' >&2
+            exit 1
+          fi
+          ci_run_id=$(printf '%s' "$ci_run" | jq -r '.[-1].id')
+          ci_attempt=$(printf '%s' "$ci_run" | jq -r '.[-1].run_attempt')
+          ci_suite_id=$(printf '%s' "$ci_run" | jq -r '.[-1].check_suite_id')
+          ci_jobs=$(gh api --method GET "/repos/$repository/actions/runs/$ci_run_id/attempts/$ci_attempt/jobs?per_page=100")
+          required_job=$(printf '%s' "$ci_jobs" | jq '
+            [.jobs[] | select(.name == "Required CI" and .status == "completed" and .conclusion == "success")]')
+          if [ "$(printf '%s' "$required_job" | jq 'length')" -ne 1 ]; then
+            echo 'Repeated Required CI job check failed.' >&2
+            exit 1
+          fi
+          required_job_id=$(printf '%s' "$required_job" | jq -r '.[0].id')
+          required_check_id=$(printf '%s' "$required_job" | jq -r '.[0].check_run_url | split("/")[-1]')
+          required_details="https://github.com/$repository/actions/runs/$ci_run_id/job/$required_job_id"
+          required_checks=$(gh api --method GET \
+            "/repos/$repository/commits/$main_sha/check-runs?check_name=Required%20CI&filter=latest&per_page=100")
+          linked_required_checks=$(printf '%s' "$required_checks" | jq \
+            --arg sha "$main_sha" --arg details "$required_details" --argjson suite_id "$ci_suite_id" '
+              [.check_runs[] | select(.head_sha == $sha and .name == "Required CI" and
+                                      .app.id == 15368 and .check_suite.id == $suite_id and
+                                      .details_url == $details and .status == "completed" and
+                                      .conclusion == "success")]')
+          latest_required_check_id=$(printf '%s' "$required_checks" | jq -r --arg sha "$main_sha" '
+            [.check_runs[] | select(.head_sha == $sha and .name == "Required CI" and
+                                    .app.id == 15368 and .status == "completed" and
+                                    .conclusion == "success")] |
+            sort_by(.completed_at, .id) | .[-1].id')
+          if [ "$(printf '%s' "$linked_required_checks" | jq 'length')" -ne 1 ] || \
+             [ "$(printf '%s' "$linked_required_checks" | jq -r '.[0].id')" != "$required_check_id" ] || \
+             [ "$latest_required_check_id" != "$required_check_id" ]; then
+            echo 'Repeated Required CI linkage check failed.' >&2
+            exit 1
+          fi
+
+          echo "validated_sha=$main_sha" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.trust.outputs.validated_sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Fast-forward the authorized internal pointer
+        env:
+          VALIDATED_SHA: ${{ steps.trust.outputs.validated_sha }}
+        run: |
+          set -euo pipefail
+
+          git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+          checkout_sha=$(git rev-parse 'HEAD^{commit}')
+          main_sha=$(git rev-parse 'refs/remotes/origin/main^{commit}')
+          if [ "$VALIDATED_SHA" != "$main_sha" ] || [ "$checkout_sha" != "$main_sha" ]; then
+            echo 'Validated authorization became stale before mutation.' >&2
+            exit 1
+          fi
+          scripts/check_internal_branch_policy.sh "$VALIDATED_SHA" "$main_sha" "$checkout_sha"
+
+          if git ls-remote --exit-code --heads origin refs/heads/codex/internal-debug >/dev/null 2>&1; then
+            git fetch --no-tags origin '+refs/heads/codex/internal-debug:refs/remotes/origin/codex/internal-debug'
+            previous_internal_sha=$(git rev-parse 'refs/remotes/origin/codex/internal-debug^{commit}')
+            if ! git merge-base --is-ancestor "$previous_internal_sha" "$main_sha"; then
+              echo 'The internal delivery pointer cannot be fast-forwarded to current main.' >&2
+              exit 1
+            fi
+          fi
+
+          git push origin "$main_sha:refs/heads/codex/internal-debug"
+
+          git fetch --no-tags origin \
+            '+refs/heads/main:refs/remotes/origin/main' \
+            '+refs/heads/codex/internal-debug:refs/remotes/origin/codex/internal-debug'
+          post_main_sha=$(git rev-parse 'refs/remotes/origin/main^{commit}')
+          internal_sha=$(git rev-parse 'refs/remotes/origin/codex/internal-debug^{commit}')
+          scripts/check_internal_branch_policy.sh "$VALIDATED_SHA" "$post_main_sha" "$internal_sha"
