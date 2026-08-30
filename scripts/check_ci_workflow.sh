@@ -3,6 +3,7 @@ set -eu
 
 workflow_path=${1:-.github/workflows/ci.yml}
 promotion_workflow_path=${2:-$(dirname -- "$workflow_path")/promote-internal.yml}
+writer_workflow_path=${3:-$(dirname -- "$workflow_path")/promote-authorized-internal.yml}
 
 if [ ! -f "$workflow_path" ]; then
     echo "CI workflow check failed: file not found: $workflow_path" >&2
@@ -14,17 +15,25 @@ if [ ! -f "$promotion_workflow_path" ]; then
     exit 1
 fi
 
-ruby - "$workflow_path" "$promotion_workflow_path" <<'RUBY'
+if [ ! -f "$writer_workflow_path" ]; then
+    echo "CI workflow check failed: file not found: $writer_workflow_path" >&2
+    exit 1
+fi
+
+ruby - "$workflow_path" "$promotion_workflow_path" "$writer_workflow_path" <<'RUBY'
 require "yaml"
 
 path = ARGV.fetch(0)
 promotion_path = ARGV.fetch(1)
+writer_path = ARGV.fetch(2)
 source = File.read(path)
 promotion_source = File.read(promotion_path)
+writer_source = File.read(writer_path)
 
 begin
   workflow = YAML.load(source)
   promotion_workflow = YAML.load(promotion_source)
+  writer_workflow = YAML.load(writer_source)
 rescue Psych::SyntaxError => error
   warn "Workflow check failed: YAML parse error: #{error.message}"
   exit 1
@@ -37,6 +46,11 @@ end
 
 unless promotion_workflow.is_a?(Hash)
   warn "CI workflow check failed: promotion workflow root must be a mapping"
+  exit 1
+end
+
+unless writer_workflow.is_a?(Hash)
+  warn "CI workflow check failed: writer workflow root must be a mapping"
   exit 1
 end
 
@@ -71,14 +85,20 @@ end
 
 workflow_directory = File.dirname(File.expand_path(path))
 promotion_directory = File.dirname(File.expand_path(promotion_path))
+writer_directory = File.dirname(File.expand_path(writer_path))
 check.call(workflow_directory == promotion_directory,
            "CI and promotion workflows must be validated from the same workflow directory")
+check.call(workflow_directory == writer_directory,
+           "CI and writer workflows must be validated from the same workflow directory")
 check.call(File.basename(promotion_path) == "promote-internal.yml",
-           "the reviewed write workflow must be named promote-internal.yml")
+           "the reviewed authorization workflow must be named promote-internal.yml")
+check.call(File.basename(writer_path) == "promote-authorized-internal.yml",
+           "the reviewed writer workflow must be named promote-authorized-internal.yml")
 
 workflow_paths = Dir.glob(File.join(workflow_directory, "*.{yml,yaml}")).sort
 check.call(workflow_paths.include?(File.expand_path(path)), "workflow inventory must include the CI workflow")
 check.call(workflow_paths.include?(File.expand_path(promotion_path)), "workflow inventory must include promote-internal.yml")
+check.call(workflow_paths.include?(File.expand_path(writer_path)), "workflow inventory must include promote-authorized-internal.yml")
 write_locations = []
 workflow_paths.each do |candidate_path|
   begin
@@ -102,15 +122,25 @@ workflow_paths.each do |candidate_path|
   next unless candidate_jobs.is_a?(Hash)
   candidate_jobs.each do |candidate_job_name, candidate_job|
     next unless candidate_job.is_a?(Hash)
+    check.call(!candidate_job.key?("uses"),
+               "workflow inventory must not contain reusable-workflow jobs: #{File.basename(candidate_path)}:#{candidate_job_name}")
     if grants_write?(candidate_job["permissions"])
       write_locations << [File.expand_path(candidate_path), "job:#{candidate_job_name}"]
+    end
+    Array(candidate_job["steps"]).each do |candidate_step|
+      next unless candidate_step.is_a?(Hash) && candidate_step.key?("uses")
+      uses = candidate_step["uses"].to_s
+      pinned = uses == "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" ||
+        uses == "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a"
+      check.call(pinned,
+                 "every inventoried action must use a reviewed full commit SHA: #{File.basename(candidate_path)}")
     end
   end
 end
 
-expected_write_locations = [[File.expand_path(promotion_path), "job:promote"]]
+expected_write_locations = [[File.expand_path(writer_path), "job:promote"]]
 check.call(write_locations == expected_write_locations,
-           "only the promote job in promote-internal.yml may request any write permission")
+           "only the promote job in promote-authorized-internal.yml may request any write permission")
 
 triggers = workflow["on"] || workflow[true]
 check.call(triggers.is_a?(Hash), "on must define an event mapping")
@@ -493,6 +523,7 @@ check.call(all_runs.scan(%r{scripts/test_internal_branch_policy\.sh}).length == 
 check.call(all_runs.scan(%r{scripts/check_internal_branch_policy\.sh}).length == 1,
            "live branch-policy validation must appear exactly once")
 
+if false
 promotion_triggers = promotion_workflow["on"] || promotion_workflow[true]
 check.call(promotion_triggers.is_a?(Hash), "promotion on must define an event mapping")
 promotion_triggers = {} unless promotion_triggers.is_a?(Hash)
@@ -684,10 +715,251 @@ check.call(!promotion_source.include?("secrets.") &&
              !promotion_source.include?("github.event.inputs") &&
              !promotion_source.include?("${{ inputs."),
            "promotion must not accept user SHAs, PATs, or repository secrets")
+end
+
+# The split delivery contract deliberately keeps the ruleset-producing authorization
+# check in a completed read-only workflow suite before a separate workflow_run writer.
+authorization_triggers = promotion_workflow["on"] || promotion_workflow[true]
+check.call(promotion_workflow["name"] == "Authorize Internal Delivery Pointer",
+           "authorization workflow name must remain stable")
+check.call(authorization_triggers.is_a?(Hash) && authorization_triggers.keys == ["workflow_dispatch"],
+           "authorization must be manual workflow_dispatch only")
+authorization_dispatch = authorization_triggers.is_a?(Hash) ? authorization_triggers["workflow_dispatch"] : nil
+check.call(authorization_dispatch.nil? || (authorization_dispatch.is_a?(Hash) && authorization_dispatch.empty?),
+           "authorization workflow_dispatch must not accept inputs")
+check.call(promotion_workflow["permissions"] == {}, "authorization top-level permissions must be empty")
+check.call(!declares_run_shell?(promotion_workflow), "authorization must not override defaults.run.shell")
+
+writer_triggers = writer_workflow["on"] || writer_workflow[true]
+check.call(writer_workflow["name"] == "Promote Authorized Internal Pointer",
+           "writer workflow name must remain stable")
+check.call(writer_triggers.is_a?(Hash) && writer_triggers.keys == ["workflow_run"],
+           "writer must be triggered only by workflow_run")
+writer_run_trigger = writer_triggers.is_a?(Hash) ? writer_triggers["workflow_run"] : nil
+if writer_run_trigger.is_a?(Hash)
+  check.call(Array(writer_run_trigger["workflows"]) == ["Authorize Internal Delivery Pointer"],
+             "writer must accept only the exact authorization workflow")
+  check.call(Array(writer_run_trigger["types"]) == ["completed"],
+             "writer must accept only completed authorization runs")
+  check.call(Array(writer_run_trigger["branches"]) == ["main"],
+             "writer workflow_run must be limited to main")
+else
+  check.call(false, "writer workflow_run trigger must be a mapping")
+end
+check.call(writer_workflow["permissions"] == {}, "writer top-level permissions must be empty")
+check.call(!declares_run_shell?(writer_workflow), "writer must not override defaults.run.shell")
+
+{"authorization"=>promotion_workflow, "writer"=>writer_workflow}.each do |label, delivery_workflow|
+  delivery_concurrency = delivery_workflow["concurrency"]
+  check.call(delivery_concurrency.is_a?(Hash) &&
+               delivery_concurrency["group"] == "promote-internal" &&
+               delivery_concurrency["cancel-in-progress"] == false,
+             "#{label} must use the fixed non-cancelling promote-internal concurrency group")
+end
+
+authorization_jobs = promotion_workflow["jobs"]
+authorization_jobs = {} unless authorization_jobs.is_a?(Hash)
+check.call(authorization_jobs.keys == ["authorize"],
+           "authorization workflow must contain exactly one authorize job")
+authorization_job = authorization_jobs["authorize"]
+authorization_job = {} unless authorization_job.is_a?(Hash)
+check.call(authorization_job["name"] == "Internal promotion authorization",
+           "authorization job/check name must remain stable")
+check.call(authorization_job["runs-on"] == "ubuntu-latest",
+           "authorization job must use ubuntu-latest")
+check.call(authorization_job["permissions"] == {"actions"=>"read", "checks"=>"read", "contents"=>"read"},
+           "authorization job must be read-only")
+check.call(!authorization_job.key?("if") && fail_closed?(authorization_job) && !declares_run_shell?(authorization_job),
+           "authorization job must be unconditional, fail closed, and use the default shell")
+authorization_steps = Array(authorization_job["steps"])
+check.call(authorization_steps.length == 2, "authorization job must contain exactly two reviewed steps")
+authorization_checkout = authorization_steps[0].is_a?(Hash) ? authorization_steps[0] : {}
+authorization_step = authorization_steps[1].is_a?(Hash) ? authorization_steps[1] : {}
+check.call(authorization_checkout["uses"] == "actions/checkout@#{checkout_sha}" &&
+             authorization_checkout["with"] == {"ref"=>"refs/heads/main", "fetch-depth"=>0, "persist-credentials"=>false},
+           "authorization must check out exact main with pinned checkout and no credentials")
+check.call(authorization_step["name"] == "Authorize current main for internal delivery" &&
+             authorization_step["env"] == {"GH_TOKEN"=>"${{ github.token }}"},
+           "authorization trust step topology and token must remain exact")
+authorization_steps.each do |step|
+  check.call(step.is_a?(Hash) && !step.key?("if") && !step.key?("shell") && fail_closed?(step),
+             "authorization steps must be unconditional, default-shell, and fail closed")
+end
+authorization_run = authorization_step["run"].to_s
+
+authorization_markers = [
+  "canonical_repository='lotwhoo/SingleGreenDemo'",
+  "canonical_workflow_path='.github/workflows/promote-internal.yml'",
+  "canonical_workflow_id='345772544'",
+  "canonical_actor='lotwhoo'",
+  '[ "$GITHUB_ACTOR" != "$canonical_actor" ]',
+  '[ "$GITHUB_TRIGGERING_ACTOR" != "$canonical_actor" ]',
+  '[ "$GITHUB_RUN_ATTEMPT" != \'1\' ]',
+  '"/repos/$canonical_repository/actions/runs/$GITHUB_RUN_ID"',
+  '.workflow_id == $workflow_id',
+  '.event == "workflow_dispatch"',
+  '.status == "in_progress"',
+  '.conclusion == null',
+  '.head_repository.full_name == $repository',
+  '.actor.login == $actor',
+  '.triggering_actor.login == $actor',
+  "git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'",
+  'scripts/check_internal_branch_policy.sh "$main_sha" "$main_sha" "$main_sha"',
+  '/actions/workflows/ci.yml/runs?branch=main&event=push&status=completed&head_sha=$main_sha',
+  '/actions/runs/$ci_run_id/attempts/$ci_attempt/jobs',
+  '.name == "Required CI"',
+  '.app.id == 15368',
+  '.check_suite.id == $suite_id',
+  '.details_url == $details',
+  'latest_required_check_id'
+]
+authorization_markers.each do |marker|
+  check.call(authorization_run.include?(marker), "authorization trust check missing: #{marker}")
+end
+check.call(authorization_run.scan(/\.app\.id == \d+/) == [".app.id == 15368", ".app.id == 15368"],
+           "authorization must bind every accepted check to GitHub Actions app 15368")
+check.call(authorization_run.scan(/\.check_suite\.id == \$suite_id/).length == 1 &&
+             authorization_run.scan(/\.details_url == \$details/).length == 1,
+           "authorization must bind Required CI to its exact suite and job details URL")
+check.call(!authorization_run.match?(%r{(?:^|\n)\s*git\s+push\b}),
+           "authorization workflow must not push refs")
+
+writer_jobs = writer_workflow["jobs"]
+writer_jobs = {} unless writer_jobs.is_a?(Hash)
+check.call(writer_jobs.keys.sort == %w[promote verify],
+           "writer must contain exactly verify and promote jobs")
+check.call(writer_jobs.values.none? { |job| job.is_a?(Hash) && job["name"] == "Internal promotion authorization" },
+           "writer must not emit the authorization ruleset check name")
+verify_job = writer_jobs["verify"]
+promote_job = writer_jobs["promote"]
+verify_job = {} unless verify_job.is_a?(Hash)
+promote_job = {} unless promote_job.is_a?(Hash)
+check.call(verify_job["permissions"] == {"actions"=>"read", "checks"=>"read", "contents"=>"read"},
+           "writer verify job must be read-only")
+check.call(promote_job["permissions"] == {"actions"=>"read", "checks"=>"read", "contents"=>"write"},
+           "writer promote job must have only the reviewed read/read/write permissions")
+check.call(Array(promote_job["needs"]) == ["verify"],
+           "writer promote job must depend on read-only verification")
+[verify_job, promote_job].each do |job|
+  check.call(job["runs-on"] == "ubuntu-latest" && !job.key?("if") && fail_closed?(job) && !declares_run_shell?(job),
+             "writer jobs must be unconditional ubuntu-latest default-shell fail-closed jobs")
+end
+
+verify_steps = Array(verify_job["steps"])
+promote_steps = Array(promote_job["steps"])
+check.call(verify_steps.length == 1 && promote_steps.length == 3,
+           "writer topology must be one verification step then exactly three promote steps")
+(verify_steps + promote_steps).each do |step|
+  check.call(step.is_a?(Hash) && !step.key?("if") && !step.key?("shell") && fail_closed?(step),
+             "writer steps must be unconditional, default-shell, and fail closed")
+end
+verify_step = verify_steps[0].is_a?(Hash) ? verify_steps[0] : {}
+trust_step = promote_steps[0].is_a?(Hash) ? promote_steps[0] : {}
+writer_checkout = promote_steps[1].is_a?(Hash) ? promote_steps[1] : {}
+mutation_step = promote_steps[2].is_a?(Hash) ? promote_steps[2] : {}
+expected_event_env = {
+  "AUTHORIZATION_RUN_ID"=>"${{ github.event.workflow_run.id }}",
+  "GH_TOKEN"=>"${{ github.token }}"
+}
+check.call(verify_step["name"] == "Verify authorization and current main" && verify_step["env"] == expected_event_env,
+           "writer verify step must consume only the event run id and github.token")
+check.call(trust_step["name"] == "Repeat authorization and CI trust checks" &&
+             trust_step["id"] == "trust" && trust_step["env"] == expected_event_env,
+           "writer write-token trust step must repeat the exact event-based verification")
+check.call(writer_checkout["uses"] == "actions/checkout@#{checkout_sha}" &&
+             writer_checkout["with"] == {
+               "ref"=>"${{ steps.trust.outputs.validated_sha }}",
+               "fetch-depth"=>0,
+               "persist-credentials"=>true
+             },
+           "writer must check out only the SHA validated under write-token trust checks")
+check.call(mutation_step["name"] == "Fast-forward the authorized internal pointer" &&
+             mutation_step["env"] == {"VALIDATED_SHA"=>"${{ steps.trust.outputs.validated_sha }}"},
+           "writer mutation step must consume only the validated SHA")
+
+writer_trust_markers = [
+  "repository='lotwhoo/SingleGreenDemo'",
+  "authorization_path='.github/workflows/promote-internal.yml'",
+  "authorization_workflow_id='345772544'",
+  "owner_actor='lotwhoo'",
+  '"/repos/$repository/actions/runs/$AUTHORIZATION_RUN_ID"',
+  '.workflow_id == $workflow_id',
+  '.event == "workflow_dispatch"',
+  '.status == "completed"',
+  '.conclusion == "success"',
+  '.head_branch == "main"',
+  '.head_sha == $sha',
+  '.run_attempt == 1',
+  '.repository.full_name == $repository',
+  '.head_repository.full_name == $repository',
+  '.actor.login == $actor',
+  '.triggering_actor.login == $actor',
+  '/git/ref/heads/main',
+  '/attempts/1/jobs',
+  '.name == "Internal promotion authorization"',
+  'check_name=Internal%20promotion%20authorization',
+  '.app.id == 15368',
+  '.check_suite.id == $suite_id',
+  '.details_url == $details',
+  'latest_authorization_check_id',
+  '/actions/workflows/ci.yml/runs?branch=main&event=push&status=completed&head_sha=$main_sha',
+  '.name == "Required CI"',
+  'check_name=Required%20CI',
+  'latest_required_check_id',
+  '.conclusion == "success"'
+]
+[verify_step["run"].to_s, trust_step["run"].to_s].each do |trust_run|
+  writer_trust_markers.each do |marker|
+    check.call(trust_run.include?(marker), "writer repeated trust check missing: #{marker}")
+  end
+  check.call(trust_run.scan(/\.app\.id == \d+/) == [".app.id == 15368", ".app.id == 15368", ".app.id == 15368", ".app.id == 15368"],
+             "writer must bind every accepted authorization and CI check to app 15368")
+  check.call(trust_run.scan(/\.check_suite\.id == \$suite_id/).length == 2 &&
+               trust_run.scan(/\.details_url == \$details/).length == 2,
+             "writer must bind authorization and Required CI to exact suites and job details URLs")
+end
+check.call(trust_step["run"].to_s.include?('echo "validated_sha=$main_sha" >> "$GITHUB_OUTPUT"'),
+           "writer trust step must emit only the revalidated current main SHA")
+
+mutation_run = mutation_step["run"].to_s
+precheck = 'scripts/check_internal_branch_policy.sh "$VALIDATED_SHA" "$main_sha" "$checkout_sha"'
+push = 'git push origin "$main_sha:refs/heads/codex/internal-debug"'
+postcheck = 'scripts/check_internal_branch_policy.sh "$VALIDATED_SHA" "$post_main_sha" "$internal_sha"'
+check.call(mutation_run.include?(precheck) && mutation_run.include?(push) && mutation_run.include?(postcheck) &&
+             mutation_run.index(precheck) < mutation_run.index(push) && mutation_run.index(push) < mutation_run.index(postcheck),
+           "writer must order precheck, exact pointer push, and postcheck")
+check.call(mutation_run.include?('git merge-base --is-ancestor "$previous_internal_sha" "$main_sha"') &&
+             mutation_run.index('git merge-base --is-ancestor') < mutation_run.index(push),
+           "writer must prove fast-forward ancestry before mutation")
+writer_push_lines = mutation_run.lines.map(&:strip).select { |line| line.match?(%r{^git\s+push\b}) }
+check.call(writer_push_lines == [push] &&
+             writer_push_lines.none? { |line| line.include?("--force") || line.match?(%r{^git\s+push\s+-f\b}) },
+           "writer must contain one exact non-force pointer push")
+check.call(mutation_run.include?("'+refs/heads/codex/internal-debug:refs/remotes/origin/codex/internal-debug'") &&
+             mutation_run.include?("post_main_sha=$(git rev-parse 'refs/remotes/origin/main^{commit}')"),
+           "writer must freshly refetch main and the internal pointer before postcheck")
+
+allowed_delivery_action = "actions/checkout@#{checkout_sha}"
+[promotion_workflow, writer_workflow].each do |delivery_workflow|
+  Array(delivery_workflow["jobs"]&.values).each do |job|
+    next unless job.is_a?(Hash)
+    check.call(!job.key?("uses"), "delivery jobs must not call reusable workflows")
+    Array(job["steps"]).each do |step|
+      next unless step.is_a?(Hash) && step.key?("uses")
+      check.call(step["uses"] == allowed_delivery_action,
+                 "delivery workflows may use only the reviewed pinned checkout action")
+    end
+  end
+end
+check.call(!promotion_source.include?("secrets.") && !writer_source.include?("secrets.") &&
+             !promotion_source.match?(/\bPAT\b/i) && !writer_source.match?(/\bPAT\b/i) &&
+             !writer_source.include?("github.event.inputs") && !writer_source.include?("${{ inputs."),
+           "delivery workflows must not use secrets, PATs, manual writer input, or user SHA input")
 
 if errors.empty?
   puts "CI workflow contract passed: #{path}"
-  puts "Promotion workflow contract passed: #{promotion_path}"
+  puts "Authorization workflow contract passed: #{promotion_path}"
+  puts "Authorized writer workflow contract passed: #{writer_path}"
 else
   errors.each { |message| warn "CI workflow check failed: #{message}" }
   exit 1

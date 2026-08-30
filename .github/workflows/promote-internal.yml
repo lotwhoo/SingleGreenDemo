@@ -1,4 +1,4 @@
-name: Promote Internal Delivery Pointer
+name: Authorize Internal Delivery Pointer
 
 on:
   workflow_dispatch:
@@ -17,129 +17,139 @@ jobs:
       actions: read
       checks: read
       contents: read
-    outputs:
-      approved_sha: ${{ steps.authorize.outputs.approved_sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: refs/heads/main
           fetch-depth: 0
           persist-credentials: false
-      - name: Authorize the exact current main commit
-        id: authorize
+      - name: Authorize current main for internal delivery
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
-          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
-            echo "Promotion must be dispatched from refs/heads/main." >&2
+          canonical_repository='lotwhoo/SingleGreenDemo'
+          canonical_workflow='Authorize Internal Delivery Pointer'
+          canonical_workflow_path='.github/workflows/promote-internal.yml'
+          canonical_workflow_id='345772544'
+          canonical_actor='lotwhoo'
+
+          if [ "$GITHUB_REPOSITORY" != "$canonical_repository" ] || \
+             [ "$GITHUB_WORKFLOW" != "$canonical_workflow" ] || \
+             [ "$GITHUB_WORKFLOW_REF" != "$canonical_repository/$canonical_workflow_path@refs/heads/main" ] || \
+             [ "$GITHUB_REF" != 'refs/heads/main' ] || \
+             [ "$GITHUB_ACTOR" != "$canonical_actor" ] || \
+             [ "$GITHUB_TRIGGERING_ACTOR" != "$canonical_actor" ] || \
+             [ "$GITHUB_RUN_ATTEMPT" != '1' ]; then
+            echo 'Authorization invocation is not the canonical owner-initiated main workflow.' >&2
+            exit 1
+          fi
+
+          self_run=$(gh api --method GET "/repos/$canonical_repository/actions/runs/$GITHUB_RUN_ID")
+          if ! printf '%s' "$self_run" | jq -e \
+            --arg repository "$canonical_repository" \
+            --arg path "$canonical_workflow_path" \
+            --arg name "$canonical_workflow" \
+            --arg actor "$canonical_actor" \
+            --arg sha "$GITHUB_SHA" \
+            --argjson run_id "$GITHUB_RUN_ID" \
+            --argjson workflow_id "$canonical_workflow_id" '
+              .id == $run_id and
+              .workflow_id == $workflow_id and
+              .name == $name and
+              .path == $path and
+              .event == "workflow_dispatch" and
+              .status == "in_progress" and
+              .conclusion == null and
+              .head_branch == "main" and
+              .head_sha == $sha and
+              .run_attempt == 1 and
+              .repository.full_name == $repository and
+              .head_repository.full_name == $repository and
+              .actor.login == $actor and
+              .triggering_actor.login == $actor' >/dev/null; then
+            echo 'Authorization run metadata is not canonical.' >&2
             exit 1
           fi
 
           git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
-          event_sha="$GITHUB_SHA"
           checkout_sha=$(git rev-parse 'HEAD^{commit}')
           main_sha=$(git rev-parse 'refs/remotes/origin/main^{commit}')
-          if [ "$event_sha" != "$main_sha" ] || [ "$checkout_sha" != "$main_sha" ]; then
-            echo "The dispatched commit, checkout, and freshly fetched origin/main must match." >&2
+          if [ "$GITHUB_SHA" != "$main_sha" ] || [ "$checkout_sha" != "$main_sha" ]; then
+            echo 'Authorization must target the freshly fetched current main commit.' >&2
             exit 1
           fi
-
           scripts/check_internal_branch_policy.sh "$main_sha" "$main_sha" "$main_sha"
 
-          workflow_runs=$(gh api --method GET \
-            "/repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?branch=main&event=push&status=completed&head_sha=$main_sha&per_page=100")
-          successful_workflow_runs=$(printf '%s' "$workflow_runs" | jq --arg sha "$main_sha" '
+          ci_runs=$(gh api --method GET \
+            "/repos/$canonical_repository/actions/workflows/ci.yml/runs?branch=main&event=push&status=completed&head_sha=$main_sha&per_page=100")
+          accepted_ci_runs=$(printf '%s' "$ci_runs" | jq --arg sha "$main_sha" --arg repository "$canonical_repository" '
             [.workflow_runs[] |
               select(.head_sha == $sha and
                      .head_branch == "main" and
                      .event == "push" and
                      .status == "completed" and
                      .conclusion == "success" and
-                     .path == ".github/workflows/ci.yml")] |
-              sort_by(.updated_at, .run_attempt, .id)')
-          workflow_run_count=$(printf '%s' "$successful_workflow_runs" | jq 'length')
-          if [ "$workflow_run_count" -lt 1 ]; then
-            echo "No successful main push CI run exists for $main_sha." >&2
+                     .path == ".github/workflows/ci.yml" and
+                     .repository.full_name == $repository and
+                     .head_repository.full_name == $repository)] |
+            sort_by(.updated_at, .run_attempt, .id)')
+          if [ "$(printf '%s' "$accepted_ci_runs" | jq 'length')" -lt 1 ]; then
+            echo 'No successful canonical main-push CI run exists for current main.' >&2
             exit 1
           fi
-          workflow_run_id=$(printf '%s' "$successful_workflow_runs" | jq -r '.[-1].id')
-
-          check_runs=$(gh api --method GET \
-            "/repos/$GITHUB_REPOSITORY/commits/$main_sha/check-runs?check_name=Required%20CI&filter=latest&per_page=100")
-          run_fragment="/actions/runs/$workflow_run_id/"
-          trusted_checks=$(printf '%s' "$check_runs" | jq \
+          ci_run=$(printf '%s' "$accepted_ci_runs" | jq '.[-1]')
+          ci_run_id=$(printf '%s' "$ci_run" | jq -r '.id')
+          ci_attempt=$(printf '%s' "$ci_run" | jq -r '.run_attempt')
+          ci_suite_id=$(printf '%s' "$ci_run" | jq -r '.check_suite_id')
+          ci_jobs=$(gh api --method GET \
+            "/repos/$canonical_repository/actions/runs/$ci_run_id/attempts/$ci_attempt/jobs?per_page=100")
+          required_jobs=$(printf '%s' "$ci_jobs" | jq '
+            [.jobs[] |
+              select(.name == "Required CI" and
+                     .status == "completed" and
+                     .conclusion == "success")]')
+          if [ "$(printf '%s' "$required_jobs" | jq 'length')" -ne 1 ]; then
+            echo 'Expected exactly one successful Required CI job in the accepted CI attempt.' >&2
+            exit 1
+          fi
+          required_job=$(printf '%s' "$required_jobs" | jq '.[0]')
+          required_job_id=$(printf '%s' "$required_job" | jq -r '.id')
+          required_check_id=$(printf '%s' "$required_job" | jq -r '.check_run_url | split("/")[-1]')
+          required_details_url="https://github.com/$canonical_repository/actions/runs/$ci_run_id/job/$required_job_id"
+          required_checks=$(gh api --method GET \
+            "/repos/$canonical_repository/commits/$main_sha/check-runs?check_name=Required%20CI&filter=latest&per_page=100")
+          accepted_required_checks=$(printf '%s' "$required_checks" | jq \
             --arg sha "$main_sha" \
-            --arg run_fragment "$run_fragment" '
+            --arg details "$required_details_url" \
+            --argjson suite_id "$ci_suite_id" '
               [.check_runs[] |
                 select(.head_sha == $sha and
                        .name == "Required CI" and
                        .app.id == 15368 and
+                       .check_suite.id == $suite_id and
+                       .details_url == $details and
                        .status == "completed" and
-                       .conclusion == "success" and
-                       (.details_url | contains($run_fragment)))] |
-                sort_by(.completed_at, .id)')
-          trusted_check_count=$(printf '%s' "$trusted_checks" | jq 'length')
-          if [ "$trusted_check_count" -lt 1 ]; then
-            echo "No successful Required CI check from GitHub Actions app 15368 is linked to run $workflow_run_id for $main_sha." >&2
-            exit 1
-          fi
-          trusted_check_id=$(printf '%s' "$trusted_checks" | jq -r '.[-1].id')
-          echo "Authorized Required CI check $trusted_check_id from workflow run $workflow_run_id."
-
-          echo "approved_sha=$main_sha" >> "$GITHUB_OUTPUT"
-
-  promote:
-    name: Promote authorized main
-    needs: authorize
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: refs/heads/main
-          fetch-depth: 0
-          persist-credentials: true
-      - name: Fast-forward the internal delivery pointer
-        env:
-          APPROVED_SHA: ${{ needs.authorize.outputs.approved_sha }}
-        run: |
-          set -euo pipefail
-
-          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
-            echo "Promotion must be dispatched from refs/heads/main." >&2
+                       .conclusion == "success")] |
+              sort_by(.completed_at, .id)')
+          if [ "$(printf '%s' "$accepted_required_checks" | jq 'length')" -ne 1 ] || \
+             [ "$(printf '%s' "$accepted_required_checks" | jq -r '.[-1].id')" != "$required_check_id" ]; then
+            echo 'Required CI job/check/app/run/suite linkage is not exact.' >&2
             exit 1
           fi
 
-          git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
-          event_sha="$GITHUB_SHA"
-          checkout_sha=$(git rev-parse 'HEAD^{commit}')
-          main_sha=$(git rev-parse 'refs/remotes/origin/main^{commit}')
-          if [ "$APPROVED_SHA" != "$main_sha" ] || \
-             [ "$event_sha" != "$main_sha" ] || \
-             [ "$checkout_sha" != "$main_sha" ]; then
-            echo "Authorization is stale or the checked out commit is not current origin/main." >&2
+          latest_required_check_id=$(printf '%s' "$required_checks" | jq -r --arg sha "$main_sha" '
+            [.check_runs[] |
+              select(.head_sha == $sha and
+                     .name == "Required CI" and
+                     .app.id == 15368 and
+                     .status == "completed" and
+                     .conclusion == "success")] |
+            sort_by(.completed_at, .id) | .[-1].id')
+          if [ "$latest_required_check_id" != "$required_check_id" ]; then
+            echo 'The accepted Required CI check is not the latest successful same-name Actions check.' >&2
             exit 1
           fi
 
-          scripts/check_internal_branch_policy.sh "$APPROVED_SHA" "$main_sha" "$checkout_sha"
-
-          if git ls-remote --exit-code --heads origin refs/heads/codex/internal-debug >/dev/null 2>&1; then
-            git fetch --no-tags origin '+refs/heads/codex/internal-debug:refs/remotes/origin/codex/internal-debug'
-            previous_internal_sha=$(git rev-parse 'refs/remotes/origin/codex/internal-debug^{commit}')
-            if ! git merge-base --is-ancestor "$previous_internal_sha" "$main_sha"; then
-              echo "The internal delivery pointer cannot be fast-forwarded to current main." >&2
-              exit 1
-            fi
-          fi
-
-          git push origin "$main_sha:refs/heads/codex/internal-debug"
-
-          git fetch --no-tags origin \
-            '+refs/heads/main:refs/remotes/origin/main' \
-            '+refs/heads/codex/internal-debug:refs/remotes/origin/codex/internal-debug'
-          post_main_sha=$(git rev-parse 'refs/remotes/origin/main^{commit}')
-          internal_sha=$(git rev-parse 'refs/remotes/origin/codex/internal-debug^{commit}')
-          scripts/check_internal_branch_policy.sh "$APPROVED_SHA" "$post_main_sha" "$internal_sha"
+          echo "Authorized current main $main_sha after Required CI check $required_check_id."
