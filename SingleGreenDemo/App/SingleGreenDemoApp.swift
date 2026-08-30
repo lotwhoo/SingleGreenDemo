@@ -13,6 +13,7 @@ struct SingleGreenDemoApp: App {
     @StateObject private var conversationController: VoiceConversationController
     @StateObject private var textAdventureController: TextAdventureController
     @StateObject private var teleprompterController: TeleprompterController
+    @StateObject private var diagnostics: ConversationTelemetryStore
 
     init() {
         let settings = Self.makeAISettings()
@@ -22,10 +23,12 @@ struct SingleGreenDemoApp: App {
             settings: settings
         )
         let teleprompterSettings = TeleprompterSettings()
+        let diagnostics = ConversationTelemetryStore(capacity: 1_000)
         let controller = VoiceConversationController(
             dependencies: .live(
                 settings: settings,
-                credentialProvider: credentialProvider
+                credentialProvider: credentialProvider,
+                telemetry: diagnostics
             )
         )
         let gameController = TextAdventureController(
@@ -56,6 +59,7 @@ struct SingleGreenDemoApp: App {
             )
         )
         _teleprompterSettings = StateObject(wrappedValue: teleprompterSettings)
+        _diagnostics = StateObject(wrappedValue: diagnostics)
         _conversationController = StateObject(wrappedValue: controller)
         _textAdventureController = StateObject(wrappedValue: gameController)
         _teleprompterController = StateObject(wrappedValue: teleprompterController)
@@ -102,7 +106,9 @@ struct SingleGreenDemoApp: App {
                 .environmentObject(profileStore)
                 .environmentObject(aiSettings)
                 .environmentObject(teleprompterSettings)
+                .environmentObject(diagnostics)
                 .task(priority: .userInitiated) {
+                    diagnostics.record(category: "app", message: "launch")
                     await cameraController.prepare()
                 }
                 .onChange(of: teleprompterSettings.scriptConfigurationRevision) { _, _ in
@@ -116,6 +122,7 @@ struct SingleGreenDemoApp: App {
                 }
         }
         .onChange(of: scenePhase) { _, phase in
+            diagnostics.record(category: "lifecycle", message: String(describing: phase))
             cameraController.handle(scenePhase: phase)
             switch phase {
             case .background:

@@ -19,8 +19,9 @@ struct AppShellView: View {
     @EnvironmentObject private var cameraController: CameraSessionController
     @EnvironmentObject private var runtime: ExperienceRuntime
     @EnvironmentObject private var profileStore: DisplayProfileStore
-    @State private var debugMode = true
+    @State private var debugMode = false
     @State private var showsAISettings = false
+    @State private var showsDiagnostics = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -43,7 +44,8 @@ struct AppShellView: View {
                 VStack(spacing: 12) {
                     FloatingHeaderView(
                         debugMode: $debugMode,
-                        showsAISettings: $showsAISettings
+                        showsAISettings: $showsAISettings,
+                        showsDiagnostics: $showsDiagnostics
                     )
 
                     Spacer(minLength: 24)
@@ -67,6 +69,14 @@ struct AppShellView: View {
         .sheet(isPresented: $showsAISettings) {
             AISettingsView()
         }
+        #if INTERNAL_DIAGNOSTICS
+        .sheet(isPresented: $showsDiagnostics) {
+            DiagnosticsPanelView()
+        }
+        .onAppear {
+            debugMode = true
+        }
+        #endif
     }
 
     private var diagnostics: some View {
@@ -132,6 +142,7 @@ private struct PreviewPane: View {
 private struct FloatingHeaderView: View {
     @Binding var debugMode: Bool
     @Binding var showsAISettings: Bool
+    @Binding var showsDiagnostics: Bool
 
     var body: some View {
         HStack(spacing: 12) {
@@ -171,6 +182,19 @@ private struct FloatingHeaderView: View {
             .accessibilityLabel("打开 AI 对话设置")
             .accessibilityIdentifier("ai_settings_button")
 
+            #if INTERNAL_DIAGNOSTICS
+            Button {
+                showsDiagnostics = true
+            } label: {
+                Image(systemName: "doc.text.magnifyingglass")
+                    .font(.system(size: 17, weight: .semibold))
+                    .frame(width: 44, height: 44)
+            }
+            .buttonStyle(.plain)
+            .glassEffect(.regular.interactive(), in: Circle())
+            .accessibilityLabel("打开 Debug 与日志")
+            .accessibilityIdentifier("diagnostics_button")
+
             Button {
                 debugMode.toggle()
             } label: {
@@ -183,6 +207,7 @@ private struct FloatingHeaderView: View {
             .contentShape(Circle())
             .accessibilityLabel(debugMode ? "关闭调试模式" : "打开调试模式")
             .accessibilityIdentifier("debug_toggle_button")
+            #endif
         }
     }
 }

@@ -6,9 +6,10 @@ extension VoiceConversationDependencies {
     @MainActor
     static func live(
         settings: AISettings,
-        credentialProvider: (any ConversationCredentialProvider)? = nil
+        credentialProvider: (any ConversationCredentialProvider)? = nil,
+        telemetry: (any ConversationTelemetrySink)? = nil
     ) -> Self {
-        let telemetry = ConversationTelemetryStore()
+        let telemetry = telemetry ?? ConversationTelemetryStore()
         let credentialProvider = credentialProvider
             ?? AIServiceComposition.makeCredentialProvider(settings: settings)
         let resolver = ConversationPreparationResolver(

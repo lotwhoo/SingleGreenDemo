@@ -1044,6 +1044,21 @@ final class ExperienceRuntimeTests: XCTestCase {
         XCTAssertEqual(store.events.last?.phase, .lifecycle)
     }
 
+    func testDiagnosticsExportMatchesBuildCapability() throws {
+        let store = ConversationTelemetryStore(capacity: 2)
+        store.record(category: "test", message: "safe-code-only")
+
+        #if INTERNAL_DIAGNOSTICS
+        let url = try store.makeExportURL()
+        let contents = try String(contentsOf: url, encoding: .utf8)
+        XCTAssertTrue(contents.contains("safe-code-only"))
+        XCTAssertFalse(contents.contains("apiKey"))
+        #else
+        XCTAssertThrowsError(try store.makeExportURL())
+        XCTAssertTrue(store.diagnosticLines.isEmpty)
+        #endif
+    }
+
     private func missingAIConfiguration() -> VoiceConversationDependencies {
         VoiceConversationDependencies(
             inputMode: { .pushToTalk },

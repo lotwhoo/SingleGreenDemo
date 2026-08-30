@@ -71,7 +71,7 @@ final class DeepSeekTextAdventureProvider: TextAdventureTurnProvider {
     }
 
     private static func logFailure(stage: String, error: Error) {
-        #if DEBUG
+        #if INTERNAL_DIAGNOSTICS
         print("[TextAdventure] stage=\(stage) error=\(diagnosticCode(for: error))")
         #endif
     }
@@ -309,7 +309,7 @@ final class LiveTextAdventureRunPreparationProvider: TextAdventureRunPreparation
             }
         } catch {
             try Task.checkCancellation()
-            #if DEBUG
+            #if INTERNAL_DIAGNOSTICS
             print("[TextAdventure] stage=framework_fallback error=\(String(describing: type(of: error)))")
             #endif
             return try await LocalTextAdventureRunPreparationProvider().prepareFramework(
