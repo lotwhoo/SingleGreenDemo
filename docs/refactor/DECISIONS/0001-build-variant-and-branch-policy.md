@@ -1,5 +1,11 @@
 # ADR 0001: Build variants and branch policy
 
+> Superseded delivery detail: ADR 0002 and [CI_WORKFLOW.md](../../CI_WORKFLOW.md)
+> define the current impact-selective PR CI and exact-SHA promotion reuse.
+> The branch, ruleset, and historical evidence in this ADR remain valid unless
+> explicitly marked otherwise; hosted validation of the new workflow is
+> pending the next upload.
+
 - Status: Accepted; PR-02 and local PR-03 contract implemented; hosted narrow
   bootstrap evidenced; steady-state validation pending
 - Date: 2026-08-30

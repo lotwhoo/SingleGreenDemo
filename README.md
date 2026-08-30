@@ -78,6 +78,10 @@ App-only 构建，因为 XCTest 宿主会嵌入 XCTest 支持文件。具体命�
 测试数量和远端限制见 [PR-03 evidence](./docs/refactor/PR03_EVIDENCE.md)；
 这不是远端 CI、真机或真实服务验证。
 
+当前上传采用分层 CI：PR 按变更影响选择昂贵门禁，`main` 推送保持全量，内部晋级复用精确
+`main` SHA 的 `Required CI` 并只做轻量指针复核。完整流程见 [CI workflow](./docs/CI_WORKFLOW.md)；
+该新行为须以下一次上传后的 hosted 结果验证，不能用本地配置代替。
+
 M2 的默认 Profile 为 `simulator.default.v2`：可见区域 8:3、宽度 `0.90`、中心对齐；初始垂直偏移为 `-0.035`，当前宿主视觉调整为 `-0.20`。中立 Profile 位于眼镜核心包，SwiftUI/CoreGraphics 转换器和内存中的宿主选择器留在 `SingleGreenDemo`；非生产标定 Fixture 不代表真实眼镜标定结果。
 
 M3 已将 Experience 元数据和动作目录化。宿主控制面板只消费 Runtime 的 descriptor、active actions 和统一事件入口，不再按 `ExperienceKind` 写分支；能力是声明式元数据，不自动承担权限 gating。当前五个稳定 raw ID 和顺序为 `conversation`、`systemStatus`、`navigation`、`notification`、`caption`。AI 对话声明 network、microphone、backgroundUpdates；其余四个内建本地体验当前无外部能力声明。M3 的事件来源与旧异步更新隔离规则见[架构报告](./docs/PROJECT_ARCHITECTURE_AND_UPGRADE_REPORT.md)。

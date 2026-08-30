@@ -1,5 +1,14 @@
 # Codex Agent Workflow
 
+## CI-aware delivery
+
+Use [CI_WORKFLOW.md](./CI_WORKFLOW.md) as the current upload contract. For a
+PR, inspect the planner result and address any fail-closed full fallback; do
+not bypass a selected gate. `main` pushes are full. Promotion uses the exact
+successful `Required CI` SHA and a lightweight fresh pointer check, while a
+manual full internal run is diagnostic only. The redesigned hosted behavior
+must be reported as unverified until a subsequent upload produces evidence.
+
 ## Purpose
 
 This repository stores project-scoped Codex agents so the architecture, testing, review, documentation, device, and release practices established during the streaming AI conversation work can be reused in later tasks.

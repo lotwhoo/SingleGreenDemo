@@ -1,5 +1,15 @@
 # Target architecture for the staged refactor
 
+## Current delivery workflow
+
+The local delivery workflow now uses deterministic, fail-closed impact
+selection for PRs and retains cheap branch/hygiene/security checks on every
+run. Pushes to `main` and no-input manual diagnostics run the full matrix.
+`Required CI` remains the protected aggregate; promotion reuses its exact
+successful `main` SHA and performs a lightweight fresh pointer equality check
+instead of a third full CI run. Coverage artifacts contain reports only. See
+[CI workflow](../CI_WORKFLOW.md); hosted validation is pending the next upload.
+
 Status: PR-03 implementation merged and narrow bootstrap verified;
 steady-state hosted promotion validation pending
 

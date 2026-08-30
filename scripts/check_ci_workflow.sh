@@ -140,11 +140,10 @@ end
 
 expected_write_locations = [
   [File.expand_path(writer_path), "job:promote"],
-  [File.expand_path(writer_path), "job:dispatch-post-promotion-ci"],
   [File.expand_path(promotion_path), "job:authorize"]
 ]
 check.call(write_locations == expected_write_locations,
-           "only the reviewed authorization, promotion, and post-promotion jobs may request write permissions")
+           "only the reviewed authorization and promotion jobs may request write permissions")
 
 triggers = workflow["on"] || workflow[true]
 check.call(triggers.is_a?(Hash), "on must define an event mapping")
@@ -183,16 +182,18 @@ jobs = workflow["jobs"]
 check.call(jobs.is_a?(Hash), "jobs must be a mapping")
 jobs = {} unless jobs.is_a?(Hash)
 expected_ci_job_ids = %w[
+  impact-plan
   branch-contract
+  repository-hygiene
   package-matrix
   app-simulator
   release-build
-  coverage-and-hygiene
+  coverage
   public-api
   required-ci
 ]
 check.call(jobs.keys.sort == expected_ci_job_ids.sort,
-           "CI must contain exactly the seven reviewed job ids")
+           "CI must contain exactly the nine reviewed job ids")
 
 checkout_sha = "3d3c42e5aac5ba805825da76410c181273ba90b1"
 upload_artifact_sha = "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a"
@@ -312,65 +313,164 @@ dispatch_policy_command = 'scripts/check_internal_branch_policy.sh "$main_sha" "
 check.call(dispatch_verify_run.lines.map(&:strip).count(dispatch_policy_command) == 1,
            "post-promotion dispatch must execute the exact branch-policy command once")
 
-expensive_jobs = %w[package-matrix app-simulator release-build coverage-and-hygiene public-api]
-expensive_jobs.each do |job_name|
+impact_job = jobs["impact-plan"]
+check.call(impact_job.is_a?(Hash) && impact_job["name"] == "Plan CI impact" &&
+             impact_job["runs-on"] == "ubuntu-latest" && !impact_job.key?("if"),
+           "impact-plan must be an unconditional ubuntu planner job")
+impact_outputs = impact_job.is_a?(Hash) ? impact_job["outputs"] : nil
+expected_impact_outputs = {
+  "full"=>"${{ steps.plan.outputs.full }}",
+  "run_packages"=>"${{ steps.plan.outputs.run_packages }}",
+  "package_matrix"=>"${{ steps.plan.outputs.package_matrix }}",
+  "run_app_simulator"=>"${{ steps.plan.outputs.run_app_simulator }}",
+  "run_release_build"=>"${{ steps.plan.outputs.run_release_build }}",
+  "run_coverage"=>"${{ steps.plan.outputs.run_coverage }}",
+  "coverage_packages"=>"${{ steps.plan.outputs.coverage_packages }}",
+  "run_public_api"=>"${{ steps.plan.outputs.run_public_api }}",
+  "reason"=>"${{ steps.plan.outputs.reason }}"
+}
+check.call(impact_outputs == expected_impact_outputs,
+           "impact-plan must expose only the reviewed planner outputs")
+impact_steps = impact_job.is_a?(Hash) ? Array(impact_job["steps"]) : []
+impact_checkout = impact_steps.find { |step| step.is_a?(Hash) && step["uses"].to_s.start_with?("actions/checkout@") }
+impact_step = impact_steps.find { |step| step.is_a?(Hash) && step["id"] == "plan" }
+check.call(impact_steps.length == 2 && impact_checkout && impact_checkout["with"] == {"fetch-depth"=>0},
+           "impact-plan must use one full-history pinned checkout and one planner step")
+impact_run = impact_step.is_a?(Hash) ? impact_step["run"].to_s : ""
+impact_env = impact_step.is_a?(Hash) ? impact_step["env"] : nil
+check.call(impact_step.is_a?(Hash) && impact_step["name"] == "Compute fail-closed CI plan" &&
+             impact_env == {
+               "EVENT_NAME"=>"${{ github.event_name }}",
+               "PR_BASE_SHA"=>"${{ github.event.pull_request.base.sha || '' }}",
+               "PR_HEAD_SHA"=>"${{ github.event.pull_request.head.sha || '' }}",
+               "CHECKOUT_SHA"=>"${{ github.sha }}"
+             },
+           "impact planner must consume only the reviewed event topology inputs")
+impact_markers = [
+  "if [ \"$EVENT_NAME\" != 'pull_request' ]",
+  "python3 scripts/plan_ci_impact.py",
+  "--event-name \"$EVENT_NAME\"",
+  "--checkout-sha \"$CHECKOUT_SHA\"",
+  "--github-output \"$GITHUB_OUTPUT\"",
+  "--summary-file \"$GITHUB_STEP_SUMMARY\"",
+  "git cat-file -e \"$PR_BASE_SHA^{commit}\"",
+  "git cat-file -e \"$PR_HEAD_SHA^{commit}\"",
+  "git cat-file -e \"$CHECKOUT_SHA^{commit}\"",
+  "git rev-list --parents -n 1 \"$CHECKOUT_SHA\"",
+  "trusted_planner=\"$RUNNER_TEMP/plan_ci_impact.py\"",
+  "trusted_config=\"$RUNNER_TEMP/architecture-boundaries.json\"",
+  "git ls-tree \"$PR_BASE_SHA\" -- scripts/plan_ci_impact.py",
+  "git ls-tree \"$PR_BASE_SHA\" -- config/architecture-boundaries.json",
+  "git show \"$PR_BASE_SHA:scripts/plan_ci_impact.py\" > \"$trusted_planner\"",
+  "git show \"$PR_BASE_SHA:config/architecture-boundaries.json\" > \"$trusted_config\"",
+  "python3 \"$trusted_planner\"",
+  "--config-path \"$trusted_config\"",
+  "trusted_base_planner_unavailable"
+]
+impact_markers.each do |marker|
+  check.call(impact_run.include?(marker), "impact planner missing: #{marker}")
+end
+fallback_outputs = %w[full=true run_packages=true run_app_simulator=true run_release_build=true run_coverage=true run_public_api=true]
+fallback_outputs.each do |marker|
+  check.call(impact_run.include?("printf '%s\\n' '#{marker}'"),
+             "initial trusted-base fallback must emit #{marker}")
+end
+check.call(impact_run.include?("package_matrix='[") && impact_run.include?("coverage_packages='["),
+           "initial trusted-base fallback must emit full package and coverage matrices")
+check.call(!impact_run.include?("git show \"$CHECKOUT_SHA:scripts/plan_ci_impact.py\"") &&
+             !impact_run.include?("git show \"$PR_HEAD_SHA:scripts/plan_ci_impact.py\""),
+           "pull requests must not select work using merge- or head-controlled planner code")
+
+selective_jobs = {
+  "package-matrix"=>"run_packages",
+  "app-simulator"=>"run_app_simulator",
+  "release-build"=>"run_release_build",
+  "coverage"=>"run_coverage",
+  "public-api"=>"run_public_api"
+}
+selective_jobs.each do |job_name, output_name|
   job = jobs[job_name]
   check.call(job.is_a?(Hash), "#{job_name} job is required")
   next unless job.is_a?(Hash)
-  needs = Array(job["needs"])
-  check.call(needs.include?("branch-contract"), "#{job_name} must need branch-contract")
+  expected_if = "needs.impact-plan.result == 'success' && needs.branch-contract.result == 'success' && needs.impact-plan.outputs.#{output_name} == 'true'"
+  check.call(Array(job["needs"]).sort == %w[branch-contract impact-plan],
+             "#{job_name} must need exactly impact-plan and branch-contract")
+  check.call(job["if"].to_s == expected_if,
+             "#{job_name} must use its exact fail-closed planner condition")
 end
+%w[branch-contract repository-hygiene impact-plan].each do |job_name|
+  job = jobs[job_name]
+  check.call(job.is_a?(Hash) && !job.key?("if"), "#{job_name} must always run")
+end
+
+hygiene_job = jobs["repository-hygiene"]
+hygiene_runs = Array(hygiene_job.is_a?(Hash) ? hygiene_job["steps"] : []).map { |step| step.is_a?(Hash) ? step["run"].to_s.strip : "" }
+%w[scripts/check_ci_workflow.sh scripts/test_ci_workflow_check.sh scripts/test_ci_impact_plan.sh scripts/test_coverage_gate_selection.sh scripts/test_coverage_scope.sh].each do |command|
+  check.call(hygiene_runs.include?(command), "repository-hygiene must run #{command}")
+end
+
+coverage_job = jobs["coverage"]
+coverage_steps = Array(coverage_job.is_a?(Hash) ? coverage_job["steps"] : [])
+coverage_run_step = coverage_steps.find { |step| step.is_a?(Hash) && step["name"] == "Run selected coverage gates" }
+coverage_run = coverage_run_step.is_a?(Hash) ? coverage_run_step["run"].to_s : ""
+check.call(coverage_run_step.is_a?(Hash) && coverage_run_step["env"] == {"COVERAGE_PACKAGES_JSON"=>"${{ needs.impact-plan.outputs.coverage_packages }}"} &&
+             coverage_run.include?("type == \"array\" and length > 0") &&
+             coverage_run.include?("scripts/coverage_gate.sh \"$RUNNER_TEMP/coverage\" \"${coverage_packages[@]}\""),
+           "coverage must validate and consume exactly the planner coverage-package JSON")
+coverage_upload = coverage_steps.find { |step| step.is_a?(Hash) && step["uses"] == "actions/upload-artifact@#{upload_artifact_sha}" }
+check.call(coverage_upload.is_a?(Hash) && coverage_upload["if"].to_s == "always()" &&
+             coverage_upload["with"] == {
+               "name"=>"package-coverage",
+               "path"=>"${{ runner.temp }}/coverage/summary.tsv\n${{ runner.temp }}/coverage/*.txt\n",
+               "if-no-files-found"=>"warn",
+               "retention-days"=>14
+             },
+           "coverage upload must retain only reports for 14 days")
 
 required_ci = jobs["required-ci"]
 check.call(required_ci.is_a?(Hash), "required-ci aggregate job is required")
 if required_ci.is_a?(Hash)
-  expected_aggregate_name = "${{ github.event_name == 'workflow_dispatch' && 'Internal post-promotion CI' || 'Required CI' }}"
+  expected_aggregate_name = "${{ github.event_name == 'workflow_dispatch' && 'Manual Full Internal Certification' || 'Required CI' }}"
   check.call(required_ci["name"] == expected_aggregate_name,
-             "required-ci must use the exact event-split protected/post-promotion display name")
+             "required-ci must retain the protected Required CI name and distinguish manual diagnostics")
   check.call(required_ci["if"].to_s == "always()", "required-ci must run with always()")
   check.call(required_ci["runs-on"] == "ubuntu-latest", "required-ci must use the reviewed ubuntu-latest runner")
-  check.call(fail_closed?(required_ci),
-             "required-ci job must fail closed and must not continue on error")
-  required_needs = %w[branch-contract package-matrix app-simulator release-build coverage-and-hygiene public-api]
+  required_needs = %w[impact-plan branch-contract repository-hygiene package-matrix app-simulator release-build coverage public-api]
   check.call(Array(required_ci["needs"]).sort == required_needs.sort,
-             "required-ci must need exactly all six CI job ids")
+             "required-ci must need every cheap and selectively planned job")
   aggregate_steps = Array(required_ci["steps"])
-  check.call(aggregate_steps.length == 1, "required-ci must contain one deterministic aggregation step")
   aggregate_step = aggregate_steps.first
   aggregate_env = aggregate_step.is_a?(Hash) ? aggregate_step["env"] : nil
   aggregate_run = aggregate_step.is_a?(Hash) ? aggregate_step["run"].to_s : ""
-  check.call(fail_closed?(aggregate_step),
-             "required-ci aggregation step must fail closed and must not continue on error")
-  check.call(aggregate_step.is_a?(Hash) && !aggregate_step.key?("if"),
-             "required-ci aggregation step must be unconditional")
   expected_results = {
-    "BRANCH_CONTRACT_RESULT" => "${{ needs.branch-contract.result }}",
-    "PACKAGE_MATRIX_RESULT" => "${{ needs.package-matrix.result }}",
-    "APP_SIMULATOR_RESULT" => "${{ needs.app-simulator.result }}",
-    "RELEASE_BUILD_RESULT" => "${{ needs.release-build.result }}",
-    "COVERAGE_AND_HYGIENE_RESULT" => "${{ needs.coverage-and-hygiene.result }}",
-    "PUBLIC_API_RESULT" => "${{ needs.public-api.result }}"
+    "FULL"=>"${{ needs.impact-plan.outputs.full }}",
+    "IMPACT_PLAN_RESULT"=>"${{ needs.impact-plan.result }}",
+    "BRANCH_CONTRACT_RESULT"=>"${{ needs.branch-contract.result }}",
+    "REPOSITORY_HYGIENE_RESULT"=>"${{ needs.repository-hygiene.result }}",
+    "RUN_PACKAGES"=>"${{ needs.impact-plan.outputs.run_packages }}",
+    "PACKAGE_MATRIX_RESULT"=>"${{ needs.package-matrix.result }}",
+    "RUN_APP_SIMULATOR"=>"${{ needs.impact-plan.outputs.run_app_simulator }}",
+    "APP_SIMULATOR_RESULT"=>"${{ needs.app-simulator.result }}",
+    "RUN_RELEASE_BUILD"=>"${{ needs.impact-plan.outputs.run_release_build }}",
+    "RELEASE_BUILD_RESULT"=>"${{ needs.release-build.result }}",
+    "RUN_COVERAGE"=>"${{ needs.impact-plan.outputs.run_coverage }}",
+    "COVERAGE_RESULT"=>"${{ needs.coverage.result }}",
+    "RUN_PUBLIC_API"=>"${{ needs.impact-plan.outputs.run_public_api }}",
+    "PUBLIC_API_RESULT"=>"${{ needs.public-api.result }}"
   }
-  check.call(aggregate_env == expected_results,
-             "required-ci must expose every dependency result and no unreviewed inputs")
-  expected_results.keys.each do |variable|
-    check.call(aggregate_run.include?(%Q{"$#{variable}"}),
-               "required-ci must inspect #{variable}")
-  end
-  check.call(aggregate_run.include?('[ "$result" != "success" ]') &&
-               aggregate_run.match?(%r{(?:^|\n)\s*exit 1(?:\n|$)}),
-             "required-ci must fail unless every dependency result is success")
+  check.call(aggregate_steps.length == 1 && aggregate_env == expected_results,
+             "required-ci must expose exactly every planner decision and dependency result")
+  check.call(aggregate_run.include?("require_planned_result()") &&
+             aggregate_run.match?(/true\)\s+if \[ "\$result" != 'success' \]; then/) &&
+             aggregate_run.match?(/false\)\s+if \[ "\$result" != 'skipped' \]; then/) &&
+             aggregate_run.include?("A full CI plan must enable every selective job."),
+             "required-ci must fail closed for planned success, unplanned skipped, and full-plan decisions")
 end
 
 jobs.each do |job_name, job|
   next unless job.is_a?(Hash)
-  if job_name == "required-ci"
-    check.call(job.key?("if") && job["if"].to_s == "always()",
-               "required-ci must be the only conditional CI job and must use always()")
-  else
-    check.call(!job.key?("if"),
-               "CI job #{job_name} must be unconditional")
-  end
+  allowed = job_name == "required-ci" || selective_jobs.key?(job_name)
+  check.call(allowed || !job.key?("if"), "unexpected conditional CI job: #{job_name}")
 end
 
 approved_conditional_step_ids = []
@@ -413,7 +513,7 @@ approve_named_condition.call(
 )
 approve_named_condition.call(
   "branch-contract",
-  "Verify post-promotion dispatch pointer",
+  "Verify manual internal certification pointer",
   "github.event_name == 'workflow_dispatch'"
 )
 approve_named_condition.call(
@@ -432,7 +532,7 @@ approve_uses_condition.call("app-simulator", "actions/upload-artifact@#{upload_a
 approve_named_condition.call("release-build", "Scan User Release App", "matrix.variant == 'user'")
 approve_named_condition.call("release-build", "Scan Internal Release App", "matrix.variant == 'internal'")
 approve_uses_condition.call("release-build", "actions/upload-artifact@#{upload_artifact_sha}", "always()")
-approve_uses_condition.call("coverage-and-hygiene", "actions/upload-artifact@#{upload_artifact_sha}", "always()")
+approve_uses_condition.call("coverage", "actions/upload-artifact@#{upload_artifact_sha}", "always()")
 
 all_conditional_steps = jobs.values.flat_map do |job|
   Array(job.is_a?(Hash) ? job["steps"] : []).select do |step|
@@ -560,7 +660,7 @@ check.call(release_runs.include?('-scheme "${{ matrix.scheme }}"') &&
              release_runs.include?("'ARCHS=arm64 x86_64'"),
            "release-build must build a universal arm64/x86_64 Simulator App")
 
-%w[package-matrix coverage-and-hygiene public-api].each do |job_name|
+%w[package-matrix coverage public-api].each do |job_name|
   job_text = jobs[job_name].to_s
   check.call(!job_text.include?("SingleGreenUser") && !job_text.include?("SingleGreenInternal") && !job_text.include?("matrix.variant"),
              "#{job_name} must remain flavor-neutral and run once")
@@ -717,52 +817,39 @@ check.call(authorization_run.include?(status_post_marker) &&
 
 writer_jobs = writer_workflow["jobs"]
 writer_jobs = {} unless writer_jobs.is_a?(Hash)
-check.call(writer_jobs.keys.sort == %w[dispatch-post-promotion-ci promote verify verify-post-promotion-ci],
-           "writer must contain exactly verify, promote, dispatch, and post-promotion verification jobs")
+check.call(writer_jobs.keys.sort == %w[promote verify verify-promoted-pointer],
+           "writer must contain exactly verify, promote, and lightweight pointer-verification jobs")
 check.call(writer_jobs.values.none? { |job| job.is_a?(Hash) && job["name"] == "Internal promotion authorization" },
            "writer must not emit the authorization ruleset check name")
 verify_job = writer_jobs["verify"]
 promote_job = writer_jobs["promote"]
-dispatch_job = writer_jobs["dispatch-post-promotion-ci"]
-post_promotion_job = writer_jobs["verify-post-promotion-ci"]
+pointer_job = writer_jobs["verify-promoted-pointer"]
 verify_job = {} unless verify_job.is_a?(Hash)
 promote_job = {} unless promote_job.is_a?(Hash)
-dispatch_job = {} unless dispatch_job.is_a?(Hash)
-post_promotion_job = {} unless post_promotion_job.is_a?(Hash)
+pointer_job = {} unless pointer_job.is_a?(Hash)
 check.call(verify_job["permissions"] == {"actions"=>"read", "checks"=>"read", "contents"=>"read"},
            "writer verify job must be read-only")
 check.call(promote_job["permissions"] == {"actions"=>"read", "checks"=>"read", "contents"=>"write"},
            "writer promote job must have only the reviewed read/read/write permissions")
-check.call(dispatch_job["permissions"] == {"actions"=>"write", "contents"=>"read"},
-           "post-promotion dispatch job must have only actions: write and contents: read")
-check.call(post_promotion_job["permissions"] == {
-               "actions"=>"read", "checks"=>"read", "contents"=>"read"
-             },
-           "post-promotion verification job must have only actions/checks/contents read")
+check.call(pointer_job["permissions"] == {"contents"=>"read"},
+           "lightweight pointer verifier must have only contents: read")
 check.call(Array(promote_job["needs"]) == ["verify"],
            "writer promote job must depend on read-only verification")
-check.call(Array(dispatch_job["needs"]) == ["promote"],
-           "post-promotion dispatch job must depend exactly on successful promotion")
-check.call(Array(post_promotion_job["needs"]) == ["dispatch-post-promotion-ci"],
-           "post-promotion verification must depend exactly on successful dispatch")
-check.call(dispatch_job["timeout-minutes"] == 5,
-           "post-promotion dispatch job must retain the short five-minute bound")
-check.call(post_promotion_job["timeout-minutes"] == 45,
-           "post-promotion verification job must retain the reviewed 45-minute outer bound")
-[verify_job, promote_job, dispatch_job, post_promotion_job].each do |job|
+check.call(Array(pointer_job["needs"]) == ["promote"] && pointer_job["timeout-minutes"] == 5,
+           "lightweight pointer verifier must depend on promotion with the short reviewed bound")
+[verify_job, promote_job, pointer_job].each do |job|
   check.call(job["runs-on"] == "ubuntu-latest" && !job.key?("if") && fail_closed?(job) && !declares_run_shell?(job),
              "writer jobs must be unconditional ubuntu-latest default-shell fail-closed jobs")
 end
 
 verify_steps = Array(verify_job["steps"])
 promote_steps = Array(promote_job["steps"])
-dispatch_steps = Array(dispatch_job["steps"])
-post_promotion_steps = Array(post_promotion_job["steps"])
+pointer_steps = Array(pointer_job["steps"])
 check.call(verify_steps.length == 1 && promote_steps.length == 3,
            "writer topology must be one verification step then exactly three promote steps")
-check.call(dispatch_steps.length == 1 && post_promotion_steps.length == 1,
-           "post-promotion CI must have one bounded dispatch step and one separate verification step")
-(verify_steps + promote_steps + dispatch_steps + post_promotion_steps).each do |step|
+check.call(pointer_steps.length == 1,
+           "writer must use one lightweight pointer-verification step after promotion")
+(verify_steps + promote_steps + pointer_steps).each do |step|
   check.call(step.is_a?(Hash) && !step.key?("if") && !step.key?("shell") && fail_closed?(step),
              "writer steps must be unconditional, default-shell, and fail closed")
 end
@@ -770,8 +857,7 @@ verify_step = verify_steps[0].is_a?(Hash) ? verify_steps[0] : {}
 trust_step = promote_steps[0].is_a?(Hash) ? promote_steps[0] : {}
 writer_checkout = promote_steps[1].is_a?(Hash) ? promote_steps[1] : {}
 mutation_step = promote_steps[2].is_a?(Hash) ? promote_steps[2] : {}
-dispatch_step = dispatch_steps[0].is_a?(Hash) ? dispatch_steps[0] : {}
-post_promotion_step = post_promotion_steps[0].is_a?(Hash) ? post_promotion_steps[0] : {}
+pointer_step = pointer_steps[0].is_a?(Hash) ? pointer_steps[0] : {}
 expected_event_env = {
   "AUTHORIZATION_RUN_ID"=>"${{ github.event.workflow_run.id }}",
   "GH_TOKEN"=>"${{ github.token }}"
@@ -794,25 +880,12 @@ check.call(mutation_step["name"] == "Fast-forward the authorized internal pointe
            "writer mutation step must consume only the validated SHA")
 check.call(promote_job["outputs"] == {"promoted_sha"=>"${{ steps.promotion.outputs.promoted_sha }}"},
            "promote job must expose only the postchecked internal SHA")
-check.call(dispatch_job["outputs"] == {
-               "dispatched_run_id"=>"${{ steps.dispatch.outputs.dispatched_run_id }}",
-               "expected_sha"=>"${{ steps.dispatch.outputs.expected_sha }}"
-             },
-           "dispatch job must expose only its exact returned run id and freshly revalidated SHA")
-check.call(dispatch_step["name"] == "Revalidate pointers and dispatch exact internal CI" &&
-             dispatch_step["id"] == "dispatch" &&
-             dispatch_step["env"] == {
+check.call(pointer_step["name"] == "Require fresh main and internal pointer equality" &&
+             pointer_step["env"] == {
                "EXPECTED_SHA"=>"${{ needs.promote.outputs.promoted_sha }}",
                "GH_TOKEN"=>"${{ github.token }}"
              },
-           "dispatch step must consume only promoted SHA and github.token")
-check.call(post_promotion_step["name"] == "Require exact internal CI success" &&
-             post_promotion_step["env"] == {
-               "EXPECTED_RUN_ID"=>"${{ needs.dispatch-post-promotion-ci.outputs.dispatched_run_id }}",
-               "EXPECTED_SHA"=>"${{ needs.dispatch-post-promotion-ci.outputs.expected_sha }}",
-               "GH_TOKEN"=>"${{ github.token }}"
-             },
-           "post-promotion verification must consume only dispatch outputs and github.token")
+           "lightweight pointer verifier must consume only the promoted SHA and github.token")
 
 writer_trust_markers = [
   "repository='lotwhoo/SingleGreenDemo'",
@@ -895,119 +968,46 @@ check.call(mutation_run.include?('echo "promoted_sha=$internal_sha" >> "$GITHUB_
              mutation_run.index(postcheck) < mutation_run.index('echo "promoted_sha=$internal_sha"'),
            "writer must expose the promoted SHA only after the exact postcheck")
 
-dispatch_run = dispatch_step["run"].to_s
-dispatch_markers = [
-  "ci_workflow_id='344358206'",
-  "internal_ref='codex/internal-debug'",
+pointer_run = pointer_step["run"].to_s
+pointer_markers = [
+  "repository='lotwhoo/SingleGreenDemo'",
+  'api_get_max_attempts=3',
+  'api_get_retry_seconds=5',
+  'api_get() {',
+  'response=$(gh api --method GET',
+  'if [ "$attempt" -ge "$api_get_max_attempts" ]',
+  'sleep "$api_get_retry_seconds"',
+  'main_ref=$(api_get "/repos/$repository/git/ref/heads/main")',
+  'internal_ref=$(api_get "/repos/$repository/git/ref/heads/codex/internal-debug")',
+  "main_sha=$(printf '%s' \"$main_ref\" | jq -er '.object.sha | select(type == \"string\")')",
+  "internal_sha=$(printf '%s' \"$internal_ref\" | jq -er '.object.sha | select(type == \"string\")')",
   'X-GitHub-Api-Version: 2026-03-10',
-  '/git/ref/heads/main',
-  '/git/ref/heads/codex/internal-debug',
   '[ "$EXPECTED_SHA" != "$main_sha" ]',
   '[ "$EXPECTED_SHA" != "$internal_sha" ]',
-  '/actions/workflows/$ci_workflow_id/dispatches',
-  '-f ref="$internal_ref"',
-  '.workflow_run_id',
-  '.workflow_run_id == $run_id',
-  '.run_url == $run_url',
-  '.html_url == $html_url',
-  'echo "dispatched_run_id=$dispatch_run_id" >> "$GITHUB_OUTPUT"',
-  'echo "expected_sha=$EXPECTED_SHA" >> "$GITHUB_OUTPUT"'
+  'echo "Verified promoted delivery pointer $EXPECTED_SHA."'
 ]
-dispatch_markers.each do |marker|
-  check.call(dispatch_run.include?(marker),
-             "post-promotion dispatch missing: #{marker}")
+pointer_markers.each do |marker|
+  check.call(pointer_run.include?(marker), "lightweight pointer verifier missing: #{marker}")
 end
-dispatch_post_marker = 'dispatch_response=$(gh api --method POST'
-check.call(dispatch_run.scan(%r{gh api --method POST}).length == 1 &&
-             dispatch_run.include?(dispatch_post_marker) &&
-             dispatch_run.index('/git/ref/heads/main') < dispatch_run.index(dispatch_post_marker) &&
-             dispatch_run.index('/git/ref/heads/codex/internal-debug') < dispatch_run.index(dispatch_post_marker) &&
-             dispatch_run.index('[ "$EXPECTED_SHA" != "$main_sha" ]') < dispatch_run.index(dispatch_post_marker) &&
-             dispatch_run.index(dispatch_post_marker) < dispatch_run.index('echo "dispatched_run_id='),
-           "dispatch job must freshly verify both refs before exactly one dispatch and only then expose outputs")
-check.call(dispatch_run.scan(/X-GitHub-Api-Version: [0-9-]+/) ==
-             Array.new(3, "X-GitHub-Api-Version: 2026-03-10"),
-           "every dispatch-job API call must use the exact reviewed API version")
-check.call(!dispatch_run.include?("return_run_details") &&
-             !dispatch_run.include?("ci_workflow_path=") &&
-             dispatch_run.scan('/actions/workflows/$ci_workflow_id/dispatches').length == 1,
-           "dispatch must use the numeric workflow id once and no deprecated run-details field or slashed workflow path")
-check.call(!dispatch_run.include?("sleep ") &&
-             !dispatch_run.include?('dispatched_run=$(gh api --method GET') &&
-             !dispatch_run.include?("while :"),
-           "actions-write dispatch job must not wait for or inspect the dispatched run")
-
-post_promotion_run = post_promotion_step["run"].to_s
-post_promotion_markers = [
-  "ci_workflow_id='344358206'",
-  "ci_workflow_path='.github/workflows/ci.yml'",
-  "internal_branch='codex/internal-debug'",
-  "expected_actor='github-actions[bot]'",
-  'max_polls=180',
-  'poll_interval_seconds=10',
-  'X-GitHub-Api-Version: 2026-03-10',
-  '/actions/runs/$dispatch_run_id',
-  '.workflow_id == $workflow_id',
-  '.event == "workflow_dispatch"',
-  '.head_branch == $branch',
-  '.head_sha == $sha',
-  '.run_attempt == 1',
-  '.repository.full_name == $repository',
-  '.head_repository.full_name == $repository',
-  '.actor.login == $actor',
-  '.triggering_actor.login == $actor',
-  'if [ "$poll" -ge "$max_polls" ]',
-  'sleep "$poll_interval_seconds"',
-  '/attempts/1/jobs?per_page=100',
-  '.name == "Internal post-promotion CI"',
-  '.name == "Required CI"',
-  '[ "$protected_aggregate_count" -ne 0 ]',
-  'dispatched_suite_id=',
-  'aggregate_check_id=',
-  'aggregate_details_url="https://github.com/$repository/actions/runs/$dispatch_run_id/job/$aggregate_job_id"',
-  '/commits/$EXPECTED_SHA/check-runs?check_name=Internal%20post-promotion%20CI&filter=latest&per_page=100',
-  '.app.id == 15368',
-  '.check_suite.id == $suite_id',
-  '.details_url == $details',
-  '[ "$(printf \'%s\' "$linked_aggregate_checks" | jq -r \'.[0].id\')" != "$aggregate_check_id" ]',
-  'final_main_sha=$(gh api --method GET',
-  'final_internal_sha=$(gh api --method GET',
-  '/git/ref/heads/main',
-  '/git/ref/heads/codex/internal-debug',
-  '[ "$EXPECTED_SHA" != "$final_main_sha" ]',
-  '[ "$EXPECTED_SHA" != "$final_internal_sha" ]'
-]
-post_promotion_markers.each do |marker|
-  check.call(post_promotion_run.include?(marker),
-             "post-promotion dispatch verification missing: #{marker}")
-end
-check.call(post_promotion_run.scan(/X-GitHub-Api-Version: [0-9-]+/) ==
-             Array.new(5, "X-GitHub-Api-Version: 2026-03-10"),
-           "every post-promotion verification API call must use the exact reviewed API version")
-metadata_marker = 'dispatched_run=$(gh api --method GET'
-aggregate_marker = 'dispatched_jobs=$(gh api --method GET'
-aggregate_check_marker = 'aggregate_checks=$(gh api --method GET'
-check.call(post_promotion_run.scan(%r{gh api --method POST}).empty? &&
-             post_promotion_run.include?(metadata_marker) &&
-             post_promotion_run.include?(aggregate_marker) &&
-             post_promotion_run.include?(aggregate_check_marker) &&
-             post_promotion_run.index(metadata_marker) < post_promotion_run.index(aggregate_marker) &&
-             post_promotion_run.index(aggregate_marker) < post_promotion_run.index(aggregate_check_marker),
-           "read-only post-promotion job must bind bounded exact-run metadata, aggregate job, and aggregate check without writes")
-check.call(post_promotion_run.scan(/\.app\.id == \d+/) == [".app.id == 15368"] &&
-             post_promotion_run.scan(/\.name == "Internal post-promotion CI"/).length == 2 &&
-             post_promotion_run.scan(/\.check_suite\.id == \$suite_id/).length == 1 &&
-             post_promotion_run.scan(/\.details_url == \$details/).length == 1,
-           "post-promotion aggregate must bind its exact job/check name, Actions app, suite, and canonical job URL")
-aggregate_link_marker = '[ "$(printf \'%s\' "$linked_aggregate_checks" | jq -r \'.[0].id\')" != "$aggregate_check_id" ]'
-final_main_marker = 'final_main_sha=$(gh api --method GET'
-final_internal_marker = 'final_internal_sha=$(gh api --method GET'
-success_marker = 'echo "Verified internal post-promotion CI run $dispatch_run_id for $EXPECTED_SHA."'
-ordered_final_markers = [aggregate_link_marker, final_main_marker, final_internal_marker, success_marker]
-ordered_final_positions = ordered_final_markers.map { |marker| post_promotion_run.index(marker) }
-check.call(ordered_final_positions.none?(&:nil?) &&
-             ordered_final_positions.each_cons(2).all? { |left, right| left < right },
-           "post-promotion verification must freshly recheck main and internal only after aggregate linkage and before success")
+check.call(pointer_run.scan(%r{gh api --method GET}).length == 1 &&
+             pointer_run.scan(%r{/git/ref/heads/main}).length == 1 &&
+             pointer_run.scan(%r{/git/ref/heads/codex/internal-debug}).length == 1,
+           "lightweight pointer verifier must issue exactly two ref reads through one bounded GET helper")
+check.call(pointer_run.scan(/X-GitHub-Api-Version: [0-9-]+/) == ["X-GitHub-Api-Version: 2026-03-10"],
+           "lightweight pointer verifier must use the reviewed API version for every GET attempt")
+forbidden_pointer_markers = ["gh api --method POST", "/dispatches", "workflow_dispatch", "poll=", "xcodebuild", "swift test", "swift build", "actions/checkout@"]
+check.call(forbidden_pointer_markers.none? { |marker| pointer_run.include?(marker) },
+           "lightweight pointer verifier must not dispatch, poll, build, test, or check out")
+check.call(pointer_run.include?("printf '%s' \"$response\"") &&
+             pointer_run.include?("return 0") && pointer_run.include?("return 1") &&
+             pointer_run.scan('sleep "$api_get_retry_seconds"').length == 1,
+           "pointer GET helper must preserve successful JSON stdout and fail closed after its bounded retries")
+pointer_helper_match = pointer_run.match(/api_get\(\) \{.*?^\}\n\n(?=main_ref=)/m)
+pointer_helper = pointer_helper_match ? pointer_helper_match.to_s : ""
+helper_output_lines = pointer_helper.lines.select { |line| line.include?("echo ") || line.include?("printf ") }
+check.call(pointer_helper.scan("printf '%s' \"$response\"").length == 1 &&
+             helper_output_lines.all? { |line| line.include?("printf '%s' \"$response\"") || line.include?(">&2") },
+           "pointer GET helper must keep successful JSON stdout pure and send diagnostics to stderr")
 
 allowed_delivery_action = "actions/checkout@#{checkout_sha}"
 [promotion_workflow, writer_workflow].each do |delivery_workflow|

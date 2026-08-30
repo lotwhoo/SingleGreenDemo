@@ -1,5 +1,22 @@
 # User and internal product variants
 
+## Current CI and promotion contract
+
+The current local CI design is documented in [CI workflow](./CI_WORKFLOW.md).
+PRs use deterministic fail-closed impact selection, while cheap branch,
+hygiene, architecture, privacy, and security checks always run. `main` pushes
+and no-input manual runs are full. The protected aggregate remains
+`Required CI`; an optional expensive job is accepted only when its planner
+decision and result agree exactly. Coverage uploads contain reports only.
+
+Promotion reuses the successful `Required CI` result for the exact protected
+`main` SHA. After the zero-delta fast-forward update, it performs a lightweight
+read-only fresh equality check for the promoted SHA, `main`, and
+`codex/internal-debug`; it does not dispatch a third full CI run. The manual
+full internal run remains diagnostic. The redesign is local until the next
+upload; the detailed historical hosted paragraphs below retain their original
+facts and are superseded for the new workflow shape.
+
 ## Current contract
 
 The repository has one `SingleGreenDemo` App target, two shared product schemes,

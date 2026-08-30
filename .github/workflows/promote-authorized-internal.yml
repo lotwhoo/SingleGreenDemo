@@ -387,20 +387,15 @@ jobs:
           scripts/check_internal_branch_policy.sh "$VALIDATED_SHA" "$post_main_sha" "$internal_sha"
           echo "promoted_sha=$internal_sha" >> "$GITHUB_OUTPUT"
 
-  dispatch-post-promotion-ci:
-    name: Dispatch internal post-promotion CI
+  verify-promoted-pointer:
+    name: Verify promoted delivery pointer
     needs: promote
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    outputs:
-      dispatched_run_id: ${{ steps.dispatch.outputs.dispatched_run_id }}
-      expected_sha: ${{ steps.dispatch.outputs.expected_sha }}
     permissions:
-      actions: write
       contents: read
     steps:
-      - name: Revalidate pointers and dispatch exact internal CI
-        id: dispatch
+      - name: Require fresh main and internal pointer equality
         env:
           EXPECTED_SHA: ${{ needs.promote.outputs.promoted_sha }}
           GH_TOKEN: ${{ github.token }}
@@ -408,178 +403,42 @@ jobs:
           set -euo pipefail
 
           repository='lotwhoo/SingleGreenDemo'
-          ci_workflow_id='344358206'
-          internal_ref='codex/internal-debug'
+          api_get_max_attempts=3
+          api_get_retry_seconds=5
 
-          main_sha=$(gh api --method GET \
-            -H 'X-GitHub-Api-Version: 2026-03-10' \
-            "/repos/$repository/git/ref/heads/main" --jq '.object.sha')
-          internal_sha=$(gh api --method GET \
-            -H 'X-GitHub-Api-Version: 2026-03-10' \
-            "/repos/$repository/git/ref/heads/codex/internal-debug" --jq '.object.sha')
-          if [ "$EXPECTED_SHA" != "$main_sha" ] || [ "$EXPECTED_SHA" != "$internal_sha" ]; then
-            echo 'Promoted SHA, fresh main, and fresh internal pointer must match before dispatch.' >&2
+          api_get() {
+            endpoint=$1
+            attempt=1
+
+            while :; do
+              if response=$(gh api --method GET \
+                -H 'X-GitHub-Api-Version: 2026-03-10' \
+                "$endpoint"); then
+                printf '%s' "$response"
+                return 0
+              fi
+
+              if [ "$attempt" -ge "$api_get_max_attempts" ]; then
+                echo "GitHub API GET failed after $api_get_max_attempts attempts: $endpoint" >&2
+                return 1
+              fi
+
+              echo "GitHub API GET attempt $attempt/$api_get_max_attempts failed; retrying in $api_get_retry_seconds seconds: $endpoint" >&2
+              sleep "$api_get_retry_seconds"
+              attempt=$((attempt + 1))
+            done
+          }
+
+          main_ref=$(api_get "/repos/$repository/git/ref/heads/main")
+          main_sha=$(printf '%s' "$main_ref" | jq -er '.object.sha | select(type == "string")')
+          internal_ref=$(api_get "/repos/$repository/git/ref/heads/codex/internal-debug")
+          internal_sha=$(printf '%s' "$internal_ref" | jq -er '.object.sha | select(type == "string")')
+
+          if [ -z "$EXPECTED_SHA" ] || \
+             [ "$EXPECTED_SHA" != "$main_sha" ] || \
+             [ "$EXPECTED_SHA" != "$internal_sha" ]; then
+            echo 'Promoted SHA, fresh main, and fresh internal pointer must be identical.' >&2
             exit 1
           fi
 
-          dispatch_response=$(gh api --method POST \
-            -H 'Accept: application/vnd.github+json' \
-            -H 'X-GitHub-Api-Version: 2026-03-10' \
-            "/repos/$repository/actions/workflows/$ci_workflow_id/dispatches" \
-            -f ref="$internal_ref")
-          dispatch_run_id=$(printf '%s' "$dispatch_response" | jq -er '.workflow_run_id | select(type == "number")')
-          expected_run_url="https://api.github.com/repos/$repository/actions/runs/$dispatch_run_id"
-          expected_html_url="https://github.com/$repository/actions/runs/$dispatch_run_id"
-          if ! printf '%s' "$dispatch_response" | jq -e \
-            --arg run_url "$expected_run_url" \
-            --arg html_url "$expected_html_url" \
-            --argjson run_id "$dispatch_run_id" '
-              .workflow_run_id == $run_id and
-              .run_url == $run_url and
-              .html_url == $html_url' >/dev/null; then
-            echo 'Workflow-dispatch response did not return the exact internal CI run.' >&2
-            exit 1
-          fi
-
-          echo "dispatched_run_id=$dispatch_run_id" >> "$GITHUB_OUTPUT"
-          echo "expected_sha=$EXPECTED_SHA" >> "$GITHUB_OUTPUT"
-
-  verify-post-promotion-ci:
-    name: Verify internal post-promotion CI
-    needs: dispatch-post-promotion-ci
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    permissions:
-      actions: read
-      checks: read
-      contents: read
-    steps:
-      - name: Require exact internal CI success
-        env:
-          EXPECTED_RUN_ID: ${{ needs.dispatch-post-promotion-ci.outputs.dispatched_run_id }}
-          EXPECTED_SHA: ${{ needs.dispatch-post-promotion-ci.outputs.expected_sha }}
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-
-          repository='lotwhoo/SingleGreenDemo'
-          ci_workflow_id='344358206'
-          ci_workflow_path='.github/workflows/ci.yml'
-          internal_branch='codex/internal-debug'
-          expected_actor='github-actions[bot]'
-          max_polls=180
-          poll_interval_seconds=10
-          dispatch_run_id="$EXPECTED_RUN_ID"
-          expected_run_url="https://api.github.com/repos/$repository/actions/runs/$dispatch_run_id"
-          expected_html_url="https://github.com/$repository/actions/runs/$dispatch_run_id"
-
-          poll=1
-          while :; do
-            dispatched_run=$(gh api --method GET \
-              -H 'X-GitHub-Api-Version: 2026-03-10' \
-              "/repos/$repository/actions/runs/$dispatch_run_id")
-            if ! printf '%s' "$dispatched_run" | jq -e \
-              --arg repository "$repository" \
-              --arg path "$ci_workflow_path" \
-              --arg branch "$internal_branch" \
-              --arg sha "$EXPECTED_SHA" \
-              --arg actor "$expected_actor" \
-              --arg run_url "$expected_run_url" \
-              --arg html_url "$expected_html_url" \
-              --argjson run_id "$dispatch_run_id" \
-              --argjson workflow_id "$ci_workflow_id" '
-                .id == $run_id and
-                .workflow_id == $workflow_id and
-                .name == "CI" and
-                .path == $path and
-                .event == "workflow_dispatch" and
-                .head_branch == $branch and
-                .head_sha == $sha and
-                .run_attempt == 1 and
-                .repository.full_name == $repository and
-                .head_repository.full_name == $repository and
-                .actor.login == $actor and
-                .actor.type == "Bot" and
-                .triggering_actor.login == $actor and
-                .url == $run_url and
-                .html_url == $html_url' >/dev/null; then
-              echo 'Dispatched internal CI run metadata is not canonical.' >&2
-              exit 1
-            fi
-
-            run_status=$(printf '%s' "$dispatched_run" | jq -r '.status')
-            if [ "$run_status" = 'completed' ]; then
-              break
-            fi
-            case "$run_status" in
-              queued|in_progress|pending|waiting|requested) ;;
-              *)
-                echo "Dispatched internal CI entered unexpected status: $run_status" >&2
-                exit 1
-                ;;
-            esac
-            if [ "$poll" -ge "$max_polls" ]; then
-              echo 'Timed out waiting for dispatched internal CI.' >&2
-              exit 1
-            fi
-            sleep "$poll_interval_seconds"
-            poll=$((poll + 1))
-          done
-
-          if [ "$(printf '%s' "$dispatched_run" | jq -r '.conclusion')" != 'success' ]; then
-            echo 'Dispatched internal CI did not complete successfully.' >&2
-            exit 1
-          fi
-          dispatched_suite_id=$(printf '%s' "$dispatched_run" | jq -er '.check_suite_id | select(type == "number")')
-          dispatched_jobs=$(gh api --method GET \
-            -H 'X-GitHub-Api-Version: 2026-03-10' \
-            "/repos/$repository/actions/runs/$dispatch_run_id/attempts/1/jobs?per_page=100")
-          successful_aggregate_jobs=$(printf '%s' "$dispatched_jobs" | jq '
-            [.jobs[] | select(.name == "Internal post-promotion CI" and
-                              .status == "completed" and
-                              .conclusion == "success")]')
-          protected_aggregate_count=$(printf '%s' "$dispatched_jobs" | jq '
-            [.jobs[] | select(.name == "Required CI")] | length')
-          if [ "$(printf '%s' "$successful_aggregate_jobs" | jq 'length')" -ne 1 ] || \
-             [ "$protected_aggregate_count" -ne 0 ]; then
-            echo 'Dispatched internal CI aggregate identity or result is not exact.' >&2
-            exit 1
-          fi
-
-          aggregate_job_id=$(printf '%s' "$successful_aggregate_jobs" | jq -r '.[0].id')
-          aggregate_check_id=$(printf '%s' "$successful_aggregate_jobs" | jq -r '.[0].check_run_url | split("/")[-1]')
-          aggregate_details_url="https://github.com/$repository/actions/runs/$dispatch_run_id/job/$aggregate_job_id"
-          aggregate_checks=$(gh api --method GET \
-            -H 'X-GitHub-Api-Version: 2026-03-10' \
-            "/repos/$repository/commits/$EXPECTED_SHA/check-runs?check_name=Internal%20post-promotion%20CI&filter=latest&per_page=100")
-          linked_aggregate_checks=$(printf '%s' "$aggregate_checks" | jq \
-            --arg sha "$EXPECTED_SHA" \
-            --arg details "$aggregate_details_url" \
-            --argjson suite_id "$dispatched_suite_id" '
-              [.check_runs[] |
-                select(.head_sha == $sha and
-                       .name == "Internal post-promotion CI" and
-                       .app.id == 15368 and
-                       .check_suite.id == $suite_id and
-                       .details_url == $details and
-                       .status == "completed" and
-                       .conclusion == "success")]')
-          if [ "$(printf '%s' "$linked_aggregate_checks" | jq 'length')" -ne 1 ] || \
-             [ "$(printf '%s' "$linked_aggregate_checks" | jq -r '.[0].id')" != "$aggregate_check_id" ]; then
-            echo 'Dispatched internal CI aggregate job/check/app/run/suite linkage is not exact.' >&2
-            exit 1
-          fi
-
-          final_main_sha=$(gh api --method GET \
-            -H 'X-GitHub-Api-Version: 2026-03-10' \
-            "/repos/$repository/git/ref/heads/main" --jq '.object.sha')
-          final_internal_sha=$(gh api --method GET \
-            -H 'X-GitHub-Api-Version: 2026-03-10' \
-            "/repos/$repository/git/ref/heads/codex/internal-debug" --jq '.object.sha')
-          if [ "$EXPECTED_SHA" != "$final_main_sha" ] || \
-             [ "$EXPECTED_SHA" != "$final_internal_sha" ]; then
-            echo 'Main or internal pointer changed while post-promotion CI was running.' >&2
-            exit 1
-          fi
-
-          echo "Verified internal post-promotion CI run $dispatch_run_id for $EXPECTED_SHA."
+          echo "Verified promoted delivery pointer $EXPECTED_SHA."

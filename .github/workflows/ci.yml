@@ -22,9 +22,113 @@ env:
   DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
 
 jobs:
+  impact-plan:
+    name: Plan CI impact
+    runs-on: ubuntu-latest
+    outputs:
+      full: ${{ steps.plan.outputs.full }}
+      run_packages: ${{ steps.plan.outputs.run_packages }}
+      package_matrix: ${{ steps.plan.outputs.package_matrix }}
+      run_app_simulator: ${{ steps.plan.outputs.run_app_simulator }}
+      run_release_build: ${{ steps.plan.outputs.run_release_build }}
+      run_coverage: ${{ steps.plan.outputs.run_coverage }}
+      coverage_packages: ${{ steps.plan.outputs.coverage_packages }}
+      run_public_api: ${{ steps.plan.outputs.run_public_api }}
+      reason: ${{ steps.plan.outputs.reason }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Compute fail-closed CI plan
+        id: plan
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          CHECKOUT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ "$EVENT_NAME" != 'pull_request' ]; then
+            python3 scripts/plan_ci_impact.py \
+              --event-name "$EVENT_NAME" \
+              --base-sha "$PR_BASE_SHA" \
+              --head-sha "$PR_HEAD_SHA" \
+              --checkout-sha "$CHECKOUT_SHA" \
+              --github-output "$GITHUB_OUTPUT" \
+              --summary-file "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          if [ -z "$PR_BASE_SHA" ] || [ -z "$PR_HEAD_SHA" ] || [ -z "$CHECKOUT_SHA" ]; then
+            echo 'Pull-request planning requires exact base, head, and checkout SHAs.' >&2
+            exit 1
+          fi
+          git cat-file -e "$PR_BASE_SHA^{commit}"
+          git cat-file -e "$PR_HEAD_SHA^{commit}"
+          git cat-file -e "$CHECKOUT_SHA^{commit}"
+
+          set -- $(git rev-list --parents -n 1 "$CHECKOUT_SHA")
+          if [ "$#" -ne 3 ] || [ "$2" != "$PR_BASE_SHA" ] || [ "$3" != "$PR_HEAD_SHA" ]; then
+            echo 'The checked-out pull-request commit is not the exact synthetic merge of event base and head.' >&2
+            exit 1
+          fi
+
+          trusted_planner="$RUNNER_TEMP/plan_ci_impact.py"
+          trusted_config="$RUNNER_TEMP/architecture-boundaries.json"
+          planner_entry=$(git ls-tree "$PR_BASE_SHA" -- scripts/plan_ci_impact.py)
+
+          if [ -z "$planner_entry" ]; then
+            package_matrix='[{"package":"StreamingTextKit","path":"Packages/StreamingTextKit"},{"package":"VoiceChatDomain","path":"Packages/VoiceChatDomain"},{"package":"VoiceActivityDetectionKit","path":"Packages/VoiceActivityDetectionKit"},{"package":"SingleGreenGlassesKit","path":"Packages/SingleGreenGlassesKit"},{"package":"SingleGreenConversationAdapters","path":"Packages/SingleGreenConversationAdapters"},{"package":"LLMKit","path":"Packages/LLMKit"},{"package":"VoiceChatCore","path":"Packages/VoiceChatCore"}]'
+            coverage_packages='["StreamingTextKit","VoiceChatDomain","VoiceActivityDetectionKit","SingleGreenGlassesKit","SingleGreenConversationAdapters","LLMKit","VoiceChatCore"]'
+            {
+              printf '%s\n' 'full=true'
+              printf '%s\n' 'run_packages=true'
+              printf '%s\n' "package_matrix=$package_matrix"
+              printf '%s\n' 'run_app_simulator=true'
+              printf '%s\n' 'run_release_build=true'
+              printf '%s\n' 'run_coverage=true'
+              printf '%s\n' "coverage_packages=$coverage_packages"
+              printf '%s\n' 'run_public_api=true'
+              printf '%s\n' 'reason=trusted_base_planner_unavailable'
+            } >> "$GITHUB_OUTPUT"
+            {
+              printf '%s\n' '### CI impact plan'
+              printf '%s\n' ''
+              printf '%s\n' '- Mode: `full`'
+              printf '%s\n' '- Full fallback: `true`'
+              printf '%s\n' '- Reason: `trusted_base_planner_unavailable`'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          planner_type=$(printf '%s\n' "$planner_entry" | awk 'NR == 1 { print $2 }')
+          if [ "$planner_type" != 'blob' ]; then
+            echo 'Trusted-base CI planner path is not a file.' >&2
+            exit 1
+          fi
+          config_entry=$(git ls-tree "$PR_BASE_SHA" -- config/architecture-boundaries.json)
+          config_type=$(printf '%s\n' "$config_entry" | awk 'NR == 1 { print $2 }')
+          if [ "$config_type" != 'blob' ]; then
+            echo 'Trusted-base architecture boundary config is missing or invalid.' >&2
+            exit 1
+          fi
+
+          git show "$PR_BASE_SHA:scripts/plan_ci_impact.py" > "$trusted_planner"
+          git show "$PR_BASE_SHA:config/architecture-boundaries.json" > "$trusted_config"
+          python3 "$trusted_planner" \
+            --event-name "$EVENT_NAME" \
+            --repository-root "$GITHUB_WORKSPACE" \
+            --config-path "$trusted_config" \
+            --base-sha "$PR_BASE_SHA" \
+            --head-sha "$PR_HEAD_SHA" \
+            --checkout-sha "$CHECKOUT_SHA" \
+            --github-output "$GITHUB_OUTPUT" \
+            --summary-file "$GITHUB_STEP_SUMMARY"
+
   branch-contract:
     name: Branch contract
-    runs-on: macos-26
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -51,12 +155,12 @@ jobs:
             exit 1
           fi
           scripts/check_internal_branch_policy.sh "$reviewed_main_sha" "$main_sha" "$internal_sha"
-      - name: Verify post-promotion dispatch pointer
+      - name: Verify manual internal certification pointer
         if: github.event_name == 'workflow_dispatch'
         run: |
           set -eu
           if [ "$GITHUB_REF" != 'refs/heads/codex/internal-debug' ]; then
-            echo 'Post-promotion CI must be dispatched at the internal delivery pointer.' >&2
+            echo 'Manual full internal certification must run at the internal delivery pointer.' >&2
             exit 1
           fi
           git fetch --no-tags origin \
@@ -65,23 +169,52 @@ jobs:
           main_sha=$(git rev-parse 'refs/remotes/origin/main^{commit}')
           internal_sha=$(git rev-parse 'refs/remotes/origin/codex/internal-debug^{commit}')
           if [ "$GITHUB_SHA" != "$main_sha" ] || [ "$GITHUB_SHA" != "$internal_sha" ]; then
-            echo 'Dispatched checkout, current main, and internal pointer must be identical.' >&2
+            echo 'Manual checkout, current main, and internal pointer must be identical.' >&2
             exit 1
           fi
           scripts/check_internal_branch_policy.sh "$main_sha" "$main_sha" "$internal_sha"
 
+  repository-hygiene:
+    name: Repository hygiene
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: scripts/check_toolchain.sh
+      - run: scripts/check_repository_hygiene.sh
+      - run: scripts/check_package_inventory.sh
+      - run: scripts/check_architecture_boundaries.sh
+      - run: scripts/test_architecture_boundaries.sh
+      - run: scripts/check_build_documentation.sh
+      - run: scripts/test_build_documentation_check.sh
+      - run: scripts/scan_secrets.sh
+      - run: scripts/test_repository_checks.sh
+      - run: scripts/test_build_flavor_checks.sh
+      - run: scripts/check_ci_workflow.sh
+      - run: scripts/test_ci_workflow_check.sh
+      - run: scripts/test_ci_impact_plan.sh
+      - run: scripts/test_coverage_scope.sh
+      - run: scripts/test_coverage_gate_selection.sh
+      - run: scripts/check_privacy_logging.sh
+      - run: scripts/check_vad_privacy.sh
+      - run: scripts/check_vad_documentation_state.sh
+      - run: scripts/test_release_evidence_validator.sh
+      - run: scripts/test_simulator_destination.sh
+
   package-matrix:
     name: Package / ${{ matrix.package }}
-    needs: branch-contract
+    needs:
+      - impact-plan
+      - branch-contract
+    if: needs.impact-plan.result == 'success' && needs.branch-contract.result == 'success' && needs.impact-plan.outputs.run_packages == 'true'
     runs-on: macos-26
     strategy:
       fail-fast: false
       matrix:
-        package: [StreamingTextKit, VoiceChatDomain, VoiceActivityDetectionKit, SingleGreenGlassesKit, SingleGreenConversationAdapters, LLMKit, VoiceChatCore]
+        include: ${{ fromJSON(needs.impact-plan.outputs.package_matrix) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: scripts/check_toolchain.sh
-      - run: swift test --package-path "Packages/${{ matrix.package }}" -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+      - run: swift test --package-path "${{ matrix.path }}" -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
       - name: Build aggregate-only VAD benchmark
         if: matrix.package == 'VoiceActivityDetectionKit'
         run: swift build --package-path Packages/VoiceActivityDetectionKit --product VADBenchmark -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
@@ -91,7 +224,10 @@ jobs:
 
   app-simulator:
     name: App simulator / ${{ matrix.variant }}
-    needs: branch-contract
+    needs:
+      - impact-plan
+      - branch-contract
+    if: needs.impact-plan.result == 'success' && needs.branch-contract.result == 'success' && needs.impact-plan.outputs.run_app_simulator == 'true'
     runs-on: macos-26
     strategy:
       fail-fast: false
@@ -138,7 +274,10 @@ jobs:
 
   release-build:
     name: Release build / ${{ matrix.variant }}
-    needs: branch-contract
+    needs:
+      - impact-plan
+      - branch-contract
+    if: needs.impact-plan.result == 'success' && needs.branch-contract.result == 'success' && needs.impact-plan.outputs.run_release_build == 'true'
     runs-on: macos-26
     strategy:
       fail-fast: false
@@ -174,41 +313,47 @@ jobs:
           path: ${{ runner.temp }}/SingleGreenDemo-${{ matrix.artifact_suffix }}.xcresult
           if-no-files-found: warn
 
-  coverage-and-hygiene:
-    name: Coverage and repository hygiene
-    needs: branch-contract
+  coverage:
+    name: Package coverage
+    needs:
+      - impact-plan
+      - branch-contract
+    if: needs.impact-plan.result == 'success' && needs.branch-contract.result == 'success' && needs.impact-plan.outputs.run_coverage == 'true'
     runs-on: macos-26
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: scripts/check_toolchain.sh
-      - run: scripts/check_repository_hygiene.sh
-      - run: scripts/check_package_inventory.sh
-      - run: scripts/check_architecture_boundaries.sh
-      - run: scripts/test_architecture_boundaries.sh
-      - run: scripts/check_build_documentation.sh
-      - run: scripts/test_build_documentation_check.sh
-      - run: scripts/scan_secrets.sh
-      - run: scripts/test_repository_checks.sh
-      - run: scripts/test_build_flavor_checks.sh
-      - run: scripts/check_ci_workflow.sh
-      - run: scripts/test_ci_workflow_check.sh
-      - run: scripts/test_coverage_scope.sh
-      - run: scripts/check_privacy_logging.sh
-      - run: scripts/check_vad_privacy.sh
-      - run: scripts/check_vad_documentation_state.sh
-      - run: scripts/test_release_evidence_validator.sh
-      - run: scripts/test_simulator_destination.sh
-      - run: scripts/coverage_gate.sh "$RUNNER_TEMP/coverage"
+      - name: Run selected coverage gates
+        env:
+          COVERAGE_PACKAGES_JSON: ${{ needs.impact-plan.outputs.coverage_packages }}
+        run: |
+          set -euo pipefail
+          if ! printf '%s' "$COVERAGE_PACKAGES_JSON" | jq -e \
+            'type == "array" and length > 0 and all(.[]; type == "string" and length > 0)' >/dev/null; then
+            echo 'Coverage package plan must be a non-empty JSON array of package names.' >&2
+            exit 1
+          fi
+          coverage_packages=()
+          while IFS= read -r package; do
+            coverage_packages+=("$package")
+          done < <(printf '%s' "$COVERAGE_PACKAGES_JSON" | jq -r '.[]')
+          scripts/coverage_gate.sh "$RUNNER_TEMP/coverage" "${coverage_packages[@]}"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: package-coverage
-          path: ${{ runner.temp }}/coverage
+          path: |
+            ${{ runner.temp }}/coverage/summary.tsv
+            ${{ runner.temp }}/coverage/*.txt
           if-no-files-found: warn
+          retention-days: 14
 
   public-api:
     name: Reviewed public API baselines
-    needs: branch-contract
+    needs:
+      - impact-plan
+      - branch-contract
+    if: needs.impact-plan.result == 'success' && needs.branch-contract.result == 'success' && needs.impact-plan.outputs.run_public_api == 'true'
     runs-on: macos-26
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -218,37 +363,100 @@ jobs:
       - run: scripts/check_public_api_baselines.sh
 
   required-ci:
-    name: ${{ github.event_name == 'workflow_dispatch' && 'Internal post-promotion CI' || 'Required CI' }}
+    name: ${{ github.event_name == 'workflow_dispatch' && 'Manual Full Internal Certification' || 'Required CI' }}
     if: always()
     needs:
+      - impact-plan
       - branch-contract
+      - repository-hygiene
       - package-matrix
       - app-simulator
       - release-build
-      - coverage-and-hygiene
+      - coverage
       - public-api
     runs-on: ubuntu-latest
     steps:
-      - name: Require every CI dependency to succeed
+      - name: Require the exact planned CI result
         env:
+          FULL: ${{ needs.impact-plan.outputs.full }}
+          IMPACT_PLAN_RESULT: ${{ needs.impact-plan.result }}
           BRANCH_CONTRACT_RESULT: ${{ needs.branch-contract.result }}
+          REPOSITORY_HYGIENE_RESULT: ${{ needs.repository-hygiene.result }}
+          RUN_PACKAGES: ${{ needs.impact-plan.outputs.run_packages }}
           PACKAGE_MATRIX_RESULT: ${{ needs.package-matrix.result }}
+          RUN_APP_SIMULATOR: ${{ needs.impact-plan.outputs.run_app_simulator }}
           APP_SIMULATOR_RESULT: ${{ needs.app-simulator.result }}
+          RUN_RELEASE_BUILD: ${{ needs.impact-plan.outputs.run_release_build }}
           RELEASE_BUILD_RESULT: ${{ needs.release-build.result }}
-          COVERAGE_AND_HYGIENE_RESULT: ${{ needs.coverage-and-hygiene.result }}
+          RUN_COVERAGE: ${{ needs.impact-plan.outputs.run_coverage }}
+          COVERAGE_RESULT: ${{ needs.coverage.result }}
+          RUN_PUBLIC_API: ${{ needs.impact-plan.outputs.run_public_api }}
           PUBLIC_API_RESULT: ${{ needs.public-api.result }}
         run: |
           set -eu
-          for result in \
-            "$BRANCH_CONTRACT_RESULT" \
-            "$PACKAGE_MATRIX_RESULT" \
-            "$APP_SIMULATOR_RESULT" \
-            "$RELEASE_BUILD_RESULT" \
-            "$COVERAGE_AND_HYGIENE_RESULT" \
-            "$PUBLIC_API_RESULT"
-          do
-            if [ "$result" != "success" ]; then
-              echo "Required CI dependency did not succeed: $result" >&2
+
+          require_success() {
+            label=$1
+            result=$2
+            if [ "$result" != 'success' ]; then
+              echo "$label must succeed, got: $result" >&2
               exit 1
             fi
-          done
+          }
+
+          require_planned_result() {
+            label=$1
+            decision=$2
+            result=$3
+            case "$decision" in
+              true)
+                if [ "$result" != 'success' ]; then
+                  echo "$label was planned and must succeed, got: $result" >&2
+                  exit 1
+                fi
+                ;;
+              false)
+                if [ "$result" != 'skipped' ]; then
+                  echo "$label was not planned and must be skipped, got: $result" >&2
+                  exit 1
+                fi
+                ;;
+              *)
+                echo "$label has an invalid planner decision: $decision" >&2
+                exit 1
+                ;;
+            esac
+          }
+
+          require_success 'Impact plan' "$IMPACT_PLAN_RESULT"
+          require_success 'Branch contract' "$BRANCH_CONTRACT_RESULT"
+          require_success 'Repository hygiene' "$REPOSITORY_HYGIENE_RESULT"
+
+          case "$FULL" in
+            true|false) ;;
+            *)
+              echo "Planner full output must be true or false, got: $FULL" >&2
+              exit 1
+              ;;
+          esac
+
+          if [ "$FULL" = 'true' ]; then
+            for decision in \
+              "$RUN_PACKAGES" \
+              "$RUN_APP_SIMULATOR" \
+              "$RUN_RELEASE_BUILD" \
+              "$RUN_COVERAGE" \
+              "$RUN_PUBLIC_API"
+            do
+              if [ "$decision" != 'true' ]; then
+                echo 'A full CI plan must enable every selective job.' >&2
+                exit 1
+              fi
+            done
+          fi
+
+          require_planned_result 'Package matrix' "$RUN_PACKAGES" "$PACKAGE_MATRIX_RESULT"
+          require_planned_result 'App simulator' "$RUN_APP_SIMULATOR" "$APP_SIMULATOR_RESULT"
+          require_planned_result 'Release build' "$RUN_RELEASE_BUILD" "$RELEASE_BUILD_RESULT"
+          require_planned_result 'Coverage' "$RUN_COVERAGE" "$COVERAGE_RESULT"
+          require_planned_result 'Public API' "$RUN_PUBLIC_API" "$PUBLIC_API_RESULT"
