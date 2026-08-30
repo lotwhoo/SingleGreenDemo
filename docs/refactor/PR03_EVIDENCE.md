@@ -1,6 +1,7 @@
 # PR-03 evidence: delivery pointer and four-variant CI contract
 
-- Status: local implementation complete; GitHub remote enforcement BLOCKED
+- Status: local implementation complete; hosted baseline green; GitHub remote
+  enforcement BLOCKED pending independent ruleset verification
 - Date: 2026-08-30
 - Scope: `codex/internal-debug` zero-delta policy, CI workflow guards, and the
   complete User/Internal Debug/Release build matrix
@@ -57,9 +58,54 @@ separation rather than weakening the artifact scanner.
 
 The workflow also retains the package matrix, public API, architecture,
 privacy, repository hygiene, build-flavor, and coverage gates. The exact
-workflow mutation suite rejects missing internal triggers, shallow checkout,
+workflow mutation suite now rejects 56/56 tested mutations, including missing
+internal triggers, shallow checkout,
 missing matrix rows or scanners, reused test derived data, swapped scanners,
 missing branch-policy invocation, and untrusted workflow-dispatch review input.
+The hardened cases also cover missing/incorrect job dependencies, non-`always`
+Required CI conditions, `continue-on-error` at job or step level, shell-level
+promotion write/ordering/post-check omissions, and any unexpected write
+permission or write step in a third workflow.
+
+`Required CI` is a stable, always-running aggregation job. It depends on
+`branch-contract`, `package-matrix`, `app-simulator`, `release-build`,
+`coverage-and-hygiene`, and `public-api`, and fails closed unless every
+dependency result is exactly `success`. Its check name is the ruleset-facing
+required check. The promotion workflow is a no-input `workflow_dispatch` with
+exactly two jobs: `Internal promotion authorization` and `Promote authorized
+main`. Authorization checks the current `main` event SHA, checkout SHA, and
+freshly fetched `origin/main`, then requires the latest successful `Required CI`
+check for that exact SHA from GitHub Actions app ID `15368`. Promotion
+re-checks the same trust chain, proves the existing internal pointer can be
+fast-forwarded, pushes without force, and runs the branch checker again after
+fetching both refs.
+
+All GitHub Actions are pinned by full commit SHA: `actions/checkout` uses
+`3d3c42e5aac5ba805825da76410c181273ba90b1` (v7.0.1), and
+`actions/upload-artifact` uses `043fb46d1a93c77aae656e7c1c64a875d1fc6a0a`
+(v4). The newer Required CI/promotion changes are locally checked but still
+await their own hosted run.
+
+## Three-layer remote delivery procedure
+
+Remote enablement requires three independently auditable layers:
+
+1. **Workflow layer:** CI runs the branch contract and full matrix on both
+   maintained refs; `Required CI` is always run and fail-closed. The no-input
+   promotion workflow authorizes only current `main`, verifies the exact
+   successful Required CI check from app `15368`, performs a fast-forward-only
+   pointer update, and re-checks the result.
+2. **Ruleset layer:** an externally controlled GitHub ruleset/branch protection
+   must make `Required CI` required, restrict `codex/internal-debug` updates to
+   the controlled promotion path, prohibit force-push and deletion, and reject
+   a direct pull-request lane. This control must not be self-authorized by the
+   promoted commit.
+3. **Pointer layer:** bootstrap only after layers one and two are verified,
+   using the no-input promotion workflow from current `main`. Recovery repeats
+   authorization against freshly fetched current `origin/main`, refuses stale
+   or divergent internal state, and advances only by fast-forward. If the
+   pointer is divergent, stop and repair it under separately authorized release
+   procedure; never force-push or delete it as implicit recovery.
 
 ## Remote enforcement status
 
@@ -79,8 +125,8 @@ implementation can be complete while remote enforcement remains disabled.
 
 | Evidence | Result | Location |
 | --- | --- | --- |
-| Branch-policy fixtures | 24/24 passed | local terminal run |
-| CI workflow mutations | 9/9 rejected as expected | local terminal run |
+| Branch-policy fixtures | 25/25 passed | local terminal run |
+| CI workflow mutations | 56/56 rejected as expected | local terminal run |
 | CI workflow live guard | passed | local terminal run |
 | User Debug App XCTest | 83/83 passed, 0 failed/skipped | `/private/tmp/SingleGreenDemo-PR03-DebugTests.W5UylJ/user.xcresult` |
 | User Debug App-only build and scan | passed | `/private/tmp/SingleGreenDemo-PR03-DebugTests.W5UylJ/user-artifact` |
@@ -105,11 +151,23 @@ The fresh full gate run passed from
   `SingleGreenGlassesKit` 88.86% (65), `SingleGreenConversationAdapters` 98.02%
   (70), `LLMKit` 89.98% (60), and `VoiceChatCore` 76.19% (55).
 
+## Hosted CI status
+
+The first public hosted CI run exposed a portability defect in lowercase SHA
+validation under a UTF-8 locale: uppercase SHA input was affected by locale
+collation behavior. The implementation was fixed by forcing `LC_ALL=C` and by
+adding a UTF-8 locale regression case. The local branch-policy fixture count is
+now **25/25** passed. Hosted run **33299053875** subsequently passed after the
+locale fix; all package, App, Release, public API, and coverage jobs were green.
+This is the hosted baseline for the locale fix. The newer Required CI/promotion
+changes still await their own hosted run and are not covered by that run's
+success.
+
 The remote check `git ls-remote` confirmed that
 `origin/codex/internal-debug` is absent at this time; `origin/main` resolved to
 `aadc54a`. The current local worktree is dirty, so it is not promotion
-evidence. No hosted CI run, remote branch bootstrap, commit, push, device
-install/launch, or live-provider validation is claimed by this record.
+evidence. No remote ruleset, branch bootstrap, promotion, commit, push, device
+install/launch, merge, or live-provider validation is claimed by this record.
 
 Remote branch bootstrap and promotion require separate explicit release
 authorization after the external ruleset requirements above are satisfied.

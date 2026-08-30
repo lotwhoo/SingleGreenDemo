@@ -178,3 +178,12 @@ builds and scans, and User/Internal Release builds and scans. The separate
 Debug App build is required because the XCTest host embeds XCTest support and
 is not the distributed artifact. Local fixture and matrix evidence, including
 the initial expected XCTest-host scan failure, is in PR03_EVIDENCE.md.
+The hosted baseline run **33299053875** passed package, App, Release, public API,
+and coverage jobs after the locale portability fix; the newer Required
+CI/promotion changes still await their own hosted run. Required CI is an
+always-running fail-closed aggregation job. Promotion is a no-input two-job
+workflow that trusts the current `main` SHA, the exact successful Required CI
+check from GitHub Actions app `15368`, and a fast-forward-only zero-delta
+pointer update. Action dependencies are pinned by full commit SHA. Remote
+ruleset/bootstrap verification is still blocked and must be performed as a
+three-layer workflow/ruleset/pointer procedure outside the promoted commit.

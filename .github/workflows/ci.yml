@@ -25,7 +25,7 @@ jobs:
     name: Branch contract
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - name: Run branch-policy fixtures
@@ -58,7 +58,7 @@ jobs:
       matrix:
         package: [StreamingTextKit, VoiceChatDomain, VoiceActivityDetectionKit, SingleGreenGlassesKit, SingleGreenConversationAdapters, LLMKit, VoiceChatCore]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: scripts/check_toolchain.sh
       - run: swift test --package-path "Packages/${{ matrix.package }}" -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
       - name: Build aggregate-only VAD benchmark
@@ -79,7 +79,7 @@ jobs:
           - { variant: user, scheme: SingleGreenUser, configuration: User-Debug, artifact_suffix: user-debug }
           - { variant: internal, scheme: SingleGreenInternal, configuration: Internal-Debug, artifact_suffix: internal-debug }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: scripts/check_toolchain.sh
       - name: Resolve Simulator and run App tests
         run: |
@@ -108,7 +108,7 @@ jobs:
       - name: Scan Internal Debug App
         if: matrix.variant == 'internal'
         run: scripts/check_internal_artifact_capabilities.sh "$RUNNER_TEMP/SingleGreenDemo-${{ matrix.artifact_suffix }}-artifact/Build/Products/${{ matrix.configuration }}-iphonesimulator/SingleGreenDemo.app"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: app-simulator-${{ matrix.artifact_suffix }}-xcresult
@@ -126,7 +126,7 @@ jobs:
           - { variant: user, scheme: SingleGreenUser, configuration: User-Release, artifact_suffix: user-release }
           - { variant: internal, scheme: SingleGreenInternal, configuration: Internal-Release, artifact_suffix: internal-release }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: scripts/check_toolchain.sh
       - name: Build universal generic Simulator App
         run: |
@@ -146,7 +146,7 @@ jobs:
       - name: Scan Internal Release App
         if: matrix.variant == 'internal'
         run: scripts/check_internal_artifact_capabilities.sh "$RUNNER_TEMP/SingleGreenDemo-${{ matrix.artifact_suffix }}/Build/Products/${{ matrix.configuration }}-iphonesimulator/SingleGreenDemo.app"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: release-${{ matrix.artifact_suffix }}-xcresult
@@ -158,7 +158,7 @@ jobs:
     needs: branch-contract
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: scripts/check_toolchain.sh
       - run: scripts/check_repository_hygiene.sh
       - run: scripts/check_package_inventory.sh
@@ -178,7 +178,7 @@ jobs:
       - run: scripts/test_release_evidence_validator.sh
       - run: scripts/test_simulator_destination.sh
       - run: scripts/coverage_gate.sh "$RUNNER_TEMP/coverage"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: package-coverage
@@ -190,8 +190,44 @@ jobs:
     needs: branch-contract
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: scripts/check_toolchain.sh
       - run: scripts/test_public_api_baselines.sh
       - run: scripts/test_public_api_baseline_update.sh
       - run: scripts/check_public_api_baselines.sh
+
+  required-ci:
+    name: Required CI
+    if: always()
+    needs:
+      - branch-contract
+      - package-matrix
+      - app-simulator
+      - release-build
+      - coverage-and-hygiene
+      - public-api
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every CI dependency to succeed
+        env:
+          BRANCH_CONTRACT_RESULT: ${{ needs.branch-contract.result }}
+          PACKAGE_MATRIX_RESULT: ${{ needs.package-matrix.result }}
+          APP_SIMULATOR_RESULT: ${{ needs.app-simulator.result }}
+          RELEASE_BUILD_RESULT: ${{ needs.release-build.result }}
+          COVERAGE_AND_HYGIENE_RESULT: ${{ needs.coverage-and-hygiene.result }}
+          PUBLIC_API_RESULT: ${{ needs.public-api.result }}
+        run: |
+          set -eu
+          for result in \
+            "$BRANCH_CONTRACT_RESULT" \
+            "$PACKAGE_MATRIX_RESULT" \
+            "$APP_SIMULATOR_RESULT" \
+            "$RELEASE_BUILD_RESULT" \
+            "$COVERAGE_AND_HYGIENE_RESULT" \
+            "$PUBLIC_API_RESULT"
+          do
+            if [ "$result" != "success" ]; then
+              echo "Required CI dependency did not succeed: $result" >&2
+              exit 1
+            fi
+          done
