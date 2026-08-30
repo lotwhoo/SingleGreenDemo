@@ -383,7 +383,9 @@ final class TeleprompterTests: XCTestCase {
 
         await controller.toggleFollowing()
         controller.updateHostLifecycle(.background)
-        await settle()
+        await waitUntil {
+            second.cancelCount == 1 && controller.pendingHostLifecycleCleanupCount == 1
+        }
         XCTAssertEqual(second.cancelCount, 1)
         XCTAssertEqual(controller.pendingHostLifecycleCleanupCount, 1)
 
@@ -671,6 +673,17 @@ final class TeleprompterTests: XCTestCase {
 
     private func settle() async {
         for _ in 0..<8 { await Task.yield() }
+    }
+
+    private func waitUntil(
+        iterations: Int = 500,
+        _ predicate: @escaping @MainActor () -> Bool
+    ) async {
+        for _ in 0..<iterations {
+            if predicate() { return }
+            await Task.yield()
+        }
+        XCTFail("等待异步状态超时")
     }
 }
 
