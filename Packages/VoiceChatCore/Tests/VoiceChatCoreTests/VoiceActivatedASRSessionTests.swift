@@ -97,21 +97,21 @@ final class VoiceActivatedASRSessionTests: XCTestCase {
             noSpeech: 5,
             clock: clock.injectedClock
         )
-        let observation = collectEvents(from: session) { event in
-            if case .state(.failed) = event { return true }
-            return false
-        }
+        let recorder = ASREventRecorder()
+        let observation = recordEvents(from: session, into: recorder)
 
         try await session.arm()
         await waitUntil { await clock.sleepCallCount == 1 }
         await clock.advance(by: .milliseconds(99))
         await source.emit(level: 0.5)
-        for _ in 0..<10 { await Task.yield() }
+        await waitUntil { await recorder.values().contains(.level(0.5)) }
         let stateBeforeDeadline = await session.state
         XCTAssertEqual(stateBeforeDeadline, .armed)
 
         await clock.advance(by: .milliseconds(1))
-        let events = await observation.value
+        await waitUntil { await recorder.values().contains(where: isTerminalState) }
+        let events = await recorder.values()
+        observation.cancel()
 
         assertSingleAudioUnavailableFailure(in: events)
         XCTAssertTrue(events.contains(.level(0.5)))
@@ -314,20 +314,22 @@ final class VoiceActivatedASRSessionTests: XCTestCase {
             policy: policy,
             frameLivenessClock: clock.injectedClock
         )
-        let observation = collectEvents(from: session) { event in
-            if case .state(.failed) = event { return true }
-            return false
-        }
+        let recorder = ASREventRecorder()
+        let observation = recordEvents(from: session, into: recorder)
 
         try await session.arm()
         await source.emit(try frame(0))
         await waitUntil { await session.state == .streaming }
         await clock.advance(by: .milliseconds(80))
         await transport.emit(.transcript("still connected"))
-        for _ in 0..<10 { await Task.yield() }
+        await waitUntil {
+            await recorder.values().contains(.transcript("still connected"))
+        }
         await clock.advance(by: .milliseconds(20))
-        let events = await observation.value
+        await waitUntil { await recorder.values().contains(where: isTerminalState) }
         await waitUntil { await transport.metrics().cancelCount == 1 }
+        let events = await recorder.values()
+        observation.cancel()
 
         assertSingleAudioUnavailableFailure(in: events)
         XCTAssertTrue(events.contains(.transcript("still connected")))
