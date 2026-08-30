@@ -5,32 +5,43 @@ import UIKit
 struct ControlPanelView: View {
     @EnvironmentObject private var runtime: ExperienceRuntime
     @EnvironmentObject private var profileStore: DisplayProfileStore
+    @EnvironmentObject private var teleprompterSettings: TeleprompterSettings
     @Binding var debugMode: Bool
 
     var body: some View {
-        VStack(spacing: 14) {
-            experienceMenu
-            if let controlState = runtime.controlState {
-                VStack(spacing: 12) {
-                    experienceStatus(controlState)
-                    if let action = primaryAction {
-                        actionButton(action, minimumHeight: 54)
-                    }
+        ScrollView(.vertical) {
+            VStack(spacing: 14) {
+                experienceMenu
+                if runtime.selectedKind == TeleprompterExperience.kind {
+                    teleprompterScriptEditor
                 }
-            } else if let action = primaryAction {
-                actionButton(action, minimumHeight: 52)
+                if let controlState = runtime.controlState {
+                    VStack(spacing: 12) {
+                        experienceStatus(controlState)
+                        if let action = primaryAction {
+                            actionButton(action, minimumHeight: 54)
+                        }
+                    }
+                } else if let action = primaryAction {
+                    actionButton(action, minimumHeight: 52)
+                }
+                if !secondaryActions.isEmpty {
+                    secondaryActionControls
+                }
+                displayControls
             }
-            if !secondaryActions.isEmpty {
-                secondaryActionControls
-            }
-            displayControls
+            .padding(16)
+            .frame(maxWidth: .infinity)
         }
-        .padding(16)
+        .scrollIndicators(.visible)
+        .scrollBounceBehavior(.basedOnSize)
+        .accessibilityIdentifier("control_panel_scroll_view")
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 30, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 30, style: .continuous)
                 .stroke(.white.opacity(0.14), lineWidth: 0.5)
         }
+        .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
         .shadow(color: .black.opacity(0.28), radius: 24, y: 12)
     }
 
@@ -280,6 +291,49 @@ struct ControlPanelView: View {
         runtime.activeActions.first { $0.placement == .primary }
     }
 
+    private var teleprompterScriptEditor: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Label("提词稿", systemImage: "doc.text")
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                Text("\(teleprompterSettings.scriptDraft.count)/\(TeleprompterLimits.maximumScriptCharacters)")
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+
+            TextEditor(text: $teleprompterSettings.scriptDraft)
+                .font(.callout)
+                .frame(minHeight: 88, maxHeight: 132)
+                .scrollContentBackground(.hidden)
+                .padding(8)
+                .background(.black.opacity(0.20), in: RoundedRectangle(cornerRadius: 12))
+                .accessibilityIdentifier("teleprompter_script_editor")
+
+            Button {
+                teleprompterSettings.applyScriptDraft()
+            } label: {
+                Label("载入稿件", systemImage: "arrow.down.doc.fill")
+                    .frame(maxWidth: .infinity, minHeight: 40)
+            }
+            .buttonStyle(.borderedProminent)
+            .accessibilityIdentifier("teleprompter_load_script_button")
+
+            Toggle(
+                "允许云端语音跟随",
+                isOn: $teleprompterSettings.allowsCloudSpeechRecognition
+            )
+            .font(.caption.weight(.semibold))
+            .accessibilityIdentifier("teleprompter_cloud_asr_consent_toggle")
+
+            Text("默认关闭。开启后，麦克风中的朗读音频会发送到设置中配置的云端语音识别服务；稿件正文不会作为文本上传。关闭后仍可用左右键手动提词。下键短按用于重对齐或切换手动模式。")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .padding(12)
+        .background(.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 16))
+    }
+
     private var secondaryActions: [ResolvedExperienceAction] {
         runtime.activeActions.filter { $0.placement == .secondary }
     }
@@ -290,7 +344,8 @@ enum SecondaryActionGridPolicy {
     static let minimumButtonWidth: CGFloat = 84
 
     static func preferredColumnCount(actionCount: Int) -> Int {
-        min(max(actionCount, 1), maximumColumnCount)
+        if actionCount == 4 { return 2 }
+        return min(max(actionCount, 1), maximumColumnCount)
     }
 
     static func rows<Element>(

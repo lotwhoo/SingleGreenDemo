@@ -1,10 +1,12 @@
 import Foundation
 import VoiceChatDomain
 
-public enum ConversationHostLifecycleState: Equatable, Sendable {
+public enum ExperienceHostLifecycleState: Equatable, Sendable {
     case active
     case background
 }
+
+public typealias ConversationHostLifecycleState = ExperienceHostLifecycleState
 
 /// AI 对话用例编排。只依赖可替换的端口，不直接创建 ASR、LLM、权限或时钟实现。
 @MainActor

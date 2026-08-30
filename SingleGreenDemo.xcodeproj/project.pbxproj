@@ -280,7 +280,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "单绿测试平台";
 				INFOPLIST_KEY_NSCameraUsageDescription = "用于显示后置摄像头画面并模拟单绿眼镜的环境透视效果。";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "用于采集语音并与 AI 助手对话。";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "用于 AI 对话和语音提词；提词器仅在你明确同意后，将朗读音频发送到所配置的云端语音识别服务。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -312,7 +312,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "单绿测试平台";
 				INFOPLIST_KEY_NSCameraUsageDescription = "用于显示后置摄像头画面并模拟单绿眼镜的环境透视效果。";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "用于采集语音并与 AI 助手对话。";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "用于 AI 对话和语音提词；提词器仅在你明确同意后，将朗读音频发送到所配置的云端语音识别服务。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

@@ -1,5 +1,6 @@
 import SingleGreenGlassesKit
 import SwiftUI
+import UIKit
 
 @main
 struct SingleGreenDemoApp: App {
@@ -8,14 +9,63 @@ struct SingleGreenDemoApp: App {
     @StateObject private var runtime: ExperienceRuntime
     @StateObject private var profileStore = DisplayProfileStore()
     @StateObject private var aiSettings: AISettings
+    @StateObject private var teleprompterSettings: TeleprompterSettings
     @StateObject private var conversationController: VoiceConversationController
+    @StateObject private var textAdventureController: TextAdventureController
+    @StateObject private var teleprompterController: TeleprompterController
 
     init() {
         let settings = Self.makeAISettings()
         _aiSettings = StateObject(wrappedValue: settings)
-        let controller = VoiceConversationController(dependencies: .live(settings: settings))
+        let credentialProvider = AIServiceComposition.makeCredentialProvider(settings: settings)
+        let speechCredentialProvider = AIServiceComposition.makeSpeechCredentialProvider(
+            settings: settings
+        )
+        let teleprompterSettings = TeleprompterSettings()
+        let controller = VoiceConversationController(
+            dependencies: .live(
+                settings: settings,
+                credentialProvider: credentialProvider
+            )
+        )
+        let gameController = TextAdventureController(
+            provider: LiveTextAdventureProvider(
+                settings: settings,
+                credentialProvider: credentialProvider
+            ),
+            preparationProvider: LiveTextAdventureRunPreparationProvider(
+                settings: settings,
+                credentialProvider: credentialProvider
+            ),
+            reduceMotion: { UIAccessibility.isReduceMotionEnabled }
+        )
+        let teleprompterController = TeleprompterController(
+            script: try? TeleprompterScript(teleprompterSettings.scriptDraft),
+            dependencies: LiveSpeechInputComposition.makeTeleprompterDependencies(
+                configurationProvider: {
+                    TeleprompterSpeechConfiguration(
+                        resourceID: settings.asrResourceID,
+                        language: settings.asrLanguage,
+                        hotwords: settings.hotwords
+                    )
+                },
+                speechCredentialProvider: speechCredentialProvider,
+                cloudSpeechRecognitionAllowed: {
+                    teleprompterSettings.allowsCloudSpeechRecognition
+                }
+            )
+        )
+        _teleprompterSettings = StateObject(wrappedValue: teleprompterSettings)
         _conversationController = StateObject(wrappedValue: controller)
-        _runtime = StateObject(wrappedValue: Self.makeRuntime(controller: controller))
+        _textAdventureController = StateObject(wrappedValue: gameController)
+        _teleprompterController = StateObject(wrappedValue: teleprompterController)
+        _runtime = StateObject(
+            wrappedValue: Self.makeRuntime(
+                controller: controller,
+                textAdventureController: gameController,
+                teleprompterController: teleprompterController
+            )
+        )
     }
 
     @MainActor
@@ -27,11 +77,17 @@ struct SingleGreenDemoApp: App {
 
     @MainActor
     private static func makeRuntime(
-        controller: VoiceConversationController
+        controller: VoiceConversationController,
+        textAdventureController: TextAdventureController,
+        teleprompterController: TeleprompterController
     ) -> ExperienceRuntime {
         do {
             return try ExperienceRuntime(
-                validating: DemoExperienceComposition.sessions(controller: controller)
+                validating: DemoExperienceComposition.sessions(
+                    controller: controller,
+                    textAdventureController: textAdventureController,
+                    teleprompterController: teleprompterController
+                )
             )
         } catch {
             preconditionFailure("Invalid built-in experience composition: \(error)")
@@ -45,8 +101,18 @@ struct SingleGreenDemoApp: App {
                 .environmentObject(runtime)
                 .environmentObject(profileStore)
                 .environmentObject(aiSettings)
+                .environmentObject(teleprompterSettings)
                 .task(priority: .userInitiated) {
                     await cameraController.prepare()
+                }
+                .onChange(of: teleprompterSettings.scriptConfigurationRevision) { _, _ in
+                    let script = teleprompterSettings.scriptDraft
+                    Task { await teleprompterController.loadScript(script) }
+                }
+                .onChange(of: teleprompterSettings.allowsCloudSpeechRecognition) { _, isAllowed in
+                    Task {
+                        await teleprompterController.updateCloudSpeechRecognitionConsent(isAllowed)
+                    }
                 }
         }
         .onChange(of: scenePhase) { _, phase in
@@ -54,8 +120,12 @@ struct SingleGreenDemoApp: App {
             switch phase {
             case .background:
                 conversationController.updateHostLifecycle(.background)
+                textAdventureController.updateHostLifecycle(.background)
+                teleprompterController.updateHostLifecycle(.background)
             case .active:
                 conversationController.updateHostLifecycle(.active)
+                textAdventureController.updateHostLifecycle(.active)
+                teleprompterController.updateHostLifecycle(.active)
             case .inactive:
                 break
             @unknown default:
@@ -69,8 +139,23 @@ struct SingleGreenDemoApp: App {
 enum DemoExperienceComposition {
     static let aiProviderDetail = "豆包 ASR → DeepSeek Agent → 博查搜索"
 
-    static func sessions(controller: VoiceConversationController) -> [any ExperienceSession] {
-        [
+    static func sessions(
+        controller: VoiceConversationController,
+        textAdventureController: TextAdventureController? = nil,
+        teleprompterController: TeleprompterController? = nil
+    ) -> [any ExperienceSession] {
+        let gameController = textAdventureController ?? TextAdventureController(
+            provider: UnavailableTextAdventureProvider(),
+            preparationProvider: UnavailableTextAdventureRunPreparationProvider()
+        )
+        let promptController = teleprompterController ?? TeleprompterController(
+            dependencies: TeleprompterDependencies(
+                prepareSpeechSession: { throw ServerCredentialError.transportNotConfigured },
+                requestMicrophonePermission: { false },
+                cloudSpeechRecognitionAllowed: { false }
+            )
+        )
+        return [
             SystemStatusExperience(),
             NavigationExperience(),
             NotificationExperience(),
@@ -78,7 +163,35 @@ enum DemoExperienceComposition {
             AIConversationExperience(
                 controller: controller,
                 providerDetail: aiProviderDetail
-            )
+            ),
+            TextAdventureExperience(
+                controller: gameController,
+                providerDetail: "博查灵感搜索 → DeepSeek 故事框架与回合"
+            ),
+            TeleprompterExperience(controller: promptController)
         ]
+    }
+}
+
+@MainActor
+private final class UnavailableTextAdventureProvider: TextAdventureTurnProvider {
+    func proposeTurn(_ request: TextAdventureTurnRequest) async throws -> TextAdventureCheckpoint {
+        throw ServerCredentialError.transportNotConfigured
+    }
+}
+
+@MainActor
+private final class UnavailableTextAdventureRunPreparationProvider:
+    TextAdventureRunPreparationProvider {
+    func prepareTrendSeed(
+        _ request: TextAdventureTrendPreparationRequest
+    ) async throws -> TextAdventureTrendSeed {
+        .reviewedFallback(seed: request.seed)
+    }
+
+    func prepareFramework(
+        _ request: TextAdventureFrameworkPreparationRequest
+    ) async throws -> TextAdventurePreparedRun {
+        throw ServerCredentialError.transportNotConfigured
     }
 }

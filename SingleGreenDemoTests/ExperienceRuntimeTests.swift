@@ -1,6 +1,7 @@
 import Foundation
 import SingleGreenGlassesKit
 import SwiftUI
+import UIKit
 import XCTest
 @testable import SingleGreenDemo
 
@@ -15,13 +16,19 @@ final class ExperienceRuntimeTests: XCTestCase {
         XCTAssertFalse(runtime.availableKinds.contains(.conversation))
     }
 
-    func testAppCompositionPublishesFiveDescriptorDrivenExperiences() {
+    func testAppCompositionPublishesBuiltInsThenTextAdventureAndTeleprompter() {
         let controller = VoiceConversationController(dependencies: missingAIConfiguration())
         let runtime = ExperienceRuntime(
             sessions: DemoExperienceComposition.sessions(controller: controller)
         )
 
-        XCTAssertEqual(runtime.availableDescriptors.map(\.kind), ExperienceKind.allCases)
+        XCTAssertEqual(
+            runtime.availableDescriptors.map(\.kind),
+            ExperienceKind.allCases + [
+                TextAdventureExperience.kind,
+                TeleprompterExperience.kind
+            ]
+        )
         XCTAssertEqual(
             runtime.availableDescriptors.first(where: { $0.kind == .conversation })?.detail,
             DemoExperienceComposition.aiProviderDetail
@@ -33,6 +40,10 @@ final class ExperienceRuntimeTests: XCTestCase {
         XCTAssertEqual(
             runtime.availableDescriptors.first(where: { $0.kind == .notification })?.actions.map(\.id),
             ["primary", "tap", "swipe_down"]
+        )
+        XCTAssertEqual(
+            runtime.availableDescriptors.first(where: { $0.kind == TeleprompterExperience.kind })?.actions.map(\.id),
+            ["left", "right", "up", "down"]
         )
     }
 
@@ -363,6 +374,26 @@ final class ExperienceRuntimeTests: XCTestCase {
         XCTAssertEqual(AppShellLayout.headerTopPadding, 0)
     }
 
+    func testControlPanelHeightIsContentIndependentAndBounded() {
+        XCTAssertEqual(
+            AppShellLayout.controlPanelHeight(in: 667),
+            AppShellLayout.minimumControlPanelHeight
+        )
+        XCTAssertEqual(
+            AppShellLayout.controlPanelHeight(in: 874),
+            874 * AppShellLayout.controlPanelHeightFraction,
+            accuracy: 0.000_001
+        )
+        XCTAssertEqual(
+            AppShellLayout.controlPanelHeight(in: 956),
+            AppShellLayout.maximumControlPanelHeight
+        )
+        XCTAssertEqual(
+            AppShellLayout.controlPanelHeight(in: 1_366),
+            AppShellLayout.maximumControlPanelHeight
+        )
+    }
+
     func testThinkingMotionPolicyUsesApprovedTimingAndReduceMotionFallback() {
         XCTAssertEqual(
             HUDMotionPolicy.thinkingDotOpacities(elapsed: 10, reduceMotion: true),
@@ -415,6 +446,15 @@ final class ExperienceRuntimeTests: XCTestCase {
             )),
             .init(duration: 0.12, curve: .easeOut)
         )
+        XCTAssertEqual(
+            HUDMotionPolicy.transition(for: .styledFlowingTextRuns(
+                [HUDTextRun(text: "回答", opacity: 0.68)],
+                isStreaming: false,
+                footer: nil,
+                style: .detail
+            )),
+            .init(duration: 0.12, curve: .easeOut)
+        )
     }
 
     func testMinimalConversationHUDRendersReferenceStateAtEightToThree() async throws {
@@ -443,6 +483,26 @@ final class ExperienceRuntimeTests: XCTestCase {
             8.0 / 3.0,
             accuracy: 0.000_001
         )
+    }
+
+    func testTeleprompterHUDRendersThreeDepthReadingStateAtEightToThree() async throws {
+        let script = try TeleprompterScript(
+            "已经读过的内容留作定位。当前正在朗读的内容保持最亮。接下来还没有读到的内容使用中等亮度。"
+        )
+        let scene = TeleprompterHUDMapper.scene(
+            for: TeleprompterState(script: script, sentenceIndex: 1, phase: .listening),
+            revision: 1
+        )
+        let image = try await renderConversationHUD(
+            scene: scene,
+            filename: "SingleGreenDemo-TeleprompterHUD-depth.png"
+        )
+        let profile = DisplayProfileCatalog.builtIn.defaultProfile
+        let projection = HUDPreviewProjection(profile: profile)
+        let expectedHeight = (400 / projection.containerAspectRatio).rounded(.up) * 4
+
+        XCTAssertEqual(image.cgImage?.width, 1_600)
+        XCTAssertEqual(image.cgImage?.height, Int(expectedHeight))
     }
 
     func testAnswerViewportUsesExactlyTwoCompleteLineHeights() {
@@ -479,6 +539,237 @@ final class ExperienceRuntimeTests: XCTestCase {
             80,
             accuracy: 0.000_001
         )
+    }
+
+    func testTeleprompterViewportUsesExactlyThreeMeasuredCompleteLines() {
+        XCTAssertEqual(HUDFlowingTextViewportPolicy.teleprompterVisibleLineCount, 3)
+        XCTAssertEqual(
+            HUDFlowingTextViewportPolicy.teleprompterFollowAnimationDuration,
+            0.18,
+            accuracy: 0.000_001
+        )
+        XCTAssertTrue(HUDFlowingTextViewportPolicy.usesCompleteLineTail(
+            sceneID: "teleprompter.asr",
+            elementID: "teleprompter_body"
+        ))
+        XCTAssertTrue(HUDFlowingTextViewportPolicy.alignsCompleteLinesToTop(
+            sceneID: "teleprompter.asr",
+            elementID: "teleprompter_body"
+        ))
+        XCTAssertEqual(
+            HUDFlowingTextViewportPolicy.completeLineViewportHeight(
+                availableHeight: 91,
+                lineHeight: 24,
+                maximumLineCount: 3
+            ),
+            72,
+            accuracy: 0.000_001
+        )
+        XCTAssertEqual(
+            HUDFlowingTextViewportPolicy.completeLineViewportHeight(
+                availableHeight: 65,
+                lineHeight: 24,
+                maximumLineCount: 3
+            ),
+            48,
+            accuracy: 0.000_001
+        )
+        XCTAssertFalse(HUDFlowingTextViewportPolicy.usesCompleteLineTail(
+            sceneID: "teleprompter.asr",
+            elementID: "teleprompter_footer"
+        ))
+        XCTAssertEqual(
+            HUDFlowingTextViewportPolicy.completeLineFocusUTF16Offset(
+                runs: [
+                    HUDTextRun(text: "▸ 当前句", isFocused: true),
+                    HUDTextRun(text: "\n  下一句", opacity: 0.68)
+                ],
+                sceneID: "teleprompter.asr",
+                elementID: "teleprompter_body"
+            ),
+            0
+        )
+    }
+
+    func testCompleteLinePolicyReturnsOnlyWholeUnicodeTailFragments() {
+        let font = UIFont.systemFont(ofSize: 17, weight: .medium)
+        let text = "第一行\n第二行👨‍👩‍👧‍👦\n第三行e\u{301}\n第四行"
+
+        let visible = HUDCompleteLineTextPolicy.visibleText(
+            text,
+            width: 500,
+            font: font,
+            maximumLineCount: 2,
+            alignsToTop: false
+        )
+
+        XCTAssertFalse(visible.contains("第二行"))
+        XCTAssertTrue(visible.contains("第三行e\u{301}"))
+        XCTAssertTrue(visible.contains("第四行"))
+        XCTAssertTrue(visible.unicodeScalars.contains("\u{301}"))
+    }
+
+    func testCompleteLineRunSelectionPreservesGreenDepthAndUnicodeBoundaries() {
+        let runs = [
+            HUDTextRun(text: "  已读👨‍👩‍👧‍👦\n", opacity: 0.32),
+            HUDTextRun(text: "▸ 当前e\u{301}\n", opacity: 1),
+            HUDTextRun(text: "  未读", opacity: 0.68)
+        ]
+        let fullText = runs.map(\.text).joined()
+        let previousLength = (runs[0].text as NSString).length
+        let selected = NSRange(
+            location: previousLength,
+            length: (fullText as NSString).length - previousLength
+        )
+
+        let visibleRuns = HUDTextRunSelectionPolicy.visibleRuns(
+            runs,
+            fullText: fullText,
+            selectedUTF16Range: selected
+        )
+
+        XCTAssertEqual(visibleRuns.map(\.text).joined(), "▸ 当前e\u{301}\n  未读")
+        XCTAssertEqual(visibleRuns.map(\.opacity), [1, 0.68])
+        XCTAssertTrue(visibleRuns[0].text.unicodeScalars.contains("\u{301}"))
+
+        XCTAssertEqual(
+            HUDTextRunSelectionPolicy.visibleRuns(
+                [HUDTextRun(text: "错误组合")],
+                fullText: "安全回退",
+                selectedUTF16Range: NSRange(location: 0, length: 4)
+            ),
+            [HUDTextRun(text: "安全回退")]
+        )
+    }
+
+    func testTeleprompterThreeLineWindowAssignsReadCurrentAndUnreadDepths() throws {
+        let font = UIFont.systemFont(ofSize: 17, weight: .medium)
+        let text = "已经读过\n▸正在朗读\n接下来未读"
+        let firstBreak = (text as NSString).range(of: "\n")
+        let focusOffset = NSMaxRange(firstBreak)
+        let selection = HUDCompleteLineTextPolicy.visibleSelection(
+            text,
+            width: 500,
+            font: font,
+            maximumLineCount: 3,
+            maximumHeight: font.lineHeight * 3,
+            alignsToTop: true,
+            focusUTF16Offset: focusOffset
+        )
+        let runs = HUDTeleprompterLineRunPolicy.visibleRuns(
+            fullText: text,
+            selectedLineUTF16Ranges: selection.lineUTF16Ranges,
+            focusUTF16Offset: focusOffset
+        )
+
+        XCTAssertEqual(selection.lineUTF16Ranges.count, 3)
+        XCTAssertEqual(runs.map(\.opacity), [0.32, 1, 0.68])
+        XCTAssertEqual(runs.map(\.isFocused), [false, true, false])
+        XCTAssertEqual(runs.map(\.text).joined(), selection.text)
+    }
+
+    func testCompleteLinePolicyUsesStructuralParagraphOffsetInsteadOfAuthoredMarker() {
+        let font = UIFont.systemFont(ofSize: 17, weight: .medium)
+        let text = "  用户正文包含 ▸ 符号\n▸ 当前行\n  下一行\n  不应出现"
+        let focusOffset = try! XCTUnwrap(
+            HUDFlowingTextViewportPolicy.completeLineFocusUTF16Offset(
+                text: text,
+                sceneID: "teleprompter.asr",
+                elementID: "teleprompter_body"
+            )
+        )
+
+        let visible = HUDCompleteLineTextPolicy.visibleText(
+            text,
+            width: 500,
+            font: font,
+            maximumLineCount: 3,
+            maximumHeight: font.lineHeight * 3,
+            alignsToTop: true,
+            focusUTF16Offset: focusOffset
+        )
+
+        XCTAssertTrue(visible.contains("用户正文包含 ▸ 符号"))
+        XCTAssertTrue(visible.contains("▸ 当前行"))
+        XCTAssertTrue(visible.contains("下一行"))
+        XCTAssertFalse(visible.contains("不应出现"))
+    }
+
+    func testNarrowTeleprompterViewportIgnoresAuthoredMarkerAtWrappedPreviousLine() throws {
+        let font = UIFont.systemFont(ofSize: 17, weight: .medium)
+        let text = "  上一句很长很长很长 ▸ 用户原文\n▸ 当前句\n  下一句"
+        let focusOffset = try XCTUnwrap(
+            HUDFlowingTextViewportPolicy.completeLineFocusUTF16Offset(
+                text: text,
+                sceneID: "teleprompter.asr",
+                elementID: "teleprompter_body"
+            )
+        )
+
+        let visible = HUDCompleteLineTextPolicy.visibleText(
+            text,
+            width: 74,
+            font: font,
+            maximumLineCount: 3,
+            maximumHeight: font.lineHeight * 3,
+            alignsToTop: true,
+            focusUTF16Offset: focusOffset
+        )
+
+        XCTAssertTrue(visible.contains("▸ 当前句"))
+        XCTAssertFalse(visible.contains("▸ 用户原文"))
+    }
+
+    func testTeleprompterViewportFollowsIntraSentenceUnreadFocus() throws {
+        let font = UIFont.systemFont(ofSize: 17, weight: .medium)
+        let runs = [
+            HUDTextRun(text: "  已经读过的第一段很长很长很长", opacity: 0.32),
+            HUDTextRun(
+                text: " ▸ 从这里继续显示还没有读到的内容直到结束",
+                opacity: 1,
+                isFocused: true
+            ),
+            HUDTextRun(text: "\n  下一句仍然未读", opacity: 0.68)
+        ]
+        let text = runs.map(\.text).joined()
+        let focusOffset = try XCTUnwrap(
+            HUDFlowingTextViewportPolicy.completeLineFocusUTF16Offset(
+                runs: runs,
+                sceneID: "teleprompter.asr",
+                elementID: "teleprompter_body"
+            )
+        )
+        let selection = HUDCompleteLineTextPolicy.visibleSelection(
+            text,
+            width: 86,
+            font: font,
+            maximumLineCount: 3,
+            maximumHeight: font.lineHeight * 3,
+            alignsToTop: true,
+            focusUTF16Offset: focusOffset
+        )
+
+        XCTAssertGreaterThan(selection.utf16Range.location, 0)
+        XCTAssertTrue(selection.text.contains("▸") || selection.text.contains("从这里"))
+        XCTAssertFalse(selection.text.contains("已经读过的第一段"))
+    }
+
+    func testCompleteLinePolicyNeverSelectsFragmentsTallerThanMeasuredViewport() {
+        let font = UIFont.systemFont(ofSize: 20, weight: .medium)
+        let text = "第一行\n第二行\n第三行"
+
+        let visible = HUDCompleteLineTextPolicy.visibleText(
+            text,
+            width: 500,
+            font: font,
+            maximumLineCount: 3,
+            maximumHeight: font.lineHeight * 2 + 0.5,
+            alignsToTop: true
+        )
+
+        XCTAssertFalse(visible.contains("第一行"))
+        XCTAssertTrue(visible.contains("第二行"))
+        XCTAssertTrue(visible.contains("第三行"))
     }
 
     func testConversationHUDRendersLongStreamingAnswerInsideTwoLineViewport() async throws {

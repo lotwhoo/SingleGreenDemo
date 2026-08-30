@@ -3,6 +3,16 @@ import SwiftUI
 
 enum AppShellLayout {
     static let headerTopPadding: CGFloat = 0
+    static let controlPanelHeightFraction: CGFloat = 0.34
+    static let minimumControlPanelHeight: CGFloat = 250
+    static let maximumControlPanelHeight: CGFloat = 320
+
+    static func controlPanelHeight(in containerHeight: CGFloat) -> CGFloat {
+        min(
+            max(containerHeight * controlPanelHeightFraction, minimumControlPanelHeight),
+            maximumControlPanelHeight
+        )
+    }
 }
 
 struct AppShellView: View {
@@ -43,6 +53,7 @@ struct AppShellView: View {
                     }
 
                     ControlPanelView(debugMode: $debugMode)
+                        .frame(height: AppShellLayout.controlPanelHeight(in: proxy.size.height))
                 }
                 .padding(.horizontal, 14)
                 .padding(.top, AppShellLayout.headerTopPadding)

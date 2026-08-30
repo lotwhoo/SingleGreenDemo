@@ -2510,6 +2510,103 @@
                     "accessorKind": "get",
                     "children": [
                       {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.Int?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s6LLMKit8LLMAgentC6ConfigV19completionMaxTokensSiSgvg",
+                    "moduleName": "LLMKit",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:6LLMKit8LLMAgentC6ConfigV19completionMaxTokensSiSgvg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.Int?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s6LLMKit8LLMAgentC6ConfigV19completionMaxTokensSiSgvs",
+                    "moduleName": "LLMKit",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:6LLMKit8LLMAgentC6ConfigV19completionMaxTokensSiSgvs"
+                  }
+                ],
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.Int?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "HasInitialValue",
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s6LLMKit8LLMAgentC6ConfigV19completionMaxTokensSiSgvp",
+                "moduleName": "LLMKit",
+                "name": "completionMaxTokens",
+                "printedName": "completionMaxTokens",
+                "usr": "s:6LLMKit8LLMAgentC6ConfigV19completionMaxTokensSiSgvp"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
                         "kind": "TypeNominal",
                         "name": "Int",
                         "printedName": "Swift.Int",
@@ -2708,6 +2805,81 @@
                 "name": "init",
                 "printedName": "init(systemPrompt:maxMessages:maxTokens:maxToolRounds:temperature:)",
                 "usr": "s:6LLMKit8LLMAgentC6ConfigV12systemPrompt11maxMessages0F6Tokens0F10ToolRounds11temperatureAESSSg_S3iSdtcfc"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Config",
+                    "printedName": "LLMKit.LLMAgent.Config",
+                    "usr": "s:6LLMKit8LLMAgentC6ConfigV"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "usr": "s:Sq"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.Int?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Constructor",
+                "init_kind": "Designated",
+                "kind": "Constructor",
+                "mangledName": "$s6LLMKit8LLMAgentC6ConfigV12systemPrompt11maxMessages0F6Tokens0F10ToolRounds11temperature013completionMaxH0AESSSg_S3iSdSiSgtcfc",
+                "moduleName": "LLMKit",
+                "name": "init",
+                "printedName": "init(systemPrompt:maxMessages:maxTokens:maxToolRounds:temperature:completionMaxTokens:)",
+                "usr": "s:6LLMKit8LLMAgentC6ConfigV12systemPrompt11maxMessages0F6Tokens0F10ToolRounds11temperature013completionMaxH0AESSSg_S3iSdSiSgtcfc"
               },
               {
                 "children": [
@@ -5443,6 +5615,103 @@
                 "usr": "s:6LLMKit13LLMChatClientC6ConfigV8thinkingAA24LLMThinkingConfigurationVSgvp"
               },
               {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "LLMResponseFormat",
+                            "printedName": "LLMKit.LLMResponseFormat",
+                            "usr": "s:6LLMKit17LLMResponseFormatV"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "LLMKit.LLMResponseFormat?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s6LLMKit13LLMChatClientC6ConfigV14responseFormatAA011LLMResponseF0VSgvg",
+                    "moduleName": "LLMKit",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:6LLMKit13LLMChatClientC6ConfigV14responseFormatAA011LLMResponseF0VSgvg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "LLMResponseFormat",
+                            "printedName": "LLMKit.LLMResponseFormat",
+                            "usr": "s:6LLMKit17LLMResponseFormatV"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "LLMKit.LLMResponseFormat?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s6LLMKit13LLMChatClientC6ConfigV14responseFormatAA011LLMResponseF0VSgvs",
+                    "moduleName": "LLMKit",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:6LLMKit13LLMChatClientC6ConfigV14responseFormatAA011LLMResponseF0VSgvs"
+                  }
+                ],
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMResponseFormat",
+                        "printedName": "LLMKit.LLMResponseFormat",
+                        "usr": "s:6LLMKit17LLMResponseFormatV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "LLMKit.LLMResponseFormat?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "HasInitialValue",
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s6LLMKit13LLMChatClientC6ConfigV14responseFormatAA011LLMResponseF0VSgvp",
+                "moduleName": "LLMKit",
+                "name": "responseFormat",
+                "printedName": "responseFormat",
+                "usr": "s:6LLMKit13LLMChatClientC6ConfigV14responseFormatAA011LLMResponseF0VSgvp"
+              },
+              {
                 "children": [
                   {
                     "kind": "TypeNominal",
@@ -5573,6 +5842,93 @@
                 "name": "init",
                 "printedName": "init(baseURL:apiKey:model:timeoutInterval:retryConfig:thinking:)",
                 "usr": "s:6LLMKit13LLMChatClientC6ConfigV7baseURL6apiKey5model15timeoutInterval05retryD08thinkingAE10Foundation0F0V_S2SSdAA08LLMRetryD0VAA24LLMThinkingConfigurationVSgtcfc"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Config",
+                    "printedName": "LLMKit.LLMChatClient.Config",
+                    "usr": "s:6LLMKit13LLMChatClientC6ConfigV"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "URL",
+                    "printedName": "Foundation.URL",
+                    "usr": "s:10Foundation3URLV"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Double",
+                        "printedName": "Swift.Double",
+                        "usr": "s:Sd"
+                      }
+                    ],
+                    "hasDefaultArg": true,
+                    "kind": "TypeNameAlias",
+                    "name": "TimeInterval",
+                    "printedName": "Foundation.TimeInterval"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "LLMRetryConfig",
+                    "printedName": "LLMKit.LLMRetryConfig",
+                    "usr": "s:6LLMKit14LLMRetryConfigV"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMThinkingConfiguration",
+                        "printedName": "LLMKit.LLMThinkingConfiguration",
+                        "usr": "s:6LLMKit24LLMThinkingConfigurationV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "LLMKit.LLMThinkingConfiguration?",
+                    "usr": "s:Sq"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMResponseFormat",
+                        "printedName": "LLMKit.LLMResponseFormat",
+                        "usr": "s:6LLMKit17LLMResponseFormatV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "LLMKit.LLMResponseFormat?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Constructor",
+                "init_kind": "Designated",
+                "kind": "Constructor",
+                "mangledName": "$s6LLMKit13LLMChatClientC6ConfigV7baseURL6apiKey5model15timeoutInterval05retryD08thinking14responseFormatAE10Foundation0F0V_S2SSdAA08LLMRetryD0VAA24LLMThinkingConfigurationVSgAA011LLMResponseO0VSgtcfc",
+                "moduleName": "LLMKit",
+                "name": "init",
+                "printedName": "init(baseURL:apiKey:model:timeoutInterval:retryConfig:thinking:responseFormat:)",
+                "usr": "s:6LLMKit13LLMChatClientC6ConfigV7baseURL6apiKey5model15timeoutInterval05retryD08thinking14responseFormatAE10Foundation0F0V_S2SSdAA08LLMRetryD0VAA24LLMThinkingConfigurationVSgAA011LLMResponseO0VSgtcfc"
               },
               {
                 "children": [
@@ -7377,6 +7733,750 @@
         "name": "LLMRetryConfig",
         "printedName": "LLMRetryConfig",
         "usr": "s:6LLMKit14LLMRetryConfigV"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Double",
+                            "printedName": "Swift.Double",
+                            "usr": "s:Sd"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.Double?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ConfigV11temperatureSdSgvg",
+                    "moduleName": "LLMKit",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:6LLMKit20LLMStatelessToolLoopV6ConfigV11temperatureSdSgvg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Double",
+                            "printedName": "Swift.Double",
+                            "usr": "s:Sd"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.Double?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ConfigV11temperatureSdSgvs",
+                    "moduleName": "LLMKit",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:6LLMKit20LLMStatelessToolLoopV6ConfigV11temperatureSdSgvs"
+                  }
+                ],
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Double",
+                        "printedName": "Swift.Double",
+                        "usr": "s:Sd"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.Double?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "HasInitialValue",
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ConfigV11temperatureSdSgvp",
+                "moduleName": "LLMKit",
+                "name": "temperature",
+                "printedName": "temperature",
+                "usr": "s:6LLMKit20LLMStatelessToolLoopV6ConfigV11temperatureSdSgvp"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.Int?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ConfigV9maxTokensSiSgvg",
+                    "moduleName": "LLMKit",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:6LLMKit20LLMStatelessToolLoopV6ConfigV9maxTokensSiSgvg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.Int?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ConfigV9maxTokensSiSgvs",
+                    "moduleName": "LLMKit",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:6LLMKit20LLMStatelessToolLoopV6ConfigV9maxTokensSiSgvs"
+                  }
+                ],
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.Int?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "HasInitialValue",
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ConfigV9maxTokensSiSgvp",
+                "moduleName": "LLMKit",
+                "name": "maxTokens",
+                "printedName": "maxTokens",
+                "usr": "s:6LLMKit20LLMStatelessToolLoopV6ConfigV9maxTokensSiSgvp"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ConfigV03maxC6RoundsSivg",
+                    "moduleName": "LLMKit",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:6LLMKit20LLMStatelessToolLoopV6ConfigV03maxC6RoundsSivg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ConfigV03maxC6RoundsSivs",
+                    "moduleName": "LLMKit",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:6LLMKit20LLMStatelessToolLoopV6ConfigV03maxC6RoundsSivs"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ConfigV03maxC6RoundsSivp",
+                "moduleName": "LLMKit",
+                "name": "maxToolRounds",
+                "printedName": "maxToolRounds",
+                "usr": "s:6LLMKit20LLMStatelessToolLoopV6ConfigV03maxC6RoundsSivp"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Config",
+                    "printedName": "LLMKit.LLMStatelessToolLoop.Config",
+                    "usr": "s:6LLMKit20LLMStatelessToolLoopV6ConfigV"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Double",
+                        "printedName": "Swift.Double",
+                        "usr": "s:Sd"
+                      }
+                    ],
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.Double?",
+                    "usr": "s:Sq"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.Int?",
+                    "usr": "s:Sq"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Constructor",
+                "init_kind": "Designated",
+                "kind": "Constructor",
+                "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ConfigV11temperature9maxTokens0gC6RoundsAESdSg_SiSgSitcfc",
+                "moduleName": "LLMKit",
+                "name": "init",
+                "printedName": "init(temperature:maxTokens:maxToolRounds:)",
+                "usr": "s:6LLMKit20LLMStatelessToolLoopV6ConfigV11temperature9maxTokens0gC6RoundsAESdSg_SiSgSitcfc"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Config",
+                    "printedName": "LLMKit.LLMStatelessToolLoop.Config",
+                    "usr": "s:6LLMKit20LLMStatelessToolLoopV6ConfigV"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Config",
+                    "printedName": "LLMKit.LLMStatelessToolLoop.Config",
+                    "usr": "s:6LLMKit20LLMStatelessToolLoopV6ConfigV"
+                  }
+                ],
+                "declAttributes": [
+                  "Implements"
+                ],
+                "declKind": "Func",
+                "funcSelfKind": "NonMutating",
+                "implicit": true,
+                "kind": "Function",
+                "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ConfigV23__derived_struct_equalsySbAE_AEtFZ",
+                "moduleName": "LLMKit",
+                "name": "__derived_struct_equals",
+                "printedName": "__derived_struct_equals(_:_:)",
+                "static": true,
+                "usr": "s:6LLMKit20LLMStatelessToolLoopV6ConfigV23__derived_struct_equalsySbAE_AEtFZ"
+              }
+            ],
+            "conformances": [
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8CopyableP",
+                "name": "Copyable",
+                "printedName": "Copyable",
+                "usr": "s:s8CopyableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$sSQ",
+                "name": "Equatable",
+                "printedName": "Equatable",
+                "usr": "s:SQ"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss9EscapableP",
+                "name": "Escapable",
+                "printedName": "Escapable",
+                "usr": "s:s9EscapableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8SendableP",
+                "name": "Sendable",
+                "printedName": "Sendable",
+                "usr": "s:s8SendableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss16SendableMetatypeP",
+                "name": "SendableMetatype",
+                "printedName": "SendableMetatype",
+                "usr": "s:s16SendableMetatypeP"
+              }
+            ],
+            "declKind": "Struct",
+            "kind": "TypeDecl",
+            "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ConfigV",
+            "moduleName": "LLMKit",
+            "name": "Config",
+            "printedName": "Config",
+            "usr": "s:6LLMKit20LLMStatelessToolLoopV6ConfigV"
+          },
+          {
+            "children": [
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMMessage",
+                        "printedName": "LLMKit.LLMMessage",
+                        "usr": "s:6LLMKit10LLMMessageV"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ResultV7messageAA10LLMMessageVvg",
+                    "moduleName": "LLMKit",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:6LLMKit20LLMStatelessToolLoopV6ResultV7messageAA10LLMMessageVvg"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMMessage",
+                    "printedName": "LLMKit.LLMMessage",
+                    "usr": "s:6LLMKit10LLMMessageV"
+                  }
+                ],
+                "declAttributes": [
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "isLet": true,
+                "kind": "Var",
+                "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ResultV7messageAA10LLMMessageVvp",
+                "moduleName": "LLMKit",
+                "name": "message",
+                "printedName": "message",
+                "usr": "s:6LLMKit20LLMStatelessToolLoopV6ResultV7messageAA10LLMMessageVvp"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Array",
+                        "printedName": "[Swift.String]",
+                        "usr": "s:Sa"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ResultV08executedC5NamesSaySSGvg",
+                    "moduleName": "LLMKit",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:6LLMKit20LLMStatelessToolLoopV6ResultV08executedC5NamesSaySSGvg"
+                  }
+                ],
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[Swift.String]",
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declAttributes": [
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "isLet": true,
+                "kind": "Var",
+                "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ResultV08executedC5NamesSaySSGvp",
+                "moduleName": "LLMKit",
+                "name": "executedToolNames",
+                "printedName": "executedToolNames",
+                "usr": "s:6LLMKit20LLMStatelessToolLoopV6ResultV08executedC5NamesSaySSGvp"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Result",
+                    "printedName": "LLMKit.LLMStatelessToolLoop.Result",
+                    "usr": "s:6LLMKit20LLMStatelessToolLoopV6ResultV"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMMessage",
+                    "printedName": "LLMKit.LLMMessage",
+                    "usr": "s:6LLMKit10LLMMessageV"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[Swift.String]",
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declKind": "Constructor",
+                "init_kind": "Designated",
+                "kind": "Constructor",
+                "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ResultV7message08executedC5NamesAeA10LLMMessageV_SaySSGtcfc",
+                "moduleName": "LLMKit",
+                "name": "init",
+                "printedName": "init(message:executedToolNames:)",
+                "usr": "s:6LLMKit20LLMStatelessToolLoopV6ResultV7message08executedC5NamesAeA10LLMMessageV_SaySSGtcfc"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Result",
+                    "printedName": "LLMKit.LLMStatelessToolLoop.Result",
+                    "usr": "s:6LLMKit20LLMStatelessToolLoopV6ResultV"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Result",
+                    "printedName": "LLMKit.LLMStatelessToolLoop.Result",
+                    "usr": "s:6LLMKit20LLMStatelessToolLoopV6ResultV"
+                  }
+                ],
+                "declAttributes": [
+                  "Implements"
+                ],
+                "declKind": "Func",
+                "funcSelfKind": "NonMutating",
+                "implicit": true,
+                "kind": "Function",
+                "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ResultV23__derived_struct_equalsySbAE_AEtFZ",
+                "moduleName": "LLMKit",
+                "name": "__derived_struct_equals",
+                "printedName": "__derived_struct_equals(_:_:)",
+                "static": true,
+                "usr": "s:6LLMKit20LLMStatelessToolLoopV6ResultV23__derived_struct_equalsySbAE_AEtFZ"
+              }
+            ],
+            "conformances": [
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8CopyableP",
+                "name": "Copyable",
+                "printedName": "Copyable",
+                "usr": "s:s8CopyableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$sSQ",
+                "name": "Equatable",
+                "printedName": "Equatable",
+                "usr": "s:SQ"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss9EscapableP",
+                "name": "Escapable",
+                "printedName": "Escapable",
+                "usr": "s:s9EscapableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8SendableP",
+                "name": "Sendable",
+                "printedName": "Sendable",
+                "usr": "s:s8SendableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss16SendableMetatypeP",
+                "name": "SendableMetatype",
+                "printedName": "SendableMetatype",
+                "usr": "s:s16SendableMetatypeP"
+              }
+            ],
+            "declKind": "Struct",
+            "kind": "TypeDecl",
+            "mangledName": "$s6LLMKit20LLMStatelessToolLoopV6ResultV",
+            "moduleName": "LLMKit",
+            "name": "Result",
+            "printedName": "Result",
+            "usr": "s:6LLMKit20LLMStatelessToolLoopV6ResultV"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "LLMStatelessToolLoop",
+                "printedName": "LLMKit.LLMStatelessToolLoop",
+                "usr": "s:6LLMKit20LLMStatelessToolLoopV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMChatTransport",
+                "printedName": "any LLMKit.LLMChatTransport",
+                "usr": "s:6LLMKit16LLMChatTransportP"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMToolExecutor",
+                "printedName": "any LLMKit.LLMToolExecutor",
+                "usr": "s:6LLMKit15LLMToolExecutorP"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Config",
+                "printedName": "LLMKit.LLMStatelessToolLoop.Config",
+                "usr": "s:6LLMKit20LLMStatelessToolLoopV6ConfigV"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s6LLMKit20LLMStatelessToolLoopV9transport8executor6configAcA16LLMChatTransport_p_AA15LLMToolExecutor_pAC6ConfigVtcfc",
+            "moduleName": "LLMKit",
+            "name": "init",
+            "printedName": "init(transport:executor:config:)",
+            "usr": "s:6LLMKit20LLMStatelessToolLoopV9transport8executor6configAcA16LLMChatTransport_p_AA15LLMToolExecutor_pAC6ConfigVtcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Result",
+                "printedName": "LLMKit.LLMStatelessToolLoop.Result",
+                "usr": "s:6LLMKit20LLMStatelessToolLoopV6ResultV"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMMessage",
+                    "printedName": "LLMKit.LLMMessage",
+                    "usr": "s:6LLMKit10LLMMessageV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[LLMKit.LLMMessage]",
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s6LLMKit20LLMStatelessToolLoopV8complete8messagesAC6ResultVSayAA10LLMMessageVG_tYaKF",
+            "moduleName": "LLMKit",
+            "name": "complete",
+            "printedName": "complete(messages:)",
+            "throwing": true,
+            "usr": "s:6LLMKit20LLMStatelessToolLoopV8complete8messagesAC6ResultVSayAA10LLMMessageVG_tYaKF"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s6LLMKit20LLMStatelessToolLoopV",
+        "moduleName": "LLMKit",
+        "name": "LLMStatelessToolLoop",
+        "printedName": "LLMStatelessToolLoop",
+        "usr": "s:6LLMKit20LLMStatelessToolLoopV"
       },
       {
         "children": [
@@ -9475,6 +10575,499 @@
       {
         "children": [
           {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "FormatType",
+                        "printedName": "LLMKit.LLMResponseFormat.FormatType",
+                        "usr": "s:6LLMKit17LLMResponseFormatV0C4TypeO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "FormatType",
+                            "printedName": "LLMKit.LLMResponseFormat.FormatType",
+                            "usr": "s:6LLMKit17LLMResponseFormatV0C4TypeO"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Metatype",
+                        "printedName": "LLMKit.LLMResponseFormat.FormatType.Type"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(LLMKit.LLMResponseFormat.FormatType.Type) -> LLMKit.LLMResponseFormat.FormatType"
+                  }
+                ],
+                "declKind": "EnumElement",
+                "kind": "Var",
+                "mangledName": "$s6LLMKit17LLMResponseFormatV0C4TypeO10jsonObjectyA2EmF",
+                "moduleName": "LLMKit",
+                "name": "jsonObject",
+                "printedName": "jsonObject",
+                "usr": "s:6LLMKit17LLMResponseFormatV0C4TypeO10jsonObjectyA2EmF"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "FormatType",
+                        "printedName": "LLMKit.LLMResponseFormat.FormatType",
+                        "usr": "s:6LLMKit17LLMResponseFormatV0C4TypeO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "LLMKit.LLMResponseFormat.FormatType?",
+                    "usr": "s:Sq"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declAttributes": [
+                  "Inlinable"
+                ],
+                "declKind": "Constructor",
+                "implicit": true,
+                "init_kind": "Designated",
+                "kind": "Constructor",
+                "mangledName": "$s6LLMKit17LLMResponseFormatV0C4TypeO8rawValueAESgSS_tcfc",
+                "moduleName": "LLMKit",
+                "name": "init",
+                "printedName": "init(rawValue:)",
+                "usr": "s:6LLMKit17LLMResponseFormatV0C4TypeO8rawValueAESgSS_tcfc"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "TypeAlias",
+                "implicit": true,
+                "kind": "TypeAlias",
+                "mangledName": "$s6LLMKit17LLMResponseFormatV0C4TypeO8RawValuea",
+                "moduleName": "LLMKit",
+                "name": "RawValue",
+                "printedName": "RawValue",
+                "usr": "s:6LLMKit17LLMResponseFormatV0C4TypeO8RawValuea"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Inlinable"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s6LLMKit17LLMResponseFormatV0C4TypeO8rawValueSSvg",
+                    "moduleName": "LLMKit",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:6LLMKit17LLMResponseFormatV0C4TypeO8rawValueSSvg"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Var",
+                "implicit": true,
+                "kind": "Var",
+                "mangledName": "$s6LLMKit17LLMResponseFormatV0C4TypeO8rawValueSSvp",
+                "moduleName": "LLMKit",
+                "name": "rawValue",
+                "printedName": "rawValue",
+                "usr": "s:6LLMKit17LLMResponseFormatV0C4TypeO8rawValueSSvp"
+              }
+            ],
+            "conformances": [
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8CopyableP",
+                "name": "Copyable",
+                "printedName": "Copyable",
+                "usr": "s:s8CopyableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$sSe",
+                "name": "Decodable",
+                "printedName": "Decodable",
+                "usr": "s:Se"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$sSE",
+                "name": "Encodable",
+                "printedName": "Encodable",
+                "usr": "s:SE"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$sSQ",
+                "name": "Equatable",
+                "printedName": "Equatable",
+                "usr": "s:SQ"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss9EscapableP",
+                "name": "Escapable",
+                "printedName": "Escapable",
+                "usr": "s:s9EscapableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$sSH",
+                "name": "Hashable",
+                "printedName": "Hashable",
+                "usr": "s:SH"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeWitness",
+                    "name": "RawValue",
+                    "printedName": "RawValue"
+                  }
+                ],
+                "kind": "Conformance",
+                "mangledName": "$sSY",
+                "name": "RawRepresentable",
+                "printedName": "RawRepresentable",
+                "usr": "s:SY"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8SendableP",
+                "name": "Sendable",
+                "printedName": "Sendable",
+                "usr": "s:s8SendableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss16SendableMetatypeP",
+                "name": "SendableMetatype",
+                "printedName": "SendableMetatype",
+                "usr": "s:s16SendableMetatypeP"
+              }
+            ],
+            "declKind": "Enum",
+            "enumRawTypeName": "String",
+            "isEnumExhaustive": true,
+            "kind": "TypeDecl",
+            "mangledName": "$s6LLMKit17LLMResponseFormatV0C4TypeO",
+            "moduleName": "LLMKit",
+            "name": "FormatType",
+            "printedName": "FormatType",
+            "usr": "s:6LLMKit17LLMResponseFormatV0C4TypeO"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "FormatType",
+                    "printedName": "LLMKit.LLMResponseFormat.FormatType",
+                    "usr": "s:6LLMKit17LLMResponseFormatV0C4TypeO"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s6LLMKit17LLMResponseFormatV4typeAC0C4TypeOvg",
+                "moduleName": "LLMKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:6LLMKit17LLMResponseFormatV4typeAC0C4TypeOvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "FormatType",
+                "printedName": "LLMKit.LLMResponseFormat.FormatType",
+                "usr": "s:6LLMKit17LLMResponseFormatV0C4TypeO"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s6LLMKit17LLMResponseFormatV4typeAC0C4TypeOvp",
+            "moduleName": "LLMKit",
+            "name": "type",
+            "printedName": "type",
+            "usr": "s:6LLMKit17LLMResponseFormatV4typeAC0C4TypeOvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "LLMResponseFormat",
+                "printedName": "LLMKit.LLMResponseFormat",
+                "usr": "s:6LLMKit17LLMResponseFormatV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "FormatType",
+                "printedName": "LLMKit.LLMResponseFormat.FormatType",
+                "usr": "s:6LLMKit17LLMResponseFormatV0C4TypeO"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s6LLMKit17LLMResponseFormatV4typeA2C0C4TypeO_tcfc",
+            "moduleName": "LLMKit",
+            "name": "init",
+            "printedName": "init(type:)",
+            "usr": "s:6LLMKit17LLMResponseFormatV4typeA2C0C4TypeO_tcfc"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMResponseFormat",
+                    "printedName": "LLMKit.LLMResponseFormat",
+                    "usr": "s:6LLMKit17LLMResponseFormatV"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s6LLMKit17LLMResponseFormatV10jsonObjectACvgZ",
+                "moduleName": "LLMKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "static": true,
+                "usr": "s:6LLMKit17LLMResponseFormatV10jsonObjectACvgZ"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "LLMResponseFormat",
+                "printedName": "LLMKit.LLMResponseFormat",
+                "usr": "s:6LLMKit17LLMResponseFormatV"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s6LLMKit17LLMResponseFormatV10jsonObjectACvpZ",
+            "moduleName": "LLMKit",
+            "name": "jsonObject",
+            "printedName": "jsonObject",
+            "static": true,
+            "usr": "s:6LLMKit17LLMResponseFormatV10jsonObjectACvpZ"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMResponseFormat",
+                "printedName": "LLMKit.LLMResponseFormat",
+                "usr": "s:6LLMKit17LLMResponseFormatV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMResponseFormat",
+                "printedName": "LLMKit.LLMResponseFormat",
+                "usr": "s:6LLMKit17LLMResponseFormatV"
+              }
+            ],
+            "declAttributes": [
+              "Implements"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s6LLMKit17LLMResponseFormatV23__derived_struct_equalsySbAC_ACtFZ",
+            "moduleName": "LLMKit",
+            "name": "__derived_struct_equals",
+            "printedName": "__derived_struct_equals(_:_:)",
+            "static": true,
+            "usr": "s:6LLMKit17LLMResponseFormatV23__derived_struct_equalsySbAC_ACtFZ"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Encoder",
+                "printedName": "any Swift.Encoder",
+                "usr": "s:s7EncoderP"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s6LLMKit17LLMResponseFormatV6encode2toys7Encoder_p_tKF",
+            "moduleName": "LLMKit",
+            "name": "encode",
+            "printedName": "encode(to:)",
+            "throwing": true,
+            "usr": "s:6LLMKit17LLMResponseFormatV6encode2toys7Encoder_p_tKF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "LLMResponseFormat",
+                "printedName": "LLMKit.LLMResponseFormat",
+                "usr": "s:6LLMKit17LLMResponseFormatV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Decoder",
+                "printedName": "any Swift.Decoder",
+                "usr": "s:s7DecoderP"
+              }
+            ],
+            "declKind": "Constructor",
+            "implicit": true,
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s6LLMKit17LLMResponseFormatV4fromACs7Decoder_p_tKcfc",
+            "moduleName": "LLMKit",
+            "name": "init",
+            "printedName": "init(from:)",
+            "throwing": true,
+            "usr": "s:6LLMKit17LLMResponseFormatV4fromACs7Decoder_p_tKcfc"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSe",
+            "name": "Decodable",
+            "printedName": "Decodable",
+            "usr": "s:Se"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSE",
+            "name": "Encodable",
+            "printedName": "Encodable",
+            "usr": "s:SE"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s6LLMKit17LLMResponseFormatV",
+        "moduleName": "LLMKit",
+        "name": "LLMResponseFormat",
+        "printedName": "LLMResponseFormat",
+        "usr": "s:6LLMKit17LLMResponseFormatV"
+      },
+      {
+        "children": [
+          {
             "accessors": [
               {
                 "accessorKind": "get",
@@ -10127,6 +11720,103 @@
             "usr": "s:6LLMKit14LLMChatRequestV8thinkingAA24LLMThinkingConfigurationVSgvp"
           },
           {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMResponseFormat",
+                        "printedName": "LLMKit.LLMResponseFormat",
+                        "usr": "s:6LLMKit17LLMResponseFormatV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "LLMKit.LLMResponseFormat?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s6LLMKit14LLMChatRequestV14responseFormatAA011LLMResponseE0VSgvg",
+                "moduleName": "LLMKit",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:6LLMKit14LLMChatRequestV14responseFormatAA011LLMResponseE0VSgvg"
+              },
+              {
+                "accessorKind": "set",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMResponseFormat",
+                        "printedName": "LLMKit.LLMResponseFormat",
+                        "usr": "s:6LLMKit17LLMResponseFormatV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "LLMKit.LLMResponseFormat?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s6LLMKit14LLMChatRequestV14responseFormatAA011LLMResponseE0VSgvs",
+                "moduleName": "LLMKit",
+                "name": "Set",
+                "printedName": "Set()",
+                "usr": "s:6LLMKit14LLMChatRequestV14responseFormatAA011LLMResponseE0VSgvs"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMResponseFormat",
+                    "printedName": "LLMKit.LLMResponseFormat",
+                    "usr": "s:6LLMKit17LLMResponseFormatV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "LLMKit.LLMResponseFormat?",
+                "usr": "s:Sq"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "kind": "Var",
+            "mangledName": "$s6LLMKit14LLMChatRequestV14responseFormatAA011LLMResponseE0VSgvp",
+            "moduleName": "LLMKit",
+            "name": "responseFormat",
+            "printedName": "responseFormat",
+            "usr": "s:6LLMKit14LLMChatRequestV14responseFormatAA011LLMResponseE0VSgvp"
+          },
+          {
             "children": [
               {
                 "kind": "TypeNominal",
@@ -10335,6 +12025,132 @@
             "name": "init",
             "printedName": "init(model:messages:temperature:maxTokens:stream:tools:thinking:)",
             "usr": "s:6LLMKit14LLMChatRequestV5model8messages11temperature9maxTokens6stream5tools8thinkingACSS_SayAA10LLMMessageVGSdSgSiSgSbSayAA7LLMToolVGSgAA24LLMThinkingConfigurationVSgtcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "LLMChatRequest",
+                "printedName": "LLMKit.LLMChatRequest",
+                "usr": "s:6LLMKit14LLMChatRequestV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMMessage",
+                    "printedName": "LLMKit.LLMMessage",
+                    "usr": "s:6LLMKit10LLMMessageV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[LLMKit.LLMMessage]",
+                "usr": "s:Sa"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.Double?",
+                "usr": "s:Sq"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.Int?",
+                "usr": "s:Sq"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMTool",
+                        "printedName": "LLMKit.LLMTool",
+                        "usr": "s:6LLMKit7LLMToolV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[LLMKit.LLMTool]",
+                    "usr": "s:Sa"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "[LLMKit.LLMTool]?",
+                "usr": "s:Sq"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMThinkingConfiguration",
+                    "printedName": "LLMKit.LLMThinkingConfiguration",
+                    "usr": "s:6LLMKit24LLMThinkingConfigurationV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "LLMKit.LLMThinkingConfiguration?",
+                "usr": "s:Sq"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMResponseFormat",
+                    "printedName": "LLMKit.LLMResponseFormat",
+                    "usr": "s:6LLMKit17LLMResponseFormatV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "LLMKit.LLMResponseFormat?",
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s6LLMKit14LLMChatRequestV5model8messages11temperature9maxTokens6stream5tools8thinking14responseFormatACSS_SayAA10LLMMessageVGSdSgSiSgSbSayAA7LLMToolVGSgAA24LLMThinkingConfigurationVSgAA011LLMResponseM0VSgtcfc",
+            "moduleName": "LLMKit",
+            "name": "init",
+            "printedName": "init(model:messages:temperature:maxTokens:stream:tools:thinking:responseFormat:)",
+            "usr": "s:6LLMKit14LLMChatRequestV5model8messages11temperature9maxTokens6stream5tools8thinking14responseFormatACSS_SayAA10LLMMessageVGSdSgSiSgSbSayAA7LLMToolVGSgAA24LLMThinkingConfigurationVSgAA011LLMResponseM0VSgtcfc"
           },
           {
             "children": [

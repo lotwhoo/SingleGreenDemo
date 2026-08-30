@@ -71,6 +71,34 @@ final class LLMChatClientNetworkTests: XCTestCase {
         XCTAssertEqual(json["max_tokens"] as? Int, 256)
         XCTAssertNil(json["thinking"])
         XCTAssertNil(json["reasoning_effort"])
+        XCTAssertNil(json["response_format"])
+    }
+
+    func testJSONResponseFormatIsSent() async throws {
+        var captured: URLRequest?
+        MockURLProtocol.requestHandler = { request in
+            captured = request
+            let json = #"{ "choices": [ { "message": { "role": "assistant", "content": "{}" } } ] }"#
+            return (self.httpResponse(200), Data(json.utf8))
+        }
+        defer { MockURLProtocol.requestHandler = nil }
+
+        let client = LLMChatClient(
+            config: .init(
+                apiKey: "sk-test",
+                thinking: nil,
+                responseFormat: .jsonObject
+            ),
+            session: makeSession()
+        )
+        _ = try await client.complete(messages: [.init(role: .user, content: "return json")])
+
+        let body = try XCTUnwrap(Self.requestBodyData(try XCTUnwrap(captured)))
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
+        XCTAssertEqual(
+            json["response_format"] as? NSDictionary,
+            ["type": "json_object"] as NSDictionary
+        )
     }
 
     func testThinkingConfigControlsOutgoingRequestAndOmitsTemperatureWhenEnabled() async throws {

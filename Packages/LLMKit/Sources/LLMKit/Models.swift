@@ -84,6 +84,21 @@ public struct LLMThinkingConfiguration: Sendable, Equatable {
     public static let disabled = Self(mode: .disabled)
 }
 
+/// Provider-neutral structured response request for OpenAI-compatible APIs.
+public struct LLMResponseFormat: Codable, Sendable, Equatable {
+    public enum FormatType: String, Codable, Sendable, Equatable {
+        case jsonObject = "json_object"
+    }
+
+    public let type: FormatType
+
+    public init(type: FormatType) {
+        self.type = type
+    }
+
+    public static let jsonObject = Self(type: .jsonObject)
+}
+
 /// Chat Completions 请求体。
 public struct LLMChatRequest: Codable, Sendable, Equatable {
     public var model: String
@@ -95,11 +110,14 @@ public struct LLMChatRequest: Codable, Sendable, Equatable {
     public var tools: [LLMTool]?
     /// Explicit thinking policy. Nil preserves generic OpenAI-compatible payloads.
     public var thinking: LLMThinkingConfiguration?
+    /// Optional structured response contract. Nil preserves existing payloads.
+    public var responseFormat: LLMResponseFormat?
 
     enum CodingKeys: String, CodingKey {
         case model, messages, temperature, stream, tools, thinking
         case maxTokens = "max_tokens"
         case reasoningEffort = "reasoning_effort"
+        case responseFormat = "response_format"
     }
 
     public init(model: String, messages: [LLMMessage],
@@ -112,7 +130,8 @@ public struct LLMChatRequest: Codable, Sendable, Equatable {
             maxTokens: maxTokens,
             stream: stream,
             tools: tools,
-            thinking: nil
+            thinking: nil,
+            responseFormat: nil
         )
     }
 
@@ -120,6 +139,23 @@ public struct LLMChatRequest: Codable, Sendable, Equatable {
                 temperature: Double? = nil, maxTokens: Int? = nil,
                 stream: Bool = false, tools: [LLMTool]? = nil,
                 thinking: LLMThinkingConfiguration?) {
+        self.init(
+            model: model,
+            messages: messages,
+            temperature: temperature,
+            maxTokens: maxTokens,
+            stream: stream,
+            tools: tools,
+            thinking: thinking,
+            responseFormat: nil
+        )
+    }
+
+    public init(model: String, messages: [LLMMessage],
+                temperature: Double? = nil, maxTokens: Int? = nil,
+                stream: Bool = false, tools: [LLMTool]? = nil,
+                thinking: LLMThinkingConfiguration?,
+                responseFormat: LLMResponseFormat?) {
         self.model = model
         self.messages = messages
         self.temperature = temperature
@@ -127,6 +163,7 @@ public struct LLMChatRequest: Codable, Sendable, Equatable {
         self.stream = stream
         self.tools = tools
         self.thinking = thinking
+        self.responseFormat = responseFormat
     }
 
     public init(from decoder: Decoder) throws {
@@ -137,6 +174,7 @@ public struct LLMChatRequest: Codable, Sendable, Equatable {
         maxTokens = try container.decodeIfPresent(Int.self, forKey: .maxTokens)
         stream = try container.decode(Bool.self, forKey: .stream)
         tools = try container.decodeIfPresent([LLMTool].self, forKey: .tools)
+        responseFormat = try container.decodeIfPresent(LLMResponseFormat.self, forKey: .responseFormat)
         if let wireThinking = try container.decodeIfPresent(WireThinking.self, forKey: .thinking) {
             thinking = LLMThinkingConfiguration(
                 mode: wireThinking.type,
@@ -158,6 +196,7 @@ public struct LLMChatRequest: Codable, Sendable, Equatable {
         try container.encodeIfPresent(maxTokens, forKey: .maxTokens)
         try container.encode(stream, forKey: .stream)
         try container.encodeIfPresent(tools, forKey: .tools)
+        try container.encodeIfPresent(responseFormat, forKey: .responseFormat)
         if let thinking {
             try container.encode(WireThinking(type: thinking.mode), forKey: .thinking)
             try container.encodeIfPresent(thinking.effort, forKey: .reasoningEffort)

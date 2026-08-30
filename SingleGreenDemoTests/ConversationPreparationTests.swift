@@ -489,6 +489,80 @@ final class ConversationPreparationTests: XCTestCase {
         XCTAssertEqual(observed, ["credential-version-one", "credential-version-two"])
     }
 
+    func testRefreshingTransportDoesNotRequireSpeechCredential() async throws {
+        let lease = ConversationCredentialLease(
+            speechAPIKey: "",
+            llmAPIKey: "llm-only-credential",
+            searchAPIKey: "",
+            agentAccountScope: .init(opaqueID: "account-a"),
+            expiresAt: .distantFuture
+        )
+        let provider = SequentialPreparationCredentialProvider(leases: [lease])
+        let recorder = TransportCredentialRecorder()
+        let transport = CredentialRefreshingLLMChatTransport(
+            scope: .fixture(account: "account-a"),
+            credentialProvider: provider,
+            makeTransport: { credential, _ in
+                RecordingChatTransport(credentialMarker: credential, recorder: recorder)
+            }
+        )
+
+        _ = try await transport.completeMessage(
+            messages: [.init(role: .user, content: "llm only")],
+            temperature: nil,
+            maxTokens: nil,
+            tools: nil
+        )
+
+        let observed = await recorder.values
+        XCTAssertEqual(observed, ["llm-only-credential"])
+    }
+
+    func testSpeechPreparationDoesNotRequireLLMCredential() async throws {
+        let settings = AISettings(buildPolicy: .serverManaged)
+        let lease = ConversationCredentialLease(
+            speechAPIKey: "speech-only-credential",
+            llmAPIKey: "",
+            searchAPIKey: "",
+            agentAccountScope: .init(opaqueID: "account-a"),
+            expiresAt: .distantFuture
+        )
+        let resolver = ConversationPreparationResolver(
+            settings: settings,
+            credentialProvider: SequentialPreparationCredentialProvider(leases: [lease]),
+            makeVoiceActivatedSession: nil
+        )
+
+        let prepared = try await resolver.prepareSpeechInput(mode: .pushToTalk)
+
+        XCTAssertEqual(prepared.mode, .pushToTalk)
+        await prepared.cancel()
+    }
+
+    func testAgentPreparationDoesNotRequireSpeechCredential() async throws {
+        let settings = AISettings(buildPolicy: .serverManaged)
+        settings.enableSearch = false
+        let lease = ConversationCredentialLease(
+            speechAPIKey: "",
+            llmAPIKey: "llm-only-credential",
+            searchAPIKey: "",
+            agentAccountScope: .init(opaqueID: "account-a"),
+            expiresAt: .distantFuture
+        )
+        let recorder = PreparationAgentFactoryRecorder()
+        let resolver = ConversationPreparationResolver(
+            settings: settings,
+            credentialProvider: SequentialPreparationCredentialProvider(leases: [lease]),
+            makeVoiceActivatedSession: nil,
+            makeAgent: recorder.make
+        )
+
+        _ = try await resolver.prepareAgent()
+
+        XCTAssertEqual(recorder.configurations.count, 1)
+        XCTAssertEqual(recorder.configurations.first?.scope.account.opaqueID, "account-a")
+    }
+
     func testRefreshingTransportRejectsChangedAccountBeforeCreatingProviderTransport() async {
         let provider = SequentialPreparationCredentialProvider(leases: [
             .fixture(llmCredential: "credential-version-two", account: "account-b")
@@ -601,6 +675,38 @@ final class ConversationPreparationTests: XCTestCase {
         XCTAssertEqual(networkCounter.value, 0)
     }
 
+    func testRefreshingSearchDoesNotRequireSpeechOrLLMCredentials() async throws {
+        let lease = ConversationCredentialLease(
+            speechAPIKey: "",
+            llmAPIKey: "",
+            searchAPIKey: "fixture-search-only-key",
+            agentAccountScope: .init(opaqueID: "account-fixture"),
+            expiresAt: .distantFuture
+        )
+        let factoryCounter = ThreadSafeFactoryCounter()
+        let networkCounter = ThreadSafeFactoryCounter()
+        let executor = CredentialRefreshingSearchToolExecutor(
+            scope: .fixture(account: "account-fixture"),
+            credentialProvider: FixedPreparationCredentialProvider(lease: lease),
+            makeExecutor: { credential in
+                XCTAssertEqual(credential, "fixture-search-only-key")
+                factoryCounter.increment()
+                return InvocationCountingToolExecutor(networkCounter: networkCounter)
+            }
+        )
+        let call = try JSONDecoder().decode(
+            LLMToolCall.self,
+            from: Data(
+                #"{"id":"call-fixture","type":"function","function":{"name":"web_search","arguments":"{\"query\":\"fixture\"}"}}"#.utf8
+            )
+        )
+
+        _ = try await executor.execute(call)
+
+        XCTAssertEqual(factoryCounter.value, 1)
+        XCTAssertEqual(networkCounter.value, 1)
+    }
+
     func testLiveAdapterMapsRawSearchToolToSemanticCoreActivity() {
         XCTAssertEqual(
             ProductionConversationAgentFactory.toolActivity(for: "web_search"),
@@ -691,6 +797,16 @@ private actor CountingPreparationCredentialProvider: ConversationCredentialProvi
 
 private struct StaticPreparationCredentialProvider: ConversationCredentialProvider {
     func lease() async throws -> ConversationCredentialLease { .fixture }
+}
+
+private struct FixedPreparationCredentialProvider: ConversationCredentialProvider {
+    let leaseValue: ConversationCredentialLease
+
+    init(lease: ConversationCredentialLease) {
+        leaseValue = lease
+    }
+
+    func lease() async throws -> ConversationCredentialLease { leaseValue }
 }
 
 private actor SequentialPreparationCredentialProvider: ConversationCredentialProvider {

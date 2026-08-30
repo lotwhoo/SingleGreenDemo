@@ -86,7 +86,7 @@ struct CredentialRefreshingLLMChatTransport: LLMChatTransport {
         try Task.checkCancellation()
         let lease = try await credentialProvider.lease()
         try Task.checkCancellation()
-        guard lease.isUsable(at: .now, minimumRemainingLifetime: 0) else {
+        guard lease.isLLMUsable(at: .now, minimumRemainingLifetime: 0) else {
             throw AgentCredentialRefreshFailure.unusableLease
         }
         guard lease.agentAccountScope == scope.account else {
@@ -124,14 +124,14 @@ struct CredentialRefreshingSearchToolExecutor: LLMToolExecutor {
         try Task.checkCancellation()
         let lease = try await credentialProvider.lease()
         try Task.checkCancellation()
-        guard lease.isUsable(at: .now, minimumRemainingLifetime: 0) else {
+        guard lease.isCurrent(at: .now, minimumRemainingLifetime: 0) else {
             throw AgentCredentialRefreshFailure.unusableLease
         }
         guard lease.agentAccountScope == scope.account else {
             throw AgentCredentialRefreshFailure.accountScopeChanged
         }
         let credential = lease.searchAPIKey.trimmed
-        guard !credential.isEmpty else {
+        guard lease.isSearchUsable(at: .now, minimumRemainingLifetime: 0) else {
             throw AgentCredentialRefreshFailure.searchCredentialMissing
         }
         try Task.checkCancellation()

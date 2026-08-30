@@ -13,6 +13,8 @@ public actor LLMChatClient {
         public var retryConfig: LLMRetryConfig
         /// Nil keeps the payload compatible with generic OpenAI-style providers.
         public var thinking: LLMThinkingConfiguration?
+        /// Nil leaves response formatting entirely to the model.
+        public var responseFormat: LLMResponseFormat?
 
         public init(baseURL: URL = URL(string: "https://api.deepseek.com/v1")!,
                     apiKey: String,
@@ -25,7 +27,8 @@ public actor LLMChatClient {
                 model: model,
                 timeoutInterval: timeoutInterval,
                 retryConfig: retryConfig,
-                thinking: nil
+                thinking: nil,
+                responseFormat: nil
             )
         }
 
@@ -35,12 +38,31 @@ public actor LLMChatClient {
                     timeoutInterval: TimeInterval = 60,
                     retryConfig: LLMRetryConfig = .init(),
                     thinking: LLMThinkingConfiguration?) {
+            self.init(
+                baseURL: baseURL,
+                apiKey: apiKey,
+                model: model,
+                timeoutInterval: timeoutInterval,
+                retryConfig: retryConfig,
+                thinking: thinking,
+                responseFormat: nil
+            )
+        }
+
+        public init(baseURL: URL = URL(string: "https://api.deepseek.com/v1")!,
+                    apiKey: String,
+                    model: String = "deepseek-v4-flash",
+                    timeoutInterval: TimeInterval = 60,
+                    retryConfig: LLMRetryConfig = .init(),
+                    thinking: LLMThinkingConfiguration?,
+                    responseFormat: LLMResponseFormat?) {
             self.baseURL = baseURL
             self.apiKey = apiKey
             self.model = model
             self.timeoutInterval = timeoutInterval
             self.retryConfig = retryConfig
             self.thinking = thinking
+            self.responseFormat = responseFormat
         }
     }
 
@@ -230,7 +252,8 @@ public actor LLMChatClient {
             maxTokens: maxTokens,
             stream: stream,
             tools: tools,
-            thinking: config.thinking
+            thinking: config.thinking,
+            responseFormat: config.responseFormat
         )
     }
 

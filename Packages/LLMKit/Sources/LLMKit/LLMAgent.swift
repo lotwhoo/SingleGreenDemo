@@ -7,7 +7,10 @@ public actor LLMAgent {
     public struct Config: Sendable, Equatable {
         public var systemPrompt: String?
         public var maxMessages: Int
+        /// Retained conversation-context budget used by `LLMChatContext`.
         public var maxTokens: Int
+        /// Optional provider completion cap. `nil` preserves provider defaults.
+        public var completionMaxTokens: Int?
         public var maxToolRounds: Int
         public var temperature: Double
 
@@ -16,9 +19,26 @@ public actor LLMAgent {
                     maxTokens: Int = 4000,
                     maxToolRounds: Int = 3,
                     temperature: Double = 0.7) {
+            self.init(
+                systemPrompt: systemPrompt,
+                maxMessages: maxMessages,
+                maxTokens: maxTokens,
+                maxToolRounds: maxToolRounds,
+                temperature: temperature,
+                completionMaxTokens: nil
+            )
+        }
+
+        public init(systemPrompt: String? = nil,
+                    maxMessages: Int = 20,
+                    maxTokens: Int = 4000,
+                    maxToolRounds: Int = 3,
+                    temperature: Double = 0.7,
+                    completionMaxTokens: Int?) {
             self.systemPrompt = systemPrompt
             self.maxMessages = maxMessages
             self.maxTokens = maxTokens
+            self.completionMaxTokens = completionMaxTokens
             self.maxToolRounds = maxToolRounds
             self.temperature = temperature
         }
@@ -73,7 +93,7 @@ public actor LLMAgent {
                 let reply = try await transport.completeMessage(
                     messages: messages,
                     temperature: config.temperature,
-                    maxTokens: nil,
+                    maxTokens: config.completionMaxTokens,
                     tools: tools
                 )
                 try ensureActive(transaction)
@@ -202,7 +222,7 @@ public actor LLMAgent {
                 for try await event in transport.completeMessageStreaming(
                     messages: messages,
                     temperature: config.temperature,
-                    maxTokens: nil,
+                    maxTokens: config.completionMaxTokens,
                     tools: tools
                 ) {
                     try Task.checkCancellation()
@@ -282,19 +302,7 @@ public actor LLMAgent {
     }
 
     private func validateToolRound(_ toolCalls: [LLMToolCall], content: String?) throws {
-        if let content, !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            throw LLMAgentError.mixedContentAndToolCall
-        }
-        for (index, call) in toolCalls.enumerated() {
-            switch call.validationFailure() {
-            case .incomplete:
-                throw LLMAgentError.incompleteToolCall(index: index)
-            case .malformedArguments:
-                throw LLMAgentError.malformedToolCallArguments(index: index)
-            case nil:
-                continue
-            }
-        }
+        try LLMToolRoundValidator.validate(toolCalls, content: content)
     }
 
     private func commit(_ newContext: LLMChatContext, transaction: Int) throws {

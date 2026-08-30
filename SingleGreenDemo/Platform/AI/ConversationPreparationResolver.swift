@@ -82,7 +82,8 @@ final class ConversationPreparationResolver {
         }
 
         let lease = try await validatedLease()
-        guard !settings.asrResourceID.trimmed.isEmpty else {
+        guard lease.isSpeechUsable(at: .now, minimumRemainingLifetime: 0),
+              !settings.asrResourceID.trimmed.isEmpty else {
             throw ConversationPreparationFailure(
                 userSafeMessage: "请先在设置中完成语音识别配置。",
                 failureCode: .configurationMissing
@@ -128,7 +129,8 @@ final class ConversationPreparationResolver {
     func prepareAgent() async throws -> PreparedConversationAgent {
         let lease = try await validatedLease()
         let model = settings.llmModel.trimmed
-        guard !model.isEmpty else {
+        guard lease.isLLMUsable(at: .now, minimumRemainingLifetime: 0),
+              !model.isEmpty else {
             throw ConversationPreparationFailure(
                 userSafeMessage: "请先在设置中完成 AI 回答配置。",
                 failureCode: .configurationMissing
@@ -175,7 +177,7 @@ final class ConversationPreparationResolver {
     private func validatedLease() async throws -> ConversationCredentialLease {
         do {
             let lease = try await credentialProvider.lease()
-            guard lease.isUsable(at: .now, minimumRemainingLifetime: 0) else {
+            guard lease.isCurrent(at: .now, minimumRemainingLifetime: 0) else {
                 throw ServerCredentialError.expiredLease
             }
             return lease

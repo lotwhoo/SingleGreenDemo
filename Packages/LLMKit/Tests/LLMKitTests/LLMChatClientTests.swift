@@ -59,6 +59,7 @@ final class LLMChatClientTests: XCTestCase {
         XCTAssertEqual(config.model, "deepseek-v4-flash")
         XCTAssertEqual(config.baseURL.absoluteString, "https://api.deepseek.com/v1")
         XCTAssertNil(config.thinking)
+        XCTAssertNil(config.responseFormat)
     }
 
     func testSSEChunkDecoding() throws {
@@ -102,5 +103,21 @@ final class LLMChatClientTests: XCTestCase {
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
         XCTAssertEqual((json["thinking"] as? [String: Any])?["type"] as? String, "disabled")
         XCTAssertNil(json["reasoning_effort"])
+    }
+
+    func testJSONResponseFormatEncodesOpenAICompatibleObject() throws {
+        let request = LLMChatRequest(
+            model: "deepseek-chat",
+            messages: [.init(role: .user, content: "return json")],
+            thinking: nil,
+            responseFormat: .jsonObject
+        )
+
+        let data = try JSONEncoder().encode(request)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertEqual(
+            json["response_format"] as? NSDictionary,
+            ["type": "json_object"] as NSDictionary
+        )
     }
 }

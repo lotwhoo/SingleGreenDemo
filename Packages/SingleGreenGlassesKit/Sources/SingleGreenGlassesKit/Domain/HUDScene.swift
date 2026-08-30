@@ -33,10 +33,25 @@ public enum HUDSemanticRole: Equatable, Sendable {
     case decorative
 }
 
+/// A provider-neutral text fragment whose opacity can express reading state
+/// without coupling the HUD scene model to SwiftUI attributed strings.
+public struct HUDTextRun: Equatable, Sendable {
+    public let text: String
+    public let opacity: Double
+    public let isFocused: Bool
+
+    public init(text: String, opacity: Double = 1, isFocused: Bool = false) {
+        self.text = text
+        self.opacity = min(max(opacity, 0), 1)
+        self.isFocused = isFocused
+    }
+}
+
 public enum HUDElementContent: Equatable, Sendable {
     case text(String, HUDTextStyle)
     case flowingText(String, isStreaming: Bool, footer: String?)
     case styledFlowingText(String, isStreaming: Bool, footer: String?, style: HUDTextStyle)
+    case styledFlowingTextRuns([HUDTextRun], isStreaming: Bool, footer: String?, style: HUDTextStyle)
     case symbol(String)
     case voiceWaveform(level: Double, isActive: Bool)
     case progress(Double)
