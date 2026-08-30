@@ -17,6 +17,7 @@ jobs:
       actions: read
       checks: read
       contents: read
+      statuses: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -152,4 +153,49 @@ jobs:
             exit 1
           fi
 
-          echo "Authorized current main $main_sha after Required CI check $required_check_id."
+          authorization_jobs=$(gh api --method GET \
+            "/repos/$canonical_repository/actions/runs/$GITHUB_RUN_ID/attempts/1/jobs?per_page=100")
+          authorization_job=$(printf '%s' "$authorization_jobs" | jq '
+            [.jobs[] |
+              select(.name == "Internal promotion authorization" and
+                     .status == "in_progress" and
+                     .conclusion == null)]')
+          if [ "$(printf '%s' "$authorization_job" | jq 'length')" -ne 1 ]; then
+            echo 'Expected exactly one in-progress authorization job for attempt 1.' >&2
+            exit 1
+          fi
+          authorization_job_id=$(printf '%s' "$authorization_job" | jq -r '.[0].id')
+          authorization_job_started_at=$(printf '%s' "$authorization_job" | jq -r '.[0].started_at')
+          authorization_target_url="https://github.com/$canonical_repository/actions/runs/$GITHUB_RUN_ID/job/$authorization_job_id"
+          authorization_description='Owner-authorized current main for internal delivery'
+          authorization_status=$(gh api --method POST \
+            -H 'X-GitHub-Api-Version: 2026-03-10' \
+            "/repos/$canonical_repository/statuses/$main_sha" \
+            -f state='success' \
+            -f context='Internal promotion authorization' \
+            -f description="$authorization_description" \
+            -f target_url="$authorization_target_url")
+          authorization_status_id=$(printf '%s' "$authorization_status" | jq -er '.id | select(type == "number")')
+          authorization_status_url="https://api.github.com/repos/$canonical_repository/statuses/$authorization_status_id"
+          if ! printf '%s' "$authorization_status" | jq -e \
+            --arg status_url "$authorization_status_url" \
+            --arg target "$authorization_target_url" \
+            --arg description "$authorization_description" \
+            --arg job_started "$authorization_job_started_at" \
+            --argjson status_id "$authorization_status_id" '
+              .id == $status_id and
+              .url == $status_url and
+              .state == "success" and
+              .context == "Internal promotion authorization" and
+              .description == $description and
+              .target_url == $target and
+              .creator.login == "github-actions[bot]" and
+              .creator.id == 41898282 and
+              .creator.type == "Bot" and
+              .created_at >= $job_started and
+              .created_at <= .updated_at' >/dev/null; then
+            echo 'Authorization commit-status response is not exact.' >&2
+            exit 1
+          fi
+
+          echo "Authorized current main $main_sha with job $authorization_job_id, status $authorization_status_id, and Required CI check $required_check_id."

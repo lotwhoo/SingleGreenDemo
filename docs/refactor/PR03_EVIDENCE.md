@@ -58,27 +58,53 @@ separation rather than weakening the artifact scanner.
 
 The workflow also retains the package matrix, public API, architecture,
 privacy, repository hygiene, build-flavor, and coverage gates. The exact
-workflow mutation suite now rejects 70/70 tested mutations, including missing
+workflow mutation suite now rejects 127/127 tested mutations, including missing
 internal triggers, shallow checkout, missing ruleset-contract fixtures,
 missing matrix rows or scanners, reused test derived data, swapped scanners,
 missing branch-policy invocation, and untrusted workflow-dispatch review input.
 The hardened cases also cover missing/incorrect job dependencies, non-`always`
 Required CI conditions, `continue-on-error` at job or step level, shell-level
-promotion write/ordering/post-check omissions, and any unexpected write
-permission or write step in a third workflow.
+promotion write/ordering/post-check omissions, authorization status response
+and linkage weakening, post-promotion dispatch broadening or unbounded waits,
+and any unexpected write permission or write step in a third workflow.
 
-`Required CI` is a stable, always-running aggregation job. It depends on
+For push and pull-request events, `Required CI` is the stable, always-running
+aggregation job. It depends on
 `branch-contract`, `package-matrix`, `app-simulator`, `release-build`,
 `coverage-and-hygiene`, and `public-api`, and fails closed unless every
 dependency result is exactly `success`. Its check name is the ruleset-facing
-required check. Promotion is now split into two workflows: a read-only,
-no-input, owner-triggered authorization workflow followed by a separate
-`workflow_run` writer workflow. Authorization checks current `main`, checkout
+required check. A no-input `workflow_dispatch` run instead names the aggregate
+`Internal post-promotion CI`, so a post-promotion run cannot mint the protected
+`Required CI` context.
+
+Promotion is split into an owner-triggered authorization workflow and a
+separate `workflow_run` writer. Authorization checks current `main`, checkout
 SHA, freshly fetched `origin/main`, and the latest successful `Required CI`
-check for that exact SHA from GitHub Actions app ID `15368`. The writer
-revalidates the exact authorization run, job, check, suite, Actions app,
-current-main SHA, and Required-CI linkage, then performs a non-force,
-fast-forward-only zero-delta pointer push and a post-push check.
+check for that exact SHA from GitHub Actions app ID `15368`. Only after those
+checks, its otherwise-read-only job uses narrowly scoped `statuses: write` to
+post one successful `Internal promotion authorization` commit status on the
+validated SHA, linked to the exact in-progress authorization job. The writer
+requires both the original completed job check with exact
+run/job/check/suite/app linkage and the latest exact successful commit status
+with its ID-derived API URL, canonical job URL, exact
+`github-actions[bot]` creator ID `41898282`, and job-bounded timestamps;
+status-only authorization is rejected. It then performs a non-force,
+fast-forward-only zero-delta pointer push and post-push check.
+
+A `GITHUB_TOKEN` push does not ordinarily trigger a push workflow. After the
+postcheck, a short job with only `actions: write` and `contents: read` freshly
+requires promoted SHA = current main = current internal, then dispatches
+workflow ID `344358206` once at `codex/internal-debug` using API version
+`2026-03-10`. That API returns the run details directly; the removed
+`return_run_details` field is forbidden. A separate job with only
+`actions: read`, `checks: read`, and `contents: read` validates the returned run
+identity, workflow, event, ref, SHA, repository, and bot actor, waits within
+fixed poll and job bounds, and requires exactly one successful
+`Internal post-promotion CI` aggregate with its exact
+job/check/suite/details/app-15368 linkage and no `Required CI` aggregate. After
+that linkage succeeds, it freshly requires current main = current internal =
+the expected SHA before reporting success. The write-capable job never
+performs that wait.
 
 All GitHub Actions are pinned by full commit SHA: `actions/checkout` uses
 `3d3c42e5aac5ba805825da76410c181273ba90b1` (v7.0.1), and
@@ -93,9 +119,10 @@ remains pending.
 Remote enablement requires three independently auditable layers:
 
 1. **Workflow layer:** CI runs the branch contract and full matrix on both
-   maintained refs; `Required CI` is always run and fail-closed. The read-only
-   owner authorization and separate `workflow_run` writer each revalidate the
-   current SHA and exact check linkage before a fast-forward-only update.
+   maintained refs; protected and post-promotion aggregate identities are
+   disjoint. Owner authorization emits both exact job-check and commit-status
+   evidence; the separate writer requires both before a fast-forward-only
+   update, then explicitly dispatches and verifies internal CI.
 2. **Ruleset layer:** the active main ruleset `21847803` and internal integrity
    ruleset `21848414` have no bypass. A separate attempted Actions writer-bypass
    ruleset failed with HTTP 422, so no exclusive writer identity is claimed.
@@ -158,7 +185,7 @@ zero-delta pointer semantics.
 | Branch-policy fixtures | 25/25 passed | local terminal run |
 | Internal ruleset contract fixtures | 63/63 passed | local terminal run |
 | Live internal ruleset contract | `steady` mode passed | ruleset `21848414` JSON snapshot |
-| CI workflow mutations | 70/70 rejected as expected | local terminal run |
+| CI workflow mutations | 127/127 rejected as expected | local terminal run |
 | CI workflow live guard | passed | local terminal run |
 | User Debug App XCTest | 83/83 passed, 0 failed/skipped | `/private/tmp/SingleGreenDemo-PR03-DebugTests.W5UylJ/user.xcresult` |
 | User Debug App-only build and scan | passed | `/private/tmp/SingleGreenDemo-PR03-DebugTests.W5UylJ/user-artifact` |
@@ -206,6 +233,25 @@ The audited bootstrap placed both `codex/internal-debug` and `main` at
 completed successfully; neither proves the remaining steady-state promotion on
 a genuinely new protected `main` SHA. No device install/launch or live-provider
 validation is claimed by this record.
+
+The first steady-state attempt for main
+`34981ff62512293b62f74899b8cd5c7ddad25782` used authorization run
+`33310068361`, authorization job/check `99253391287` in suite `90265105843`,
+and Required CI run `33309548401`, job/check `99253282988` in suite
+`90263765227`. Writer run `33310076996` attempt 1 failed at job `99253434540`
+because GH013 reported the sole missing item
+`Internal promotion authorization`. A diagnostic attempt 2 several minutes
+later failed identically at job `99254044526`, while the authorization check
+remained completed, successful, app `15368`, and attached to the same SHA.
+This disproves a short propagation-delay explanation; bounded retry alone
+would only postpone a deterministic failure.
+
+The local protocol therefore adds a SHA-level commit status while retaining
+the original job check as mandatory independent evidence. It also adds an
+explicit post-promotion CI dispatch because `GITHUB_TOKEN` pushes do not
+naturally trigger push workflows. These changes are locally guarded but still
+require a new hosted steady-state promotion before this document can claim the
+design complete. The internal ruleset was not changed.
 
 Remote branch bootstrap and promotion require separate explicit release
 authorization after the external ruleset requirements above are satisfied.

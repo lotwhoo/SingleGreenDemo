@@ -42,6 +42,18 @@ design are implemented; the narrow bootstrap succeeded and the pointer is
 present at the audited ref below. Steady-state promotion on a genuinely new
 protected `main` SHA remains pending.
 
+The owner authorization job retains only read permissions plus
+`statuses: write`. After current-main and Required-CI validation it posts one
+success commit status linked to its exact in-progress job. The writer requires
+both that latest exact status and the original completed job
+check/suite/app-15368 linkage, so status-only authorization fails closed. After
+a successful push and postcheck, a short job with only `actions: write` and
+`contents: read` freshly revalidates main/internal/promoted equality before one
+explicit dispatch. A separate job with `actions: read`, `checks: read`, and
+`contents: read` performs the bounded exact-run verification, then freshly
+requires main/internal/expected equality again before success, so the write
+token is not retained while waiting.
+
 ## Log privacy contract
 
 Internal export contains only timestamps, app/build metadata, lifecycle
@@ -82,10 +94,16 @@ deletion/non-fast-forward/linear-history rules, and
 The trusted push flow uses `github.event.after` for the reviewed SHA,
 `GITHUB_SHA` for the internal SHA, and an explicitly fetched `origin/main` for
 the main SHA, in that order. Pull requests targeting `codex/internal-debug`
-and workflow-dispatch review input are rejected. CI's complete User/Internal
-Debug/Release matrix is implemented locally: Debug tests are followed by a
-separate clean App-only build because XCTest hosts embed XCTest support; both
-Debug and Release artifacts are scanned for their variant capabilities.
+and workflow-dispatch review input are rejected. A no-input CI
+`workflow_dispatch` is accepted only at the exact internal ref when checkout,
+fresh main, and fresh internal SHAs are identical. Its aggregate is named
+`Internal post-promotion CI`, never the ruleset-facing `Required CI`; the
+writer validates its exact run metadata and aggregate
+job/check/suite/details/app-15368 linkage within fixed bounds. CI's complete
+User/Internal Debug/Release matrix is implemented locally: Debug tests are
+followed by a separate clean App-only build because XCTest hosts embed XCTest
+support; both Debug and Release artifacts are scanned for their variant
+capabilities.
 
 The main ruleset `21847803` and internal integrity ruleset `21848414` are active
 with no bypass. A separate attempted GitHub Actions writer-bypass ruleset
@@ -93,6 +111,15 @@ failed HTTP 422, so no exclusive writer identity is claimed. The remote branch
 is present at audited ref
 `eb21fa1aa9958075a81fbd0887619c5000975665`; no PAT or repository secret is
 used. Steady-state new-SHA promotion remains pending.
+
+Steady-state writer run `33310076996` failed twice for main
+`34981ff62512293b62f74899b8cd5c7ddad25782` with the identical sole GH013
+missing-authorization-check detail, including a diagnostic rerun several
+minutes later. The exact authorization job check remained successful and
+app-15368 linked, so bounded retry was rejected as a structural non-fix. The
+local protocol now adds the separately verified commit status described above
+and an explicit post-push CI dispatch. The ruleset remains unchanged; hosted
+proof of the new protocol is still pending.
 
 The separate internal Bundle ID intentionally creates an isolated settings
 domain, App sandbox, and Keychain context. Internal first launch therefore
