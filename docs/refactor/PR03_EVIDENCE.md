@@ -58,7 +58,7 @@ separation rather than weakening the artifact scanner.
 
 The workflow also retains the package matrix, public API, architecture,
 privacy, repository hygiene, build-flavor, and coverage gates. The exact
-workflow mutation suite now rejects 127/127 tested mutations, including missing
+workflow mutation suite now rejects 131/131 tested mutations, including missing
 internal triggers, shallow checkout, missing ruleset-contract fixtures,
 missing matrix rows or scanners, reused test derived data, swapped scanners,
 missing branch-policy invocation, and untrusted workflow-dispatch review input.
@@ -86,7 +86,8 @@ post one successful `Internal promotion authorization` commit status on the
 validated SHA, linked to the exact in-progress authorization job. The writer
 requires both the original completed job check with exact
 run/job/check/suite/app linkage and the latest exact successful commit status
-with its ID-derived API URL, canonical job URL, exact
+with its validated-SHA-derived API URL, independent numeric status ID,
+canonical job URL, exact
 `github-actions[bot]` creator ID `41898282`, and job-bounded timestamps;
 status-only authorization is rejected. It then performs a non-force,
 fast-forward-only zero-delta pointer push and post-push check.
@@ -185,7 +186,7 @@ zero-delta pointer semantics.
 | Branch-policy fixtures | 25/25 passed | local terminal run |
 | Internal ruleset contract fixtures | 63/63 passed | local terminal run |
 | Live internal ruleset contract | `steady` mode passed | ruleset `21848414` JSON snapshot |
-| CI workflow mutations | 127/127 rejected as expected | local terminal run |
+| CI workflow mutations | 131/131 rejected as expected | local terminal run |
 | CI workflow live guard | passed | local terminal run |
 | User Debug App XCTest | 83/83 passed, 0 failed/skipped | `/private/tmp/SingleGreenDemo-PR03-DebugTests.W5UylJ/user.xcresult` |
 | User Debug App-only build and scan | passed | `/private/tmp/SingleGreenDemo-PR03-DebugTests.W5UylJ/user-artifact` |
@@ -252,6 +253,22 @@ explicit post-promotion CI dispatch because `GITHUB_TOKEN` pushes do not
 naturally trigger push workflows. These changes are locally guarded but still
 require a new hosted steady-state promotion before this document can claim the
 design complete. The internal ruleset was not changed.
+
+The next hosted authorization attempt, run `33317246675`, reached the new
+commit-status response validation and created successful status ID
+`53177109135` for main `ad378c397afbb0dd45afce6d13cc7bc998fd5779`.
+GitHub returned the status object's `url` as
+`https://api.github.com/repos/lotwhoo/SingleGreenDemo/statuses/ad378c397afbb0dd45afce6d13cc7bc998fd5779`:
+the endpoint is derived from the validated commit SHA, while `.id` remains a
+separate numeric identity. The run failed because the workflow incorrectly
+expected `/statuses/53177109135`; the creator, target, context, state, and
+timestamp predicates all passed independently. The corrected contract retains
+all of those checks and binds `.url` to the exact validated-SHA endpoint in the
+authorization response and both repeated writer trust checks. Deterministic
+fixtures accept that response and reject the former numeric-ID-derived URL;
+the static mutation suite also rejects weakening the URL predicate to a merely
+non-null check. This failed run is diagnostic evidence only, not successful
+promotion.
 
 Remote branch bootstrap and promotion require separate explicit release
 authorization after the external ruleset requirements above are satisfied.
