@@ -4,7 +4,7 @@ import SwiftUI
 
 struct AISettingsBuildPolicy: Equatable, Sendable {
     enum CredentialMode: Equatable, Sendable {
-        #if DEBUG
+        #if INTERNAL_DEMO_CREDENTIALS
         case internalDemo
         #endif
         case serverManaged
@@ -13,7 +13,7 @@ struct AISettingsBuildPolicy: Equatable, Sendable {
     let credentialMode: CredentialMode
 
     static let current: Self = {
-        #if DEBUG
+        #if INTERNAL_DEMO_CREDENTIALS
         Self(credentialMode: .internalDemo)
         #else
         Self(credentialMode: .serverManaged)
@@ -22,12 +22,12 @@ struct AISettingsBuildPolicy: Equatable, Sendable {
 
     static let serverManaged = Self(credentialMode: .serverManaged)
 
-    #if DEBUG
+    #if INTERNAL_DEMO_CREDENTIALS
     static let internalDemo = Self(credentialMode: .internalDemo)
     #endif
 
     var allowsDemoCredentialStorage: Bool {
-        #if DEBUG
+        #if INTERNAL_DEMO_CREDENTIALS
         credentialMode == .internalDemo
         #else
         false
@@ -35,7 +35,7 @@ struct AISettingsBuildPolicy: Equatable, Sendable {
     }
 
     var credentialStatus: AICredentialStatusPresentation {
-        #if DEBUG
+        #if INTERNAL_DEMO_CREDENTIALS
         if allowsDemoCredentialStorage {
             return AICredentialStatusPresentation(
                 title: "内部演示模式",
@@ -78,7 +78,7 @@ struct AISpeechInputAvailability: Equatable, Sendable {
     )
 }
 
-#if DEBUG
+#if INTERNAL_DEMO_CREDENTIALS
 @MainActor
 protocol DemoCredentialStore {
     func load(_ key: String) -> String?
@@ -117,7 +117,7 @@ final class AISettings: ObservableObject {
     @AppStorage("ai.llm.model") var llmModel = "deepseek-v4-flash"
     @AppStorage("ai.llm.enableSearch") var enableSearch = true
 
-    #if DEBUG
+    #if INTERNAL_DEMO_CREDENTIALS
     private let demoCredentialStore: any DemoCredentialStore
     private let makeCredentialRevision: () -> String
 
@@ -205,7 +205,7 @@ final class AISettings: ObservableObject {
             .filter { !$0.isEmpty }
     }
 
-    #if DEBUG
+    #if INTERNAL_DEMO_CREDENTIALS
     var speechAPIKeyBinding: Binding<String> {
         Binding(get: { self.speechAPIKey }, set: { self.speechAPIKey = $0 })
     }

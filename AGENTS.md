@@ -104,8 +104,9 @@ cd Packages/SingleGreenConversationAdapters && swift test
 For App integration, resolve an available simulator before running:
 
 ```bash
-xcodebuild -project SingleGreenDemo.xcodeproj -scheme SingleGreenDemo -showdestinations
-xcodebuild -project SingleGreenDemo.xcodeproj -scheme SingleGreenDemo \
+xcodebuild -project SingleGreenDemo.xcodeproj -scheme SingleGreenUser -showdestinations
+xcodebuild -project SingleGreenDemo.xcodeproj -scheme SingleGreenUser \
+  -configuration User-Debug \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
   -derivedDataPath /private/tmp/SingleGreenDemo-AgentTests \
   test -only-testing:SingleGreenDemoTests
@@ -114,7 +115,8 @@ xcodebuild -project SingleGreenDemo.xcodeproj -scheme SingleGreenDemo \
 For build compatibility:
 
 ```bash
-xcodebuild -project SingleGreenDemo.xcodeproj -scheme SingleGreenDemo \
+xcodebuild -project SingleGreenDemo.xcodeproj -scheme SingleGreenUser \
+  -configuration User-Release \
   -destination 'generic/platform=iOS Simulator' \
   -derivedDataPath /private/tmp/SingleGreenDemo-AgentBuild \
   CODE_SIGNING_ALLOWED=NO build
@@ -165,3 +167,28 @@ For substantial feature work, prefer this sequence:
 - Do not force-push, rewrite history, or use destructive reset/checkout commands unless the user explicitly requests the exact operation.
 - Resolve the exact device identifier before installation. Build, install, and launch are separate gates and must be reported separately.
 - Never treat a successful generic device build as evidence that installation or launch succeeded.
+
+## PR-03 local delivery-pointer evidence
+
+The local PR-03 contract is documented in
+`docs/refactor/PR03_EVIDENCE.md`. The exact branch checker invocation is:
+
+```bash
+scripts/check_internal_branch_policy.sh REVIEWED_MAIN_SHA MAIN_SHA INTERNAL_SHA
+```
+
+Its validation order is full-SHA syntax and commit objects, equality with the
+freshly fetched current `origin/main`, exact reviewed/internal SHA equality,
+tree equality, then empty diff. An older reviewed commit is rejected because a
+workflow sourced from the pushed commit may not contain PR-03. The trusted push workflow sources these values from
+`github.event.after`, an explicitly fetched `origin/main`, and `GITHUB_SHA`,
+and rejects pull requests targeting `codex/internal-debug` or workflow-dispatch
+review input. Zero tracked exceptions are permitted.
+
+CI covers User-Debug and Internal-Debug App XCTest followed by separate clean
+App-only Debug builds and artifact scans, plus User-Release and Internal-Release
+generic Simulator builds and scans. The separate Debug build is required
+because the XCTest host embeds XCTest support and is not the distributed App.
+Remote branch bootstrap/promotion, hosted CI, commit/push, device validation,
+and live-provider validation remain separately authorized and must not be
+claimed from local evidence.

@@ -6,7 +6,9 @@ struct ControlPanelView: View {
     @EnvironmentObject private var runtime: ExperienceRuntime
     @EnvironmentObject private var profileStore: DisplayProfileStore
     @EnvironmentObject private var teleprompterSettings: TeleprompterSettings
+    #if INTERNAL_DIAGNOSTICS
     @Binding var debugMode: Bool
+    #endif
 
     var body: some View {
         ScrollView(.vertical) {
@@ -237,6 +239,7 @@ struct ControlPanelView: View {
                     .labelsHidden()
             }
 
+            #if INTERNAL_DIAGNOSTICS
             if debugMode {
                 Picker(
                     "显示配置",
@@ -259,6 +262,7 @@ struct ControlPanelView: View {
                 .pickerStyle(.menu)
                 .accessibilityIdentifier("display_profile_picker")
             }
+            #endif
 
             HStack(spacing: 10) {
                 Image(systemName: "sun.min")
@@ -273,6 +277,7 @@ struct ControlPanelView: View {
                     .frame(width: 38, alignment: .trailing)
             }
 
+            #if INTERNAL_DIAGNOSTICS
             if debugMode {
                 Button(role: .destructive) {
                     let expectedKind = runtime.selectedKind
@@ -283,6 +288,7 @@ struct ControlPanelView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+            #endif
         }
         .padding(.horizontal, 2)
     }

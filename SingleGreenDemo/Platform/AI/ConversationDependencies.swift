@@ -9,7 +9,7 @@ extension VoiceConversationDependencies {
         credentialProvider: (any ConversationCredentialProvider)? = nil,
         telemetry: (any ConversationTelemetrySink)? = nil
     ) -> Self {
-        let telemetry = telemetry ?? ConversationTelemetryStore()
+        let telemetry = telemetry ?? NoopConversationTelemetry()
         let credentialProvider = credentialProvider
             ?? AIServiceComposition.makeCredentialProvider(settings: settings)
         let resolver = ConversationPreparationResolver(
@@ -34,7 +34,7 @@ enum AIServiceComposition {
     static func makeCredentialProvider(
         settings: AISettings
     ) -> any ConversationCredentialProvider {
-        #if DEBUG
+        #if INTERNAL_DEMO_CREDENTIALS
         let credentialProvider: any ConversationCredentialProvider
         if settings.buildPolicy.allowsDemoCredentialStorage {
             credentialProvider = DemoKeychainCredentialProvider(settings: settings)
@@ -55,7 +55,7 @@ enum AIServiceComposition {
     static func makeSpeechCredentialProvider(
         settings: AISettings
     ) -> any SpeechCredentialProvider {
-        #if DEBUG
+        #if INTERNAL_DEMO_CREDENTIALS
         if settings.buildPolicy.allowsDemoCredentialStorage {
             return DemoSpeechCredentialProvider(settings: settings)
         }

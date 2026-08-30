@@ -711,7 +711,8 @@ swift test \
 
 xcodebuild \
   -project SingleGreenDemo.xcodeproj \
-  -scheme SingleGreenDemo \
+  -scheme SingleGreenUser \
+  -configuration User-Debug \
   -destination "platform=iOS Simulator,id=$(scripts/resolve_simulator_destination.sh)" \
   -derivedDataPath /private/tmp/SingleGreenDemoTests \
   -enableCodeCoverage YES \

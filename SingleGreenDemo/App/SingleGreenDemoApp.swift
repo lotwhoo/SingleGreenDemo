@@ -13,7 +13,9 @@ struct SingleGreenDemoApp: App {
     @StateObject private var conversationController: VoiceConversationController
     @StateObject private var textAdventureController: TextAdventureController
     @StateObject private var teleprompterController: TeleprompterController
+    #if INTERNAL_DIAGNOSTICS
     @StateObject private var diagnostics: ConversationTelemetryStore
+    #endif
 
     init() {
         let settings = Self.makeAISettings()
@@ -23,12 +25,17 @@ struct SingleGreenDemoApp: App {
             settings: settings
         )
         let teleprompterSettings = TeleprompterSettings()
+        #if INTERNAL_DIAGNOSTICS
         let diagnostics = ConversationTelemetryStore(capacity: 1_000)
+        let telemetry: any ConversationTelemetrySink = diagnostics
+        #else
+        let telemetry: any ConversationTelemetrySink = NoopConversationTelemetry()
+        #endif
         let controller = VoiceConversationController(
             dependencies: .live(
                 settings: settings,
                 credentialProvider: credentialProvider,
-                telemetry: diagnostics
+                telemetry: telemetry
             )
         )
         let gameController = TextAdventureController(
@@ -59,7 +66,9 @@ struct SingleGreenDemoApp: App {
             )
         )
         _teleprompterSettings = StateObject(wrappedValue: teleprompterSettings)
+        #if INTERNAL_DIAGNOSTICS
         _diagnostics = StateObject(wrappedValue: diagnostics)
+        #endif
         _conversationController = StateObject(wrappedValue: controller)
         _textAdventureController = StateObject(wrappedValue: gameController)
         _teleprompterController = StateObject(wrappedValue: teleprompterController)
@@ -106,9 +115,13 @@ struct SingleGreenDemoApp: App {
                 .environmentObject(profileStore)
                 .environmentObject(aiSettings)
                 .environmentObject(teleprompterSettings)
+                #if INTERNAL_DIAGNOSTICS
                 .environmentObject(diagnostics)
+                #endif
                 .task(priority: .userInitiated) {
+                    #if INTERNAL_DIAGNOSTICS
                     diagnostics.record(category: "app", message: "launch")
+                    #endif
                     await cameraController.prepare()
                 }
                 .onChange(of: teleprompterSettings.scriptConfigurationRevision) { _, _ in
@@ -122,7 +135,9 @@ struct SingleGreenDemoApp: App {
                 }
         }
         .onChange(of: scenePhase) { _, phase in
+            #if INTERNAL_DIAGNOSTICS
             diagnostics.record(category: "lifecycle", message: String(describing: phase))
+            #endif
             cameraController.handle(scenePhase: phase)
             switch phase {
             case .background:

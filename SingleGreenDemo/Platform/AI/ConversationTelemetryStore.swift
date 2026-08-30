@@ -1,3 +1,4 @@
+#if INTERNAL_DIAGNOSTICS
 import Combine
 import Foundation
 import OSLog
@@ -16,7 +17,6 @@ final class ConversationTelemetryStore: ObservableObject, ConversationTelemetryS
     }
 
     func record(_ event: ConversationTelemetryEvent) {
-        #if INTERNAL_DIAGNOSTICS || DEBUG
         events.append(event)
         if events.count > capacity {
             events.removeFirst(events.count - capacity)
@@ -29,32 +29,21 @@ final class ConversationTelemetryStore: ObservableObject, ConversationTelemetryS
             category: "conversation",
             message: "phase=\(event.phase.rawValue) outcome=\(event.outcome.rawValue) duration_ms=\(event.elapsedMilliseconds) failure=\(failure)"
         )
-        #else
-        _ = event
-        #endif
     }
 
     func record(category: String, message: String) {
-        #if INTERNAL_DIAGNOSTICS
         let timestamp = ISO8601DateFormatter().string(from: Date())
         diagnosticLines.append("\(timestamp) [\(category)] \(message)")
         if diagnosticLines.count > capacity {
             diagnosticLines.removeFirst(diagnosticLines.count - capacity)
         }
-        #else
-        _ = category
-        _ = message
-        #endif
     }
 
     func removeAllDiagnostics() {
-        #if INTERNAL_DIAGNOSTICS
         diagnosticLines.removeAll(keepingCapacity: true)
-        #endif
     }
 
     func makeExportURL() throws -> URL {
-        #if INTERNAL_DIAGNOSTICS
         let bundle = Bundle.main
         let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
         let build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown"
@@ -74,12 +63,10 @@ final class ConversationTelemetryStore: ObservableObject, ConversationTelemetryS
             .appendingPathComponent("SingleGreenDemo-logs-\(formatter.string(from: Date())).txt")
         try contents.write(to: url, atomically: true, encoding: .utf8)
         return url
-        #else
-        throw DiagnosticsExportError.unavailable
-        #endif
     }
 }
 
 enum DiagnosticsExportError: Error {
     case unavailable
 }
+#endif

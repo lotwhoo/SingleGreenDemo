@@ -1,0 +1,12 @@
+#include "Base.xcconfig"
+
+COPY_PHASE_STRIP = YES
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+ENABLE_NS_ASSERTIONS = NO
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited)
+SWIFT_COMPILATION_MODE = wholemodule
+
+EXCLUDED_SOURCE_FILE_NAMES = $(inherited) SingleGreenInternalCapabilities.txt
+SG_APP_BUNDLE_IDENTIFIER = com.local.SingleGreenDemo
+SG_APP_DISPLAY_NAME = 单绿测试平台
+SG_TEST_BUNDLE_IDENTIFIER = com.local.SingleGreenDemoTests

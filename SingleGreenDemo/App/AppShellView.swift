@@ -19,15 +19,22 @@ struct AppShellView: View {
     @EnvironmentObject private var cameraController: CameraSessionController
     @EnvironmentObject private var runtime: ExperienceRuntime
     @EnvironmentObject private var profileStore: DisplayProfileStore
+    #if INTERNAL_DIAGNOSTICS
     @State private var debugMode = false
-    @State private var showsAISettings = false
     @State private var showsDiagnostics = false
+    #endif
+    @State private var showsAISettings = false
 
     var body: some View {
         GeometryReader { proxy in
             ZStack {
+                #if INTERNAL_DIAGNOSTICS
                 PreviewPane(debugMode: $debugMode)
                     .ignoresSafeArea()
+                #else
+                PreviewPane()
+                    .ignoresSafeArea()
+                #endif
 
                 LinearGradient(
                     stops: [
@@ -42,20 +49,29 @@ struct AppShellView: View {
                 .ignoresSafeArea()
 
                 VStack(spacing: 12) {
+                    #if INTERNAL_DIAGNOSTICS
                     FloatingHeaderView(
                         debugMode: $debugMode,
-                        showsAISettings: $showsAISettings,
-                        showsDiagnostics: $showsDiagnostics
+                        showsDiagnostics: $showsDiagnostics,
+                        showsAISettings: $showsAISettings
                     )
+                    #else
+                    FloatingHeaderView(showsAISettings: $showsAISettings)
+                    #endif
 
                     Spacer(minLength: 24)
 
+                    #if INTERNAL_DIAGNOSTICS
                     if debugMode {
                         diagnostics
                     }
 
                     ControlPanelView(debugMode: $debugMode)
                         .frame(height: AppShellLayout.controlPanelHeight(in: proxy.size.height))
+                    #else
+                    ControlPanelView()
+                        .frame(height: AppShellLayout.controlPanelHeight(in: proxy.size.height))
+                    #endif
                 }
                 .padding(.horizontal, 14)
                 .padding(.top, AppShellLayout.headerTopPadding)
@@ -79,6 +95,7 @@ struct AppShellView: View {
         #endif
     }
 
+    #if INTERNAL_DIAGNOSTICS
     private var diagnostics: some View {
         HStack(spacing: 7) {
             Image(systemName: runtime.selectedDescriptor.systemImageName)
@@ -105,13 +122,16 @@ struct AppShellView: View {
                 .stroke(.white.opacity(0.10), lineWidth: 0.5)
         }
     }
+    #endif
 
 }
 
 private struct PreviewPane: View {
     @EnvironmentObject private var runtime: ExperienceRuntime
     @EnvironmentObject private var profileStore: DisplayProfileStore
+    #if INTERNAL_DIAGNOSTICS
     @Binding var debugMode: Bool
+    #endif
 
     var body: some View {
         GeometryReader { proxy in
@@ -126,7 +146,7 @@ private struct PreviewPane: View {
                         scene: runtime.scene,
                         profile: profileStore.activeProfile,
                         intensity: profileStore.intensity,
-                        showsSafeArea: debugMode
+                        showsSafeArea: showsSafeArea
                     )
                     .frame(width: surfaceSize.width, height: surfaceSize.height)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: projection.alignment)
@@ -137,17 +157,26 @@ private struct PreviewPane: View {
         }
     }
 
+    private var showsSafeArea: Bool {
+        #if INTERNAL_DIAGNOSTICS
+        debugMode
+        #else
+        false
+        #endif
+    }
 }
 
 private struct FloatingHeaderView: View {
+    #if INTERNAL_DIAGNOSTICS
     @Binding var debugMode: Bool
-    @Binding var showsAISettings: Bool
     @Binding var showsDiagnostics: Bool
+    #endif
+    @Binding var showsAISettings: Bool
 
     var body: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 3) {
-                Text("单绿测试平台")
+                Text(Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "单绿测试平台")
                     .font(.headline)
 
                 HStack(spacing: 6) {

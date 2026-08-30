@@ -69,6 +69,15 @@ M8 本地证据：`SingleGreenGlassesKit` **178/178**；App XCTest **58/58**；�
 
 M1 的首次完整 QA 为五个 Package 150 项 + App-hosted 13 项，共 **163/0**；两项 P2 修复后的受影响复测为 SingleGreenGlassesKit 46 项 + App-hosted 13 项，共 **59/0**。两次均通过通用 Simulator build。详细验收清单和残余人工检查见[架构与升级报告](./docs/PROJECT_ARCHITECTURE_AND_UPGRADE_REPORT.md)及[M1 任务卡](./docs/tasks/2026-08-28-long-term-roadmap.md)。
 
+### M1 refactor PR-02/PR-03（本地实现，2026-08-30）
+
+PR-02 已落地四个 XCConfig 变体和两个产品 Scheme；PR-03 已在本地落地
+`codex/internal-debug` 的三 SHA 零差异校验器、PR 目标分支拒绝规则，以及
+User/Internal Debug/Release 的 CI 矩阵。Debug 测试后的产物扫描使用单独的
+App-only 构建，因为 XCTest 宿主会嵌入 XCTest 支持文件。具体命令、路径、
+测试数量和远端限制见 [PR-03 evidence](./docs/refactor/PR03_EVIDENCE.md)；
+这不是远端 CI、真机或真实服务验证。
+
 M2 的默认 Profile 为 `simulator.default.v2`：可见区域 8:3、宽度 `0.90`、中心对齐；初始垂直偏移为 `-0.035`，当前宿主视觉调整为 `-0.20`。中立 Profile 位于眼镜核心包，SwiftUI/CoreGraphics 转换器和内存中的宿主选择器留在 `SingleGreenDemo`；非生产标定 Fixture 不代表真实眼镜标定结果。
 
 M3 已将 Experience 元数据和动作目录化。宿主控制面板只消费 Runtime 的 descriptor、active actions 和统一事件入口，不再按 `ExperienceKind` 写分支；能力是声明式元数据，不自动承担权限 gating。当前五个稳定 raw ID 和顺序为 `conversation`、`systemStatus`、`navigation`、`notification`、`caption`。AI 对话声明 network、microphone、backgroundUpdates；其余四个内建本地体验当前无外部能力声明。M3 的事件来源与旧异步更新隔离规则见[架构报告](./docs/PROJECT_ARCHITECTURE_AND_UPGRADE_REPORT.md)。
@@ -127,13 +136,20 @@ AI 对话采用轻量的 Ports & Adapters 结构，不把具体服务或系统 A
 
 直接打开 `SingleGreenDemo.xcodeproj`。Xcode 会解析 App 当前使用的七个本地 Package，不需要 CocoaPods 或额外 workspace。
 
-工程使用临时 Bundle Identifier `com.local.SingleGreenDemo`。无签名编译：
+工程包含一个 App Target、两个显式产品 Scheme 和四个配置：`SingleGreenUser` 使用
+`User-Debug`/`User-Release`，`SingleGreenInternal` 使用
+`Internal-Debug`/`Internal-Release`。用户版 Bundle ID 为
+`com.local.SingleGreenDemo`，内部版为 `com.local.SingleGreenDemo.internal`；内部版
+额外启用 `INTERNAL_DIAGNOSTICS` 和 `INTERNAL_DEMO_CREDENTIALS`。`DEBUG` 只表示
+编译/调试配置，不代表内部能力。完整矩阵见[构建变体与分支策略](./docs/INTERNAL_DIAGNOSTICS_BRANCH_POLICY.md)。
+
+用户版无签名编译：
 
 ```bash
 xcodebuild \
   -project SingleGreenDemo.xcodeproj \
-  -scheme SingleGreenDemo \
-  -configuration Debug \
+  -scheme SingleGreenUser \
+  -configuration User-Release \
   -destination 'generic/platform=iOS' \
   -derivedDataPath /private/tmp/SingleGreenDemoBuild \
   CODE_SIGNING_ALLOWED=NO \
@@ -145,8 +161,8 @@ xcodebuild \
 ```bash
 xcodebuild \
   -project SingleGreenDemo.xcodeproj \
-  -scheme SingleGreenDemo \
-  -configuration Debug \
+  -scheme SingleGreenUser \
+  -configuration User-Debug \
   -destination 'generic/platform=iOS' \
   -derivedDataPath /private/tmp/SingleGreenDemoBuildForTesting \
   CODE_SIGNING_ALLOWED=NO \
@@ -168,7 +184,8 @@ AI 对话编排测试已随核心代码迁入 `SingleGreenGlassesKitTests`。App
 ```bash
 xcodebuild \
   -project SingleGreenDemo.xcodeproj \
-  -scheme SingleGreenDemo \
+  -scheme SingleGreenUser \
+  -configuration User-Debug \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' \
   -derivedDataPath /private/tmp/SingleGreenDemoTests \
   -enableCodeCoverage YES \
@@ -205,6 +222,8 @@ iPhone 叠加效果不等同于真实眼镜 OST 光学效果。
 - [M7 PR5 mechanical decomposition](./docs/tasks/2026-08-28-m7-pr5-mechanical-decomposition.md)
 - [M8 dependency and composition refinement](./docs/tasks/2026-08-29-m8-dependency-composition-refinement.md)
 - [M9 runtime state decomposition](./docs/tasks/2026-08-29-runtime-state-decomposition.md)
+- [PR-02 build variants evidence](./docs/refactor/PR02_EVIDENCE.md)
+- [PR-03 delivery pointer and CI evidence](./docs/refactor/PR03_EVIDENCE.md)
 - [AI 对话单绿 HUD 重设计 PRD](./docs/tasks/2026-08-29-ai-conversation-hud-reasoning-prd.md)
 - [发布检查单](./docs/RELEASE_CHECKLIST.md)
 - [覆盖率基线](./docs/COVERAGE_BASELINE.md)

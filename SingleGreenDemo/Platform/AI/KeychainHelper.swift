@@ -1,4 +1,4 @@
-#if DEBUG
+#if INTERNAL_DEMO_CREDENTIALS
 import Foundation
 import Security
 
