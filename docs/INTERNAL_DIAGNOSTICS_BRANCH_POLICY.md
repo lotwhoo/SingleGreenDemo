@@ -38,8 +38,9 @@ and documentation. `codex/internal-debug` is retained as the owner's delivery
 pointer. It is a zero-delta pointer to an explicitly reviewed commit already on
 `main`; it is not a second development lane and must not carry tracked product
 differences. The local PR-03 checker and two-workflow authorization/writer
-design are implemented; remote pointer bootstrap remains separately authorized
-and pending hosted validation.
+design are implemented; the narrow bootstrap succeeded and the pointer is
+present at the audited ref below. Steady-state promotion on a genuinely new
+protected `main` SHA remains pending.
 
 ## Log privacy contract
 
@@ -66,6 +67,18 @@ PR-03. Its exact invocation is:
 scripts/check_internal_branch_policy.sh REVIEWED_MAIN_SHA MAIN_SHA INTERNAL_SHA
 ```
 
+Ruleset snapshots are validated independently with:
+
+```text
+scripts/check_internal_ruleset_contract.sh {steady|bootstrap} RULESET_JSON
+```
+
+`steady` requires both app-15368 checks; `bootstrap` is the audited first-ref
+shape that retains only app-15368 `Required CI`. Both modes require the exact
+ruleset identity, active enforcement, no bypass, the single internal target,
+deletion/non-fast-forward/linear-history rules, and
+`do_not_enforce_on_create=false`.
+
 The trusted push flow uses `github.event.after` for the reviewed SHA,
 `GITHUB_SHA` for the internal SHA, and an explicitly fetched `origin/main` for
 the main SHA, in that order. Pull requests targeting `codex/internal-debug`
@@ -77,8 +90,9 @@ Debug and Release artifacts are scanned for their variant capabilities.
 The main ruleset `21847803` and internal integrity ruleset `21848414` are active
 with no bypass. A separate attempted GitHub Actions writer-bypass ruleset
 failed HTTP 422, so no exclusive writer identity is claimed. The remote branch
-is absent pending post-merge hosted validation and authorized bootstrap; no PAT
-or repository secret is used.
+is present at audited ref
+`eb21fa1aa9958075a81fbd0887619c5000975665`; no PAT or repository secret is
+used. Steady-state new-SHA promotion remains pending.
 
 The separate internal Bundle ID intentionally creates an isolated settings
 domain, App sandbox, and Keychain context. Internal first launch therefore

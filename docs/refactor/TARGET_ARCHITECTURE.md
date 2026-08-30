@@ -1,7 +1,7 @@
 # Target architecture for the staged refactor
 
-Status: pre-merge; local PR-03 implementation verified; hosted promotion
-validation pending
+Status: PR-03 implementation merged and narrow bootstrap verified;
+steady-state hosted promotion validation pending
 
 ## Outcomes
 
@@ -168,10 +168,12 @@ rejected because a workflow sourced from the pushed commit may not contain
 PR-03. The trusted internal push flow uses `github.event.after`,
 `GITHUB_SHA`, and an explicitly fetched `origin/main`; PRs targeting the
 delivery pointer and workflow-dispatch review input are rejected. Zero tracked
-exceptions are permitted. GitHub remote enforcement is currently BLOCKED until
-an independently controlled ruleset/branch protection restricts updates to the
-controlled promotion path, prohibits force-push/deletion/direct PR lane, and
-requires the current policy and full matrix checks.
+exceptions are permitted. The active main ruleset is `21847803` and the active
+internal integrity ruleset is `21848414`, both with no bypass. The internal
+pointer is present at verified ref
+`eb21fa1aa9958075a81fbd0887619c5000975665`; steady-state promotion on a new
+protected `main` SHA remains pending. The narrow-window evidence and ruleset
+versions are recorded in PR03_EVIDENCE.md.
 
 CI covers User/Internal Debug App tests plus separate clean App-only Debug
 builds and scans, and User/Internal Release builds and scans. The separate
@@ -179,8 +181,9 @@ Debug App build is required because the XCTest host embeds XCTest support and
 is not the distributed artifact. Local fixture and matrix evidence, including
 the initial expected XCTest-host scan failure, is in PR03_EVIDENCE.md.
 The hosted baseline run **33299053875** passed package, App, Release, public API,
-and coverage jobs after the locale portability fix; the newer two-workflow
-Required CI/promotion changes still await their own hosted run. Required CI is
+and coverage jobs after the locale portability fix. The two-workflow Required
+CI/promotion design has hosted narrow-bootstrap evidence; steady-state new-SHA
+promotion remains pending. Required CI is
 an always-running fail-closed aggregation job. Promotion uses a read-only,
 no-input owner-triggered authorization workflow followed by a separate
 `workflow_run` writer. The writer revalidates the exact authorization
@@ -188,5 +191,9 @@ run/job/check/suite, Actions app `15368`, current-main SHA, and Required-CI
 linkage before a non-force fast-forward-only zero-delta pointer update. The
 active main ruleset `21847803` and internal integrity ruleset `21848414` have
 no bypass; an attempted separate writer-bypass ruleset failed HTTP 422, so no
-exclusive writer identity is claimed. The internal branch remains absent until
-post-merge hosted validation and authorized bootstrap.
+exclusive writer identity is claimed. The internal branch is present at the
+verified bootstrap ref. The first split attempt had completed authorization,
+but GitHub still reported the expected check during first-ref creation; the
+later narrow bootstrap succeeded, but steady-state promotion on a genuinely
+new protected `main` SHA remains pending. No PAT, secret, bypass, manual/force push,
+deletion, device, or live-provider validation is claimed.

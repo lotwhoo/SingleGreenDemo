@@ -234,10 +234,21 @@ if checkout
   check.call(checkout_with.is_a?(Hash) && checkout_with["fetch-depth"] == 0, "branch-contract checkout must use fetch-depth: 0")
 end
 
-branch_runs = branch_steps.map { |step| step.is_a?(Hash) ? step["run"] : nil }.compact.join("\n")
+branch_policy_fixture_steps = branch_steps.select do |step|
+  step.is_a?(Hash) && step["run"].to_s.strip == "scripts/test_internal_branch_policy.sh"
+end
+check.call(branch_policy_fixture_steps.length == 1,
+           "branch-contract must have exactly one exact branch-policy fixture step")
+check.call(branch_policy_fixture_steps.length == 1 && !branch_policy_fixture_steps.first.key?("if"),
+           "branch-policy fixture step must be unconditional")
 
-check.call(branch_runs.scan(%r{scripts/test_internal_branch_policy\.sh}).length == 1,
-           "branch-contract must run test_internal_branch_policy.sh exactly once")
+ruleset_contract_fixture_steps = branch_steps.select do |step|
+  step.is_a?(Hash) && step["run"].to_s.strip == "scripts/test_internal_ruleset_contract.sh"
+end
+check.call(ruleset_contract_fixture_steps.length == 1,
+           "branch-contract must have exactly one exact ruleset-contract fixture step")
+check.call(ruleset_contract_fixture_steps.length == 1 && !ruleset_contract_fixture_steps.first.key?("if"),
+           "ruleset-contract fixture step must be unconditional")
 reject_step = branch_steps.find do |step|
   condition = step.is_a?(Hash) ? step["if"].to_s : ""
   condition.include?("github.event_name == 'pull_request'") &&
@@ -518,8 +529,13 @@ end
 all_runs = jobs.values.flat_map do |job|
   Array(job.is_a?(Hash) ? job["steps"] : []).map { |step| step.is_a?(Hash) ? step["run"] : nil }.compact
 end.join("\n")
-check.call(all_runs.scan(%r{scripts/test_internal_branch_policy\.sh}).length == 1,
+all_steps = jobs.values.flat_map do |job|
+  Array(job.is_a?(Hash) ? job["steps"] : []).select { |step| step.is_a?(Hash) }
+end
+check.call(all_steps.count { |step| step["run"].to_s.strip == "scripts/test_internal_branch_policy.sh" } == 1,
            "branch-policy fixtures must not be duplicated across jobs")
+check.call(all_steps.count { |step| step["run"].to_s.strip == "scripts/test_internal_ruleset_contract.sh" } == 1,
+           "ruleset-contract fixtures must not be duplicated across jobs")
 check.call(all_runs.scan(%r{scripts/check_internal_branch_policy\.sh}).length == 1,
            "live branch-policy validation must appear exactly once")
 

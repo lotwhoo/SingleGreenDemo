@@ -1,7 +1,7 @@
 # ADR 0001: Build variants and branch policy
 
-- Status: Accepted; PR-02 and local PR-03 contract implemented; remote
-  enforcement blocked
+- Status: Accepted; PR-02 and local PR-03 contract implemented; hosted narrow
+  bootstrap evidenced; steady-state validation pending
 - Date: 2026-08-30
 - First implementation: PR-02
 
@@ -58,7 +58,9 @@ security, entitlement, rollback, and data-lifecycle review.
 XCConfigs, the shared `SingleGreenInternal` scheme, capability flags, identity,
 source, tests, Packages, project definitions, and CI. `codex/internal-debug` is
 retained as the owner's promotion/delivery pointer, not as a development lane.
-Promotion moves that ref to an explicitly reviewed commit already on `main`.
+Promotion uses a read-only owner authorization workflow followed by a separate
+`workflow_run` writer, and moves that ref only to the current protected commit
+on `main` after exact CI linkage checks.
 The two branches therefore satisfy the user's two-branch delivery workflow
 without maintaining two tracked product definitions.
 
@@ -147,5 +149,6 @@ and Keychain behavior, fail-closed credentials, unchanged public Package APIs,
 and built artifacts locally. PR-03 implements current-main SHA equality,
 exact commit/tree equality, zero-delta, and deterministic fixture gates for
 promotion and pushes affecting either maintained branch. Remote bootstrap and
-promotion remain separately authorized release operations; GitHub remote
-enforcement is blocked until an independently controlled ruleset is configured.
+promotion remain separately authorized release operations. The main and
+internal rulesets are active with no bypass, but steady-state promotion on a
+genuinely new protected `main` SHA remains pending hosted validation.

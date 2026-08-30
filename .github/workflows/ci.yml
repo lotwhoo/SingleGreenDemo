@@ -30,6 +30,8 @@ jobs:
           fetch-depth: 0
       - name: Run branch-policy fixtures
         run: scripts/test_internal_branch_policy.sh
+      - name: Run ruleset-contract fixtures
+        run: scripts/test_internal_ruleset_contract.sh
       - name: Reject pull requests targeting the delivery pointer
         if: github.event_name == 'pull_request' && github.base_ref == 'codex/internal-debug'
         run: |
