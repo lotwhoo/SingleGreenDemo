@@ -1,5 +1,14 @@
 # Production source coverage baseline
 
+## CI collection policy
+
+The coverage thresholds and source-scope rules below remain unchanged. The
+current CI selects directly affected production packages and directly changed
+package-test owners for PR coverage, then uploads only summary/package report
+files; build products and derived data are not uploaded. Pushes to `main` and
+no-input manual diagnostics still run the full coverage matrix. The redesigned
+hosted collection behavior is unverified until the next upload.
+
 Reviewed locally on 2026-08-28 for the combined M7 PR3+PR4 state and the isolated M7 PR5 rerun. The gate accepts only files whose canonical path is under that package's own production `Sources/<package-name>/` directory. Test, generated, dependency-package, benchmark-support, executable, and `Tools/ASRCLI` files are excluded. `scripts/test_coverage_scope.sh` pins this behavior with mixed production-target, benchmark-support, dependency, and test paths. ASRCLI and VADBenchmark are reported separately through strict-concurrency, warnings-as-errors product builds; no executable line-coverage percentage is claimed. Earlier M6/PR1/PR2/PR3 reports remain historical. The PR5 isolated measurement is `SingleGreenGlassesKit` **93.91%** and `SingleGreenConversationAdapters` **98.02%**; the combined PR3+PR4 measurement remains the superseded comparison at SGK **94.08%**.
 
 | Package | Covered / source lines | Baseline | Gate |

@@ -1,5 +1,12 @@
 # PR-03 evidence: delivery pointer and four-variant CI contract
 
+> Historical/superseded workflow evidence: the facts and run identifiers in
+> this record are preserved as evidence for the earlier four-variant CI and
+> promotion design. The current local CI contract is [CI_WORKFLOW.md](../CI_WORKFLOW.md),
+> which uses impact-selective PR gates, report-only coverage artifacts, and
+> exact-SHA promotion reuse. The redesigned hosted behavior remains unverified
+> until the next upload.
+
 - Status: implementation merged and narrow bootstrap evidenced; steady-state
   hosted validation pending
 - Date: 2026-08-30

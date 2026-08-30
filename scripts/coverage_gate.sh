@@ -5,14 +5,50 @@ set -eu
 script_directory=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repository_root=$(CDPATH= cd -- "$script_directory/.." && pwd)
 output_directory=${1:-"$repository_root/.coverage"}
-mkdir -p "$output_directory"
+if [ "$#" -gt 0 ]; then
+    shift
+fi
 
 # Thresholds are deliberately below the reviewed 2026-08-28 local baselines.
 # They protect against large regressions without pretending that line coverage is
 # a release-quality substitute for the deterministic streaming test matrix.
 # Only package production files under Sources/ are aggregated. Tools/ASRCLI is
 # intentionally excluded and is enforced by a separate strict build gate.
-packages='StreamingTextKit:70 VoiceChatDomain:75 VoiceActivityDetectionKit:80 SingleGreenGlassesKit:65 SingleGreenConversationAdapters:70 LLMKit:60 VoiceChatCore:55'
+package_thresholds='StreamingTextKit:70 VoiceChatDomain:75 VoiceActivityDetectionKit:80 SingleGreenGlassesKit:65 SingleGreenConversationAdapters:70 LLMKit:60 VoiceChatCore:55'
+packages=$package_thresholds
+
+# Optional package arguments let pull-request CI measure only directly affected
+# packages. With no package arguments the historical full-gate behavior is
+# preserved. Validate the complete selection before starting expensive builds.
+if [ "$#" -gt 0 ]; then
+    packages=
+    selected_names=' '
+    for requested_package in "$@"; do
+        case "$selected_names" in
+            *" $requested_package "*)
+                echo "error: duplicate coverage package: $requested_package" >&2
+                exit 2
+                ;;
+        esac
+
+        requested_entry=
+        for candidate_entry in $package_thresholds; do
+            candidate_package=${candidate_entry%%:*}
+            if [ "$candidate_package" = "$requested_package" ]; then
+                requested_entry=$candidate_entry
+                break
+            fi
+        done
+        if [ -z "$requested_entry" ]; then
+            echo "error: unknown coverage package: $requested_package" >&2
+            exit 2
+        fi
+        packages="$packages $requested_entry"
+        selected_names="$selected_names$requested_package "
+    done
+fi
+
+mkdir -p "$output_directory"
 summary="$output_directory/summary.tsv"
 printf 'package\tline_coverage_percent\tthreshold_percent\n' > "$summary"
 printf '%s\n' 'Scope: package Sources/ only; Tools/ASRCLI is covered by a separate strict build gate.'

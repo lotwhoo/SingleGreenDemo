@@ -90,6 +90,85 @@ if authorization_status_contract_matches "$wrong_description_status_fixture"; th
 fi
 echo 'Commit-status response fixtures passed: SHA URL accepted; numeric-ID URL, wrong target, and wrong description rejected'
 
+pointer_helper="$fixture_root/pointer-helper.sh"
+ruby -ryaml - "$source_writer_workflow" > "$pointer_helper" <<'RUBY'
+workflow = YAML.load_file(ARGV.fetch(0))
+run = workflow.fetch("jobs").fetch("verify-promoted-pointer").fetch("steps").fetch(0).fetch("run")
+snippet = run[/api_get_max_attempts=3.*?(?=^main_ref=)/m]
+abort "pointer helper fixture could not extract the reviewed helper" unless snippet
+puts "#!/bin/sh"
+puts "set -eu"
+puts snippet
+puts 'api_get "$1"'
+RUBY
+chmod +x "$pointer_helper"
+
+fake_bin="$fixture_root/pointer-bin"
+mkdir -p "$fake_bin"
+cat > "$fake_bin/gh" <<'SH'
+#!/bin/sh
+set -eu
+count_file=${FAKE_GH_COUNT_FILE:?}
+count=0
+if [ -f "$count_file" ]; then
+    count=$(cat "$count_file")
+fi
+count=$((count + 1))
+printf '%s' "$count" > "$count_file"
+case ${FAKE_GH_MODE:?} in
+    transient)
+        if [ "$count" -eq 1 ]; then
+            echo 'transient transport failure' >&2
+            exit 1
+        fi
+        ;;
+    exhaustion)
+        echo 'persistent transport failure' >&2
+        exit 1
+        ;;
+    *)
+        echo "unexpected fake GH mode: $FAKE_GH_MODE" >&2
+        exit 2
+        ;;
+esac
+printf '%s' '{"object":{"sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}'
+SH
+cat > "$fake_bin/sleep" <<'SH'
+#!/bin/sh
+exit 0
+SH
+chmod +x "$fake_bin/gh" "$fake_bin/sleep"
+
+helper_count="$fixture_root/pointer-count"
+export FAKE_GH_COUNT_FILE="$helper_count"
+export PATH="$fake_bin:$PATH"
+export FAKE_GH_MODE=transient
+helper_output=$("$pointer_helper" '/repos/lotwhoo/SingleGreenDemo/git/ref/heads/main')
+[ "$helper_output" = '{"object":{"sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}' ] || {
+    echo 'CI workflow fixture test failed: pointer helper changed successful JSON stdout' >&2
+    exit 1
+}
+[ "$(cat "$helper_count")" = 2 ] || {
+    echo 'CI workflow fixture test failed: pointer helper did not retry exactly once after transient failure' >&2
+    exit 1
+}
+
+: > "$helper_count"
+export FAKE_GH_MODE=exhaustion
+if failure_output=$("$pointer_helper" '/repos/lotwhoo/SingleGreenDemo/git/ref/heads/main'); then
+    echo 'CI workflow fixture test failed: pointer helper accepted three consecutive GET failures' >&2
+    exit 1
+fi
+[ -z "$failure_output" ] || {
+    echo 'CI workflow fixture test failed: pointer helper leaked failure output to stdout' >&2
+    exit 1
+}
+[ "$(cat "$helper_count")" = 3 ] || {
+    echo 'CI workflow fixture test failed: pointer helper did not stop after exactly three failures' >&2
+    exit 1
+}
+echo 'Pointer GET helper fixtures passed: transient retry, three-failure exhaustion, and stdout purity; wrong-SHA no-healing is mutation-covered.'
+
 mutation_count=0
 
 expect_mutation_failure() {
@@ -170,8 +249,8 @@ when "workflow-dispatch-input"
   text.sub!("  workflow_dispatch:\n", "  workflow_dispatch:\n    inputs:\n      reviewed_sha:\n        required: true\n")
 when "missing-workflow-dispatch"
   text.sub!("  workflow_dispatch:\n", "")
-when "dispatch-aggregate-mints-required-ci"
-  text.sub!(%q{name: ${{ github.event_name == 'workflow_dispatch' && 'Internal post-promotion CI' || 'Required CI' }}}, "name: Required CI")
+when "manual-aggregate-mints-required-ci"
+  text.sub!(%q{name: ${{ github.event_name == 'workflow_dispatch' && 'Manual Full Internal Certification' || 'Required CI' }}}, "name: Required CI")
 when "dispatch-missing-ref-gate"
   text.sub!(%q{          if [ "$GITHUB_REF" != 'refs/heads/codex/internal-debug' ]; then}, %q{          if false; then})
 when "dispatch-broad-sha-gate"
@@ -195,16 +274,22 @@ when "required-ci-not-always"
   text.sub!("    if: always()\n", "    if: success()\n")
 when "required-ci-missing-need"
   text.sub!("      - public-api\n", "")
-when "required-ci-allows-failure"
-  text.sub!('[ "$result" != "success" ]', '[ "$result" = "cancelled" ]')
+when "required-ci-allows-planned-skip"
+  text.sub!("              true)\n                if [ \"$result\" != 'success' ]; then",
+            "              true)\n                if [ \"$result\" != 'skipped' ]; then")
+when "required-ci-allows-unplanned-success"
+  text.sub!("              false)\n                if [ \"$result\" != 'skipped' ]; then",
+            "              false)\n                if [ \"$result\" != 'success' ]; then")
+when "required-ci-missing-full-enable"
+  text.sub!("A full CI plan must enable every selective job.", "Full plans are advisory.")
 when "ci-job-write"
   text.sub!("    name: Branch contract\n", "    name: Branch contract\n    permissions:\n      contents: write\n")
 when "required-ci-job-continue-on-error"
   text.sub!("  required-ci:\n", "  required-ci:\n    continue-on-error: true\n")
 when "required-ci-step-continue-on-error"
-  text.sub!("      - name: Require every CI dependency to succeed\n", "      - name: Require every CI dependency to succeed\n        continue-on-error: true\n")
+  text.sub!("      - name: Require the exact planned CI result\n", "      - name: Require the exact planned CI result\n        continue-on-error: true\n")
 when "required-ci-step-condition"
-  text.sub!("      - name: Require every CI dependency to succeed\n", "      - name: Require every CI dependency to succeed\n        if: false\n")
+  text.sub!("      - name: Require the exact planned CI result\n", "      - name: Require the exact planned CI result\n        if: false\n")
 when "upstream-ci-job-continue-on-error"
   text.sub!("    name: Branch contract\n", "    name: Branch contract\n    continue-on-error: true\n")
 when "branch-fixture-step-condition"
@@ -218,7 +303,7 @@ when "app-test-step-condition"
 when "ci-top-level-custom-shell"
   text.sub!("permissions:\n  contents: read\n", "permissions:\n  contents: read\n\ndefaults:\n  run:\n    shell: bash -c 'bash {0} || true'\n")
 when "required-ci-step-custom-shell"
-  text.sub!("      - name: Require every CI dependency to succeed\n", "      - name: Require every CI dependency to succeed\n        shell: bash -c 'bash {0} || true'\n")
+  text.sub!("      - name: Require the exact planned CI result\n", "      - name: Require the exact planned CI result\n        shell: bash -c 'bash {0} || true'\n")
 when "failing-extra-ci-job"
   marker = "\n  required-ci:\n"
   addition = <<~YAML
@@ -421,110 +506,59 @@ when "writer-step-continue-on-error"
 when "writer-extra-step"
   marker = "      - name: Fast-forward the authorized internal pointer\n"
   text.sub!(marker, "      - run: echo unexpected\n#{marker}")
-when "writer-post-ci-missing-dependency"
-  text.sub!("    needs: promote\n", "")
-when "writer-post-ci-broad-permissions"
-  text.sub!("    permissions:\n      actions: write\n      contents: read\n", "    permissions:\n      actions: write\n      contents: write\n")
-when "writer-dispatch-missing-fresh-main"
-  text.sub!('/git/ref/heads/main" --jq', '/git/ref/heads/develop" --jq')
-when "writer-dispatch-missing-fresh-internal"
-  text.sub!('/git/ref/heads/codex/internal-debug" --jq', '/git/ref/heads/main" --jq')
-when "writer-dispatch-broad-ref-equality"
-  text.sub!('[ "$EXPECTED_SHA" != "$main_sha" ] || [ "$EXPECTED_SHA" != "$internal_sha" ]',
-            '[ "$EXPECTED_SHA" != "$main_sha" ]')
-when "writer-dispatch-waits-with-write-token"
-  text.sub!('          dispatch_response=$(gh api --method POST', "          sleep 10\n          dispatch_response=$(gh api --method POST")
-when "writer-dispatch-adds-checkout"
-  marker = "      - name: Revalidate pointers and dispatch exact internal CI\n"
+when "impact-planner-from-checkout"
+  text.sub!('git show "$PR_BASE_SHA:scripts/plan_ci_impact.py"', 'git show "$CHECKOUT_SHA:scripts/plan_ci_impact.py"')
+when "impact-config-from-checkout"
+  text.sub!('git show "$PR_BASE_SHA:config/architecture-boundaries.json"', 'git show "$CHECKOUT_SHA:config/architecture-boundaries.json"')
+when "impact-missing-fallback"
+  text.sub!("              printf '%s\\n' 'full=true'", "              printf '%s\\n' 'full=false'")
+when "impact-fallback-disables-release"
+  text.sub!("              printf '%s\\n' 'run_release_build=true'", "              printf '%s\\n' 'run_release_build=false'")
+when "impact-missing-output"
+  text.sub!("      coverage_packages: ${{ steps.plan.outputs.coverage_packages }}\n", "")
+when "impact-package-condition-bypassed"
+  text.sub!("    if: needs.impact-plan.result == 'success' && needs.branch-contract.result == 'success' && needs.impact-plan.outputs.run_packages == 'true'\n", "")
+when "impact-release-condition-wrong-output"
+  text.sub!("needs.impact-plan.outputs.run_release_build == 'true'", "needs.impact-plan.outputs.run_packages == 'true'")
+when "repository-hygiene-missing-planner-test"
+  text.sub!("      - run: scripts/test_ci_impact_plan.sh\n", "")
+when "repository-hygiene-missing-coverage-test"
+  text.sub!("      - run: scripts/test_coverage_gate_selection.sh\n", "")
+when "coverage-upload-broad-path"
+  text.sub!("            ${{ runner.temp }}/coverage/*.txt\n", "            ${{ runner.temp }}/coverage\n")
+when "coverage-upload-wrong-retention"
+  text.sub!("          retention-days: 14\n", "          retention-days: 90\n")
+when "writer-pointer-missing-dependency"
+  marker = "  verify-promoted-pointer:\n    name: Verify promoted delivery pointer\n    needs: promote\n"
+  text.sub!(marker, "  verify-promoted-pointer:\n    name: Verify promoted delivery pointer\n")
+when "writer-pointer-broad-permissions"
+  marker = "    permissions:\n      contents: read\n"
+  index = text.rindex(marker)
+  abort "pointer permission marker not found" unless index
+  text[index, marker.length] = "    permissions:\n      actions: write\n      contents: read\n"
+  true
+when "writer-pointer-missing-fresh-main"
+  text.sub!('main_ref=$(api_get "/repos/$repository/git/ref/heads/main")',
+            'main_ref=$(api_get "/repos/$repository/git/ref/heads/develop")')
+when "writer-pointer-missing-fresh-internal"
+  text.sub!('internal_ref=$(api_get "/repos/$repository/git/ref/heads/codex/internal-debug")',
+            'internal_ref=$(api_get "/repos/$repository/git/ref/heads/main")')
+when "writer-pointer-adds-checkout"
+  marker = "      - name: Require fresh main and internal pointer equality\n"
   text.sub!(marker, "      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1\n#{marker}")
-when "writer-post-ci-verifier-missing-dependency"
-  text.sub!("    needs: dispatch-post-promotion-ci\n", "")
-when "writer-post-ci-verifier-write"
-  text.sub!("    permissions:\n      actions: read\n      checks: read\n      contents: read\n",
-            "    permissions:\n      actions: write\n      checks: read\n      contents: read\n")
-when "writer-post-ci-verifier-post"
-  text.sub!("          poll=1\n", "          gh api --method POST /unexpected\n          poll=1\n")
-when "writer-dispatch-echo-only"
-  text.sub!('dispatch_response=$(gh api --method POST', 'dispatch_response=$(echo gh api --method POST')
-when "writer-dispatch-wrong-workflow"
-  text.sub!("ci_workflow_id='344358206'", "ci_workflow_id='1'")
-when "writer-dispatch-slashed-workflow-identifier"
-  text.sub!('/actions/workflows/$ci_workflow_id/dispatches',
-            '/actions/workflows/.github/workflows/ci.yml/dispatches')
-when "writer-dispatch-wrong-ref"
-  text.sub!("internal_ref='codex/internal-debug'", "internal_ref='main'")
-when "writer-dispatch-wrong-api-version"
+when "writer-pointer-post"
+  text.sub!('api_get() {', "api_get() {\n            gh api --method POST /unexpected")
+when "writer-pointer-wrong-api-version"
   text.sub!("X-GitHub-Api-Version: 2026-03-10", "X-GitHub-Api-Version: 2022-11-28")
-when "writer-dispatch-deprecated-run-details"
-  text.sub!('-f ref="$internal_ref")', "-f ref=\"$internal_ref\" \\\n            -F return_run_details=true)")
-when "writer-dispatch-response-broad-run-id"
-  text.sub!('.workflow_run_id == $run_id', '.workflow_run_id > 0')
-when "writer-dispatch-response-broad-run-url"
-  text.sub!('.run_url == $run_url', '.run_url != null')
-when "writer-dispatch-response-broad-html-url"
-  text.sub!('.html_url == $html_url', '.html_url != null')
-when "writer-dispatch-unbounded-wait"
-  text.sub!('if [ "$poll" -ge "$max_polls" ]; then', 'if false; then')
-when "writer-dispatch-broad-aggregate"
-  text.sub!('.name == "Internal post-promotion CI"', '.name != "Required CI"')
-when "writer-dispatch-allows-required-ci"
-  text.sub!('[ "$protected_aggregate_count" -ne 0 ]', '[ "$protected_aggregate_count" -lt 0 ]')
-when "writer-post-ci-wrong-check-app"
-  marker = '.app.id == 15368'
-  index = text.rindex(marker)
-  abort "post-promotion app marker not found" unless index
-  text[index, marker.length] = '.app.id == 1'
-  true
-when "writer-post-ci-missing-suite-link"
-  marker = '.check_suite.id == $suite_id'
-  index = text.rindex(marker)
-  abort "post-promotion suite marker not found" unless index
-  text[index, marker.length] = '.check_suite.id > 0'
-  true
-when "writer-post-ci-missing-details-link"
-  marker = '.details_url == $details'
-  index = text.rindex(marker)
-  abort "post-promotion details marker not found" unless index
-  text[index, marker.length] = '.details_url != null'
-  true
-when "writer-post-ci-missing-check-id-link"
-  text.sub!('[ "$(printf \'%s\' "$linked_aggregate_checks" | jq -r \'.[0].id\')" != "$aggregate_check_id" ]',
-            '[ "$(printf \'%s\' "$linked_aggregate_checks" | jq -r \'.[0].id\')" = "" ]')
-when "writer-post-ci-check-query-wrong-sha"
-  text.sub!('/commits/$EXPECTED_SHA/check-runs?check_name=Internal%20post-promotion%20CI',
-            '/commits/main/check-runs?check_name=Internal%20post-promotion%20CI')
-when "writer-post-ci-missing-final-main"
-  marker = '/git/ref/heads/main" --jq'
-  index = text.rindex(marker)
-  abort "final main marker not found" unless index
-  text[index, marker.length] = '/git/ref/heads/develop" --jq'
-  true
-when "writer-post-ci-missing-final-internal"
-  marker = '/git/ref/heads/codex/internal-debug" --jq'
-  index = text.rindex(marker)
-  abort "final internal marker not found" unless index
-  text[index, marker.length] = '/git/ref/heads/main" --jq'
-  true
-when "writer-post-ci-broad-final-equality"
-  text.sub!('[ "$EXPECTED_SHA" != "$final_internal_sha" ]', '[ "$EXPECTED_SHA" != "$final_main_sha" ]')
-when "writer-post-ci-broad-run-attempt"
-  marker = '.run_attempt == 1'
-  index = text.rindex(marker)
-  abort "post-promotion run-attempt marker not found" unless index
-  text[index, marker.length] = '.run_attempt >= 1'
-  true
-when "writer-post-ci-broad-actor"
-  marker = '.actor.login == $actor'
-  index = text.rindex(marker)
-  abort "post-promotion actor marker not found" unless index
-  text[index, marker.length] = '.actor.login != null'
-  true
-when "writer-post-ci-broad-triggering-actor"
-  marker = '.triggering_actor.login == $actor'
-  index = text.rindex(marker)
-  abort "post-promotion triggering-actor marker not found" unless index
-  text[index, marker.length] = '.triggering_actor.login != null'
-  true
+when "writer-pointer-unbounded-attempts"
+  text.sub!('api_get_max_attempts=3', 'api_get_max_attempts=4')
+when "writer-pointer-wrong-retry-delay"
+  text.sub!('api_get_retry_seconds=5', 'api_get_retry_seconds=1')
+when "writer-pointer-stdout-contamination"
+  text.sub!("                printf '%s' \"$response\"", "                printf '%s' \"$response\"\n                printf 'debug'")
+when "writer-pointer-broad-ref-equality"
+  text.sub!(%r{\[ -z "\$EXPECTED_SHA" \] \|\| \\\n+\s*\[ "\$EXPECTED_SHA" != "\$main_sha" \] \|\| \\\n+\s*\[ "\$EXPECTED_SHA" != "\$internal_sha" \]; then},
+            '[ -z "$EXPECTED_SHA" ] || \\\n+             [ "$EXPECTED_SHA" != "$main_sha" ]; then')
 when "extra-top-level-writer"
   text = <<~YAML
     name: Unauthorized Writer
@@ -596,7 +630,7 @@ expect_mutation_failure missing-ruleset-contract-fixtures
 expect_mutation_failure ruleset-contract-echo-only
 expect_mutation_failure workflow-dispatch-input
 expect_mutation_failure missing-workflow-dispatch
-expect_mutation_failure dispatch-aggregate-mints-required-ci
+expect_mutation_failure manual-aggregate-mints-required-ci
 expect_mutation_failure dispatch-missing-ref-gate
 expect_mutation_failure dispatch-broad-sha-gate
 expect_mutation_failure dispatch-branch-policy-echo-only
@@ -605,7 +639,9 @@ expect_mutation_failure unpinned-ci-upload
 expect_mutation_failure missing-required-ci
 expect_mutation_failure required-ci-not-always
 expect_mutation_failure required-ci-missing-need
-expect_mutation_failure required-ci-allows-failure
+expect_mutation_failure required-ci-allows-planned-skip
+expect_mutation_failure required-ci-allows-unplanned-success
+expect_mutation_failure required-ci-missing-full-enable
 expect_mutation_failure ci-job-write
 expect_mutation_failure required-ci-job-continue-on-error
 expect_mutation_failure required-ci-step-continue-on-error
@@ -618,6 +654,17 @@ expect_mutation_failure ci-top-level-custom-shell
 expect_mutation_failure required-ci-step-custom-shell
 expect_mutation_failure failing-extra-ci-job
 expect_mutation_failure unreviewed-ci-step-action
+expect_mutation_failure impact-planner-from-checkout
+expect_mutation_failure impact-config-from-checkout
+expect_mutation_failure impact-missing-fallback
+expect_mutation_failure impact-fallback-disables-release
+expect_mutation_failure impact-missing-output
+expect_mutation_failure impact-package-condition-bypassed
+expect_mutation_failure impact-release-condition-wrong-output
+expect_mutation_failure repository-hygiene-missing-planner-test
+expect_mutation_failure repository-hygiene-missing-coverage-test
+expect_mutation_failure coverage-upload-broad-path
+expect_mutation_failure coverage-upload-wrong-retention
 expect_mutation_failure promotion-dispatch-input promotion
 expect_mutation_failure promotion-top-level-write promotion
 expect_mutation_failure promotion-unpinned-checkout promotion
@@ -678,39 +725,17 @@ expect_mutation_failure writer-step-condition writer
 expect_mutation_failure writer-step-custom-shell writer
 expect_mutation_failure writer-step-continue-on-error writer
 expect_mutation_failure writer-extra-step writer
-expect_mutation_failure writer-post-ci-missing-dependency writer
-expect_mutation_failure writer-post-ci-broad-permissions writer
-expect_mutation_failure writer-dispatch-missing-fresh-main writer
-expect_mutation_failure writer-dispatch-missing-fresh-internal writer
-expect_mutation_failure writer-dispatch-broad-ref-equality writer
-expect_mutation_failure writer-dispatch-waits-with-write-token writer
-expect_mutation_failure writer-dispatch-adds-checkout writer
-expect_mutation_failure writer-post-ci-verifier-missing-dependency writer
-expect_mutation_failure writer-post-ci-verifier-write writer
-expect_mutation_failure writer-post-ci-verifier-post writer
-expect_mutation_failure writer-dispatch-echo-only writer
-expect_mutation_failure writer-dispatch-wrong-workflow writer
-expect_mutation_failure writer-dispatch-slashed-workflow-identifier writer
-expect_mutation_failure writer-dispatch-wrong-ref writer
-expect_mutation_failure writer-dispatch-wrong-api-version writer
-expect_mutation_failure writer-dispatch-deprecated-run-details writer
-expect_mutation_failure writer-dispatch-response-broad-run-id writer
-expect_mutation_failure writer-dispatch-response-broad-run-url writer
-expect_mutation_failure writer-dispatch-response-broad-html-url writer
-expect_mutation_failure writer-dispatch-unbounded-wait writer
-expect_mutation_failure writer-dispatch-broad-aggregate writer
-expect_mutation_failure writer-dispatch-allows-required-ci writer
-expect_mutation_failure writer-post-ci-wrong-check-app writer
-expect_mutation_failure writer-post-ci-missing-suite-link writer
-expect_mutation_failure writer-post-ci-missing-details-link writer
-expect_mutation_failure writer-post-ci-missing-check-id-link writer
-expect_mutation_failure writer-post-ci-check-query-wrong-sha writer
-expect_mutation_failure writer-post-ci-missing-final-main writer
-expect_mutation_failure writer-post-ci-missing-final-internal writer
-expect_mutation_failure writer-post-ci-broad-final-equality writer
-expect_mutation_failure writer-post-ci-broad-run-attempt writer
-expect_mutation_failure writer-post-ci-broad-actor writer
-expect_mutation_failure writer-post-ci-broad-triggering-actor writer
+expect_mutation_failure writer-pointer-missing-dependency writer
+expect_mutation_failure writer-pointer-broad-permissions writer
+expect_mutation_failure writer-pointer-missing-fresh-main writer
+expect_mutation_failure writer-pointer-missing-fresh-internal writer
+expect_mutation_failure writer-pointer-broad-ref-equality writer
+expect_mutation_failure writer-pointer-adds-checkout writer
+expect_mutation_failure writer-pointer-post writer
+expect_mutation_failure writer-pointer-wrong-api-version writer
+expect_mutation_failure writer-pointer-unbounded-attempts writer
+expect_mutation_failure writer-pointer-wrong-retry-delay writer
+expect_mutation_failure writer-pointer-stdout-contamination writer
 expect_mutation_failure extra-top-level-writer extra
 expect_mutation_failure extra-job-level-writer extra
 expect_mutation_failure extra-omitted-permissions extra

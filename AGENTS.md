@@ -1,5 +1,18 @@
 # SingleGreenDemo Agent Instructions
 
+## Current CI operating contract
+
+The layered CI design in [docs/CI_WORKFLOW.md](./docs/CI_WORKFLOW.md) is the
+current local contract. Pull requests use deterministic, fail-closed impact
+selection from the exact PR base planner/config; cheap branch/hygiene/security
+gates always run; pushes to `main` and no-input manual diagnostic runs are
+full. The initial rollout falls back to a hard-coded full plan when the base
+does not yet contain the planner. `Required CI` remains the stable protected
+aggregate. Promotion reuses the exact successful `main` SHA and performs a
+lightweight fresh pointer check instead of a third full CI run. Coverage
+uploads contain reports only. This behavior is not hosted evidence until the
+next upload.
+
 ## Communication contract
 
 - Communicate with the user in Simplified Chinese unless the user explicitly requests another language.
@@ -72,6 +85,16 @@ Do not move provider-specific code into the Controller, duplicate StreamingTextK
 - Never write API keys, access tokens, provisioning content, or user secrets into tracked files, fixtures, logs, or documentation.
 
 ## Test gates
+
+For impact-selective CI or promotion-workflow changes, run the planner and
+coverage fixtures before the static workflow contract and mutation suite:
+
+```bash
+scripts/test_ci_impact_plan.sh
+scripts/test_coverage_gate_selection.sh
+scripts/check_ci_workflow.sh
+scripts/test_ci_workflow_check.sh
+```
 
 M7 PR1 quality gates (run from the repository root):
 
