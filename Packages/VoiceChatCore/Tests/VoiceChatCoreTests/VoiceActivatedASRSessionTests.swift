@@ -841,25 +841,298 @@ final class VoiceActivatedASRSessionTests: XCTestCase {
     func testDelayedSendAppliesBackpressureAndPreservesEveryAcceptedFrameInFIFO() async throws {
         let source = FakePCMFrameSource()
         let detector = FakeVoiceActivityDetector(defaultSpeech: true)
-        let transport = FakeStreamingASRTransport(autoFinishEvent: false, gateFirstSend: true)
-        let session = try makeSession(source: source, detector: detector, transport: transport)
+        let transport = FakeStreamingASRTransport(
+            autoFinishEvent: false,
+            gateFirstSend: true,
+            gateFinish: true
+        )
+        let finishWorkerWaitRecorder = FinishWorkerWaitRecorder()
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: try makePolicy(),
+            finishWorkerWaitHook: { generation, phase in
+                await finishWorkerWaitRecorder.record(generation: generation, phase: phase)
+            }
+        )
+        let manualDrain = collectEvents(from: session) { $0 == .state(.draining(.manual)) }
+        let finishCompletion = AsyncCompletionProbe()
 
         try await session.arm()
         for sequence in 0..<3 { await source.emit(try frame(UInt64(sequence))) }
         await transport.waitUntilFirstSendEntered()
         for sequence in 3..<6 { await source.emit(try frame(UInt64(sequence))) }
-        let finish = Task { await session.finish() }
-        await Task.yield()
+        await source.suspendNextStop()
+        let finish = Task {
+            await session.finish()
+            await finishCompletion.complete()
+        }
+        _ = await manualDrain.value
+        await source.waitUntilStopIsSuspended()
 
         let blockedMetrics = await transport.metrics()
         XCTAssertEqual(blockedMetrics.sendCallCount, 1)
         await transport.releaseFirstSend()
+        await transport.waitUntilFinishEntered()
+        await source.releaseSuspendedStop()
+        let selectedWait = await finishWorkerWaitRecorder.waitForSelection()
+        XCTAssertEqual(selectedWait.generation, 1)
+        XCTAssertEqual(selectedWait.phase, .willAwaitWorker)
+        let completionWhileFinishStreamIsBlocked = await finishCompletion.isComplete
+        XCTAssertFalse(completionWhileFinishStreamIsBlocked)
+        await transport.releaseFinish()
         await finish.value
 
         let metrics = await transport.metrics()
         XCTAssertEqual(metrics.sentSequences, [0, 1, 2, 3, 4, 5])
         XCTAssertEqual(Set(metrics.sentSequences).count, metrics.sentSequences.count)
         XCTAssertEqual(metrics.operations.last, "finish")
+        let completionAfterFinishStreamReturns = await finishCompletion.isComplete
+        XCTAssertTrue(completionAfterFinishStreamReturns)
+        let phases = await finishWorkerWaitRecorder.recordedPhases
+        XCTAssertEqual(phases, [.willAwaitWorker, .didAwaitWorker])
+    }
+
+    func testCancelUnblocksGatedFinishStreamWithoutDeadlocking() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: true)
+        let transport = FakeStreamingASRTransport(
+            autoFinishEvent: false,
+            gateFirstSend: true,
+            gateFinish: true
+        )
+        let finishWorkerWaitRecorder = FinishWorkerWaitRecorder()
+        let cancelRetiringWorkerWaitRecorder = CancelRetiringWorkerWaitRecorder()
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: try makePolicy(),
+            finishWorkerWaitHook: { generation, phase in
+                await finishWorkerWaitRecorder.record(generation: generation, phase: phase)
+            },
+            cancelRetiringWorkerWaitHook: { _, phase in
+                await cancelRetiringWorkerWaitRecorder.record(phase)
+            }
+        )
+        let manualDrain = collectEvents(from: session) { $0 == .state(.draining(.manual)) }
+
+        try await session.arm()
+        for sequence in 0..<3 { await source.emit(try frame(UInt64(sequence))) }
+        await transport.waitUntilFirstSendEntered()
+        for sequence in 3..<6 { await source.emit(try frame(UInt64(sequence))) }
+        await source.suspendNextStop()
+
+        let finish = Task { await session.finish() }
+        _ = await manualDrain.value
+        await source.waitUntilStopIsSuspended()
+        await transport.releaseFirstSend()
+        await transport.waitUntilFinishEntered()
+        await source.releaseSuspendedStop()
+        let selectedWait = await finishWorkerWaitRecorder.waitForSelection()
+        XCTAssertEqual(selectedWait.generation, 1)
+        XCTAssertEqual(selectedWait.phase, .willAwaitWorker)
+        let cancel = Task { await session.cancel() }
+        await transport.waitUntilCancelEntered()
+        await cancel.value
+
+        let metricsAfterRetirement = await transport.metrics()
+        XCTAssertEqual(metricsAfterRetirement.finishStreamInFlightCount, 0)
+        let newStreaming = collectEvents(from: session) { $0 == .state(.streaming) }
+        try await session.arm()
+        for sequence in 10..<13 { await source.emit(try frame(UInt64(sequence))) }
+        _ = await newStreaming.value
+        await waitUntil {
+            await transport.metrics().sentSequences == [0, 1, 2, 3, 4, 5, 10, 11, 12]
+        }
+
+        let sourceStartCount = await source.startCount
+        let maximumActiveRunCount = await source.maximumActiveRunCount
+        let metricsAfterRearm = await transport.metrics()
+        XCTAssertEqual(sourceStartCount, 2)
+        XCTAssertEqual(maximumActiveRunCount, 1)
+        XCTAssertEqual(metricsAfterRearm.openCount, 2)
+        XCTAssertEqual(metricsAfterRearm.openWhileFinishStreamInFlightCount, 0)
+
+        await finish.value
+        let oldRunPhases = await finishWorkerWaitRecorder.recordedPhases(for: 1)
+        XCTAssertEqual(oldRunPhases, [.willAwaitWorker, .didAwaitWorker])
+        let retirementPhases = await cancelRetiringWorkerWaitRecorder.recordedPhases
+        XCTAssertEqual(retirementPhases, [.willAwaitWorker, .didAwaitWorker])
+
+        let newFinish = Task { await session.finish() }
+        await waitUntil { await transport.metrics().finishCount == 2 }
+        await transport.releaseFinish()
+        await newFinish.value
+        await session.cancel()
+
+        let metrics = await transport.metrics()
+        XCTAssertEqual(metrics.sentSequences, [0, 1, 2, 3, 4, 5, 10, 11, 12])
+        XCTAssertEqual(Set(metrics.sentSequences).count, metrics.sentSequences.count)
+        XCTAssertEqual(metrics.finishCount, 2)
+        XCTAssertEqual(metrics.cancelCount, 2)
+        XCTAssertEqual(metrics.operations.last, "cancel")
+        let newRunPhases = await finishWorkerWaitRecorder.recordedPhases(for: 3)
+        XCTAssertEqual(newRunPhases, [.directFinalizationSelected])
+        let finalState = await session.state
+        XCTAssertEqual(finalState, .idle)
+    }
+
+    func testTransportFinishedBlocksRearmUntilTrackedDirectFinalizerExits() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: true)
+        let transport = FakeStreamingASRTransport(
+            autoFinishEvent: false,
+            gateFirstSend: true,
+            gateFinish: true
+        )
+        let finishWorkerWaitRecorder = FinishWorkerWaitRecorder()
+        let retirementWaitRecorder = WorkerRetirementWaitRecorder()
+        let workerExitRecorder = WorkerExitRecorder()
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: try makePolicy(),
+            finishWorkerWaitHook: { generation, phase in
+                await finishWorkerWaitRecorder.record(generation: generation, phase: phase)
+            },
+            workerRetirementWaitHook: { retirementID, phase in
+                await retirementWaitRecorder.record(retirementID: retirementID, phase: phase)
+            },
+            workerExitHook: { workerID, generation in
+                await workerExitRecorder.record(workerID: workerID, generation: generation)
+            }
+        )
+        let finished = collectEvents(from: session) { $0 == .state(.finished) }
+
+        try await session.arm()
+        for sequence in 0..<3 { await source.emit(try frame(UInt64(sequence))) }
+        await transport.waitUntilFirstSendEntered()
+        await transport.releaseFirstSend()
+        await transport.waitUntilSendCallCompleted(1)
+        _ = await workerExitRecorder.waitUntilExit(generation: 1)
+        let finish = Task { await session.finish() }
+        let selection = await finishWorkerWaitRecorder.waitForSelection()
+        XCTAssertEqual(selection.generation, 1)
+        XCTAssertEqual(selection.phase, .directFinalizationSelected)
+        await transport.waitUntilFinishEntered()
+
+        await transport.emit(.finished)
+        _ = await finished.value
+        let rearm = Task { await armOutcome(session) }
+        _ = await retirementWaitRecorder.waitUntilWillAwait()
+
+        let blockedStartCount = await source.startCount
+        let blockedMetrics = await transport.metrics()
+        XCTAssertEqual(blockedStartCount, 1)
+        XCTAssertEqual(blockedMetrics.openCount, 1)
+
+        await transport.releaseFinish()
+        await finish.value
+        let rearmOutcome = await rearm.value
+        XCTAssertEqual(rearmOutcome, .started)
+        let retirementPhases = await retirementWaitRecorder.recordedPhases
+        XCTAssertEqual(retirementPhases, [.willAwait, .didAwait])
+        let finalStartCount = await source.startCount
+        let finalMetrics = await transport.metrics()
+        XCTAssertEqual(finalStartCount, 2)
+        XCTAssertEqual(finalMetrics.openCount, 1)
+        await session.cancel()
+    }
+
+    func testTransportFailureBlocksRearmUntilGatedWorkerExits() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: true)
+        let transport = FakeStreamingASRTransport(
+            autoFinishEvent: false,
+            gateFirstSend: true
+        )
+        let retirementWaitRecorder = WorkerRetirementWaitRecorder()
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: try makePolicy(),
+            workerRetirementWaitHook: { retirementID, phase in
+                await retirementWaitRecorder.record(retirementID: retirementID, phase: phase)
+            }
+        )
+        let failed = collectEvents(from: session) {
+            $0 == .state(.failed(ASRFailure(code: .connectionLost)))
+        }
+
+        try await session.arm()
+        for sequence in 0..<3 { await source.emit(try frame(UInt64(sequence))) }
+        await transport.waitUntilFirstSendEntered()
+        await transport.emit(.failed(ASRFailure(code: .connectionLost)))
+        _ = await failed.value
+
+        let rearm = Task { await armOutcome(session) }
+        _ = await retirementWaitRecorder.waitUntilWillAwait()
+        let blockedStartCount = await source.startCount
+        let blockedMetrics = await transport.metrics()
+        XCTAssertEqual(blockedStartCount, 1)
+        XCTAssertEqual(blockedMetrics.openCount, 1)
+
+        await transport.releaseFirstSend()
+        let rearmOutcome = await rearm.value
+        XCTAssertEqual(rearmOutcome, .started)
+        let retirementPhases = await retirementWaitRecorder.recordedPhases
+        XCTAssertEqual(retirementPhases, [.willAwait, .didAwait])
+        let finalStartCount = await source.startCount
+        let finalMetrics = await transport.metrics()
+        XCTAssertEqual(finalStartCount, 2)
+        XCTAssertEqual(finalMetrics.openCount, 1)
+        await session.cancel()
+    }
+
+    func testWorkerSendFailureDoesNotSelfAwaitAndRearmsAfterExactRetirement() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: true)
+        let transport = FakeStreamingASRTransport(
+            autoFinishEvent: false,
+            sendFailureAtCall: 1
+        )
+        let retirementWaitGate = WorkerRetirementWaitRecorder(gateWillAwait: true)
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: try makePolicy(),
+            workerRetirementWaitHook: { retirementID, phase in
+                await retirementWaitGate.record(retirementID: retirementID, phase: phase)
+            }
+        )
+        let failed = collectEvents(from: session) {
+            $0 == .state(.failed(ASRFailure(code: .connectionLost)))
+        }
+
+        try await session.arm()
+        for sequence in 0..<3 { await source.emit(try frame(UInt64(sequence))) }
+        _ = await failed.value
+
+        let rearm = Task { await armOutcome(session) }
+        let retirementObservation = await retirementWaitGate.waitUntilWillAwait()
+        XCTAssertEqual(retirementObservation.retirementID, 1)
+        XCTAssertEqual(retirementObservation.phase, .willAwait)
+        let blockedStartCount = await source.startCount
+        XCTAssertEqual(blockedStartCount, 1)
+
+        await retirementWaitGate.releaseWillAwait()
+        let rearmOutcome = await rearm.value
+        XCTAssertEqual(rearmOutcome, .started)
+        let retirementPhases = await retirementWaitGate.recordedPhases
+        XCTAssertEqual(retirementPhases, [.willAwait, .didAwait])
+        let finalStartCount = await source.startCount
+        let maximumActiveRunCount = await source.maximumActiveRunCount
+        XCTAssertEqual(finalStartCount, 2)
+        XCTAssertEqual(maximumActiveRunCount, 1)
+        let metrics = await transport.metrics()
+        XCTAssertEqual(metrics.sendCallCount, 1)
+        XCTAssertEqual(metrics.openCount, 1)
+        await session.cancel()
     }
 
     func testAutomaticEndpointDrainsThroughEndpointAndDiscardsLaterQueuedCapture() async throws {
@@ -1652,6 +1925,8 @@ private actor FakeStreamingASRTransport: StreamingASRTransport {
         let cancelCount: Int
         let sentSequences: [UInt64]
         let operations: [String]
+        let finishStreamInFlightCount: Int
+        let openWhileFinishStreamInFlightCount: Int
     }
 
     private var continuation: AsyncStream<StreamingASRTransportEvent>.Continuation?
@@ -1660,12 +1935,20 @@ private actor FakeStreamingASRTransport: StreamingASRTransport {
     private let sendFailureAtCall: Int?
     private let finishFailure: Bool
     private let gateFirstSend: Bool
+    private let gateFinish: Bool
     private let gateCancel: Bool
     private let finishEventStreamOnCancel: Bool
     private var openRelease: CheckedContinuation<Void, Never>?
     private var openWaiters: [CheckedContinuation<Void, Never>] = []
     private var firstSendRelease: CheckedContinuation<Void, Never>?
     private var firstSendWaiters: [CheckedContinuation<Void, Never>] = []
+    private var completedSendCallCount = 0
+    private var sendCompletionWaiters: [(
+        target: Int,
+        continuation: CheckedContinuation<Void, Never>
+    )] = []
+    private var finishRelease: CheckedContinuation<Void, Never>?
+    private var finishWaiters: [CheckedContinuation<Void, Never>] = []
     private var cancelRelease: CheckedContinuation<Void, Never>?
     private var cancelWaiters: [CheckedContinuation<Void, Never>] = []
     private var openCount = 0
@@ -1674,6 +1957,8 @@ private actor FakeStreamingASRTransport: StreamingASRTransport {
     private var cancelCount = 0
     private var sentSequences: [UInt64] = []
     private var operations: [String] = []
+    private var finishStreamInFlightCount = 0
+    private var openWhileFinishStreamInFlightCount = 0
     private var eventContinuations: [AsyncStream<StreamingASRTransportEvent>.Continuation] = []
 
     init(
@@ -1682,6 +1967,7 @@ private actor FakeStreamingASRTransport: StreamingASRTransport {
         sendFailureAtCall: Int? = nil,
         finishFailure: Bool = false,
         gateFirstSend: Bool = false,
+        gateFinish: Bool = false,
         gateCancel: Bool = false,
         finishEventStreamOnCancel: Bool = true
     ) {
@@ -1690,11 +1976,15 @@ private actor FakeStreamingASRTransport: StreamingASRTransport {
         self.sendFailureAtCall = sendFailureAtCall
         self.finishFailure = finishFailure
         self.gateFirstSend = gateFirstSend
+        self.gateFinish = gateFinish
         self.gateCancel = gateCancel
         self.finishEventStreamOnCancel = finishEventStreamOnCancel
     }
 
     func openStream() async throws -> AsyncStream<StreamingASRTransportEvent> {
+        if finishStreamInFlightCount > 0 {
+            openWhileFinishStreamInFlightCount += 1
+        }
         continuation?.finish()
         let (events, continuation) = AsyncStream<StreamingASRTransportEvent>.makeStream()
         self.continuation = continuation
@@ -1729,11 +2019,26 @@ private actor FakeStreamingASRTransport: StreamingASRTransport {
             throw ASRFailure(code: .connectionLost)
         }
         sentSequences.append(contentsOf: frames.map(\.sequence))
+        completedSendCallCount += 1
+        let readyWaiters = sendCompletionWaiters.filter { $0.target <= completedSendCallCount }
+        sendCompletionWaiters.removeAll { $0.target <= completedSendCallCount }
+        readyWaiters.forEach { $0.continuation.resume() }
     }
 
     func finishStream() async throws {
+        finishStreamInFlightCount += 1
+        defer { finishStreamInFlightCount -= 1 }
         finishCount += 1
         operations.append("finish")
+        let waiters = finishWaiters
+        finishWaiters.removeAll()
+        waiters.forEach { $0.resume() }
+        if gateFinish {
+            await withCheckedContinuation { continuation in
+                finishRelease = continuation
+            }
+            finishRelease = nil
+        }
         if finishFailure { throw ASRFailure(code: .connectionLost) }
         if autoFinishEvent { continuation?.yield(.finished) }
     }
@@ -1743,6 +2048,8 @@ private actor FakeStreamingASRTransport: StreamingASRTransport {
         operations.append("cancel")
         openRelease?.resume()
         openRelease = nil
+        finishRelease?.resume()
+        finishRelease = nil
         let waiters = cancelWaiters
         cancelWaiters.removeAll()
         waiters.forEach { $0.resume() }
@@ -1792,6 +2099,25 @@ private actor FakeStreamingASRTransport: StreamingASRTransport {
         firstSendRelease = nil
     }
 
+    func waitUntilSendCallCompleted(_ target: Int) async {
+        guard completedSendCallCount < target else { return }
+        await withCheckedContinuation { continuation in
+            sendCompletionWaiters.append((target: target, continuation: continuation))
+        }
+    }
+
+    func waitUntilFinishEntered() async {
+        guard finishCount == 0 else { return }
+        await withCheckedContinuation { continuation in
+            finishWaiters.append(continuation)
+        }
+    }
+
+    func releaseFinish() {
+        finishRelease?.resume()
+        finishRelease = nil
+    }
+
     func waitUntilCancelEntered() async {
         guard cancelCount == 0 else { return }
         await withCheckedContinuation { continuation in
@@ -1811,8 +2137,152 @@ private actor FakeStreamingASRTransport: StreamingASRTransport {
             finishCount: finishCount,
             cancelCount: cancelCount,
             sentSequences: sentSequences,
-            operations: operations
+            operations: operations,
+            finishStreamInFlightCount: finishStreamInFlightCount,
+            openWhileFinishStreamInFlightCount: openWhileFinishStreamInFlightCount
         )
+    }
+}
+
+private actor AsyncCompletionProbe {
+    private(set) var isComplete = false
+
+    func complete() {
+        isComplete = true
+    }
+}
+
+private actor FinishWorkerWaitRecorder {
+    struct Observation: Equatable, Sendable {
+        let generation: UInt64
+        let phase: VoiceActivatedASRFinishWorkerWaitPhase
+    }
+
+    private var observations: [Observation] = []
+    private var selectionWaiters: [CheckedContinuation<Observation, Never>] = []
+
+    var recordedPhases: [VoiceActivatedASRFinishWorkerWaitPhase] {
+        observations.map(\.phase)
+    }
+
+    func recordedPhases(for generation: UInt64) -> [VoiceActivatedASRFinishWorkerWaitPhase] {
+        observations.lazy
+            .filter { $0.generation == generation }
+            .map(\.phase)
+    }
+
+    func record(generation: UInt64, phase: VoiceActivatedASRFinishWorkerWaitPhase) {
+        let observation = Observation(generation: generation, phase: phase)
+        observations.append(observation)
+        guard phase == .directFinalizationSelected || phase == .willAwaitWorker else { return }
+        let waiters = selectionWaiters
+        selectionWaiters.removeAll()
+        waiters.forEach { $0.resume(returning: observation) }
+    }
+
+    func waitForSelection() async -> Observation {
+        if let selection = observations.first(where: {
+            $0.phase == .directFinalizationSelected || $0.phase == .willAwaitWorker
+        }) {
+            return selection
+        }
+        return await withCheckedContinuation { continuation in
+            selectionWaiters.append(continuation)
+        }
+    }
+}
+
+private actor CancelRetiringWorkerWaitRecorder {
+    private var observations: [VoiceActivatedASRCancelRetiringWorkerWaitPhase] = []
+
+    var recordedPhases: [VoiceActivatedASRCancelRetiringWorkerWaitPhase] {
+        observations
+    }
+
+    func record(_ phase: VoiceActivatedASRCancelRetiringWorkerWaitPhase) {
+        observations.append(phase)
+    }
+}
+
+private actor WorkerRetirementWaitRecorder {
+    struct Observation: Equatable, Sendable {
+        let retirementID: UInt64
+        let phase: VoiceActivatedASRWorkerRetirementWaitPhase
+    }
+
+    private var observations: [Observation] = []
+    private var willAwaitWaiters: [CheckedContinuation<Observation, Never>] = []
+    private let gateWillAwait: Bool
+    private var releaseWillAwaitImmediately = false
+    private var willAwaitRelease: CheckedContinuation<Void, Never>?
+
+    init(gateWillAwait: Bool = false) {
+        self.gateWillAwait = gateWillAwait
+    }
+
+    var recordedPhases: [VoiceActivatedASRWorkerRetirementWaitPhase] {
+        observations.map(\.phase)
+    }
+
+    func record(
+        retirementID: UInt64,
+        phase: VoiceActivatedASRWorkerRetirementWaitPhase
+    ) async {
+        let observation = Observation(retirementID: retirementID, phase: phase)
+        observations.append(observation)
+        guard phase == .willAwait else { return }
+        let waiters = willAwaitWaiters
+        willAwaitWaiters.removeAll()
+        waiters.forEach { $0.resume(returning: observation) }
+        guard gateWillAwait, !releaseWillAwaitImmediately else { return }
+        await withCheckedContinuation { continuation in
+            willAwaitRelease = continuation
+        }
+    }
+
+    func waitUntilWillAwait() async -> Observation {
+        if let observation = observations.first(where: { $0.phase == .willAwait }) {
+            return observation
+        }
+        return await withCheckedContinuation { continuation in
+            willAwaitWaiters.append(continuation)
+        }
+    }
+
+    func releaseWillAwait() {
+        releaseWillAwaitImmediately = true
+        willAwaitRelease?.resume()
+        willAwaitRelease = nil
+    }
+}
+
+private actor WorkerExitRecorder {
+    struct Observation: Equatable, Sendable {
+        let workerID: UInt64
+        let generation: UInt64
+    }
+
+    private var observations: [Observation] = []
+    private var waiters: [(
+        generation: UInt64,
+        continuation: CheckedContinuation<Observation, Never>
+    )] = []
+
+    func record(workerID: UInt64, generation: UInt64) {
+        let observation = Observation(workerID: workerID, generation: generation)
+        observations.append(observation)
+        let readyWaiters = waiters.filter { $0.generation == generation }
+        waiters.removeAll { $0.generation == generation }
+        readyWaiters.forEach { $0.continuation.resume(returning: observation) }
+    }
+
+    func waitUntilExit(generation: UInt64) async -> Observation {
+        if let observation = observations.first(where: { $0.generation == generation }) {
+            return observation
+        }
+        return await withCheckedContinuation { continuation in
+            waiters.append((generation: generation, continuation: continuation))
+        }
     }
 }
 

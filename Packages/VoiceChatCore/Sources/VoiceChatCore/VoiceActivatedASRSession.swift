@@ -1,11 +1,38 @@
 import Foundation
 import VoiceActivityDetectionKit
 
+enum VoiceActivatedASRFinishWorkerWaitPhase: Equatable, Sendable {
+    case directFinalizationSelected
+    case willAwaitWorker
+    case didAwaitWorker
+}
+
+enum VoiceActivatedASRCancelRetiringWorkerWaitPhase: Equatable, Sendable {
+    case willAwaitWorker
+    case didAwaitWorker
+}
+
+enum VoiceActivatedASRWorkerRetirementWaitPhase: Equatable, Sendable {
+    case willAwait
+    case didAwait
+}
+
 /// A one-shot local-VAD-gated ASR session. Capture and VAD run locally while armed; the transport is
 /// not opened until onset is confirmed. All accepted upload batches are awaited in strict FIFO order.
 public actor VoiceActivatedASRSession {
     private struct CleanupBarrier {
         let id: UInt64
+        let task: Task<Void, Never>
+    }
+
+    private struct WorkerRetirementBarrier {
+        let id: UInt64
+        let task: Task<Void, Never>
+    }
+
+    private struct WorkerHandle {
+        let id: UInt64
+        let generation: UInt64
         let task: Task<Void, Never>
     }
 
@@ -23,6 +50,16 @@ public actor VoiceActivatedASRSession {
     private let cleanupWaitHook: (
         @Sendable (UInt64, VoiceActivatedASRCleanupWaitPhase) async -> Void
     )?
+    private let finishWorkerWaitHook: (
+        @Sendable (UInt64, VoiceActivatedASRFinishWorkerWaitPhase) async -> Void
+    )?
+    private let cancelRetiringWorkerWaitHook: (
+        @Sendable (UInt64, VoiceActivatedASRCancelRetiringWorkerWaitPhase) async -> Void
+    )?
+    private let workerRetirementWaitHook: (
+        @Sendable (UInt64, VoiceActivatedASRWorkerRetirementWaitPhase) async -> Void
+    )?
+    private let workerExitHook: (@Sendable (UInt64, UInt64) async -> Void)?
 
     private var generation: UInt64 = 0
     private var activeGeneration: UInt64?
@@ -31,12 +68,15 @@ public actor VoiceActivatedASRSession {
     private var sourceFrameTask: Task<Void, Never>?
     private var sourceLevelTask: Task<Void, Never>?
     private var transportEventTask: Task<Void, Never>?
-    private var workerTask: Task<Void, Never>?
+    private var nextWorkerID: UInt64 = 0
+    private var workerHandle: WorkerHandle?
     private var frameLivenessTask: Task<Void, Never>?
     private var frameLivenessDeadline: Duration?
     private var frameLivenessEpoch: UInt64 = 0
     private var nextCleanupID: UInt64 = 0
     private var cleanupBarrier: CleanupBarrier?
+    private var nextWorkerRetirementID: UInt64 = 0
+    private var workerRetirementBarrier: WorkerRetirementBarrier?
 
     public init(
         config: ASRSession.Config,
@@ -71,6 +111,10 @@ public actor VoiceActivatedASRSession {
         self.frameLivenessClock = .continuous
         self.frameLivenessInterval = Self.frameLivenessInterval(for: policy)
         self.cleanupWaitHook = nil
+        self.finishWorkerWaitHook = nil
+        self.cancelRetiringWorkerWaitHook = nil
+        self.workerRetirementWaitHook = nil
+        self.workerExitHook = nil
     }
 
     init(
@@ -81,7 +125,17 @@ public actor VoiceActivatedASRSession {
         frameLivenessClock: VoiceActivatedASRMonotonicClock = .continuous,
         cleanupWaitHook: (
             @Sendable (UInt64, VoiceActivatedASRCleanupWaitPhase) async -> Void
-        )? = nil
+        )? = nil,
+        finishWorkerWaitHook: (
+            @Sendable (UInt64, VoiceActivatedASRFinishWorkerWaitPhase) async -> Void
+        )? = nil,
+        cancelRetiringWorkerWaitHook: (
+            @Sendable (UInt64, VoiceActivatedASRCancelRetiringWorkerWaitPhase) async -> Void
+        )? = nil,
+        workerRetirementWaitHook: (
+            @Sendable (UInt64, VoiceActivatedASRWorkerRetirementWaitPhase) async -> Void
+        )? = nil,
+        workerExitHook: (@Sendable (UInt64, UInt64) async -> Void)? = nil
     ) {
         let (events, continuation) = AsyncStream<VoiceActivatedASREvent>.makeStream()
         self.events = events
@@ -96,34 +150,46 @@ public actor VoiceActivatedASRSession {
         self.frameLivenessClock = frameLivenessClock
         self.frameLivenessInterval = Self.frameLivenessInterval(for: policy)
         self.cleanupWaitHook = cleanupWaitHook
+        self.finishWorkerWaitHook = finishWorkerWaitHook
+        self.cancelRetiringWorkerWaitHook = cancelRetiringWorkerWaitHook
+        self.workerRetirementWaitHook = workerRetirementWaitHook
+        self.workerExitHook = workerExitHook
     }
 
     deinit {
         sourceFrameTask?.cancel()
         sourceLevelTask?.cancel()
         transportEventTask?.cancel()
-        workerTask?.cancel()
+        workerHandle?.task.cancel()
         frameLivenessTask?.cancel()
         cleanupBarrier?.task.cancel()
+        workerRetirementBarrier?.task.cancel()
         eventContinuation.finish()
     }
 
     public func arm() async throws {
         while true {
             guard canArm else { throw VoiceActivatedASRSessionError.busy }
-            guard let cleanupBarrier else { break }
-            if let cleanupWaitHook {
-                await cleanupWaitHook(cleanupBarrier.id, .willAwait)
+            if let cleanupBarrier {
+                if let cleanupWaitHook {
+                    await cleanupWaitHook(cleanupBarrier.id, .willAwait)
+                }
+                await cleanupBarrier.task.value
+                if let cleanupWaitHook {
+                    await cleanupWaitHook(cleanupBarrier.id, .didAwait)
+                }
+                clearCleanupBarrier(ifMatching: cleanupBarrier.id)
+                continue
             }
-            await cleanupBarrier.task.value
-            if let cleanupWaitHook {
-                await cleanupWaitHook(cleanupBarrier.id, .didAwait)
+            if let workerRetirementBarrier {
+                await awaitWorkerRetirement(workerRetirementBarrier)
+                continue
             }
-            clearCleanupBarrier(ifMatching: cleanupBarrier.id)
+            break
         }
 
         // No suspension is allowed between this final admission check and reserving the generation.
-        guard canArm, cleanupBarrier == nil else {
+        guard canArm, cleanupBarrier == nil, workerRetirementBarrier == nil else {
             throw VoiceActivatedASRSessionError.busy
         }
         generation &+= 1
@@ -175,31 +241,58 @@ public actor VoiceActivatedASRSession {
         transition(to: .draining(.manual))
         runState.sourceStopExpected = true
         cancelFrameLivenessWatchdog()
+        let finishingSourceTask = sourceFrameTask
         await frameSource.stop()
-        await sourceFrameTask?.value
+        await finishingSourceTask?.value
+        guard activeGeneration == runGeneration else { return }
         runState.acceptingFrames = false
-        if !runState.hasQueuedFrames, workerTask == nil {
-            await finalize(reason: .manual, generation: runGeneration)
+        if !runState.hasQueuedFrames, workerHandle == nil {
+            let finalizer = startDirectFinalizer(generation: runGeneration)
+            if let finishWorkerWaitHook {
+                await finishWorkerWaitHook(runGeneration, .directFinalizationSelected)
+            }
+            await finalizer.task.value
             return
         }
-        let worker = workerTask
+        let worker = workerHandle
         startWorkerIfNeeded(generation: runGeneration)
-        await (worker ?? workerTask)?.value
+        let workerToAwait = worker ?? workerHandle
+        if let finishWorkerWaitHook {
+            await finishWorkerWaitHook(runGeneration, .willAwaitWorker)
+        }
+        await workerToAwait?.task.value
+        if let finishWorkerWaitHook {
+            await finishWorkerWaitHook(runGeneration, .didAwaitWorker)
+        }
     }
 
     public func cancel() async {
         guard activeGeneration != nil else {
             if state != .idle { transition(to: .idle) }
-            while let cleanupBarrier {
-                await cleanupBarrier.task.value
-                clearCleanupBarrier(ifMatching: cleanupBarrier.id)
+            while cleanupBarrier != nil || workerRetirementBarrier != nil {
+                if let cleanupBarrier {
+                    await cleanupBarrier.task.value
+                    clearCleanupBarrier(ifMatching: cleanupBarrier.id)
+                }
+                if let workerRetirementBarrier {
+                    await awaitWorkerRetirement(workerRetirementBarrier)
+                }
             }
             return
         }
+        let retiringWorker = workerHandle?.task
+        let shouldCancelTransport = runState.transportAttempted
+        let workerRetirement = startWorkerRetirement(for: retiringWorker)
         invalidateActiveRun(terminalState: .idle)
-        let cleanup = startCleanup(cancelTransport: runState.transportAttempted)
+        let cleanup = startCleanup(
+            cancelTransport: shouldCancelTransport,
+            retiringWorker: retiringWorker
+        )
         await cleanup.task.value
         clearCleanupBarrier(ifMatching: cleanup.id)
+        if let workerRetirement {
+            await awaitWorkerRetirement(workerRetirement)
+        }
     }
 
     private var canArm: Bool {
@@ -219,7 +312,7 @@ public actor VoiceActivatedASRSession {
         sourceFrameTask = nil
         sourceLevelTask = nil
         transportEventTask = nil
-        workerTask = nil
+        workerHandle = nil
     }
 
     private static func frameLivenessInterval(for policy: VoiceActivatedASRPolicy) -> Duration {
@@ -391,11 +484,33 @@ public actor VoiceActivatedASRSession {
 
     private func startWorkerIfNeeded(generation runGeneration: UInt64) {
         guard activeGeneration == runGeneration,
-              workerTask == nil,
+              workerHandle == nil,
               runState.hasQueuedFrames else { return }
-        workerTask = Task { [weak self] in
-            await self?.runWorker(generation: runGeneration)
+        nextWorkerID &+= 1
+        let workerID = nextWorkerID
+        let task = Task<Void, Never> { [weak self] in
+            guard let self else { return }
+            await self.runWorker(generation: runGeneration)
+            await self.workerDidExit(id: workerID, generation: runGeneration)
         }
+        workerHandle = WorkerHandle(id: workerID, generation: runGeneration, task: task)
+    }
+
+    private func startDirectFinalizer(generation runGeneration: UInt64) -> WorkerHandle {
+        nextWorkerID &+= 1
+        let workerID = nextWorkerID
+        let task = Task<Void, Never> { [weak self] in
+            guard let self else { return }
+            await self.runDirectFinalizer(generation: runGeneration)
+            await self.workerDidExit(id: workerID, generation: runGeneration)
+        }
+        let handle = WorkerHandle(id: workerID, generation: runGeneration, task: task)
+        workerHandle = handle
+        return handle
+    }
+
+    private func runDirectFinalizer(generation runGeneration: UInt64) async {
+        await finalize(reason: .manual, generation: runGeneration)
     }
 
     private func runWorker(generation runGeneration: UInt64) async {
@@ -443,10 +558,15 @@ public actor VoiceActivatedASRSession {
         }
 
         guard activeGeneration == runGeneration else { return }
-        workerTask = nil
         if runState.manualFinishRequested {
             await finalize(reason: .manual, generation: runGeneration)
         }
+    }
+
+    private func workerDidExit(id: UInt64, generation: UInt64) async {
+        guard workerHandle?.id == id, workerHandle?.generation == generation else { return }
+        workerHandle = nil
+        if let workerExitHook { await workerExitHook(id, generation) }
     }
 
     private func handle(
@@ -582,6 +702,7 @@ public actor VoiceActivatedASRSession {
 
     private func completeLocallyWithoutOpeningTransport(generation runGeneration: UInt64) async {
         guard activeGeneration == runGeneration, !runState.transportAttempted else { return }
+        _ = startWorkerRetirement(for: workerHandle?.task)
         invalidateActiveRun(terminalState: .finished)
         let cleanup = startCleanup(cancelTransport: false)
         await cleanup.task.value
@@ -590,17 +711,18 @@ public actor VoiceActivatedASRSession {
 
     private func completeSuccessfully(generation runGeneration: UInt64) {
         guard activeGeneration == runGeneration else { return }
+        _ = startWorkerRetirement(for: workerHandle?.task)
         activeGeneration = nil
         runState.acceptingFrames = false
         cancelFrameLivenessWatchdog()
         sourceFrameTask?.cancel()
         sourceLevelTask?.cancel()
         transportEventTask?.cancel()
-        workerTask?.cancel()
+        workerHandle?.task.cancel()
         sourceFrameTask = nil
         sourceLevelTask = nil
         transportEventTask = nil
-        workerTask = nil
+        workerHandle = nil
         runState.clearBufferedFrames()
         runState.transportAttempted = false
         transition(to: .finished)
@@ -609,6 +731,7 @@ public actor VoiceActivatedASRSession {
     private func fail(_ failure: ASRFailure, generation runGeneration: UInt64) async {
         guard activeGeneration == runGeneration else { return }
         let shouldCancelTransport = runState.transportAttempted
+        _ = startWorkerRetirement(for: workerHandle?.task)
         invalidateActiveRun(terminalState: .failed(failure))
         let cleanup = startCleanup(cancelTransport: shouldCancelTransport)
         await cleanup.task.value
@@ -622,33 +745,85 @@ public actor VoiceActivatedASRSession {
         cancelFrameLivenessWatchdog()
         sourceFrameTask?.cancel()
         sourceLevelTask?.cancel()
-        workerTask?.cancel()
+        workerHandle?.task.cancel()
         sourceFrameTask = nil
         sourceLevelTask = nil
-        workerTask = nil
+        workerHandle = nil
         runState.clearBufferedFrames()
         runState.manualFinishRequested = false
         transition(to: terminalState)
     }
 
     @discardableResult
-    private func startCleanup(cancelTransport: Bool) -> CleanupBarrier {
+    private func startCleanup(
+        cancelTransport: Bool,
+        retiringWorker: Task<Void, Never>? = nil
+    ) -> CleanupBarrier {
         let frameSource = frameSource
         let pipeline = pipeline
         let transport = transport
         let transportEventTask = transportEventTask
+        let cancelRetiringWorkerWaitHook = cancelRetiringWorkerWaitHook
         self.transportEventTask = nil
+        nextCleanupID &+= 1
+        let cleanupID = nextCleanupID
         let cleanup = Task {
             await frameSource.stop()
             await pipeline.reset()
             if cancelTransport { await transport.cancelStream() }
+            await Self.awaitRetiringWorker(
+                retiringWorker,
+                cleanupID: cleanupID,
+                hook: cancelRetiringWorkerWaitHook
+            )
             transportEventTask?.cancel()
         }
-        nextCleanupID &+= 1
-        let barrier = CleanupBarrier(id: nextCleanupID, task: cleanup)
+        let barrier = CleanupBarrier(id: cleanupID, task: cleanup)
         cleanupBarrier = barrier
         runState.transportAttempted = false
         return barrier
+    }
+
+    private nonisolated static func awaitRetiringWorker(
+        _ retiringWorker: Task<Void, Never>?,
+        cleanupID: UInt64,
+        hook: (@Sendable (UInt64, VoiceActivatedASRCancelRetiringWorkerWaitPhase) async -> Void)?
+    ) async {
+        guard let retiringWorker else { return }
+        if let hook { await hook(cleanupID, .willAwaitWorker) }
+        await retiringWorker.value
+        if let hook { await hook(cleanupID, .didAwaitWorker) }
+    }
+
+    @discardableResult
+    private func startWorkerRetirement(
+        for worker: Task<Void, Never>?
+    ) -> WorkerRetirementBarrier? {
+        guard let worker else { return nil }
+        if let workerRetirementBarrier { return workerRetirementBarrier }
+        nextWorkerRetirementID &+= 1
+        let barrier = WorkerRetirementBarrier(
+            id: nextWorkerRetirementID,
+            task: worker
+        )
+        workerRetirementBarrier = barrier
+        return barrier
+    }
+
+    private func awaitWorkerRetirement(_ barrier: WorkerRetirementBarrier) async {
+        if let workerRetirementWaitHook {
+            await workerRetirementWaitHook(barrier.id, .willAwait)
+        }
+        await barrier.task.value
+        if let workerRetirementWaitHook {
+            await workerRetirementWaitHook(barrier.id, .didAwait)
+        }
+        clearWorkerRetirementBarrier(ifMatching: barrier.id)
+    }
+
+    private func clearWorkerRetirementBarrier(ifMatching id: UInt64) {
+        guard workerRetirementBarrier?.id == id else { return }
+        workerRetirementBarrier = nil
     }
 
     private func clearCleanupBarrier(ifMatching id: UInt64) {
