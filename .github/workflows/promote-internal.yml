@@ -176,7 +176,7 @@ jobs:
             -f description="$authorization_description" \
             -f target_url="$authorization_target_url")
           authorization_status_id=$(printf '%s' "$authorization_status" | jq -er '.id | select(type == "number")')
-          authorization_status_url="https://api.github.com/repos/$canonical_repository/statuses/$authorization_status_id"
+          authorization_status_url="https://api.github.com/repos/$canonical_repository/statuses/$main_sha"
           if ! printf '%s' "$authorization_status" | jq -e \
             --arg status_url "$authorization_status_url" \
             --arg target "$authorization_target_url" \

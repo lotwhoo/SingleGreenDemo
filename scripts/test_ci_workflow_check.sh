@@ -17,6 +17,79 @@ fi
 
 "$checker" "$source_workflow" "$source_promotion_workflow" "$source_writer_workflow"
 
+authorization_status_sha='ad378c397afbb0dd45afce6d13cc7bc998fd5779'
+authorization_status_id='53177109135'
+authorization_status_target='https://github.com/lotwhoo/SingleGreenDemo/actions/runs/33317246675/job/99272836258'
+authorization_status_description='Owner-authorized current main for internal delivery'
+authorization_job_started='2026-08-30T14:34:49Z'
+authorization_job_completed='2026-08-30T14:34:57Z'
+authorization_status_fixture='{
+  "id": 53177109135,
+  "url": "https://api.github.com/repos/lotwhoo/SingleGreenDemo/statuses/ad378c397afbb0dd45afce6d13cc7bc998fd5779",
+  "state": "success",
+  "context": "Internal promotion authorization",
+  "description": "Owner-authorized current main for internal delivery",
+  "target_url": "https://github.com/lotwhoo/SingleGreenDemo/actions/runs/33317246675/job/99272836258",
+  "creator": {
+    "login": "github-actions[bot]",
+    "id": 41898282,
+    "type": "Bot"
+  },
+  "created_at": "2026-08-30T14:34:55Z",
+  "updated_at": "2026-08-30T14:34:55Z"
+}'
+
+authorization_status_contract_matches() {
+    printf '%s' "$1" | jq -e \
+        --arg status_url "https://api.github.com/repos/lotwhoo/SingleGreenDemo/statuses/$authorization_status_sha" \
+        --arg target "$authorization_status_target" \
+        --arg description "$authorization_status_description" \
+        --arg job_started "$authorization_job_started" \
+        --arg job_completed "$authorization_job_completed" \
+        --argjson status_id "$authorization_status_id" '
+          type == "object" and
+          .id == $status_id and
+          .url == $status_url and
+          .state == "success" and
+          .context == "Internal promotion authorization" and
+          .description == $description and
+          .target_url == $target and
+          .creator.login == "github-actions[bot]" and
+          .creator.id == 41898282 and
+          .creator.type == "Bot" and
+          .created_at >= $job_started and
+          .created_at <= .updated_at and
+          .updated_at <= $job_completed' >/dev/null
+}
+
+if ! authorization_status_contract_matches "$authorization_status_fixture"; then
+    echo 'CI workflow fixture test failed: validated-SHA status response was rejected' >&2
+    exit 1
+fi
+
+id_derived_status_fixture=$(printf '%s' "$authorization_status_fixture" | jq \
+    --arg status_url "https://api.github.com/repos/lotwhoo/SingleGreenDemo/statuses/$authorization_status_id" \
+    '.url = $status_url')
+if authorization_status_contract_matches "$id_derived_status_fixture"; then
+    echo 'CI workflow fixture test failed: numeric-ID-derived status response was accepted' >&2
+    exit 1
+fi
+
+wrong_target_status_fixture=$(printf '%s' "$authorization_status_fixture" | jq \
+    '.target_url = "https://example.invalid/untrusted"')
+if authorization_status_contract_matches "$wrong_target_status_fixture"; then
+    echo 'CI workflow fixture test failed: wrong-target status response was accepted' >&2
+    exit 1
+fi
+
+wrong_description_status_fixture=$(printf '%s' "$authorization_status_fixture" | jq \
+    '.description = "Untrusted authorization"')
+if authorization_status_contract_matches "$wrong_description_status_fixture"; then
+    echo 'CI workflow fixture test failed: wrong-description status response was accepted' >&2
+    exit 1
+fi
+echo 'Commit-status response fixtures passed: SHA URL accepted; numeric-ID URL, wrong target, and wrong description rejected'
+
 mutation_count=0
 
 expect_mutation_failure() {
@@ -246,15 +319,19 @@ when "authorization-status-wrong-context"
   text.sub!("-f context='Internal promotion authorization'", "-f context='Broad authorization'")
 when "authorization-status-wrong-target"
   text.sub!('-f target_url="$authorization_target_url"', %q{-f target_url="https://example.invalid"})
+when "authorization-response-wrong-description-predicate"
+  text.sub!('.description == $description', '.description != null')
+when "authorization-response-wrong-target-predicate"
+  text.sub!('.target_url == $target', '.target_url != null')
 when "authorization-status-wrong-creator"
   text.sub!('.creator.login == "github-actions[bot]"', '.creator.login == "lotwhoo"')
 when "authorization-status-wrong-creator-id"
   text.sub!('.creator.id == 41898282', '.creator.id == 1')
 when "authorization-status-wrong-url"
   text.sub!('.url == $status_url', '.url != null')
-when "authorization-status-sha-url"
-  text.sub!('authorization_status_url="https://api.github.com/repos/$canonical_repository/statuses/$authorization_status_id"',
-            'authorization_status_url="https://api.github.com/repos/$canonical_repository/statuses/$main_sha"')
+when "authorization-status-id-url"
+  text.sub!('authorization_status_url="https://api.github.com/repos/$canonical_repository/statuses/$main_sha"',
+            'authorization_status_url="https://api.github.com/repos/$canonical_repository/statuses/$authorization_status_id"')
 when "authorization-job-condition"
   text.sub!("    name: Internal promotion authorization\n", "    name: Internal promotion authorization\n    if: false\n")
 when "authorization-step-condition"
@@ -296,15 +373,19 @@ when "writer-status-wrong-state"
   text.sub!('.state == "success"', '.state != "failure"')
 when "writer-status-wrong-context"
   text.gsub!('.context == "Internal promotion authorization"', '.context != null')
+when "writer-status-wrong-description"
+  text.gsub!('.description == $description', '.description != null')
+when "writer-status-wrong-target"
+  text.gsub!('.target_url == $target', '.target_url != null')
 when "writer-status-wrong-creator"
   text.sub!('.creator.login == "github-actions[bot]"', '.creator.login != null')
 when "writer-status-wrong-creator-id"
   text.sub!('.creator.id == 41898282', '.creator.id > 0')
 when "writer-status-wrong-url"
   text.sub!('.url == $status_url', '.url != null')
-when "writer-status-sha-url"
-  text.sub!('authorization_status_url="https://api.github.com/repos/$repository/statuses/$authorization_status_id"',
-            'authorization_status_url="https://api.github.com/repos/$repository/statuses/$main_sha"')
+when "writer-status-id-url"
+  text.sub!('authorization_status_url="https://api.github.com/repos/$repository/statuses/$main_sha"',
+            'authorization_status_url="https://api.github.com/repos/$repository/statuses/$authorization_status_id"')
 when "writer-status-missing-time-bound"
   text.sub!('.updated_at <= $job_completed', '.updated_at != null')
 when "writer-does-not-repeat-trust"
@@ -553,10 +634,12 @@ expect_mutation_failure authorization-status-echo-only promotion
 expect_mutation_failure authorization-status-wrong-state promotion
 expect_mutation_failure authorization-status-wrong-context promotion
 expect_mutation_failure authorization-status-wrong-target promotion
+expect_mutation_failure authorization-response-wrong-description-predicate promotion
+expect_mutation_failure authorization-response-wrong-target-predicate promotion
 expect_mutation_failure authorization-status-wrong-creator promotion
 expect_mutation_failure authorization-status-wrong-creator-id promotion
 expect_mutation_failure authorization-status-wrong-url promotion
-expect_mutation_failure authorization-status-sha-url promotion
+expect_mutation_failure authorization-status-id-url promotion
 expect_mutation_failure authorization-job-condition promotion
 expect_mutation_failure authorization-step-condition promotion
 expect_mutation_failure authorization-extra-step promotion
@@ -577,10 +660,12 @@ expect_mutation_failure writer-missing-latest-status writer
 expect_mutation_failure writer-status-only-authorization writer
 expect_mutation_failure writer-status-wrong-state writer
 expect_mutation_failure writer-status-wrong-context writer
+expect_mutation_failure writer-status-wrong-description writer
+expect_mutation_failure writer-status-wrong-target writer
 expect_mutation_failure writer-status-wrong-creator writer
 expect_mutation_failure writer-status-wrong-creator-id writer
 expect_mutation_failure writer-status-wrong-url writer
-expect_mutation_failure writer-status-sha-url writer
+expect_mutation_failure writer-status-id-url writer
 expect_mutation_failure writer-status-missing-time-bound writer
 expect_mutation_failure writer-does-not-repeat-trust writer
 expect_mutation_failure writer-unvalidated-checkout writer

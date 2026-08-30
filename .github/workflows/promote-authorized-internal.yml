@@ -109,7 +109,7 @@ jobs:
             [.[] | select(.context == "Internal promotion authorization")] |
             sort_by(.created_at, .id) | .[-1]')
           authorization_status_id=$(printf '%s' "$latest_authorization_status" | jq -er '.id | select(type == "number")')
-          authorization_status_url="https://api.github.com/repos/$repository/statuses/$authorization_status_id"
+          authorization_status_url="https://api.github.com/repos/$repository/statuses/$main_sha"
           if ! printf '%s' "$latest_authorization_status" | jq -e \
             --arg status_url "$authorization_status_url" \
             --arg target "$authorization_details" \
@@ -273,7 +273,7 @@ jobs:
             [.[] | select(.context == "Internal promotion authorization")] |
             sort_by(.created_at, .id) | .[-1]')
           authorization_status_id=$(printf '%s' "$latest_authorization_status" | jq -er '.id | select(type == "number")')
-          authorization_status_url="https://api.github.com/repos/$repository/statuses/$authorization_status_id"
+          authorization_status_url="https://api.github.com/repos/$repository/statuses/$main_sha"
           if ! printf '%s' "$latest_authorization_status" | jq -e \
             --arg status_url "$authorization_status_url" \
             --arg target "$authorization_details" \
