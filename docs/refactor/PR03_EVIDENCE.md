@@ -1,6 +1,7 @@
 # PR-03 evidence: delivery pointer and four-variant CI contract
 
-- Status: pre-merge; local implementation complete; hosted follow-up pending
+- Status: implementation merged and narrow bootstrap evidenced; steady-state
+  hosted validation pending
 - Date: 2026-08-30
 - Scope: `codex/internal-debug` zero-delta policy, CI workflow guards, and the
   complete User/Internal Debug/Release build matrix
@@ -57,8 +58,8 @@ separation rather than weakening the artifact scanner.
 
 The workflow also retains the package matrix, public API, architecture,
 privacy, repository hygiene, build-flavor, and coverage gates. The exact
-workflow mutation suite now rejects 56/56 tested mutations, including missing
-internal triggers, shallow checkout,
+workflow mutation suite now rejects 70/70 tested mutations, including missing
+internal triggers, shallow checkout, missing ruleset-contract fixtures,
 missing matrix rows or scanners, reused test derived data, swapped scanners,
 missing branch-policy invocation, and untrusted workflow-dispatch review input.
 The hardened cases also cover missing/incorrect job dependencies, non-`always`
@@ -83,8 +84,9 @@ All GitHub Actions are pinned by full commit SHA: `actions/checkout` uses
 `3d3c42e5aac5ba805825da76410c181273ba90b1` (v7.0.1), and
 `actions/upload-artifact` uses `043fb46d1a93c77aae656e7c1c64a875d1fc6a0a`
 (v4). Shared concurrency prevents overlapping authorization or writer runs.
-The newer two-workflow Required CI/promotion changes are locally checked but
-still await their own hosted run.
+The two-workflow Required CI/promotion design has hosted narrow-bootstrap
+evidence below; steady-state promotion on a genuinely new protected `main` SHA
+remains pending.
 
 ## Three-layer remote delivery procedure
 
@@ -106,18 +108,57 @@ Remote enablement requires three independently auditable layers:
 ## Remote enforcement status
 
 The main ruleset `21847803` and internal integrity ruleset `21848414` are
-active, with no bypass. The remote `codex/internal-debug` branch remains absent
-until post-merge hosted validation and an authorized bootstrap. The attempted
+active, with no bypass. The remote `codex/internal-debug` branch is now present
+at the verified ref recorded below. The attempted
 separate GitHub Actions writer-bypass ruleset failed HTTP 422; therefore this
 record does not claim an exclusive writer identity. No PAT or repository secret
-is used, and no ruleset/bootstrap operation was authorized here.
+is used. The narrow bootstrap was authorized and audited as recorded below;
+steady-state promotion remains separately gated.
+
+## Hosted split and narrow bootstrap evidence
+
+The first split promotion attempt exposed a first-ref creation limitation:
+authorization run `33303667829` was followed by writer run `33303679780`, with
+authorization check `99236278089` and failed ruleset suite `3872785190`.
+Although authorization had completed, GitHub still reported the expected
+`Internal promotion authorization` check during first-ref creation. This is
+not evidence that the writer ran before authorization completion; it motivated
+the narrowly scoped bootstrap procedure.
+
+A later narrow bootstrap succeeded with authorization run `33306317042`,
+authorization check `99243399362` in suite `90255580802`, writer run
+`33306324927`, and successful ruleset suite `3873047543`. The main Required CI
+evidence used run `33303185457`, check `99236117822`, and suite
+`90247660948`.
+
+The internal integrity ruleset is `21848414`. Its versions were original
+`48089707`, temporary `48093453`, and restored `48093483`; the normalized ruleset
+hash is
+`19b63d95d42ad0431ba18d15cd5aa3b88253bca3c89353d49e2229baecbab460`. Connector
+was temporarily excluded from the repository during the narrow window and
+restored to **All repositories** after protections were restored. Ref equality
+was observed at `eb21fa1aa9958075a81fbd0887619c5000975665`; the branch-policy
+checker passed for that observed equality.
+
+These runs do not complete the design: steady-state promotion on a genuinely
+new protected `main` SHA remains pending. No PAT, secret, bypass, manual push,
+force-push, deletion, device validation, or live-provider validation is claimed.
+
+`scripts/check_internal_ruleset_contract.sh` validates the exact internal
+ruleset identity and its `steady` or `bootstrap` protection shape from a JSON
+snapshot. Its deterministic fixtures reject wrong identity, targets, bypasses,
+rule objects, policies, app IDs, and missing, duplicate, or extra checks. The
+separate workflow and three-SHA gates continue to own authorization linkage and
+zero-delta pointer semantics.
 
 ## Local evidence
 
 | Evidence | Result | Location |
 | --- | --- | --- |
 | Branch-policy fixtures | 25/25 passed | local terminal run |
-| CI workflow mutations | 56/56 rejected as expected | local terminal run |
+| Internal ruleset contract fixtures | 63/63 passed | local terminal run |
+| Live internal ruleset contract | `steady` mode passed | ruleset `21848414` JSON snapshot |
+| CI workflow mutations | 70/70 rejected as expected | local terminal run |
 | CI workflow live guard | passed | local terminal run |
 | User Debug App XCTest | 83/83 passed, 0 failed/skipped | `/private/tmp/SingleGreenDemo-PR03-DebugTests.W5UylJ/user.xcresult` |
 | User Debug App-only build and scan | passed | `/private/tmp/SingleGreenDemo-PR03-DebugTests.W5UylJ/user-artifact` |
@@ -150,9 +191,9 @@ collation behavior. The implementation was fixed by forcing `LC_ALL=C` and by
 adding a UTF-8 locale regression case. The local branch-policy fixture count is
 now **25/25** passed. Hosted run **33299053875** subsequently passed after the
 locale fix; all package, App, Release, public API, and coverage jobs were green.
-This is the hosted baseline for the locale fix. The newer Required CI/promotion
-changes still await their own hosted run and are not covered by that run's
-success.
+This is the hosted baseline for the locale fix. The later narrow-bootstrap
+run is recorded above; steady-state promotion on a genuinely new protected
+`main` SHA remains pending and is not implied by these successful runs.
 
 Live promotion attempts **33301458724** and **33301506479** failed with
 `GH013` because the authorization check suite was still in progress. They are
@@ -160,13 +201,11 @@ not promotion evidence; the current two-workflow design addresses this by
 having the writer revalidate the completed authorization and exact check
 linkage before writing.
 
-The remote check `git ls-remote` confirmed that
-`origin/codex/internal-debug` is absent at this time; `origin/main` resolved to
-`aadc54a`. The current local worktree is dirty, so it is not promotion
-evidence. The rulesets are configured remotely as noted above, but the
-internal pointer is not bootstrapped. No successful hosted validation of the
-new two-workflow promotion design, promotion, commit, push, device
-install/launch, merge, or live-provider validation is claimed by this record.
+The audited bootstrap placed both `codex/internal-debug` and `main` at
+`eb21fa1aa9958075a81fbd0887619c5000975665`. PR #2 and its protected-main CI
+completed successfully; neither proves the remaining steady-state promotion on
+a genuinely new protected `main` SHA. No device install/launch or live-provider
+validation is claimed by this record.
 
 Remote branch bootstrap and promotion require separate explicit release
 authorization after the external ruleset requirements above are satisfied.

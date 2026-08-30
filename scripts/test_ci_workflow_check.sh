@@ -87,6 +87,12 @@ when "swapped-scanners"
   end
 when "missing-branch-policy-call"
   text.sub!("          scripts/check_internal_branch_policy.sh \"$reviewed_main_sha\" \"$main_sha\" \"$internal_sha\"\n", "")
+when "branch-policy-echo-only"
+  text.sub!("        run: scripts/test_internal_branch_policy.sh\n", "        run: echo scripts/test_internal_branch_policy.sh\n")
+when "missing-ruleset-contract-fixtures"
+  text.sub!("      - name: Run ruleset-contract fixtures\n        run: scripts/test_internal_ruleset_contract.sh\n", "")
+when "ruleset-contract-echo-only"
+  text.sub!("        run: scripts/test_internal_ruleset_contract.sh\n", "        run: echo scripts/test_internal_ruleset_contract.sh\n")
 when "workflow-dispatch-input"
   dispatch = "on:\n" \
              "  workflow_dispatch:\n" \
@@ -351,6 +357,9 @@ expect_mutation_failure missing-internal-debug-scanner
 expect_mutation_failure reused-debug-test-derived-data
 expect_mutation_failure swapped-scanners
 expect_mutation_failure missing-branch-policy-call
+expect_mutation_failure branch-policy-echo-only
+expect_mutation_failure missing-ruleset-contract-fixtures
+expect_mutation_failure ruleset-contract-echo-only
 expect_mutation_failure workflow-dispatch-input
 expect_mutation_failure unpinned-ci-checkout
 expect_mutation_failure unpinned-ci-upload
