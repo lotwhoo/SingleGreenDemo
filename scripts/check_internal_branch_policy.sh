@@ -2,6 +2,11 @@
 
 set -eu
 
+# Shell pattern ranges follow the active collation locale. Pin ASCII semantics
+# so uppercase hexadecimal is rejected consistently on macOS and Linux.
+LC_ALL=C
+export LC_ALL
+
 usage() {
     echo "usage: $0 REVIEWED_MAIN_SHA MAIN_SHA INTERNAL_SHA" >&2
     exit 2

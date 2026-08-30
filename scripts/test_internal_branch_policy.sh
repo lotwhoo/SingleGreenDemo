@@ -90,6 +90,13 @@ run_check_outside_git() {
     )
 }
 
+run_check_outside_git_with_locale() {
+    (
+        cd "$temp_root"
+        LC_ALL="$utf8_locale" "$check" "$@"
+    )
+}
+
 mutated_commit() {
     branch_name=$1
     path=$2
@@ -128,6 +135,20 @@ expect_failure "extra SHA before Git" "$usage_message" run_check_outside_git "$b
 expect_failure "short reviewed SHA before Git" "error: invalid-reviewed-sha" run_check_outside_git "${base_sha%????????}" "$main_tip_sha" "$base_sha"
 expect_failure "uppercase main SHA before Git" "error: invalid-main-sha" run_check_outside_git "$base_sha" "$uppercase_sha" "$base_sha"
 expect_failure "non-hex internal SHA before Git" "error: invalid-internal-sha" run_check_outside_git "$base_sha" "$main_tip_sha" "gggggggggggggggggggggggggggggggggggggggg"
+
+utf8_locale=
+available_locales=$(locale -a 2>/dev/null || true)
+for locale_candidate in en_US.UTF-8 en_US.utf8 C.UTF-8 C.utf8 UTF-8; do
+    if printf '%s\n' "$available_locales" | LC_ALL=C grep -F -x -- "$locale_candidate" >/dev/null 2>&1; then
+        utf8_locale=$locale_candidate
+        break
+    fi
+done
+if [ -n "$utf8_locale" ]; then
+    expect_failure "uppercase main SHA under UTF-8 locale before Git" "error: invalid-main-sha" run_check_outside_git_with_locale "$base_sha" "$uppercase_sha" "$base_sha"
+else
+    echo "SKIP: no UTF-8 locale available for uppercase SHA regression." >&2
+fi
 
 expect_failure "nonexistent reviewed object" "error: missing-reviewed-commit-object" run_check "$nonexistent_sha" "$main_tip_sha" "$base_sha"
 expect_failure "nonexistent main object" "error: missing-main-commit-object" run_check "$base_sha" "$nonexistent_sha" "$base_sha"
