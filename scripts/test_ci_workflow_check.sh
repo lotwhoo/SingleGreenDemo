@@ -94,12 +94,21 @@ when "missing-ruleset-contract-fixtures"
 when "ruleset-contract-echo-only"
   text.sub!("        run: scripts/test_internal_ruleset_contract.sh\n", "        run: echo scripts/test_internal_ruleset_contract.sh\n")
 when "workflow-dispatch-input"
-  dispatch = "on:\n" \
-             "  workflow_dispatch:\n" \
-             "    inputs:\n" \
-             "      reviewed_sha:\n" \
-             "        required: true\n"
-  text.sub!("on:\n", dispatch)
+  text.sub!("  workflow_dispatch:\n", "  workflow_dispatch:\n    inputs:\n      reviewed_sha:\n        required: true\n")
+when "missing-workflow-dispatch"
+  text.sub!("  workflow_dispatch:\n", "")
+when "dispatch-aggregate-mints-required-ci"
+  text.sub!(%q{name: ${{ github.event_name == 'workflow_dispatch' && 'Internal post-promotion CI' || 'Required CI' }}}, "name: Required CI")
+when "dispatch-missing-ref-gate"
+  text.sub!(%q{          if [ "$GITHUB_REF" != 'refs/heads/codex/internal-debug' ]; then}, %q{          if false; then})
+when "dispatch-broad-sha-gate"
+  text.sub!(%q{if [ "$GITHUB_SHA" != "$main_sha" ] || [ "$GITHUB_SHA" != "$internal_sha" ]; then}, %q{if [ "$GITHUB_SHA" != "$main_sha" ]; then})
+when "dispatch-branch-policy-echo-only"
+  marker = 'scripts/check_internal_branch_policy.sh "$main_sha" "$main_sha" "$internal_sha"'
+  index = text.rindex(marker)
+  abort "dispatch branch-policy marker not found" unless index
+  text[index, marker.length] = "echo #{marker}"
+  true
 when "unpinned-ci-checkout"
   text.sub!("actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@v7")
 when "unpinned-ci-upload"
@@ -118,7 +127,7 @@ when "required-ci-allows-failure"
 when "ci-job-write"
   text.sub!("    name: Branch contract\n", "    name: Branch contract\n    permissions:\n      contents: write\n")
 when "required-ci-job-continue-on-error"
-  text.sub!("    name: Required CI\n", "    name: Required CI\n    continue-on-error: true\n")
+  text.sub!("  required-ci:\n", "  required-ci:\n    continue-on-error: true\n")
 when "required-ci-step-continue-on-error"
   text.sub!("      - name: Require every CI dependency to succeed\n", "      - name: Require every CI dependency to succeed\n        continue-on-error: true\n")
 when "required-ci-step-condition"
@@ -225,6 +234,27 @@ when "authorization-missing-current-main-check"
   text.sub!('          scripts/check_internal_branch_policy.sh "$main_sha" "$main_sha" "$main_sha"', '')
 when "authorization-adds-push"
   text.sub!('          echo "Authorized current main', "          git push origin main\n          echo \"Authorized current main")
+when "authorization-missing-status-write"
+  text.sub!("      statuses: write\n", "")
+when "authorization-broad-status-write"
+  text.sub!("      statuses: write\n", "      statuses: write\n      issues: write\n")
+when "authorization-status-echo-only"
+  text.sub!('authorization_status=$(gh api --method POST', 'authorization_status=$(echo gh api --method POST')
+when "authorization-status-wrong-state"
+  text.sub!("-f state='success'", "-f state='pending'")
+when "authorization-status-wrong-context"
+  text.sub!("-f context='Internal promotion authorization'", "-f context='Broad authorization'")
+when "authorization-status-wrong-target"
+  text.sub!('-f target_url="$authorization_target_url"', %q{-f target_url="https://example.invalid"})
+when "authorization-status-wrong-creator"
+  text.sub!('.creator.login == "github-actions[bot]"', '.creator.login == "lotwhoo"')
+when "authorization-status-wrong-creator-id"
+  text.sub!('.creator.id == 41898282', '.creator.id == 1')
+when "authorization-status-wrong-url"
+  text.sub!('.url == $status_url', '.url != null')
+when "authorization-status-sha-url"
+  text.sub!('authorization_status_url="https://api.github.com/repos/$canonical_repository/statuses/$authorization_status_id"',
+            'authorization_status_url="https://api.github.com/repos/$canonical_repository/statuses/$main_sha"')
 when "authorization-job-condition"
   text.sub!("    name: Internal promotion authorization\n", "    name: Internal promotion authorization\n    if: false\n")
 when "authorization-step-condition"
@@ -258,6 +288,25 @@ when "writer-missing-suite-link"
   text.sub!(".check_suite.id == $suite_id", ".check_suite.id > 0")
 when "writer-missing-details-link"
   text.sub!(".details_url == $details", ".details_url != null")
+when "writer-missing-latest-status"
+  text.gsub!("latest_authorization_status", "ignored_authorization_status")
+when "writer-status-only-authorization"
+  text.gsub!('.check_suite.id == $suite_id', '.check_suite.id > 0')
+when "writer-status-wrong-state"
+  text.sub!('.state == "success"', '.state != "failure"')
+when "writer-status-wrong-context"
+  text.gsub!('.context == "Internal promotion authorization"', '.context != null')
+when "writer-status-wrong-creator"
+  text.sub!('.creator.login == "github-actions[bot]"', '.creator.login != null')
+when "writer-status-wrong-creator-id"
+  text.sub!('.creator.id == 41898282', '.creator.id > 0')
+when "writer-status-wrong-url"
+  text.sub!('.url == $status_url', '.url != null')
+when "writer-status-sha-url"
+  text.sub!('authorization_status_url="https://api.github.com/repos/$repository/statuses/$authorization_status_id"',
+            'authorization_status_url="https://api.github.com/repos/$repository/statuses/$main_sha"')
+when "writer-status-missing-time-bound"
+  text.sub!('.updated_at <= $job_completed', '.updated_at != null')
 when "writer-does-not-repeat-trust"
   marker = "authorization_workflow_id='345772544'"
   index = text.rindex(marker)
@@ -291,6 +340,110 @@ when "writer-step-continue-on-error"
 when "writer-extra-step"
   marker = "      - name: Fast-forward the authorized internal pointer\n"
   text.sub!(marker, "      - run: echo unexpected\n#{marker}")
+when "writer-post-ci-missing-dependency"
+  text.sub!("    needs: promote\n", "")
+when "writer-post-ci-broad-permissions"
+  text.sub!("    permissions:\n      actions: write\n      contents: read\n", "    permissions:\n      actions: write\n      contents: write\n")
+when "writer-dispatch-missing-fresh-main"
+  text.sub!('/git/ref/heads/main" --jq', '/git/ref/heads/develop" --jq')
+when "writer-dispatch-missing-fresh-internal"
+  text.sub!('/git/ref/heads/codex/internal-debug" --jq', '/git/ref/heads/main" --jq')
+when "writer-dispatch-broad-ref-equality"
+  text.sub!('[ "$EXPECTED_SHA" != "$main_sha" ] || [ "$EXPECTED_SHA" != "$internal_sha" ]',
+            '[ "$EXPECTED_SHA" != "$main_sha" ]')
+when "writer-dispatch-waits-with-write-token"
+  text.sub!('          dispatch_response=$(gh api --method POST', "          sleep 10\n          dispatch_response=$(gh api --method POST")
+when "writer-dispatch-adds-checkout"
+  marker = "      - name: Revalidate pointers and dispatch exact internal CI\n"
+  text.sub!(marker, "      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1\n#{marker}")
+when "writer-post-ci-verifier-missing-dependency"
+  text.sub!("    needs: dispatch-post-promotion-ci\n", "")
+when "writer-post-ci-verifier-write"
+  text.sub!("    permissions:\n      actions: read\n      checks: read\n      contents: read\n",
+            "    permissions:\n      actions: write\n      checks: read\n      contents: read\n")
+when "writer-post-ci-verifier-post"
+  text.sub!("          poll=1\n", "          gh api --method POST /unexpected\n          poll=1\n")
+when "writer-dispatch-echo-only"
+  text.sub!('dispatch_response=$(gh api --method POST', 'dispatch_response=$(echo gh api --method POST')
+when "writer-dispatch-wrong-workflow"
+  text.sub!("ci_workflow_id='344358206'", "ci_workflow_id='1'")
+when "writer-dispatch-slashed-workflow-identifier"
+  text.sub!('/actions/workflows/$ci_workflow_id/dispatches',
+            '/actions/workflows/.github/workflows/ci.yml/dispatches')
+when "writer-dispatch-wrong-ref"
+  text.sub!("internal_ref='codex/internal-debug'", "internal_ref='main'")
+when "writer-dispatch-wrong-api-version"
+  text.sub!("X-GitHub-Api-Version: 2026-03-10", "X-GitHub-Api-Version: 2022-11-28")
+when "writer-dispatch-deprecated-run-details"
+  text.sub!('-f ref="$internal_ref")', "-f ref=\"$internal_ref\" \\\n            -F return_run_details=true)")
+when "writer-dispatch-response-broad-run-id"
+  text.sub!('.workflow_run_id == $run_id', '.workflow_run_id > 0')
+when "writer-dispatch-response-broad-run-url"
+  text.sub!('.run_url == $run_url', '.run_url != null')
+when "writer-dispatch-response-broad-html-url"
+  text.sub!('.html_url == $html_url', '.html_url != null')
+when "writer-dispatch-unbounded-wait"
+  text.sub!('if [ "$poll" -ge "$max_polls" ]; then', 'if false; then')
+when "writer-dispatch-broad-aggregate"
+  text.sub!('.name == "Internal post-promotion CI"', '.name != "Required CI"')
+when "writer-dispatch-allows-required-ci"
+  text.sub!('[ "$protected_aggregate_count" -ne 0 ]', '[ "$protected_aggregate_count" -lt 0 ]')
+when "writer-post-ci-wrong-check-app"
+  marker = '.app.id == 15368'
+  index = text.rindex(marker)
+  abort "post-promotion app marker not found" unless index
+  text[index, marker.length] = '.app.id == 1'
+  true
+when "writer-post-ci-missing-suite-link"
+  marker = '.check_suite.id == $suite_id'
+  index = text.rindex(marker)
+  abort "post-promotion suite marker not found" unless index
+  text[index, marker.length] = '.check_suite.id > 0'
+  true
+when "writer-post-ci-missing-details-link"
+  marker = '.details_url == $details'
+  index = text.rindex(marker)
+  abort "post-promotion details marker not found" unless index
+  text[index, marker.length] = '.details_url != null'
+  true
+when "writer-post-ci-missing-check-id-link"
+  text.sub!('[ "$(printf \'%s\' "$linked_aggregate_checks" | jq -r \'.[0].id\')" != "$aggregate_check_id" ]',
+            '[ "$(printf \'%s\' "$linked_aggregate_checks" | jq -r \'.[0].id\')" = "" ]')
+when "writer-post-ci-check-query-wrong-sha"
+  text.sub!('/commits/$EXPECTED_SHA/check-runs?check_name=Internal%20post-promotion%20CI',
+            '/commits/main/check-runs?check_name=Internal%20post-promotion%20CI')
+when "writer-post-ci-missing-final-main"
+  marker = '/git/ref/heads/main" --jq'
+  index = text.rindex(marker)
+  abort "final main marker not found" unless index
+  text[index, marker.length] = '/git/ref/heads/develop" --jq'
+  true
+when "writer-post-ci-missing-final-internal"
+  marker = '/git/ref/heads/codex/internal-debug" --jq'
+  index = text.rindex(marker)
+  abort "final internal marker not found" unless index
+  text[index, marker.length] = '/git/ref/heads/main" --jq'
+  true
+when "writer-post-ci-broad-final-equality"
+  text.sub!('[ "$EXPECTED_SHA" != "$final_internal_sha" ]', '[ "$EXPECTED_SHA" != "$final_main_sha" ]')
+when "writer-post-ci-broad-run-attempt"
+  marker = '.run_attempt == 1'
+  index = text.rindex(marker)
+  abort "post-promotion run-attempt marker not found" unless index
+  text[index, marker.length] = '.run_attempt >= 1'
+  true
+when "writer-post-ci-broad-actor"
+  marker = '.actor.login == $actor'
+  index = text.rindex(marker)
+  abort "post-promotion actor marker not found" unless index
+  text[index, marker.length] = '.actor.login != null'
+  true
+when "writer-post-ci-broad-triggering-actor"
+  marker = '.triggering_actor.login == $actor'
+  index = text.rindex(marker)
+  abort "post-promotion triggering-actor marker not found" unless index
+  text[index, marker.length] = '.triggering_actor.login != null'
+  true
 when "extra-top-level-writer"
   text = <<~YAML
     name: Unauthorized Writer
@@ -361,6 +514,11 @@ expect_mutation_failure branch-policy-echo-only
 expect_mutation_failure missing-ruleset-contract-fixtures
 expect_mutation_failure ruleset-contract-echo-only
 expect_mutation_failure workflow-dispatch-input
+expect_mutation_failure missing-workflow-dispatch
+expect_mutation_failure dispatch-aggregate-mints-required-ci
+expect_mutation_failure dispatch-missing-ref-gate
+expect_mutation_failure dispatch-broad-sha-gate
+expect_mutation_failure dispatch-branch-policy-echo-only
 expect_mutation_failure unpinned-ci-checkout
 expect_mutation_failure unpinned-ci-upload
 expect_mutation_failure missing-required-ci
@@ -389,6 +547,16 @@ expect_mutation_failure authorization-wrong-workflow-id promotion
 expect_mutation_failure authorization-allows-rerun promotion
 expect_mutation_failure authorization-missing-current-main-check promotion
 expect_mutation_failure authorization-adds-push promotion
+expect_mutation_failure authorization-missing-status-write promotion
+expect_mutation_failure authorization-broad-status-write promotion
+expect_mutation_failure authorization-status-echo-only promotion
+expect_mutation_failure authorization-status-wrong-state promotion
+expect_mutation_failure authorization-status-wrong-context promotion
+expect_mutation_failure authorization-status-wrong-target promotion
+expect_mutation_failure authorization-status-wrong-creator promotion
+expect_mutation_failure authorization-status-wrong-creator-id promotion
+expect_mutation_failure authorization-status-wrong-url promotion
+expect_mutation_failure authorization-status-sha-url promotion
 expect_mutation_failure authorization-job-condition promotion
 expect_mutation_failure authorization-step-condition promotion
 expect_mutation_failure authorization-extra-step promotion
@@ -405,6 +573,15 @@ expect_mutation_failure writer-missing-latest-authorization writer
 expect_mutation_failure writer-wrong-check-app writer
 expect_mutation_failure writer-missing-suite-link writer
 expect_mutation_failure writer-missing-details-link writer
+expect_mutation_failure writer-missing-latest-status writer
+expect_mutation_failure writer-status-only-authorization writer
+expect_mutation_failure writer-status-wrong-state writer
+expect_mutation_failure writer-status-wrong-context writer
+expect_mutation_failure writer-status-wrong-creator writer
+expect_mutation_failure writer-status-wrong-creator-id writer
+expect_mutation_failure writer-status-wrong-url writer
+expect_mutation_failure writer-status-sha-url writer
+expect_mutation_failure writer-status-missing-time-bound writer
 expect_mutation_failure writer-does-not-repeat-trust writer
 expect_mutation_failure writer-unvalidated-checkout writer
 expect_mutation_failure writer-force-push writer
@@ -416,6 +593,39 @@ expect_mutation_failure writer-step-condition writer
 expect_mutation_failure writer-step-custom-shell writer
 expect_mutation_failure writer-step-continue-on-error writer
 expect_mutation_failure writer-extra-step writer
+expect_mutation_failure writer-post-ci-missing-dependency writer
+expect_mutation_failure writer-post-ci-broad-permissions writer
+expect_mutation_failure writer-dispatch-missing-fresh-main writer
+expect_mutation_failure writer-dispatch-missing-fresh-internal writer
+expect_mutation_failure writer-dispatch-broad-ref-equality writer
+expect_mutation_failure writer-dispatch-waits-with-write-token writer
+expect_mutation_failure writer-dispatch-adds-checkout writer
+expect_mutation_failure writer-post-ci-verifier-missing-dependency writer
+expect_mutation_failure writer-post-ci-verifier-write writer
+expect_mutation_failure writer-post-ci-verifier-post writer
+expect_mutation_failure writer-dispatch-echo-only writer
+expect_mutation_failure writer-dispatch-wrong-workflow writer
+expect_mutation_failure writer-dispatch-slashed-workflow-identifier writer
+expect_mutation_failure writer-dispatch-wrong-ref writer
+expect_mutation_failure writer-dispatch-wrong-api-version writer
+expect_mutation_failure writer-dispatch-deprecated-run-details writer
+expect_mutation_failure writer-dispatch-response-broad-run-id writer
+expect_mutation_failure writer-dispatch-response-broad-run-url writer
+expect_mutation_failure writer-dispatch-response-broad-html-url writer
+expect_mutation_failure writer-dispatch-unbounded-wait writer
+expect_mutation_failure writer-dispatch-broad-aggregate writer
+expect_mutation_failure writer-dispatch-allows-required-ci writer
+expect_mutation_failure writer-post-ci-wrong-check-app writer
+expect_mutation_failure writer-post-ci-missing-suite-link writer
+expect_mutation_failure writer-post-ci-missing-details-link writer
+expect_mutation_failure writer-post-ci-missing-check-id-link writer
+expect_mutation_failure writer-post-ci-check-query-wrong-sha writer
+expect_mutation_failure writer-post-ci-missing-final-main writer
+expect_mutation_failure writer-post-ci-missing-final-internal writer
+expect_mutation_failure writer-post-ci-broad-final-equality writer
+expect_mutation_failure writer-post-ci-broad-run-attempt writer
+expect_mutation_failure writer-post-ci-broad-actor writer
+expect_mutation_failure writer-post-ci-broad-triggering-actor writer
 expect_mutation_failure extra-top-level-writer extra
 expect_mutation_failure extra-job-level-writer extra
 expect_mutation_failure extra-omitted-permissions extra

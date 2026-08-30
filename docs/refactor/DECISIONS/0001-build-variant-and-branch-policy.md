@@ -58,9 +58,21 @@ security, entitlement, rollback, and data-lifecycle review.
 XCConfigs, the shared `SingleGreenInternal` scheme, capability flags, identity,
 source, tests, Packages, project definitions, and CI. `codex/internal-debug` is
 retained as the owner's promotion/delivery pointer, not as a development lane.
-Promotion uses a read-only owner authorization workflow followed by a separate
+Promotion uses an owner authorization workflow followed by a separate
 `workflow_run` writer, and moves that ref only to the current protected commit
-on `main` after exact CI linkage checks.
+on `main` after exact CI linkage checks. The authorization job has only its
+existing reads plus `statuses: write`; it emits a commit status only after
+validating current main and Required CI. The writer requires both the original
+successful app-15368 job check and the latest exact job-linked status, then
+performs the non-force update and postcheck. A short job with only
+`actions: write` and `contents: read` freshly revalidates both refs before one
+explicit internal-CI dispatch because a `GITHUB_TOKEN` push does not trigger
+push CI. A separate job with `actions: read`, `checks: read`, and
+`contents: read` performs bounded verification of the numeric-workflow-ID
+dispatch response and its aggregate job/check/suite/details/app-15368 linkage,
+then freshly rechecks main/internal/expected equality before success. The
+dispatched aggregate has a distinct `Internal post-promotion CI` name and
+cannot satisfy the ruleset-facing `Required CI` context.
 The two branches therefore satisfy the user's two-branch delivery workflow
 without maintaining two tracked product definitions.
 

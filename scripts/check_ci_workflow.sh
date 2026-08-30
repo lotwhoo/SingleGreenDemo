@@ -138,15 +138,23 @@ workflow_paths.each do |candidate_path|
   end
 end
 
-expected_write_locations = [[File.expand_path(writer_path), "job:promote"]]
+expected_write_locations = [
+  [File.expand_path(writer_path), "job:promote"],
+  [File.expand_path(writer_path), "job:dispatch-post-promotion-ci"],
+  [File.expand_path(promotion_path), "job:authorize"]
+]
 check.call(write_locations == expected_write_locations,
-           "only the promote job in promote-authorized-internal.yml may request any write permission")
+           "only the reviewed authorization, promotion, and post-promotion jobs may request write permissions")
 
 triggers = workflow["on"] || workflow[true]
 check.call(triggers.is_a?(Hash), "on must define an event mapping")
 triggers = {} unless triggers.is_a?(Hash)
 
-check.call(!triggers.key?("workflow_dispatch"), "workflow_dispatch and its inputs are not allowed")
+check.call(triggers.keys.sort == %w[pull_request push workflow_dispatch].sort,
+           "CI triggers must be exactly pull_request, push, and no-input workflow_dispatch")
+dispatch = triggers["workflow_dispatch"]
+check.call(dispatch.nil? || (dispatch.is_a?(Hash) && dispatch.empty?),
+           "CI workflow_dispatch must not accept inputs")
 
 %w[pull_request push].each do |event|
   contract = triggers[event]
@@ -279,6 +287,31 @@ check.call(!verify_run.include?("github.event.before"),
 check.call(verify_run.match?(%r{scripts/check_internal_branch_policy\.sh\s+"\$reviewed_main_sha"\s+"\$main_sha"\s+"\$internal_sha"}),
            "branch policy checker must receive reviewed, main, and internal full SHAs in order")
 
+dispatch_verify_step = branch_steps.find do |step|
+  condition = step.is_a?(Hash) ? step["if"].to_s : ""
+  condition == "github.event_name == 'workflow_dispatch'"
+end
+check.call(!dispatch_verify_step.nil?,
+           "branch-contract must contain the exact post-promotion workflow_dispatch verifier")
+dispatch_verify_run = dispatch_verify_step.is_a?(Hash) ? dispatch_verify_step["run"].to_s : ""
+dispatch_verify_markers = [
+  %q{[ "$GITHUB_REF" != 'refs/heads/codex/internal-debug' ]},
+  "'+refs/heads/main:refs/remotes/origin/main'",
+  "'+refs/heads/codex/internal-debug:refs/remotes/origin/codex/internal-debug'",
+  "main_sha=$(git rev-parse 'refs/remotes/origin/main^{commit}')",
+  "internal_sha=$(git rev-parse 'refs/remotes/origin/codex/internal-debug^{commit}')",
+  '[ "$GITHUB_SHA" != "$main_sha" ]',
+  '[ "$GITHUB_SHA" != "$internal_sha" ]',
+  'scripts/check_internal_branch_policy.sh "$main_sha" "$main_sha" "$internal_sha"'
+]
+dispatch_verify_markers.each do |marker|
+  check.call(dispatch_verify_run.include?(marker),
+             "post-promotion dispatch verification missing: #{marker}")
+end
+dispatch_policy_command = 'scripts/check_internal_branch_policy.sh "$main_sha" "$main_sha" "$internal_sha"'
+check.call(dispatch_verify_run.lines.map(&:strip).count(dispatch_policy_command) == 1,
+           "post-promotion dispatch must execute the exact branch-policy command once")
+
 expensive_jobs = %w[package-matrix app-simulator release-build coverage-and-hygiene public-api]
 expensive_jobs.each do |job_name|
   job = jobs[job_name]
@@ -291,7 +324,9 @@ end
 required_ci = jobs["required-ci"]
 check.call(required_ci.is_a?(Hash), "required-ci aggregate job is required")
 if required_ci.is_a?(Hash)
-  check.call(required_ci["name"] == "Required CI", "required-ci display name must be stable: Required CI")
+  expected_aggregate_name = "${{ github.event_name == 'workflow_dispatch' && 'Internal post-promotion CI' || 'Required CI' }}"
+  check.call(required_ci["name"] == expected_aggregate_name,
+             "required-ci must use the exact event-split protected/post-promotion display name")
   check.call(required_ci["if"].to_s == "always()", "required-ci must run with always()")
   check.call(required_ci["runs-on"] == "ubuntu-latest", "required-ci must use the reviewed ubuntu-latest runner")
   check.call(fail_closed?(required_ci),
@@ -377,6 +412,11 @@ approve_named_condition.call(
   "github.event_name == 'push' && github.ref == 'refs/heads/codex/internal-debug'"
 )
 approve_named_condition.call(
+  "branch-contract",
+  "Verify post-promotion dispatch pointer",
+  "github.event_name == 'workflow_dispatch'"
+)
+approve_named_condition.call(
   "package-matrix",
   "Build aggregate-only VAD benchmark",
   "matrix.package == 'VoiceActivityDetectionKit'"
@@ -399,9 +439,9 @@ all_conditional_steps = jobs.values.flat_map do |job|
     step.is_a?(Hash) && step.key?("if")
   end
 end
-check.call(all_conditional_steps.length == 11 &&
+check.call(all_conditional_steps.length == 12 &&
              all_conditional_steps.map(&:object_id).sort == approved_conditional_step_ids.sort,
-           "CI step conditions must match exactly the eleven reviewed conditional steps; every other step must be unconditional")
+           "CI step conditions must match exactly the twelve reviewed conditional steps; every other step must be unconditional")
 
 def matrix_rows(job)
   return [] unless job.is_a?(Hash)
@@ -536,202 +576,9 @@ check.call(all_steps.count { |step| step["run"].to_s.strip == "scripts/test_inte
            "branch-policy fixtures must not be duplicated across jobs")
 check.call(all_steps.count { |step| step["run"].to_s.strip == "scripts/test_internal_ruleset_contract.sh" } == 1,
            "ruleset-contract fixtures must not be duplicated across jobs")
-check.call(all_runs.scan(%r{scripts/check_internal_branch_policy\.sh}).length == 1,
-           "live branch-policy validation must appear exactly once")
+check.call(all_runs.scan(%r{scripts/check_internal_branch_policy\.sh}).length == 2,
+           "push and workflow_dispatch branch-policy validations must each appear exactly once")
 
-if false
-promotion_triggers = promotion_workflow["on"] || promotion_workflow[true]
-check.call(promotion_triggers.is_a?(Hash), "promotion on must define an event mapping")
-promotion_triggers = {} unless promotion_triggers.is_a?(Hash)
-check.call(promotion_triggers.keys == ["workflow_dispatch"],
-           "promotion must be manual workflow_dispatch only")
-dispatch_contract = promotion_triggers["workflow_dispatch"]
-check.call(dispatch_contract.nil? || (dispatch_contract.is_a?(Hash) && dispatch_contract.empty?),
-           "promotion workflow_dispatch must not accept inputs")
-check.call(promotion_workflow["permissions"] == {},
-           "promotion top-level permissions must be empty")
-check.call(!declares_run_shell?(promotion_workflow),
-           "promotion workflow must not override defaults.run.shell")
-
-promotion_concurrency = promotion_workflow["concurrency"]
-check.call(promotion_concurrency.is_a?(Hash), "promotion concurrency must be configured")
-if promotion_concurrency.is_a?(Hash)
-  check.call(promotion_concurrency["group"] == "promote-internal",
-             "promotion concurrency group must be the stable promote-internal key")
-  check.call(promotion_concurrency["cancel-in-progress"] == false,
-             "promotion concurrency must not cancel an in-flight promotion")
-end
-
-promotion_jobs = promotion_workflow["jobs"]
-check.call(promotion_jobs.is_a?(Hash), "promotion jobs must be a mapping")
-promotion_jobs = {} unless promotion_jobs.is_a?(Hash)
-check.call(promotion_jobs.keys.sort == %w[authorize promote],
-           "promotion must contain exactly separate authorize and promote jobs")
-authorize_job = promotion_jobs["authorize"]
-promote_job = promotion_jobs["promote"]
-check.call(authorize_job.is_a?(Hash), "promotion authorize job is required")
-check.call(promote_job.is_a?(Hash), "promotion promote job is required")
-
-if authorize_job.is_a?(Hash)
-  check.call(!declares_run_shell?(authorize_job),
-             "promotion authorize job must not override defaults.run.shell")
-  check.call(fail_closed?(authorize_job),
-             "promotion authorize job must fail closed and must not continue on error")
-  check.call(!authorize_job.key?("if"), "promotion authorize job must be unconditional")
-  check.call(authorize_job["name"] == "Internal promotion authorization",
-             "authorize display name must be stable for the promotion ruleset")
-  check.call(authorize_job["permissions"] == {"actions"=>"read", "checks"=>"read", "contents"=>"read"},
-             "authorize permissions must be job-scoped actions/checks/contents read")
-  check.call(authorize_job["outputs"] == {"approved_sha"=>"${{ steps.authorize.outputs.approved_sha }}"},
-             "authorize must expose only its reviewed approved SHA")
-end
-if promote_job.is_a?(Hash)
-  check.call(!declares_run_shell?(promote_job),
-             "promotion promote job must not override defaults.run.shell")
-  check.call(fail_closed?(promote_job),
-             "promotion promote job must fail closed and must not continue on error")
-  check.call(!promote_job.key?("if"), "promotion promote job must be unconditional")
-  check.call(promote_job["permissions"] == {"contents"=>"write"},
-             "promote must have only job-scoped contents write")
-  check.call(Array(promote_job["needs"]) == ["authorize"],
-             "promote must depend only on successful authorization")
-end
-
-promotion_steps = promotion_jobs.values.flat_map do |job|
-  Array(job.is_a?(Hash) ? job["steps"] : []).select { |step| step.is_a?(Hash) }
-end
-promotion_checkouts = promotion_steps.map do |step|
-  step["uses"] if step["uses"].to_s.start_with?("actions/checkout@")
-end.compact
-check.call(promotion_checkouts.length == 2 &&
-             promotion_checkouts.all? { |uses| uses == "actions/checkout@#{checkout_sha}" },
-           "both promotion checkouts must be pinned to the reviewed v7.0.1 commit SHA")
-promotion_steps.each do |step|
-  uses = step["uses"].to_s
-  next if uses.empty?
-  check.call(uses == "actions/checkout@#{checkout_sha}",
-             "promotion may use only the reviewed pinned checkout action")
-end
-
-authorize_steps = authorize_job.is_a?(Hash) ? Array(authorize_job["steps"]) : []
-promote_steps = promote_job.is_a?(Hash) ? Array(promote_job["steps"]) : []
-[authorize_steps, promote_steps].flatten.each do |step|
-  check.call(fail_closed?(step),
-             "every promotion step must fail closed and must not continue on error")
-  check.call(step.is_a?(Hash) && !step.key?("if"),
-             "every promotion step must be unconditional")
-  check.call(step.is_a?(Hash) && !step.key?("shell"),
-             "promotion steps must not override their shell")
-end
-authorize_checkout = authorize_steps.find { |step| step.is_a?(Hash) && step["uses"].to_s.start_with?("actions/checkout@") }
-promote_checkout = promote_steps.find { |step| step.is_a?(Hash) && step["uses"].to_s.start_with?("actions/checkout@") }
-check.call(authorize_checkout.is_a?(Hash) &&
-             authorize_checkout["with"].is_a?(Hash) &&
-             authorize_checkout["with"]["ref"] == "refs/heads/main" &&
-             authorize_checkout["with"]["fetch-depth"] == 0 &&
-             authorize_checkout["with"]["persist-credentials"] == false,
-           "authorize must deeply check out main without persisted credentials")
-check.call(promote_checkout.is_a?(Hash) &&
-             promote_checkout["with"].is_a?(Hash) &&
-             promote_checkout["with"]["ref"] == "refs/heads/main" &&
-             promote_checkout["with"]["fetch-depth"] == 0 &&
-             promote_checkout["with"]["persist-credentials"] == true,
-           "promote must deeply check out main with only the job-scoped GitHub token")
-
-authorize_step = authorize_steps.find { |step| step.is_a?(Hash) && step["id"] == "authorize" }
-check.call(authorize_steps.length == 2 &&
-             authorize_steps[0] == authorize_checkout &&
-             authorize_steps[1] == authorize_step,
-           "authorize must contain exactly the pinned checkout followed by the reviewed authorization step")
-check.call(authorize_step.is_a?(Hash) && authorize_step["name"] == "Authorize the exact current main commit",
-           "authorize step name and topology must remain stable")
-authorize_run = authorize_step.is_a?(Hash) ? authorize_step["run"].to_s : ""
-authorize_env = authorize_step.is_a?(Hash) ? authorize_step["env"] : nil
-check.call(authorize_env == {"GH_TOKEN"=>"${{ github.token }}"},
-           "authorize API access must use only github.token")
-check.call(authorize_run.include?('[ "$GITHUB_REF" != "refs/heads/main" ]'),
-           "authorize must reject dispatches not sourced from refs/heads/main")
-check.call(authorize_run.include?("git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'") &&
-             authorize_run.include?('event_sha="$GITHUB_SHA"') &&
-             authorize_run.include?("main_sha=$(git rev-parse 'refs/remotes/origin/main^{commit}')") &&
-             authorize_run.include?('[ "$event_sha" != "$main_sha" ]') &&
-             authorize_run.include?('[ "$checkout_sha" != "$main_sha" ]'),
-           "authorize must freshly resolve origin/main and match event and checkout SHAs")
-check.call(authorize_run.include?('scripts/check_internal_branch_policy.sh "$main_sha" "$main_sha" "$main_sha"'),
-           "authorize must precheck the current main SHA in all three checker positions")
-check.call(authorize_run.include?('/actions/workflows/ci.yml/runs?branch=main&event=push&status=completed&head_sha=$main_sha&per_page=100') &&
-             authorize_run.include?('.head_sha == $sha') &&
-             authorize_run.include?('.head_branch == "main"') &&
-             authorize_run.include?('.event == "push"') &&
-             authorize_run.include?('.conclusion == "success"') &&
-             authorize_run.include?('.path == ".github/workflows/ci.yml"') &&
-             authorize_run.include?('sort_by(.updated_at, .run_attempt, .id)') &&
-             authorize_run.include?("workflow_run_id=$(printf '%s' \"$successful_workflow_runs\" | jq -r '.[-1].id')"),
-           "authorize must select the latest exact successful current-main push CI run")
-check.call(authorize_run.include?('/commits/$main_sha/check-runs?check_name=Required%20CI&filter=latest&per_page=100') &&
-             authorize_run.include?('.name == "Required CI"') &&
-             authorize_run.include?('.app.id == 15368') &&
-             authorize_run.include?('.head_sha == $sha') &&
-             authorize_run.include?('(.details_url | contains($run_fragment))') &&
-             authorize_run.include?('sort_by(.completed_at, .id)') &&
-             authorize_run.include?("trusted_check_id=$(printf '%s' \"$trusted_checks\" | jq -r '.[-1].id')"),
-           "authorize must select the latest Required CI check bound to the exact SHA, trusted Actions app, and push run")
-check.call(authorize_run.scan(/-lt 1/).length == 2 && !authorize_run.include?("-ne 1"),
-           "authorize must reject zero trusted results without rejecting safe reruns")
-check.call(authorize_run.include?('echo "approved_sha=$main_sha" >> "$GITHUB_OUTPUT"'),
-           "authorize must emit only the freshly authorized main SHA")
-check.call(!authorize_run.match?(%r{(?:^|\n)\s*git\s+push\b}),
-           "authorize must not mutate repository refs")
-
-promote_step = promote_steps.find do |step|
-  step.is_a?(Hash) && step["run"].to_s.match?(%r{(?:^|\n)\s*git\s+push\b})
-end
-check.call(promote_steps.length == 2 &&
-             promote_steps[0] == promote_checkout &&
-             promote_steps[1] == promote_step,
-           "promote must contain exactly the pinned checkout followed by the reviewed mutation step")
-check.call(promote_step.is_a?(Hash) && promote_step["name"] == "Fast-forward the internal delivery pointer",
-           "promote mutation step name and topology must remain stable")
-promote_run = promote_step.is_a?(Hash) ? promote_step["run"].to_s : ""
-promote_env = promote_step.is_a?(Hash) ? promote_step["env"] : nil
-check.call(promote_env == {"APPROVED_SHA"=>"${{ needs.authorize.outputs.approved_sha }}"},
-           "promote must consume only the authorize job approved SHA")
-check.call(promote_run.include?('[ "$GITHUB_REF" != "refs/heads/main" ]'),
-           "promote must independently gate refs/heads/main")
-check.call(promote_run.include?("git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'") &&
-             promote_run.include?('event_sha="$GITHUB_SHA"') &&
-             promote_run.include?('[ "$APPROVED_SHA" != "$main_sha" ]') &&
-             promote_run.include?('[ "$event_sha" != "$main_sha" ]') &&
-             promote_run.include?('[ "$checkout_sha" != "$main_sha" ]'),
-           "promote must reject stale authorization and non-current main SHAs")
-check.call(promote_run.scan(%r{scripts/check_internal_branch_policy\.sh}).length == 2,
-           "promote must run exactly one pre-push and one post-push three-SHA check")
-precheck = 'scripts/check_internal_branch_policy.sh "$APPROVED_SHA" "$main_sha" "$checkout_sha"'
-push = 'git push origin "$main_sha:refs/heads/codex/internal-debug"'
-postcheck = 'scripts/check_internal_branch_policy.sh "$APPROVED_SHA" "$post_main_sha" "$internal_sha"'
-check.call(promote_run.include?(precheck) && promote_run.include?(push) && promote_run.include?(postcheck) &&
-             promote_run.index(precheck) < promote_run.index(push) &&
-             promote_run.index(push) < promote_run.index(postcheck),
-           "promote must order the reviewed precheck, exact pointer push, and postcheck")
-check.call(promote_run.include?('git merge-base --is-ancestor "$previous_internal_sha" "$main_sha"') &&
-             promote_run.index('git merge-base --is-ancestor') < promote_run.index(push),
-           "promote must prove an existing internal pointer can fast-forward before push")
-push_lines = promote_run.lines.select { |line| line.match?(%r{^\s*git\s+push\b}) }
-check.call(push_lines == ["          #{push}\n"] || push_lines.map(&:strip) == [push],
-           "promotion must contain exactly one reviewed pointer push")
-check.call(push_lines.none? { |line| line.match?(%r{(?:^|\s)(?:--force(?:-with-lease)?|-f)(?:\s|$)}) || line.include?("+:refs/") },
-           "promotion must never force-push")
-check.call(promote_run.include?("'+refs/heads/codex/internal-debug:refs/remotes/origin/codex/internal-debug'") &&
-             promote_run.include?("post_main_sha=$(git rev-parse 'refs/remotes/origin/main^{commit}')") &&
-             promote_run.include?("internal_sha=$(git rev-parse 'refs/remotes/origin/codex/internal-debug^{commit}')"),
-           "promote must freshly fetch and verify both refs after mutation")
-
-check.call(!promotion_source.include?("secrets.") &&
-             !promotion_source.match?(/\bPAT\b/i) &&
-             !promotion_source.include?("github.event.inputs") &&
-             !promotion_source.include?("${{ inputs."),
-           "promotion must not accept user SHAs, PATs, or repository secrets")
-end
 
 # The split delivery contract deliberately keeps the ruleset-producing authorization
 # check in a completed read-only workflow suite before a separate workflow_run writer.
@@ -783,8 +630,10 @@ check.call(authorization_job["name"] == "Internal promotion authorization",
            "authorization job/check name must remain stable")
 check.call(authorization_job["runs-on"] == "ubuntu-latest",
            "authorization job must use ubuntu-latest")
-check.call(authorization_job["permissions"] == {"actions"=>"read", "checks"=>"read", "contents"=>"read"},
-           "authorization job must be read-only")
+check.call(authorization_job["permissions"] == {
+               "actions"=>"read", "checks"=>"read", "contents"=>"read", "statuses"=>"write"
+             },
+           "authorization job must have only reviewed reads plus commit-status write")
 check.call(!authorization_job.key?("if") && fail_closed?(authorization_job) && !declares_run_shell?(authorization_job),
            "authorization job must be unconditional, fail closed, and use the default shell")
 authorization_steps = Array(authorization_job["steps"])
@@ -827,7 +676,25 @@ authorization_markers = [
   '.app.id == 15368',
   '.check_suite.id == $suite_id',
   '.details_url == $details',
-  'latest_required_check_id'
+  'latest_required_check_id',
+  '/attempts/1/jobs?per_page=100',
+  '.status == "in_progress"',
+  '.conclusion == null',
+  'authorization_target_url="https://github.com/$canonical_repository/actions/runs/$GITHUB_RUN_ID/job/$authorization_job_id"',
+  'authorization_status_id=$(printf \'%s\' "$authorization_status" | jq -er',
+  'authorization_status_url="https://api.github.com/repos/$canonical_repository/statuses/$authorization_status_id"',
+  "authorization_description='Owner-authorized current main for internal delivery'",
+  '/statuses/$main_sha',
+  "X-GitHub-Api-Version: 2026-03-10",
+  "-f state='success'",
+  "-f context='Internal promotion authorization'",
+  '-f description="$authorization_description"',
+  '-f target_url="$authorization_target_url"',
+  '.id == $status_id',
+  '.url == $status_url',
+  '.creator.login == "github-actions[bot]"',
+  '.creator.id == 41898282',
+  '.creator.type == "Bot"'
 ]
 authorization_markers.each do |marker|
   check.call(authorization_run.include?(marker), "authorization trust check missing: #{marker}")
@@ -839,33 +706,61 @@ check.call(authorization_run.scan(/\.check_suite\.id == \$suite_id/).length == 1
            "authorization must bind Required CI to its exact suite and job details URL")
 check.call(!authorization_run.match?(%r{(?:^|\n)\s*git\s+push\b}),
            "authorization workflow must not push refs")
+status_post_marker = 'authorization_status=$(gh api --method POST'
+check.call(authorization_run.include?(status_post_marker) &&
+             authorization_run.index('latest_required_check_id') < authorization_run.index(status_post_marker) &&
+             authorization_run.index(status_post_marker) < authorization_run.index('authorization_status_id=') &&
+             authorization_run.index('authorization_status_id=') < authorization_run.index('.url == $status_url'),
+           "authorization must post and validate one commit status only after Required CI validation")
 
 writer_jobs = writer_workflow["jobs"]
 writer_jobs = {} unless writer_jobs.is_a?(Hash)
-check.call(writer_jobs.keys.sort == %w[promote verify],
-           "writer must contain exactly verify and promote jobs")
+check.call(writer_jobs.keys.sort == %w[dispatch-post-promotion-ci promote verify verify-post-promotion-ci],
+           "writer must contain exactly verify, promote, dispatch, and post-promotion verification jobs")
 check.call(writer_jobs.values.none? { |job| job.is_a?(Hash) && job["name"] == "Internal promotion authorization" },
            "writer must not emit the authorization ruleset check name")
 verify_job = writer_jobs["verify"]
 promote_job = writer_jobs["promote"]
+dispatch_job = writer_jobs["dispatch-post-promotion-ci"]
+post_promotion_job = writer_jobs["verify-post-promotion-ci"]
 verify_job = {} unless verify_job.is_a?(Hash)
 promote_job = {} unless promote_job.is_a?(Hash)
+dispatch_job = {} unless dispatch_job.is_a?(Hash)
+post_promotion_job = {} unless post_promotion_job.is_a?(Hash)
 check.call(verify_job["permissions"] == {"actions"=>"read", "checks"=>"read", "contents"=>"read"},
            "writer verify job must be read-only")
 check.call(promote_job["permissions"] == {"actions"=>"read", "checks"=>"read", "contents"=>"write"},
            "writer promote job must have only the reviewed read/read/write permissions")
+check.call(dispatch_job["permissions"] == {"actions"=>"write", "contents"=>"read"},
+           "post-promotion dispatch job must have only actions: write and contents: read")
+check.call(post_promotion_job["permissions"] == {
+               "actions"=>"read", "checks"=>"read", "contents"=>"read"
+             },
+           "post-promotion verification job must have only actions/checks/contents read")
 check.call(Array(promote_job["needs"]) == ["verify"],
            "writer promote job must depend on read-only verification")
-[verify_job, promote_job].each do |job|
+check.call(Array(dispatch_job["needs"]) == ["promote"],
+           "post-promotion dispatch job must depend exactly on successful promotion")
+check.call(Array(post_promotion_job["needs"]) == ["dispatch-post-promotion-ci"],
+           "post-promotion verification must depend exactly on successful dispatch")
+check.call(dispatch_job["timeout-minutes"] == 5,
+           "post-promotion dispatch job must retain the short five-minute bound")
+check.call(post_promotion_job["timeout-minutes"] == 45,
+           "post-promotion verification job must retain the reviewed 45-minute outer bound")
+[verify_job, promote_job, dispatch_job, post_promotion_job].each do |job|
   check.call(job["runs-on"] == "ubuntu-latest" && !job.key?("if") && fail_closed?(job) && !declares_run_shell?(job),
              "writer jobs must be unconditional ubuntu-latest default-shell fail-closed jobs")
 end
 
 verify_steps = Array(verify_job["steps"])
 promote_steps = Array(promote_job["steps"])
+dispatch_steps = Array(dispatch_job["steps"])
+post_promotion_steps = Array(post_promotion_job["steps"])
 check.call(verify_steps.length == 1 && promote_steps.length == 3,
            "writer topology must be one verification step then exactly three promote steps")
-(verify_steps + promote_steps).each do |step|
+check.call(dispatch_steps.length == 1 && post_promotion_steps.length == 1,
+           "post-promotion CI must have one bounded dispatch step and one separate verification step")
+(verify_steps + promote_steps + dispatch_steps + post_promotion_steps).each do |step|
   check.call(step.is_a?(Hash) && !step.key?("if") && !step.key?("shell") && fail_closed?(step),
              "writer steps must be unconditional, default-shell, and fail closed")
 end
@@ -873,6 +768,8 @@ verify_step = verify_steps[0].is_a?(Hash) ? verify_steps[0] : {}
 trust_step = promote_steps[0].is_a?(Hash) ? promote_steps[0] : {}
 writer_checkout = promote_steps[1].is_a?(Hash) ? promote_steps[1] : {}
 mutation_step = promote_steps[2].is_a?(Hash) ? promote_steps[2] : {}
+dispatch_step = dispatch_steps[0].is_a?(Hash) ? dispatch_steps[0] : {}
+post_promotion_step = post_promotion_steps[0].is_a?(Hash) ? post_promotion_steps[0] : {}
 expected_event_env = {
   "AUTHORIZATION_RUN_ID"=>"${{ github.event.workflow_run.id }}",
   "GH_TOKEN"=>"${{ github.token }}"
@@ -890,8 +787,30 @@ check.call(writer_checkout["uses"] == "actions/checkout@#{checkout_sha}" &&
              },
            "writer must check out only the SHA validated under write-token trust checks")
 check.call(mutation_step["name"] == "Fast-forward the authorized internal pointer" &&
+             mutation_step["id"] == "promotion" &&
              mutation_step["env"] == {"VALIDATED_SHA"=>"${{ steps.trust.outputs.validated_sha }}"},
            "writer mutation step must consume only the validated SHA")
+check.call(promote_job["outputs"] == {"promoted_sha"=>"${{ steps.promotion.outputs.promoted_sha }}"},
+           "promote job must expose only the postchecked internal SHA")
+check.call(dispatch_job["outputs"] == {
+               "dispatched_run_id"=>"${{ steps.dispatch.outputs.dispatched_run_id }}",
+               "expected_sha"=>"${{ steps.dispatch.outputs.expected_sha }}"
+             },
+           "dispatch job must expose only its exact returned run id and freshly revalidated SHA")
+check.call(dispatch_step["name"] == "Revalidate pointers and dispatch exact internal CI" &&
+             dispatch_step["id"] == "dispatch" &&
+             dispatch_step["env"] == {
+               "EXPECTED_SHA"=>"${{ needs.promote.outputs.promoted_sha }}",
+               "GH_TOKEN"=>"${{ github.token }}"
+             },
+           "dispatch step must consume only promoted SHA and github.token")
+check.call(post_promotion_step["name"] == "Require exact internal CI success" &&
+             post_promotion_step["env"] == {
+               "EXPECTED_RUN_ID"=>"${{ needs.dispatch-post-promotion-ci.outputs.dispatched_run_id }}",
+               "EXPECTED_SHA"=>"${{ needs.dispatch-post-promotion-ci.outputs.expected_sha }}",
+               "GH_TOKEN"=>"${{ github.token }}"
+             },
+           "post-promotion verification must consume only dispatch outputs and github.token")
 
 writer_trust_markers = [
   "repository='lotwhoo/SingleGreenDemo'",
@@ -918,6 +837,20 @@ writer_trust_markers = [
   '.check_suite.id == $suite_id',
   '.details_url == $details',
   'latest_authorization_check_id',
+  '/commits/$main_sha/statuses?per_page=100',
+  'latest_authorization_status',
+  'authorization_status_id=$(printf \'%s\' "$latest_authorization_status" | jq -er',
+  'authorization_status_url="https://api.github.com/repos/$repository/statuses/$authorization_status_id"',
+  "authorization_description='Owner-authorized current main for internal delivery'",
+  '.id == $status_id',
+  '.url == $status_url',
+  '.state == "success"',
+  '.context == "Internal promotion authorization"',
+  '.creator.login == "github-actions[bot]"',
+  '.creator.id == 41898282',
+  '.creator.type == "Bot"',
+  '.created_at >= $job_started',
+  '.updated_at <= $job_completed',
   '/actions/workflows/ci.yml/runs?branch=main&event=push&status=completed&head_sha=$main_sha',
   '.name == "Required CI"',
   'check_name=Required%20CI',
@@ -954,6 +887,123 @@ check.call(writer_push_lines == [push] &&
 check.call(mutation_run.include?("'+refs/heads/codex/internal-debug:refs/remotes/origin/codex/internal-debug'") &&
              mutation_run.include?("post_main_sha=$(git rev-parse 'refs/remotes/origin/main^{commit}')"),
            "writer must freshly refetch main and the internal pointer before postcheck")
+check.call(mutation_run.include?('echo "promoted_sha=$internal_sha" >> "$GITHUB_OUTPUT"') &&
+             mutation_run.index(postcheck) < mutation_run.index('echo "promoted_sha=$internal_sha"'),
+           "writer must expose the promoted SHA only after the exact postcheck")
+
+dispatch_run = dispatch_step["run"].to_s
+dispatch_markers = [
+  "ci_workflow_id='344358206'",
+  "internal_ref='codex/internal-debug'",
+  'X-GitHub-Api-Version: 2026-03-10',
+  '/git/ref/heads/main',
+  '/git/ref/heads/codex/internal-debug',
+  '[ "$EXPECTED_SHA" != "$main_sha" ]',
+  '[ "$EXPECTED_SHA" != "$internal_sha" ]',
+  '/actions/workflows/$ci_workflow_id/dispatches',
+  '-f ref="$internal_ref"',
+  '.workflow_run_id',
+  '.workflow_run_id == $run_id',
+  '.run_url == $run_url',
+  '.html_url == $html_url',
+  'echo "dispatched_run_id=$dispatch_run_id" >> "$GITHUB_OUTPUT"',
+  'echo "expected_sha=$EXPECTED_SHA" >> "$GITHUB_OUTPUT"'
+]
+dispatch_markers.each do |marker|
+  check.call(dispatch_run.include?(marker),
+             "post-promotion dispatch missing: #{marker}")
+end
+dispatch_post_marker = 'dispatch_response=$(gh api --method POST'
+check.call(dispatch_run.scan(%r{gh api --method POST}).length == 1 &&
+             dispatch_run.include?(dispatch_post_marker) &&
+             dispatch_run.index('/git/ref/heads/main') < dispatch_run.index(dispatch_post_marker) &&
+             dispatch_run.index('/git/ref/heads/codex/internal-debug') < dispatch_run.index(dispatch_post_marker) &&
+             dispatch_run.index('[ "$EXPECTED_SHA" != "$main_sha" ]') < dispatch_run.index(dispatch_post_marker) &&
+             dispatch_run.index(dispatch_post_marker) < dispatch_run.index('echo "dispatched_run_id='),
+           "dispatch job must freshly verify both refs before exactly one dispatch and only then expose outputs")
+check.call(dispatch_run.scan(/X-GitHub-Api-Version: [0-9-]+/) ==
+             Array.new(3, "X-GitHub-Api-Version: 2026-03-10"),
+           "every dispatch-job API call must use the exact reviewed API version")
+check.call(!dispatch_run.include?("return_run_details") &&
+             !dispatch_run.include?("ci_workflow_path=") &&
+             dispatch_run.scan('/actions/workflows/$ci_workflow_id/dispatches').length == 1,
+           "dispatch must use the numeric workflow id once and no deprecated run-details field or slashed workflow path")
+check.call(!dispatch_run.include?("sleep ") &&
+             !dispatch_run.include?('dispatched_run=$(gh api --method GET') &&
+             !dispatch_run.include?("while :"),
+           "actions-write dispatch job must not wait for or inspect the dispatched run")
+
+post_promotion_run = post_promotion_step["run"].to_s
+post_promotion_markers = [
+  "ci_workflow_id='344358206'",
+  "ci_workflow_path='.github/workflows/ci.yml'",
+  "internal_branch='codex/internal-debug'",
+  "expected_actor='github-actions[bot]'",
+  'max_polls=180',
+  'poll_interval_seconds=10',
+  'X-GitHub-Api-Version: 2026-03-10',
+  '/actions/runs/$dispatch_run_id',
+  '.workflow_id == $workflow_id',
+  '.event == "workflow_dispatch"',
+  '.head_branch == $branch',
+  '.head_sha == $sha',
+  '.run_attempt == 1',
+  '.repository.full_name == $repository',
+  '.head_repository.full_name == $repository',
+  '.actor.login == $actor',
+  '.triggering_actor.login == $actor',
+  'if [ "$poll" -ge "$max_polls" ]',
+  'sleep "$poll_interval_seconds"',
+  '/attempts/1/jobs?per_page=100',
+  '.name == "Internal post-promotion CI"',
+  '.name == "Required CI"',
+  '[ "$protected_aggregate_count" -ne 0 ]',
+  'dispatched_suite_id=',
+  'aggregate_check_id=',
+  'aggregate_details_url="https://github.com/$repository/actions/runs/$dispatch_run_id/job/$aggregate_job_id"',
+  '/commits/$EXPECTED_SHA/check-runs?check_name=Internal%20post-promotion%20CI&filter=latest&per_page=100',
+  '.app.id == 15368',
+  '.check_suite.id == $suite_id',
+  '.details_url == $details',
+  '[ "$(printf \'%s\' "$linked_aggregate_checks" | jq -r \'.[0].id\')" != "$aggregate_check_id" ]',
+  'final_main_sha=$(gh api --method GET',
+  'final_internal_sha=$(gh api --method GET',
+  '/git/ref/heads/main',
+  '/git/ref/heads/codex/internal-debug',
+  '[ "$EXPECTED_SHA" != "$final_main_sha" ]',
+  '[ "$EXPECTED_SHA" != "$final_internal_sha" ]'
+]
+post_promotion_markers.each do |marker|
+  check.call(post_promotion_run.include?(marker),
+             "post-promotion dispatch verification missing: #{marker}")
+end
+check.call(post_promotion_run.scan(/X-GitHub-Api-Version: [0-9-]+/) ==
+             Array.new(5, "X-GitHub-Api-Version: 2026-03-10"),
+           "every post-promotion verification API call must use the exact reviewed API version")
+metadata_marker = 'dispatched_run=$(gh api --method GET'
+aggregate_marker = 'dispatched_jobs=$(gh api --method GET'
+aggregate_check_marker = 'aggregate_checks=$(gh api --method GET'
+check.call(post_promotion_run.scan(%r{gh api --method POST}).empty? &&
+             post_promotion_run.include?(metadata_marker) &&
+             post_promotion_run.include?(aggregate_marker) &&
+             post_promotion_run.include?(aggregate_check_marker) &&
+             post_promotion_run.index(metadata_marker) < post_promotion_run.index(aggregate_marker) &&
+             post_promotion_run.index(aggregate_marker) < post_promotion_run.index(aggregate_check_marker),
+           "read-only post-promotion job must bind bounded exact-run metadata, aggregate job, and aggregate check without writes")
+check.call(post_promotion_run.scan(/\.app\.id == \d+/) == [".app.id == 15368"] &&
+             post_promotion_run.scan(/\.name == "Internal post-promotion CI"/).length == 2 &&
+             post_promotion_run.scan(/\.check_suite\.id == \$suite_id/).length == 1 &&
+             post_promotion_run.scan(/\.details_url == \$details/).length == 1,
+           "post-promotion aggregate must bind its exact job/check name, Actions app, suite, and canonical job URL")
+aggregate_link_marker = '[ "$(printf \'%s\' "$linked_aggregate_checks" | jq -r \'.[0].id\')" != "$aggregate_check_id" ]'
+final_main_marker = 'final_main_sha=$(gh api --method GET'
+final_internal_marker = 'final_internal_sha=$(gh api --method GET'
+success_marker = 'echo "Verified internal post-promotion CI run $dispatch_run_id for $EXPECTED_SHA."'
+ordered_final_markers = [aggregate_link_marker, final_main_marker, final_internal_marker, success_marker]
+ordered_final_positions = ordered_final_markers.map { |marker| post_promotion_run.index(marker) }
+check.call(ordered_final_positions.none?(&:nil?) &&
+             ordered_final_positions.each_cons(2).all? { |left, right| left < right },
+           "post-promotion verification must freshly recheck main and internal only after aggregate linkage and before success")
 
 allowed_delivery_action = "actions/checkout@#{checkout_sha}"
 [promotion_workflow, writer_workflow].each do |delivery_workflow|

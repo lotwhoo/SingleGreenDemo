@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - main
@@ -50,6 +51,24 @@ jobs:
             exit 1
           fi
           scripts/check_internal_branch_policy.sh "$reviewed_main_sha" "$main_sha" "$internal_sha"
+      - name: Verify post-promotion dispatch pointer
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          set -eu
+          if [ "$GITHUB_REF" != 'refs/heads/codex/internal-debug' ]; then
+            echo 'Post-promotion CI must be dispatched at the internal delivery pointer.' >&2
+            exit 1
+          fi
+          git fetch --no-tags origin \
+            '+refs/heads/main:refs/remotes/origin/main' \
+            '+refs/heads/codex/internal-debug:refs/remotes/origin/codex/internal-debug'
+          main_sha=$(git rev-parse 'refs/remotes/origin/main^{commit}')
+          internal_sha=$(git rev-parse 'refs/remotes/origin/codex/internal-debug^{commit}')
+          if [ "$GITHUB_SHA" != "$main_sha" ] || [ "$GITHUB_SHA" != "$internal_sha" ]; then
+            echo 'Dispatched checkout, current main, and internal pointer must be identical.' >&2
+            exit 1
+          fi
+          scripts/check_internal_branch_policy.sh "$main_sha" "$main_sha" "$internal_sha"
 
   package-matrix:
     name: Package / ${{ matrix.package }}
@@ -199,7 +218,7 @@ jobs:
       - run: scripts/check_public_api_baselines.sh
 
   required-ci:
-    name: Required CI
+    name: ${{ github.event_name == 'workflow_dispatch' && 'Internal post-promotion CI' || 'Required CI' }}
     if: always()
     needs:
       - branch-contract
