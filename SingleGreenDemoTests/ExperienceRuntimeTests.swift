@@ -832,6 +832,7 @@ final class ExperienceRuntimeTests: XCTestCase {
         XCTAssertEqual(VoiceConversationState.searching.systemImage, "globe")
     }
 
+    #if INTERNAL_DEMO_CREDENTIALS
     func testSearchConfigurationOnlyRequiresKeyWhenEnabled() {
         let settings = AISettings()
         let originalEnabled = settings.enableSearch
@@ -851,6 +852,7 @@ final class ExperienceRuntimeTests: XCTestCase {
         settings.bochaAPIKey = "bocha-test-key"
         XCTAssertTrue(settings.isSearchConfigured)
     }
+    #endif
 
     func testAISettingsParsesHotwordsFromCommonSeparators() {
         let settings = AISettings()
@@ -862,6 +864,7 @@ final class ExperienceRuntimeTests: XCTestCase {
         XCTAssertEqual(settings.hotwords, ["单绿眼镜", "豆包", "DeepSeek", "产品经理"])
     }
 
+    #if INTERNAL_DEMO_CREDENTIALS
     func testKeychainHelperRoundTripsSecret() {
         let key = "tests.\(UUID().uuidString)"
         defer { KeychainHelper.delete(key) }
@@ -871,6 +874,7 @@ final class ExperienceRuntimeTests: XCTestCase {
         XCTAssertTrue(KeychainHelper.delete(key))
         XCTAssertNil(KeychainHelper.load(key))
     }
+    #endif
 
     func testServerCredentialProviderCoalescesConcurrentRefreshAndCachesLease() async throws {
         let lease = ConversationCredentialLease(
@@ -989,7 +993,7 @@ final class ExperienceRuntimeTests: XCTestCase {
 
     func testUnauthorizedSpeechFailureRecordsOneRedactedInputFailure() async {
         let session = HostSpeechRecognitionSession()
-        let telemetry = ConversationTelemetryStore()
+        let telemetry = RecordingRuntimeTelemetry()
         let controller = VoiceConversationController(dependencies: VoiceConversationDependencies(
             inputMode: { .pushToTalk },
             voiceActivatedInputAvailable: { false },
@@ -1033,6 +1037,7 @@ final class ExperienceRuntimeTests: XCTestCase {
         }
     }
 
+    #if INTERNAL_DIAGNOSTICS
     func testTelemetryStoreIsBoundedAndContainsOnlyTypedSafeEvents() {
         let store = ConversationTelemetryStore(capacity: 2)
         store.record(.init(phase: .input, outcome: .started, elapsedMilliseconds: 0))
@@ -1043,6 +1048,17 @@ final class ExperienceRuntimeTests: XCTestCase {
         XCTAssertEqual(store.events.first?.failureCode, .unauthorized)
         XCTAssertEqual(store.events.last?.phase, .lifecycle)
     }
+
+    func testDiagnosticsExportMatchesBuildCapability() throws {
+        let store = ConversationTelemetryStore(capacity: 2)
+        store.record(category: "test", message: "safe-code-only")
+
+        let url = try store.makeExportURL()
+        let contents = try String(contentsOf: url, encoding: .utf8)
+        XCTAssertTrue(contents.contains("safe-code-only"))
+        XCTAssertFalse(contents.contains("apiKey"))
+    }
+    #endif
 
     private func missingAIConfiguration() -> VoiceConversationDependencies {
         VoiceConversationDependencies(
@@ -1268,6 +1284,15 @@ private final class ThreadSafeCounter: @unchecked Sendable {
 
     func increment() {
         lock.withLock { storage += 1 }
+    }
+}
+
+@MainActor
+private final class RecordingRuntimeTelemetry: ConversationTelemetrySink {
+    private(set) var events: [ConversationTelemetryEvent] = []
+
+    func record(_ event: ConversationTelemetryEvent) {
+        events.append(event)
     }
 }
 

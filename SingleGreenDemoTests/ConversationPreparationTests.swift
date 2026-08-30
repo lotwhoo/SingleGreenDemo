@@ -192,8 +192,8 @@ final class ConversationPreparationTests: XCTestCase {
             makeVoiceActivatedSession: { _ in sessionB },
             makeAgent: { _ in agentB }
         )
-        let telemetryA = ConversationTelemetryStore()
-        let telemetryB = ConversationTelemetryStore()
+        let telemetryA = RecordingPreparationTelemetry()
+        let telemetryB = RecordingPreparationTelemetry()
         let dependenciesA = VoiceConversationComposition(
             resolver: resolverA,
             requestMicrophonePermission: { true },
@@ -271,7 +271,7 @@ final class ConversationPreparationTests: XCTestCase {
             requestMicrophonePermission: { true },
             sleep: { _ in },
             reduceMotion: { false },
-            telemetry: ConversationTelemetryStore(),
+            telemetry: RecordingPreparationTelemetry(),
             presentationCopy: .singleGreenDemo,
             monotonicNow: { 0 }
         ).dependencies
@@ -995,6 +995,15 @@ private final class ThreadSafeFactoryCounter: @unchecked Sendable {
         lock.lock()
         storedValue += 1
         lock.unlock()
+    }
+}
+
+@MainActor
+private final class RecordingPreparationTelemetry: ConversationTelemetrySink {
+    private(set) var events: [ConversationTelemetryEvent] = []
+
+    func record(_ event: ConversationTelemetryEvent) {
+        events.append(event)
     }
 }
 

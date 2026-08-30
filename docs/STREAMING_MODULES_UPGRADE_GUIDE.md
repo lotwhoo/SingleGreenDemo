@@ -159,7 +159,7 @@ cd Packages/LLMKit && swift test
 cd Packages/VoiceChatDomain && swift test
 cd Packages/VoiceChatCore && swift test
 swift test
-xcodebuild -project SingleGreenDemo.xcodeproj -scheme SingleGreenDemo \
+xcodebuild -project SingleGreenDemo.xcodeproj -scheme SingleGreenUser -configuration User-Debug \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test
 ```
 

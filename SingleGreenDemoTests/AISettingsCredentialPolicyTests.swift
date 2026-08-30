@@ -31,7 +31,7 @@ final class AISettingsCredentialPolicyTests: XCTestCase {
     }
 
     func testLiveCompositionPublishesVoiceActivationAvailabilityWithoutReadingCredentials() {
-        #if DEBUG
+        #if INTERNAL_DEMO_CREDENTIALS
         let store = RecordingDemoCredentialStore()
         let settings = AISettings(
             buildPolicy: .serverManaged,
@@ -49,7 +49,7 @@ final class AISettingsCredentialPolicyTests: XCTestCase {
         XCTAssertTrue(settings.speechInputAvailability.voiceActivatedIsAvailable)
         XCTAssertTrue(dependencies.voiceActivatedInputAvailable())
         XCTAssertFalse(settings.speechInputAvailability.voiceActivatedDetail.contains("WebRTC"))
-        #if DEBUG
+        #if INTERNAL_DEMO_CREDENTIALS
         XCTAssertEqual(store.operations, [])
         #endif
     }
@@ -117,7 +117,7 @@ final class AISettingsCredentialPolicyTests: XCTestCase {
         )
     }
 
-    #if DEBUG
+    #if INTERNAL_DEMO_CREDENTIALS
     func testInternalBuildPolicyMakesDemoModeExplicit() {
         let policy = AISettingsBuildPolicy.internalDemo
 
@@ -244,7 +244,7 @@ final class AISettingsCredentialPolicyTests: XCTestCase {
     #endif
 }
 
-#if DEBUG
+#if INTERNAL_DEMO_CREDENTIALS
 @MainActor
 private final class RecordingDemoCredentialStore: DemoCredentialStore {
     enum Operation: Equatable {

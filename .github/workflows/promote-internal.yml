@@ -1,0 +1,145 @@
+name: Promote Internal Delivery Pointer
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: promote-internal
+  cancel-in-progress: false
+
+jobs:
+  authorize:
+    name: Internal promotion authorization
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      checks: read
+      contents: read
+    outputs:
+      approved_sha: ${{ steps.authorize.outputs.approved_sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/heads/main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Authorize the exact current main commit
+        id: authorize
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "Promotion must be dispatched from refs/heads/main." >&2
+            exit 1
+          fi
+
+          git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+          event_sha="$GITHUB_SHA"
+          checkout_sha=$(git rev-parse 'HEAD^{commit}')
+          main_sha=$(git rev-parse 'refs/remotes/origin/main^{commit}')
+          if [ "$event_sha" != "$main_sha" ] || [ "$checkout_sha" != "$main_sha" ]; then
+            echo "The dispatched commit, checkout, and freshly fetched origin/main must match." >&2
+            exit 1
+          fi
+
+          scripts/check_internal_branch_policy.sh "$main_sha" "$main_sha" "$main_sha"
+
+          workflow_runs=$(gh api --method GET \
+            "/repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?branch=main&event=push&status=completed&head_sha=$main_sha&per_page=100")
+          successful_workflow_runs=$(printf '%s' "$workflow_runs" | jq --arg sha "$main_sha" '
+            [.workflow_runs[] |
+              select(.head_sha == $sha and
+                     .head_branch == "main" and
+                     .event == "push" and
+                     .status == "completed" and
+                     .conclusion == "success" and
+                     .path == ".github/workflows/ci.yml")] |
+              sort_by(.updated_at, .run_attempt, .id)')
+          workflow_run_count=$(printf '%s' "$successful_workflow_runs" | jq 'length')
+          if [ "$workflow_run_count" -lt 1 ]; then
+            echo "No successful main push CI run exists for $main_sha." >&2
+            exit 1
+          fi
+          workflow_run_id=$(printf '%s' "$successful_workflow_runs" | jq -r '.[-1].id')
+
+          check_runs=$(gh api --method GET \
+            "/repos/$GITHUB_REPOSITORY/commits/$main_sha/check-runs?check_name=Required%20CI&filter=latest&per_page=100")
+          run_fragment="/actions/runs/$workflow_run_id/"
+          trusted_checks=$(printf '%s' "$check_runs" | jq \
+            --arg sha "$main_sha" \
+            --arg run_fragment "$run_fragment" '
+              [.check_runs[] |
+                select(.head_sha == $sha and
+                       .name == "Required CI" and
+                       .app.id == 15368 and
+                       .status == "completed" and
+                       .conclusion == "success" and
+                       (.details_url | contains($run_fragment)))] |
+                sort_by(.completed_at, .id)')
+          trusted_check_count=$(printf '%s' "$trusted_checks" | jq 'length')
+          if [ "$trusted_check_count" -lt 1 ]; then
+            echo "No successful Required CI check from GitHub Actions app 15368 is linked to run $workflow_run_id for $main_sha." >&2
+            exit 1
+          fi
+          trusted_check_id=$(printf '%s' "$trusted_checks" | jq -r '.[-1].id')
+          echo "Authorized Required CI check $trusted_check_id from workflow run $workflow_run_id."
+
+          echo "approved_sha=$main_sha" >> "$GITHUB_OUTPUT"
+
+  promote:
+    name: Promote authorized main
+    needs: authorize
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/heads/main
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Fast-forward the internal delivery pointer
+        env:
+          APPROVED_SHA: ${{ needs.authorize.outputs.approved_sha }}
+        run: |
+          set -euo pipefail
+
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "Promotion must be dispatched from refs/heads/main." >&2
+            exit 1
+          fi
+
+          git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+          event_sha="$GITHUB_SHA"
+          checkout_sha=$(git rev-parse 'HEAD^{commit}')
+          main_sha=$(git rev-parse 'refs/remotes/origin/main^{commit}')
+          if [ "$APPROVED_SHA" != "$main_sha" ] || \
+             [ "$event_sha" != "$main_sha" ] || \
+             [ "$checkout_sha" != "$main_sha" ]; then
+            echo "Authorization is stale or the checked out commit is not current origin/main." >&2
+            exit 1
+          fi
+
+          scripts/check_internal_branch_policy.sh "$APPROVED_SHA" "$main_sha" "$checkout_sha"
+
+          if git ls-remote --exit-code --heads origin refs/heads/codex/internal-debug >/dev/null 2>&1; then
+            git fetch --no-tags origin '+refs/heads/codex/internal-debug:refs/remotes/origin/codex/internal-debug'
+            previous_internal_sha=$(git rev-parse 'refs/remotes/origin/codex/internal-debug^{commit}')
+            if ! git merge-base --is-ancestor "$previous_internal_sha" "$main_sha"; then
+              echo "The internal delivery pointer cannot be fast-forwarded to current main." >&2
+              exit 1
+            fi
+          fi
+
+          git push origin "$main_sha:refs/heads/codex/internal-debug"
+
+          git fetch --no-tags origin \
+            '+refs/heads/main:refs/remotes/origin/main' \
+            '+refs/heads/codex/internal-debug:refs/remotes/origin/codex/internal-debug'
+          post_main_sha=$(git rev-parse 'refs/remotes/origin/main^{commit}')
+          internal_sha=$(git rev-parse 'refs/remotes/origin/codex/internal-debug^{commit}')
+          scripts/check_internal_branch_policy.sh "$APPROVED_SHA" "$post_main_sha" "$internal_sha"

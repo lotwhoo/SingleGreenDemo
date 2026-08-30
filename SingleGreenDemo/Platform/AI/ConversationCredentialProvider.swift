@@ -67,7 +67,7 @@ protocol SpeechCredentialProvider: Sendable {
     func speechLease() async throws -> SpeechCredentialLease
 }
 
-#if DEBUG
+#if INTERNAL_DEMO_CREDENTIALS
 @MainActor
 final class DemoKeychainCredentialProvider: ConversationCredentialProvider {
     private let settings: AISettings

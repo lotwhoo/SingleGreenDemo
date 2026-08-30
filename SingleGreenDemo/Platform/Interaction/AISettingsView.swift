@@ -11,7 +11,7 @@ struct AISettingsView: View {
                 credentialModeSection
 
                 Section {
-                    #if DEBUG
+                    #if INTERNAL_DEMO_CREDENTIALS
                     if settings.buildPolicy.allowsDemoCredentialStorage {
                         SecureField("ASR API Key", text: settings.speechAPIKeyBinding)
                             .textInputAutocapitalization(.never)
@@ -53,7 +53,7 @@ struct AISettingsView: View {
                 } header: {
                     Label("豆包流式语音识别 2.0", systemImage: "waveform")
                 } footer: {
-                    #if DEBUG
+                    #if INTERNAL_DEMO_CREDENTIALS
                     credentialFooter(
                         demoText: "API Key 存入系统 Keychain，并作为 X-Api-Key 发送；不是 Access Token 或 Secret Key。"
                     )
@@ -74,7 +74,7 @@ struct AISettingsView: View {
                 }
 
                 Section {
-                    #if DEBUG
+                    #if INTERNAL_DEMO_CREDENTIALS
                     if settings.buildPolicy.allowsDemoCredentialStorage {
                         SecureField("DeepSeek API Key", text: settings.llmAPIKeyBinding)
                             .textInputAutocapitalization(.never)
@@ -89,7 +89,7 @@ struct AISettingsView: View {
                 } header: {
                     Label("DeepSeek AI 回答", systemImage: "sparkles")
                 } footer: {
-                    #if DEBUG
+                    #if INTERNAL_DEMO_CREDENTIALS
                     credentialFooter(
                         demoText: "通过 LLMKit 调用 OpenAI 兼容接口，并保留多轮上下文。API Key 存入系统 Keychain。"
                     )
@@ -100,7 +100,7 @@ struct AISettingsView: View {
 
                 Section {
                     Toggle("模型自主联网搜索", isOn: $settings.enableSearch)
-                    #if DEBUG
+                    #if INTERNAL_DEMO_CREDENTIALS
                     if settings.buildPolicy.allowsDemoCredentialStorage {
                         SecureField("博查搜索 API Key", text: settings.bochaAPIKeyBinding)
                             .textInputAutocapitalization(.never)
@@ -175,7 +175,7 @@ struct AISettingsView: View {
         )
     }
 
-    #if DEBUG
+    #if INTERNAL_DEMO_CREDENTIALS
     @ViewBuilder
     private func credentialFooter(demoText: String) -> some View {
         if settings.buildPolicy.allowsDemoCredentialStorage {
@@ -192,7 +192,7 @@ struct AISettingsView: View {
 
     @ViewBuilder
     private var configurationStatusSection: some View {
-        #if DEBUG
+        #if INTERNAL_DEMO_CREDENTIALS
         if settings.buildPolicy.allowsDemoCredentialStorage {
             Section("演示凭证状态") {
                 configurationRow("语音识别", configured: settings.isASRConfigured)
