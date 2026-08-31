@@ -1564,6 +1564,12 @@ final class VoiceActivatedASRSessionTests: XCTestCase {
         await waitUntil { await transport.metrics().finishCount == 1 }
         await transport.emit(.finished)
         await waitUntil { await session.state == .finished }
+        // The transport terminal event may finish the session while the
+        // concurrent finishStream() call is still returning. Observe that
+        // independent diagnostic boundary before taking one immutable snapshot.
+        await waitUntil {
+            diagnostics.values.contains(.finishStreamReturned(generation: 1))
+        }
 
         let values = diagnostics.values
         XCTAssertTrue(values.contains(.speechResumed(

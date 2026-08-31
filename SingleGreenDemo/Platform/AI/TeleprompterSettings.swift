@@ -1,17 +1,36 @@
 import Foundation
 import SingleGreenGlassesKit
 
+/// One local record owns the draft plus every derived artifact. Replacing this
+/// record is the atomic boundary used by script deletion.
+struct TeleprompterLocalArtifactEnvelope: Codable, Equatable {
+    static let currentSchemaVersion = 1
+
+    var schemaVersion = Self.currentSchemaVersion
+    var scriptIdentity: TeleprompterScriptIdentity
+    var scriptSource: String
+    var checkpointData: Data?
+    var normalizedIndexCache: Data?
+    var evaluationCache: Data?
+
+    static func empty(
+        identity: TeleprompterScriptIdentity = .init(rawValue: UUID().uuidString)
+    ) -> Self {
+        Self(
+            scriptIdentity: identity,
+            scriptSource: "",
+            checkpointData: nil,
+            normalizedIndexCache: nil,
+            evaluationCache: nil
+        )
+    }
+}
+
 @MainActor
-final class TeleprompterSettings: ObservableObject {
+final class TeleprompterSettings: ObservableObject, TeleprompterCheckpointStore {
     @Published private(set) var scriptConfigurationRevision = 0
     @Published var scriptDraft: String {
-        didSet {
-            let limited = String(scriptDraft.prefix(TeleprompterLimits.maximumScriptCharacters))
-            if limited != scriptDraft {
-                scriptDraft = limited
-            }
-            defaults.set(limited, forKey: scriptStorageKey)
-        }
+        didSet { scriptDraftDidChange() }
     }
     @Published var allowsCloudSpeechRecognition: Bool {
         didSet {
@@ -19,23 +38,166 @@ final class TeleprompterSettings: ObservableObject {
         }
     }
 
+    var scriptIdentity: TeleprompterScriptIdentity { envelope.scriptIdentity }
+
     private let defaults: UserDefaults
-    private let scriptStorageKey: String
+    private let legacyScriptStorageKey: String
+    private let envelopeStorageKey: String
     private let consentStorageKey: String
+    private var envelope: TeleprompterLocalArtifactEnvelope
+    private var envelopeLoadFailure: TeleprompterCheckpointRejectionReason?
+    private var isApplyingEnvelope = false
 
     init(
         defaults: UserDefaults = .standard,
         scriptStorageKey: String = "teleprompter.script",
+        envelopeStorageKey: String = "teleprompter.localArtifactEnvelope",
         consentStorageKey: String = "teleprompter.cloudASRConsent"
     ) {
         self.defaults = defaults
-        self.scriptStorageKey = scriptStorageKey
+        self.legacyScriptStorageKey = scriptStorageKey
+        self.envelopeStorageKey = envelopeStorageKey
         self.consentStorageKey = consentStorageKey
-        self.scriptDraft = defaults.string(forKey: scriptStorageKey) ?? ""
-        self.allowsCloudSpeechRecognition = defaults.bool(forKey: consentStorageKey)
+
+        let decoded = Self.decodeEnvelope(defaults.data(forKey: envelopeStorageKey))
+        switch decoded {
+        case .loaded(let value):
+            envelope = value
+            envelopeLoadFailure = nil
+        case .missing:
+            var migrated = TeleprompterLocalArtifactEnvelope.empty()
+            migrated.scriptSource = String(
+                (defaults.string(forKey: scriptStorageKey) ?? "")
+                    .prefix(TeleprompterLimits.maximumScriptCharacters)
+            )
+            envelope = migrated
+            envelopeLoadFailure = nil
+        case .rejected(let reason):
+            envelope = .empty()
+            envelopeLoadFailure = reason
+        }
+        scriptDraft = envelope.scriptSource
+        allowsCloudSpeechRecognition = defaults.bool(forKey: consentStorageKey)
+
+        if defaults.data(forKey: envelopeStorageKey) == nil {
+            _ = persistEnvelope()
+            defaults.removeObject(forKey: legacyScriptStorageKey)
+        }
     }
 
     func applyScriptDraft() {
         scriptConfigurationRevision &+= 1
     }
+
+    func loadCheckpoint(
+        for script: TeleprompterScript
+    ) -> TeleprompterCheckpointLoadResult {
+        if let envelopeLoadFailure { return .rejected(envelopeLoadFailure) }
+        guard let checkpointData = envelope.checkpointData else { return .missing }
+        return TeleprompterCheckpointCodec.decode(checkpointData)
+    }
+
+    func saveCheckpoint(
+        _ checkpoint: TeleprompterPositionCheckpoint
+    ) -> TeleprompterCheckpointWriteResult {
+        guard envelopeLoadFailure == nil,
+              !envelope.scriptSource.isEmpty,
+              checkpoint.scriptIdentity == envelope.scriptIdentity,
+              let data = try? TeleprompterCheckpointCodec.encode(checkpoint) else {
+            return .failed
+        }
+        guard envelope.checkpointData != data else { return .unchanged }
+        envelope.checkpointData = data
+        return persistEnvelope() ? .saved : .failed
+    }
+
+    func deleteScriptArtifacts(
+        for identity: TeleprompterScriptIdentity
+    ) -> TeleprompterScriptDeletionResult {
+        if envelope.scriptSource.isEmpty,
+           envelope.checkpointData == nil,
+           envelope.normalizedIndexCache == nil,
+           envelope.evaluationCache == nil {
+            if envelopeLoadFailure != nil, !persistEnvelope() { return .failed }
+            envelopeLoadFailure = nil
+            return .alreadyDeleted
+        }
+        guard identity == envelope.scriptIdentity else { return .rejectedIdentity }
+
+        let previous = envelope
+        envelope = .empty()
+        guard persistEnvelope() else {
+            envelope = previous
+            return .failed
+        }
+        envelopeLoadFailure = nil
+        isApplyingEnvelope = true
+        scriptDraft = ""
+        isApplyingEnvelope = false
+        return .deleted
+    }
+
+    /// Test seam for proving that atomic deletion clears future derived stores
+    /// even before production indexing and evaluation cache writers exist.
+    func replaceDerivedArtifactsForTesting(
+        normalizedIndexCache: Data?,
+        evaluationCache: Data?
+    ) {
+        envelope.normalizedIndexCache = normalizedIndexCache
+        envelope.evaluationCache = evaluationCache
+        _ = persistEnvelope()
+    }
+
+    private func scriptDraftDidChange() {
+        guard !isApplyingEnvelope else { return }
+        let limited = String(scriptDraft.prefix(TeleprompterLimits.maximumScriptCharacters))
+        if limited != scriptDraft {
+            isApplyingEnvelope = true
+            scriptDraft = limited
+            isApplyingEnvelope = false
+        }
+        guard limited != envelope.scriptSource || envelopeLoadFailure != nil else { return }
+        envelopeLoadFailure = nil
+        envelope.scriptSource = limited
+        // Any authored-content revision invalidates every derived position.
+        envelope.checkpointData = nil
+        envelope.normalizedIndexCache = nil
+        envelope.evaluationCache = nil
+        _ = persistEnvelope()
+    }
+
+    private func persistEnvelope() -> Bool {
+        do {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.sortedKeys]
+            defaults.set(try encoder.encode(envelope), forKey: envelopeStorageKey)
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    private static func decodeEnvelope(
+        _ data: Data?
+    ) -> TeleprompterCheckpointLoadResultEnvelope {
+        guard let data else { return .missing }
+        do {
+            let envelope = try JSONDecoder().decode(
+                TeleprompterLocalArtifactEnvelope.self,
+                from: data
+            )
+            guard envelope.schemaVersion == TeleprompterLocalArtifactEnvelope.currentSchemaVersion else {
+                return .rejected(.unsupportedSchema(envelope.schemaVersion))
+            }
+            return .loaded(envelope)
+        } catch {
+            return .rejected(.corruptData)
+        }
+    }
+}
+
+private enum TeleprompterCheckpointLoadResultEnvelope {
+    case missing
+    case loaded(TeleprompterLocalArtifactEnvelope)
+    case rejected(TeleprompterCheckpointRejectionReason)
 }

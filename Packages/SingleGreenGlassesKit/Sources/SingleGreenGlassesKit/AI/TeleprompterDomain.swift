@@ -15,10 +15,20 @@ public enum TeleprompterScriptError: Error, Equatable, Sendable {
 /// Stable, non-text identity for one exact locally prepared script revision.
 /// It is suitable for stale-event checks but is not a cryptographic content
 /// signature and must not be treated as an authentication or integrity proof.
-public struct TeleprompterScriptVersion: Equatable, Hashable, Sendable {
+public struct TeleprompterScriptVersion: Codable, Equatable, Hashable, Sendable {
     public let rawValue: UInt64
 
     public init(rawValue: UInt64) {
+        self.rawValue = rawValue
+    }
+}
+
+/// Stable identity for one user-owned script across content revisions. It is
+/// intentionally opaque and must not contain the script title or source text.
+public struct TeleprompterScriptIdentity: Codable, Equatable, Hashable, Sendable {
+    public let rawValue: String
+
+    public init(rawValue: String) {
         self.rawValue = rawValue
     }
 }
@@ -29,16 +39,38 @@ public struct TeleprompterScriptVersion: Equatable, Hashable, Sendable {
 public struct TeleprompterScript: Equatable, Sendable {
     public let source: String
     public let sentences: [String]
+    public let identity: TeleprompterScriptIdentity
     public let version: TeleprompterScriptVersion
 
     public init(_ source: String) throws {
+        try self.init(source, identity: nil)
+    }
+
+    public init(
+        _ source: String,
+        identity: TeleprompterScriptIdentity
+    ) throws {
+        try self.init(source, identity: Optional(identity))
+    }
+
+    private init(
+        _ source: String,
+        identity: TeleprompterScriptIdentity?
+    ) throws {
         let limited = String(source.prefix(TeleprompterLimits.maximumScriptCharacters))
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let sentences = Self.segment(limited)
         guard !sentences.isEmpty else { throw TeleprompterScriptError.empty }
+        let version = Self.makeVersion(for: limited)
         self.source = limited
         self.sentences = sentences
-        self.version = Self.makeVersion(for: limited)
+        // Existing callers that do not yet own a repository receive a stable,
+        // non-text compatibility identity for identical content. App storage
+        // supplies a durable identity that remains stable across revisions.
+        self.identity = identity ?? TeleprompterScriptIdentity(
+            rawValue: "content-\(String(version.rawValue, radix: 16))"
+        )
+        self.version = version
     }
 
     private static func segment(_ source: String) -> [String] {

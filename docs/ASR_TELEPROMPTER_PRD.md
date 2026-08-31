@@ -1,8 +1,8 @@
 # 单绿眼镜 ASR 智能提词器 PRD
 
-> 版本：MVP Implemented Baseline v1.7（含 M11-PR1/PR2 与延期/未验证项）
+> 版本：MVP Implemented Baseline v1.8（含 M11-PR1–PR4 第一阶段与延期/未验证项）
 >
-> 日期：2026-08-31
+> 日期：2026-09-01
 >
 > 产品定义：用户导入/粘贴讲稿，ASR 只跟踪已说到的位置；系统不生成、不续写、不改写讲稿。
 >
@@ -15,7 +15,7 @@
 核心循环：
 
 ```text
-手机端粘贴并载入讲稿（TXT 文件导入延期）
+手机端粘贴或导入 UTF-8 TXT/Markdown 并载入讲稿
   -> 删除空格与 Tab、把连续换行折叠为一个 `/`，再做本地规范化和测量分页
   -> 启动语音跟随（一次话语 Session 自动轮换）
   -> 在当前已读位置后的 50 个规范化字符内匹配已说内容
@@ -23,11 +23,12 @@
   -> 静默/插话/歧义时保持
   -> 自动跃迁后可在手机端一次性撤销
   -> 四向键纠偏、暂停或切换纯手动
+  -> 暂停/完成/后台/shutdown 保存兼容位置；手机确认后完整删除本地稿件与派生数据
 ```
 
 成功标准不是“ASR 转写看起来准确”，而是演讲者抬眼时，当前要说的内容稳定地处于中间行，且系统绝不因识别猜测自动向后跳。向后恢复只允许由用户明确点击手机端的一次性撤销，或使用既有人工纠偏。
 
-当前证据边界：本次 checkout 的 SingleGreenGlassesKit 256/256、SingleGreenUser App Simulator 86/86、七 Package strict-concurrency/WAE 552/552、User Release Simulator build、架构边界和敏感信息扫描已通过。新增 `ReadingPositionEngine` 与 Controller 撤销入口的 public API 基线因本机工具链低于仓库锁定版本而未生成和审阅。真实 DeepSeek/搜索/ASR 调用、50 字跃迁与撤销的物理设备复验和长时可读性仍未验证。
+当前证据边界：本次 checkout 的 SingleGreenGlassesKit 265/265、SingleGreenUser App Simulator 93/93、七 Package strict-concurrency/WAE 561/561、User Release Simulator build、架构边界和敏感信息扫描已通过；checkpoint 聚焦 4/4、提词器聚焦 47/47。Xcode 26.6 public API baseline 与真机检查按用户决定延期至 2026-09-02，本轮未尝试。真实 DeepSeek/搜索/ASR 调用、位置恢复/导入/删除的物理设备复验和长时可读性仍未验证。
 
 ## 2. 用户与待完成任务
 
@@ -80,7 +81,7 @@
 
 | 场景 | 优先级 | MVP 行为 |
 |---|---|---|
-| 讲稿预演 | P0 | 已实现粘贴/编辑、载入、ASR 跟随、暂停/继续、手动纠偏；TXT 文件导入延期 |
+| 讲稿预演 | P0 | 已实现粘贴/编辑、UTF-8 TXT/Markdown 导入、载入、ASR 跟随、暂停/继续、手动纠偏和位置恢复 |
 | 现场演讲/演示 | P0 | 三完整行、低打扰状态、静默保持、断网转纯手动 |
 | 忘词/跳段恢复 | P0 | 已实现上/下一句和当前句重新锚定；上一段/下一段依赖长按，延期 |
 | 即兴插话后回稿 | P0 | 不消费稿件；识别到局部窗口内稳定证据后继续 |
@@ -93,7 +94,7 @@
 
 ### 5.1 手机端准备
 
-1. 用户进入“ASR 提词器”，在 App 内粘贴/编辑讲稿并点击“载入稿件”；UTF-8 TXT 文件选择与解析尚未实现。
+1. 用户进入“ASR 提词器”，可在 App 内粘贴/编辑，或从手机文件选择器导入 UTF-8 TXT/Markdown；导入成功后自动载入。空白、非法 UTF-8、超过 20,000 字、不支持类型和重复内容均返回明确结果，失败不覆盖当前稿件。
 2. 系统保留原始稿件副本；载入显示稿时删除空格、Tab 等布局空白，连续 CR/LF 折叠为一个 `/`，开头和结尾的换行不生成 `/`，不生成空句或空白显示行。该规则也会删除英文单词之间的空格，这是当前产品明确选择。
 3. 当前系统建立句子序列和确定性脚本版本标识，并由纯值 `ReadingPositionEngine` 用规范化文本做有界前向匹配；版本标识只用于拒绝陈旧事件，不是加密摘要。完整 token/range/段落索引仍是后续增强。
 4. 当前由首句或已在运行中选择的句子开始，查看 8:3 眼镜预览；手机端段落选择尚未实现。
@@ -108,8 +109,9 @@
 4. partial 转写推进当前句内位置；焦点跨过完整显示行时，以 0.18 秒向上过渡并继续露出未读内容。三行依次为已读、正在读、未读：已读内容为 32% 深绿、当前行为 100% 高亮、未读行为 68% 中绿。正文不自动添加箭头或完成符号，分段只显示规范化后的单个 `/`；首尾不插入空白占位。
 5. 静默、即兴插话或低置信度时冻结页面，不自动完成。
 6. 用户可随时左右纠偏，或下键重新锚定/切换纯手动。
-7. 当前通过暂停、切换体验或宿主 shutdown 结束；长按上键结束和位置 checkpoint 尚未实现。App 未新增音频或识别全文持久化。
+7. 暂停、自动到稿尾、Controller 显式完成、App 后台和宿主 shutdown 会保存版本兼容的位置 checkpoint；普通 ASR partial/final 位置变化与 reset 不直接写盘。显式完成的手机/眼镜手势尚未接入，App 未持久化音频或识别全文。
 8. 若系统刚执行一次 `jump` 自动跃迁，手机控制面板临时出现“撤销刚才的自动跳转”；点击一次恢复跃迁前锚点并重建识别 Session，随后按钮消失。眼镜按键映射不变。
+9. 手机端可经二次确认删除稿件；删除会以单一版本化本地记录替换同时清除稿件、checkpoint、预留索引和本地评测缓存，且旧 Session 事件不能恢复已删除状态。
 
 ### 5.3 脚本预处理与双文本模型
 
@@ -194,6 +196,10 @@
 M11-PR1 已把上述定位规则收敛为纯值 `ReadingPositionEngine`：输入为脚本及其版本、当前位置、转写片段、partial/final 语义和只含数值的稳定证据；输出为 `stay / advance / jump`，reason/evidence 不包含稿件或转写文本。脚本版本不一致时 fail-closed 保持。`TeleprompterController` 继续拥有识别 generation、Session 生命周期和状态发布，但不再自行持有候选阈值、稳定计数或跃迁判定，只应用 Engine 的目标位置。保留的 `TeleprompterScriptAligner` 是兼容入口和底层确定性匹配原语。
 
 M11-PR2 在 Controller 边界加入纯值 `ReadingPositionUndoState`：记录只含脚本版本、独立 alignment generation 和跃迁前后锚点。只有 `.jump` 被成功应用且未进入完成态时记录；后续 `.advance` 或不兼容上下文立即清除。兼容的一次话语 rollover 保留记录，避免 final 后按钮在用户操作前消失；消费时仍重新校验脚本版本、定位代际和当前目标锚点。撤销不是 Engine 自动后退，而是手机端用户命令。
+
+M11-PR3 新增纯值 `TeleprompterPositionCheckpoint` 与 `TeleprompterCheckpointStore`：checkpoint 仅含 schema、稳定 script identity、不可逆内容版本标识、句子索引和句内原稿 UTF-16 位置。仅全部兼容时恢复；损坏、未知 schema、身份/内容版本不符和越界均类型化拒绝，并从安全默认位置启动。App adapter 把单稿件正文、checkpoint bytes、索引缓存与评测缓存放在一个 versioned envelope 中，删除通过一次记录替换完成。
+
+M11-PR4 第一阶段把 TXT/Markdown bytes 解析留在 App/Infrastructure；Controller 仍只接收构造后的 `TeleprompterScript`。解析结果不携带文件名或路径，DOCX/PDF/云盘和多稿件列表仍延期。
 
 ### 8.2 特殊语音行为
 
@@ -288,7 +294,7 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 | App 进入后台 | 立即使 generation 失效、取消事件任务并发起 Session cancellation，页面进入暂停 | 回前台后用户明确继续 | 自动化通过；设备生命周期未验证 |
 | 宿主 shutdown | 立即取消当前消费并发起当前/待清理 Session cancellation，等待清理结束 | 无 | 自动化通过；设备生命周期未验证 |
 | 眼镜断连 | 目标为停止采集并保留位置 | 重连后明确继续 | 延期 |
-| 空白稿件 | 不进入可跟随态，显示安全错误 | 重新粘贴并载入 | 已实现；TXT 损坏文件不适用，因为文件导入延期 |
+| 空白稿件 | 不进入可跟随态，显示安全错误 | 重新粘贴或导入并载入 | 已实现；TXT/Markdown 的空白、非法 UTF-8 与不可读文件均返回类型化失败，且不覆盖当前稿件 |
 | 超长讲稿 | 当前截取到 20,000 个 `Character` | 缩短或分稿 | 已实现上限；分块索引延期 |
 | 热状态/低电量 | 降低非必要刷新，优先保持文本 | 用户可切纯手动 | 延期/设备未验证 |
 
@@ -332,11 +338,10 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 
 ### 12.2 已从首版 MVP 延期
 
-- UTF-8 TXT 文件选择/导入；
 - 长按上一段/下一段/结束等动作和长短按互斥；
 - 专用连续 ASR 事件端口、显式 sequence、静默/不确定/中断细分状态；
 - 完整 token-to-original range、段落索引和长稿分块索引；
-- 位置 checkpoint、专用删除闭环、设备端 ASR、遥测；
+- 多稿件 ScriptRepository、设备端 ASR、遥测；
 - live provider 与物理设备验证未通过前，不将自动轮换称为“无缝”。
 
 ### 12.3 Later
@@ -379,8 +384,8 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 
 | 条目 | 当前状态 | 证据/缺口摘要 |
 |---|---|---|
-| GWT-01 | 部分实现 | 粘贴/载入与分句已覆盖；TXT 文件导入、完整 token/range 索引延期 |
-| GWT-02 | 部分实现 | 空稿安全失败已实现；文件解码路径延期 |
+| GWT-01 | 部分实现 | 粘贴、TXT/Markdown 导入、载入与分句已覆盖；完整 token/range 索引延期 |
+| GWT-02 | 通过（Core + App 自动化） | 空稿、空文件、非法 UTF-8、超长、重复和不支持类型均有明确结果，失败不覆盖当前稿件 |
 | GWT-03 | 部分实现 | TextKit 完整 Unicode 行片段自动化通过；完整预处理 range 索引延期 |
 | GWT-04 | 通过（聚焦 App/HUD 自动化） | 3 条完整测量行有覆盖 |
 | GWT-05 | 通过（聚焦 App/HUD 自动化） | 默认 iPhone 17 Pro Max 投影尺寸可容纳 3 条完整正文行 |
@@ -402,15 +407,15 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 | GWT-22 | 部分实现 | 下键重启当前锚点已实现；未单独验证新 generation 全路径 |
 | GWT-23 | 通过（Core 自动化） | 撤销云端同意后转手动并拒绝迟到事件 |
 | GWT-24 | 通过（Core 自动化） | background 后暂停并拒绝迟到事件；其他 paused 来源未全量覆盖 |
-| GWT-25 | 延期 | 长按结束和 checkpoint 未实现 |
+| GWT-25 | 部分实现 | 长按结束延期；完成态及暂停/后台/reset/shutdown checkpoint 已实现 |
 | GWT-25A–25E | 通过（Core + App Simulator 自动化） | 手机按钮按需出现；一次性恢复跃迁前锚点；重复点击和旧事件无效；人工/脚本/reset/shutdown/完成/普通推进使记录失效；兼容 rollover 保留且不兼容重锚定拒绝。真机触达与真实 ASR 未验证 |
 | GWT-26 | 通过（Core + App 自动化） | 同意默认拒绝；不请求权限/不准备 Session；手动仍可用 |
 | GWT-27 | 部分实现 | stream failure 转手动并保留锚点；1 秒网络目标未验证 |
 | GWT-28 | 已实现，未验证 | 无静默自动恢复上传逻辑；真实网络恢复未跑 |
-| GWT-29 | 部分通过 | background 立即取消有自动化；checkpoint 与眼镜断连延期 |
+| GWT-29 | 部分通过 | background 立即取消并保存 checkpoint 有自动化；真实眼镜断连事件延期 |
 | GWT-30 | 延期 | 电话/音频路由专用恢复未实现 |
 | GWT-31 | 通过（Core 自动化） | one-shot auto-rotation 与旧事件拒绝通过；live/device 连续性未验证 |
-| GWT-32 | 延期 | 专用删除闭环和 checkpoint 均未实现 |
+| GWT-32 | 通过（Core + App 自动化） | 手机确认后单 envelope 清理稿件、checkpoint、索引与评测缓存；真机交互未验证 |
 | GWT-33 | 延期 | 当前未新增提词器遥测；未来需隐私 payload 测试 |
 
 ### 14.1 导入与排版
@@ -451,6 +456,7 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 25C. **Given** 已完成一次撤销，**When** 用户重复点击或旧 Session 继续发送 partial/final，**Then** 页面不再回退且旧事件被拒绝。
 25D. **Given** 存在撤销记录，**When** 用户左右纠偏、下键重锚定、替换脚本、reset、shutdown、完成或发生后续普通自动推进，**Then** 记录立即失效。
 25E. **Given** 自动 rollover 保持相同脚本与定位上下文，**When** 新 Session 接管，**Then** 撤销仍可用；若脚本版本、定位代际或目标锚点不匹配，**Then** fail-closed。
+25F. **Given** 存在兼容 checkpoint，**When** App 重新建立同一 script identity 与内容版本，**Then** 恢复句子与句内原稿位置；schema、身份、版本或边界不兼容时从安全默认位置开始并返回类型化原因。
 
 ### 14.4 故障、隐私与恢复
 
@@ -499,11 +505,11 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 | T28 | Unit/Failure | 权限拒绝 | start | Manual；不重试弹窗；可读稿 | 部分：代码路径已实现；默认拒绝同意路径通过 |
 | T29 | Unit/Failure | 云端网络断开 | injected clock + error | ≤1 秒进入 Manual；保留锚点 | 部分：stream failure 降级通过；时间/真实网络未跑 |
 | T30 | Unit/Privacy | 网络恢复 | 无用户动作 | 不创建云端 session | 已实现，真实网络未验证 |
-| T31 | Unit/Lifecycle | App 后台/眼镜断连 | lifecycle event | 采集停止；checkpoint 写一次 | 部分：后台取消通过；断连/checkpoint 延期 |
+| T31 | Unit/Lifecycle | App 后台/眼镜断连 | lifecycle event | 采集停止；checkpoint 写一次 | 部分：后台取消与 checkpoint 去重写入通过；真实眼镜断连事件延期 |
 | T32 | Unit/Lifecycle | 电话中断后恢复 | interruption events | 当前句 Searching；不从头开始 | 延期 |
 | T33 | Unit/Concurrency | reset 后旧事件 | old run id/sequence | 全部忽略；新 run 不污染 | 通过（Core generation） |
 | T34 | Unit/Adapter | recognizer rollover | 两 session 交叠 | 序列单调；旧 session 尾事件忽略 | 通过（Core fake session）；live/device 未验证 |
-| T35 | Unit/Storage | 删除讲稿 | delete | 原稿/索引/checkpoint 全删除 | 延期 |
+| T35 | Unit/Storage | 删除讲稿 | delete | 原稿/索引/checkpoint/评测缓存单记录清空并旋转 identity | 通过（Core + App 自动化）；真机确认框未验证 |
 | T36 | Unit/Telemetry | 正常/错误全路径 | capture events | payload 无文本、音频、文件名/可逆哈希 | 延期：尚无提词器遥测 |
 | T37 | Performance | 60 分钟长稿 | 固定流 | 内存有界；局部搜索耗时不随全文线性恶化 | 未运行 |
 | T38 | App Integration | fake ASR + Experience | 四向操作 | 四向操作继续走通用 control state；仅手机撤销读取提词器可用状态并调用显式命令 | 通过（Core/App/架构门禁的相关覆盖） |
@@ -517,33 +523,40 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 | T46 | Unit/Controller | 人工纠偏、脚本替换、reset、shutdown、完成、普通推进 | 各失效动作 | 撤销不可用且不能改变新位置 | 通过（Core） |
 | T47 | Unit/Controller | 自动 rollover 后撤销 | 三个 fake Session | 兼容 rollover 保留；只取消当前 Session；新 Session 从旧锚点开始 | 通过（Core fake Session）；live provider 未验证 |
 | T48 | App/UI Policy | 提词器/其他体验 × 有/无记录 | 状态组合 | 仅提词器且有记录时显示手机按钮 | 通过（App Simulator 策略）；真机视觉未验证 |
+| T49 | Unit/Checkpoint | schema/identity/content version/位置组合 | restore | 仅全部兼容时恢复；其余类型化拒绝到安全默认 | 通过（Core） |
+| T50 | Unit/Checkpoint Codec | 正常、损坏与未知 schema bytes | encode/decode | 正常 round-trip；损坏/未知版本 fail-closed；记录无稿件/转写/provider payload | 通过（Core） |
+| T51 | Unit/Controller | partial、暂停、后台、shutdown、自动/显式完成 | 生命周期序列 | partial 不落盘；边界写入；相同位置去重；完成保存末尾位置 | 通过（Core fake store） |
+| T52 | App/Storage | 旧 script key、versioned envelope | App 初始化 | 旧稿迁移一次；identity 保持；checkpoint 可恢复 | 通过（App Simulator） |
+| T53 | App/Storage | 稿件内容变化、损坏 checkpoint | 编辑/启动 | 清空派生数据；损坏位置不覆盖正文且回到安全默认 | 通过（App Simulator） |
+| T54 | App/Import | TXT/Markdown、空白、非法 UTF-8、超长、重复、不支持类型 | bytes parse | 成功返回正文；失败/重复不覆盖；结果无文件名和路径 | 通过（App Simulator parser）；真实文件提供器未验证 |
+| T55 | Unit/Controller | 运行中删除后旧 Session 回调 | delete + late events | 持久化确认后清空状态；旧事件不能复活稿件 | 通过（Core fake Session） |
 
 ## 16. 发布门与证据要求
 
 建议按以下顺序验收，任何后层成功都不能替代前层证据：
 
-1. **已通过**：本次 SingleGreenGlassesKit 全量套件 256/256；
-2. **已通过**：本次 SingleGreenUser App Simulator 全量 86/86，0 failures，0 skips，运行于 iPhone 17 Pro / iOS 26.5；
+1. **已通过**：本次 SingleGreenGlassesKit 全量套件 265/265；
+2. **已通过**：本次 SingleGreenUser App Simulator 全量 93/93，0 failures，0 skips，运行于 iPhone 17 Pro / iOS 26.5；
 3. **已通过**：本次 Internal Debug iphoneos archive/export、Internal Debug Simulator build/能力扫描和 User Release Simulator build；历史 Release generic iphoneos build 仍只作为历史证据；
 4. **部分通过**：本次 credential isolation、repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates 和 public API updater 安全自检已通过；final public API baseline 因本机工具链低于仓库锁定版本而按设计未运行；
 5. **未运行**：live provider 的 DeepSeek、搜索和 ASR 调用，包括普通话、噪声、静默、插话、跳读与 rollover 连续性；
-6. **部分通过**：历史用户版 Build 8 与本次三行修复内部版均已安装到 `kemin‘s phone`（iPhone 17 Pro Max）；本次内部版因设备锁屏未能自动启动，物理眼镜显示、音频路由和人工可读性仍未验证。安装通过不能替代这些证据。
+6. **延期**：本轮按用户决定不执行设备 install/launch；2026-08-31 的历史安装记录不替代 2026-09-01 当前 checkout 的真机、物理眼镜显示、音频路由和人工可读性证据。
 
 PromptSmart 对 VoiceTrack 使用专利表述。商业发布前应由合格人员做独立的专利/自由实施审查；本文不是法律意见，也不据此判断侵权与否。
 
-## 17. 当前验证状态（2026-08-31）
+## 17. 当前验证状态（2026-09-01）
 
 本文同时记录产品规格与目前实现证据，但不把自动化通过外推为真实服务或物理设备通过。本次修复已重新运行 Core 与 App 自动化；真实服务和物理设备仍是独立门。
 
 | 证据类别 | 当前状态 | 备注 |
 |---|---|---|
 | 文档静态检查 | 已通过：逐文件 whitespace check 与敏感信息模式扫描 | 未发现 diff 空白错误或常见密钥模式；不验证业务 |
-| 最终 Core 自动化 | 本次全量已通过：SingleGreenGlassesKit 256/256；Engine 聚焦 9/9；提词器聚焦回归 42/42 | 在 M11-PR1 定位覆盖之外，新增一次性消费、脚本/代际/目标兼容校验、旧事件拒绝、manual/script/reset/shutdown/completion/advance 失效和兼容 rollover 覆盖；不代表真实服务通过 |
-| 最终 App Simulator 全量 | 本次已通过：86/86，0 failures，0 skips；iPhone 17 Pro，iOS 26.5；`/tmp/SingleGreenDemo-M11-PR2-Final-AppTests/Logs/Test/Test-SingleGreenUser-2026.08.31_22-51-58-+0800.xcresult` | SingleGreenUser App test target 全量通过，含撤销按钮显示策略、提词器装配、HUD 三行、句内焦点和显示配置回归；不等于 live provider 或设备验证 |
+| 最终 Core 自动化 | 本次全量已通过：SingleGreenGlassesKit 265/265；checkpoint 聚焦 4/4；提词器聚焦回归 47/47 | 新增 schema/codec/兼容恢复、生命周期写入频率、显式完成、原子删除和迟到事件隔离覆盖；不代表真实服务通过 |
+| 最终 App Simulator 全量 | 本次已通过：93/93，0 failures，0 skips；iPhone 17 Pro，iOS 26.5；`/tmp/SingleGreenDemo-M11-PR34-Final3-AppTests/Logs/Test/Test-SingleGreenUser-2026.09.01_00-21-14-+0800.xcresult` | SingleGreenUser App test target 全量通过，含本地 envelope/迁移/删除、TXT/Markdown parser、撤销策略与既有 HUD 回归；不等于真实文件提供器、live provider 或设备验证 |
 | 本次内部版 App/HUD 聚焦复测 | 已通过：49/49，0 failures，0 skips；iPhone 17 Pro Max Simulator，iOS 26.5；`/private/tmp/SingleGreenDemo-ThreeLineFixTests/Logs/Test/Test-SingleGreenInternal-2026.08.31_14-27-37-+0800.xcresult` | 使用默认显示 Profile 与 440×956 容器计算实际投影，验证 14 pt 正文可完整容纳 3 行 |
 | iphoneos 构建与导出 | 本次 Internal Debug archive/export 成功；版本 0.1（9）的 `SingleGreenInternal-Build9-M10.ipa` 已核验签名、内部 Bundle ID、能力标记和 SHA-256；历史 Release generic iphoneos build 仍为历史证据 | 测试包路径：`/Users/chenkemin/Documents/ChatGPT/单绿眼镜 Demo/测试包/Build-9-M10/SingleGreenInternal-Build9-M10.ipa`；构建与签名通过不等于具体设备 install/launch |
-| 发布与隐私门禁 | 本次已通过：secret scan、repository hygiene、privacy logging、VAD privacy、architecture gates 与 11 个负向 fixture、七 Package strict-concurrency/WAE 552/552、User Release Simulator build、diff whitespace 和 public API updater 安全自检 | 实际 public API baseline 已尝试但因当前 Xcode 26.5（17F42）/ Swift 6.3.2 低于锁定 Xcode 26.6（17F113）/ Swift 6.3.3 而按设计 fail-closed；未改写 baseline |
+| 发布与隐私门禁 | 本次已通过：secret scan、repository hygiene、privacy logging、VAD privacy、architecture gates 与 11 个负向 fixture、七 Package strict-concurrency/WAE 561/561、User Release Simulator build、diff whitespace 和 public API updater 安全自检 | 实际 public API baseline 按用户决定未运行，延期至 2026-09-02 在 Xcode 26.6（17F113）/ Swift 6.3.3 执行；本轮未改写 baseline |
 | Live provider | 未运行 | 未验证真实 DeepSeek、搜索、普通话 ASR、延迟、噪声或 one-shot auto-rotation 连续性 |
-| 物理设备 install/launch | 三行修复内部版 install 已通过；launch 因设备锁屏被系统拒绝 | `SingleGreenInternal` 已于 2026-08-31 覆盖安装到 `kemin‘s phone`；尚未人工确认手机画面，也未验证眼镜可读性、按键、音频路由、热与电量 |
+| 物理设备 install/launch | 本轮未运行，按用户决定延期至 2026-09-02 | 2026-08-31 有旧 checkout 的历史安装记录；不能证明当前 checkpoint/导入/删除、撤销、眼镜可读性、按键、音频路由、热与电量 |
 
 本次 checkout 的 Core/App 自动化、架构边界、严格并发和敏感信息扫描已刷新；公共 API 基线仍需在仓库锁定工具链上复验。真实普通话 ASR、50 字跃迁与撤销、物理设备显示、音频路由和人工可读性体验继续作为独立证据门。

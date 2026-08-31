@@ -5,7 +5,7 @@
 | 项目 | 内容 |
 | --- | --- |
 | 文档类型 | 详细实施计划 / 跨模块技术与产品路线 |
-| 当前状态 | In progress：M10-PR1 已完成；M10-PR2 本机可执行门禁已完成，锁定工具链复验待补；M10-PR3 测试包已生成，真机体验待用户执行；M11-PR1 已完成本机实现；M11-PR2 手机端一次性撤销及本机最终门禁已完成，锁定工具链审阅待补 |
+| 当前状态 | In progress：M10-PR1 已完成；M10-PR2 锁定工具链复验按用户决定延期至 2026-09-02；M10-PR3 真机体验同样延期；M11-PR1/PR2 已完成；M11-PR3 checkpoint/删除闭环与 M11-PR4 第一阶段 TXT/Markdown 导入已完成本机实现和最终门禁 |
 | 适用范围 | `SingleGreenDemo`、七个本地 Package、User/Internal 构建、未来真实眼镜 Host |
 | 起始基线 | 当前 M9 之后的工作树，包含尚未提交的提词器“向后 50 个规范化字符内唯一精确命中跃迁”改动 |
 | 目标读者 | 产品、架构、iOS、算法、QA、发布与设备验证参与者 |
@@ -56,11 +56,11 @@
 - 当前工作树已实现：从当前已读位置向前最多 50 个规范化字符搜索，唯一精确的 ASR 后缀命中可单事件跃迁；重复目标、窗口外目标和低可信目标保持当前位置。
 - “50 个字符”当前只计算字母、数字和 CJK；标点、空格、换行和 emoji 不占窗口。
 - 当前已具备自动化覆盖，但真实普通话、真实网络、真机音频和物理眼镜体验仍待验证。
-- 位置 checkpoint、删除闭环、TXT/Markdown 导入、长稿索引和离线评测集仍未完成；最近一次自动跃迁的手机端一次性撤销已实现。
+- 位置 checkpoint、删除闭环及 TXT/Markdown 导入已实现；长稿索引、离线评测集、DOCX/PDF/云盘导入仍未完成；最近一次自动跃迁的手机端一次性撤销已实现。
 
 ### 3.3 证据基线
 
-- 同一工作树最近一次 SingleGreenGlassesKit 为 256/256，SingleGreenUser App Simulator 为 86/86。
+- 同一工作树最近一次 SingleGreenGlassesKit 为 265/265，SingleGreenUser App Simulator 为 93/93。
 - 当前架构 inventory、import boundary 和 11 个负向 fixture 已通过。
 - 当前机器为 Xcode 26.5 / Swift 6.3.2，仓库锁定 Xcode 26.6 / Swift 6.3.3；公共 API 基线必须在锁定工具链重新执行。
 - 七个 Package 的覆盖率表属于此前测量基线；最新提词器变化后应重新测量受影响 Package，不能直接把历史数字作为当前结果。
@@ -92,6 +92,16 @@
 - Engine 聚焦 9/9、提词器聚焦 42/42、`SingleGreenGlassesKit` 严格并发/WAE 全量 256/256、七 Package 严格并发/WAE 共 552/552、SingleGreenUser App Simulator 86/86 均通过；User Release generic iOS Simulator build、7-Package inventory、架构边界与 11 个负向 fixture、隐私、secret、repository hygiene、diff whitespace 和 API updater 安全自检通过。
 - App 证据：`/tmp/SingleGreenDemo-M11-PR2-Final-AppTests/Logs/Test/Test-SingleGreenUser-2026.08.31_22-51-58-+0800.xcresult`，iPhone 17 Pro / iOS 26.5，0 failures，0 skips。
 - 实际 public API baseline 已尝试并按设计 fail-closed：当前 Xcode 26.5（17F42）/ Swift 6.3.2 低于锁定 Xcode 26.6（17F113）/ Swift 6.3.3，未生成或改写 baseline。未执行设备安装/启动、真实 ASR、物理眼镜或生产验证。
+
+### 3.7 M11-PR3/PR4 当前执行快照（2026-09-01）
+
+- Core 新增 versioned、纯值 `TeleprompterPositionCheckpoint`，只含 schema、稳定 script identity、单向确定性内容版本标识（非加密完整性证明）、句子索引和句内原稿 UTF-16 位置；不含 ASR、音频、凭证、文件路径或供应商 payload。
+- `TeleprompterCheckpointStore` 是 Controller 唯一持久化依赖；具体编码、本地 envelope、旧草稿迁移和单记录替换均位于 App 层。
+- 暂停、自动到稿尾、Controller 显式完成、App 后台与 Experience shutdown 是 checkpoint 写入边界；ASR partial/final 的普通位置变化和 reset 不直接写盘，相同位置写入由存储层去重。显式完成的手机/眼镜手势仍延期。
+- 仅 schema、script identity、内容版本和位置边界全部兼容时恢复；损坏、未知 schema、换稿、身份不符和越界均返回类型化拒绝并从安全默认位置开始。
+- 手机端删除需要二次确认；确认后以一个本地 envelope 替换同时清理稿件、checkpoint、预留索引缓存和本地评测缓存，并旋转 script identity。删除前先隔离 Session generation，迟到事件不能恢复稿件。
+- M11-PR4 第一阶段加入 TXT/Markdown 文件选择与 UTF-8 解析边界；解析器只接收 bytes、类型和当前正文，不接收文件名或完整路径。空文件、非法 UTF-8、超过 20,000 字、重复内容和不支持类型均返回明确结果，失败不覆盖当前稿件。
+- checkpoint 聚焦 4/4、提词器聚焦 47/47、SingleGreenGlassesKit strict-concurrency/WAE 265/265、七 Package 561/561、SingleGreenUser App Simulator 93/93 与 User Release Simulator build 均通过；架构、隐私、secret、repository hygiene、diff whitespace 与 API updater 安全自检通过。本轮未执行 public API baseline、真机 install/launch、真实 ASR 或物理眼镜验证；前两项已按用户决定延期到 2026-09-02。
 
 ## 4. 本计划的边界
 
@@ -346,6 +356,8 @@ jump(target, distance, confidence, evidence)
 - checkpoint 损坏时从安全默认位置启动并给出可恢复状态；
 - 删除稿件时同时删除稿件、索引、checkpoint 和关联的本地评测缓存。
 
+实施状态（2026-09-01）：纯值 schema/codec/resolver、抽象存储、生命周期写入、兼容恢复、单 envelope 原子删除、手机确认入口及 Core/App 聚焦测试已实现。眼镜断连尚无真实设备 Host 事件可接入；public API baseline 与真机复验延期至 2026-09-02。
+
 #### M11-PR4：稿件导入与 ScriptRepository
 
 第一阶段建议支持粘贴、TXT 和 Markdown；DOCX/PDF/云盘留到需求明确后。
@@ -357,6 +369,8 @@ jump(target, distance, confidence, evidence)
 - 导入失败不覆盖当前可用稿件；
 - 超长、空文件、编码异常和重复导入有明确结果；
 - 文件名和完整路径不进入遥测。
+
+实施状态（2026-09-01）：单稿件本地 repository envelope、旧 UserDefaults 草稿迁移、TXT/Markdown 文件选择和 UTF-8 解析已实现；导入失败保持当前稿件，重复导入为 no-op，超长文件明确拒绝而不静默截断。DOCX/PDF/云盘、多稿件列表和生产级索引仍延期。
 
 #### M11-PR5：离线评测集与性能基线
 
@@ -854,7 +868,46 @@ Core 只输出类型化、无内容事件：
 | 备选方案 | 常驻禁用按钮；短时提示条。 |
 | 影响范围 | 手机控制面板布局、可访问性标识与 UI 状态策略。 |
 | 回滚方式 | 改为常驻禁用或其他可逆呈现，不改变 Core/Controller 契约。 |
-| 证据状态 | App Simulator 策略测试及 App 全量 86/86 验证可见条件与集成回归；真机视觉层级与触达性待验证。 |
+| 证据状态 | App Simulator 策略测试及 App 全量 93/93 验证可见条件与集成回归；真机视觉层级与触达性待验证。 |
+
+### DEC-M11-004：稿件与派生数据使用单一版本化本地 envelope
+
+| 字段 | 内容 |
+| --- | --- |
+| 日期 / 里程碑 | 2026-09-01 / M11-PR3 |
+| 问题 | 稿件、checkpoint、索引与评测缓存分散存储会让删除出现部分成功和残留。 |
+| 所选方案 | App 层用一个 versioned local envelope 保存单稿件正文、稳定 identity、checkpoint bytes 和派生缓存；删除通过一次记录替换清空全部并旋转 identity。Controller 仅依赖 `TeleprompterCheckpointStore`。 |
+| 理由 | 单记录替换提供清晰的原子边界，避免 Controller 依赖 UserDefaults 或具体 schema，也为后续多稿件 repository 留出迁移入口。 |
+| 备选方案 | 多个 UserDefaults key 逐项删除；立即引入数据库或文件目录。 |
+| 影响范围 | checkpoint Core 契约、`TeleprompterSettings` 本地 envelope、App 组合、删除 UI 与迁移测试。 |
+| 回滚方式 | 保留 Core 协议，更换 App adapter；旧 envelope 可由新 adapter 读取后迁移，不需改变 Controller。 |
+| 证据状态 | Core/App 聚焦自动化覆盖 schema、旧草稿迁移、损坏、去重和完整删除；真机持久化与系统异常中断尚未验证。 |
+
+### DEC-M11-005：checkpoint 只在生命周期边界写入
+
+| 字段 | 内容 |
+| --- | --- |
+| 日期 / 里程碑 | 2026-09-01 / M11-PR3 |
+| 问题 | 每个 ASR partial 保存位置会造成高频写入，但仅 shutdown 保存又可能丢失过多进度。 |
+| 所选方案 | 在暂停、自动/显式完成、App 后台和 Experience shutdown 写入；普通 partial/final 位置变化和 reset 只更新内存，相同 checkpoint 由 adapter 返回 `unchanged`。 |
+| 理由 | 这些边界已有明确用户或宿主语义，能控制写入频率并保持恢复价值。当前没有真实眼镜断连事件，因此不虚构设备触发。 |
+| 备选方案 | 每个识别事件写入；固定时间轮询；只在 shutdown 写入。 |
+| 影响范围 | Controller 生命周期、checkpoint store、写入频率测试。 |
+| 回滚方式 | 后续在协议不变的情况下增加节流定时器或真实设备断连触发。 |
+| 证据状态 | fake store 已证明 partial 不写、边界写入和相同位置去重；真实系统终止、功耗和磁盘行为未验证。 |
+
+### DEC-M11-006：超长导入明确拒绝，不静默截断
+
+| 字段 | 内容 |
+| --- | --- |
+| 日期 / 里程碑 | 2026-09-01 / M11-PR4 |
+| 问题 | TXT/Markdown 超过 20,000 字时应截断、分页导入还是拒绝？ |
+| 所选方案 | 第一阶段返回明确的超长拒绝结果，并保持当前稿件不变。手工编辑仍沿用既有字符上限保护。 |
+| 理由 | 静默截断会让用户误以为全文已导入；分块与多稿件需要独立产品和 repository 设计。 |
+| 备选方案 | 静默截断；自动拆分；提高上限。 |
+| 影响范围 | App import parser、结果文案与自动化。 |
+| 回滚方式 | 后续加入可审阅的拆分预览，不改变 Core checkpoint 或 Controller。 |
+| 证据状态 | App Simulator 自动化覆盖 TXT/Markdown、空白、非法 UTF-8、超长、重复和不支持类型；真实文件提供器与真机权限流程未验证。 |
 
 ### DEC-PLATFORM-001：低风险可逆判断采用推荐方案并连续留痕
 
@@ -874,7 +927,7 @@ Core 只输出类型化、无内容事件：
 以下事项不阻塞 M10 文档与代码基线，但会影响后续行为：
 
 1. Search 失败后是否允许模型在明确声明“未获取实时信息”的情况下继续回答；
-2. checkpoint 的保存周期、稿件列表和删除交互；
+2. 多稿件列表、保留周期和跨设备同步；当前单稿件 checkpoint 与删除交互已实现；
 3. TXT/Markdown 之后是否需要 DOCX、PDF 或云盘导入；
 4. 真实眼镜 SDK、协议、硬件参数和样机可用时间；
 5. 遥测上传、保留周期、用户同意和运营平台；
@@ -884,11 +937,11 @@ Core 只输出类型化、无内容事件：
 
 ## 22. 推荐立即启动的前三个任务
 
-1. 在锁定工具链执行 M10-PR2，并审阅 M11-PR1 新增的 public API：七 Package、App、双架构 public API 和 Release build。
-2. 在获准环境补 M11-PR2 真机手机按钮、真实 ASR 跃迁和 rollover 连续性体验。
-3. 启动 M11-PR5 离线评测夹具与基线采集，先建立 50/51 字、重复短语、partial 修订和长稿性能证据。
+1. 2026-09-02 在锁定 Xcode 26.6 / Swift 6.3.3 环境审阅 M11 新增 public API baseline；同日再补真机 checkpoint/导入/删除与 M11-PR2 撤销体验，不在本批次自动执行设备操作。
+2. 启动 M11-PR5 离线评测夹具与基线采集，先建立 50/51 字、重复短语、partial 修订和长稿性能证据。
+3. 评审多稿件 ScriptRepository、长稿索引和导入拆分；DOCX/PDF/云盘继续保持待确认（责任方未指定）。
 
-M11-PR1 与 M11-PR2 已完成当前主机可执行的实现与最终门禁。完成锁定工具链 API 审阅后，可继续 checkpoint、导入与 M12 音频/ASR Target 拆分；真机与真实服务仍保持独立验收。
+M11-PR1–PR4 第一阶段已完成当前主机可执行的实现与最终门禁。锁定工具链、真机、真实 ASR 与物理眼镜继续作为 2026-09-02 之后的独立证据门，不阻塞当前本机提交。
 
 ## 23. 参考来源
 
