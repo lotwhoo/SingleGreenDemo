@@ -17,6 +17,8 @@ struct HUDFlowingTextView: View {
     let usesCompleteLineTail: Bool
     let alignsCompleteLinesToTop: Bool
     let completeLineFocusUTF16Offset: Int?
+    let completeLineTransitionDuration: TimeInterval
+    let completeLineRunResolver: ((String, [NSRange], Int) -> [HUDTextRun])?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var contentHeight: CGFloat = 0
@@ -59,11 +61,11 @@ struct HUDFlowingTextView: View {
             }
             let selectedRuns: [HUDTextRun]? = if usesCompleteLineTail,
                                                    let completeLineFocusUTF16Offset,
-                                                   selection.lineUTF16Ranges.count == 3 {
-                HUDTeleprompterLineRunPolicy.visibleRuns(
-                    fullText: text,
-                    selectedLineUTF16Ranges: selection.lineUTF16Ranges,
-                    focusUTF16Offset: completeLineFocusUTF16Offset
+                                                   let completeLineRunResolver {
+                completeLineRunResolver(
+                    text,
+                    selection.lineUTF16Ranges,
+                    completeLineFocusUTF16Offset
                 )
             } else {
                 textRuns.map {
@@ -204,7 +206,7 @@ struct HUDFlowingTextView: View {
         .animation(
             reduceMotion
                 ? nil
-                : .easeOut(duration: HUDFlowingTextViewportPolicy.teleprompterFollowAnimationDuration),
+                : .easeOut(duration: completeLineTransitionDuration),
             value: transitionID
         )
     }
@@ -252,9 +254,8 @@ struct HUDFlowingTextView: View {
 
 enum HUDFlowingTextViewportPolicy {
     static let answerVisibleLineCount = 2
-    static let teleprompterVisibleLineCount = 3
     static let answerOverflowAnimationDuration: TimeInterval = 0.30
-    static let teleprompterFollowAnimationDuration: TimeInterval = 0.18
+    static let completeLineTransitionDuration: TimeInterval = 0.18
 
     static func viewportHeight(
         availableHeight: CGFloat,
@@ -285,39 +286,7 @@ enum HUDFlowingTextViewportPolicy {
     }
 
     static func usesCompleteLineTail(sceneID: String, elementID: String) -> Bool {
-        (sceneID == "text_adventure.green_signal" && elementID == "game_body")
-            || (sceneID == "teleprompter.asr" && elementID == "teleprompter_body")
-    }
-
-    static func alignsCompleteLinesToTop(sceneID: String, elementID: String) -> Bool {
-        sceneID == "teleprompter.asr" && elementID == "teleprompter_body"
-    }
-
-    static func completeLineFocusUTF16Offset(
-        text: String,
-        sceneID: String,
-        elementID: String
-    ) -> Int? {
-        guard sceneID == "teleprompter.asr",
-              elementID == "teleprompter_body" else { return nil }
-        let firstParagraphBreak = (text as NSString).range(of: "\n")
-        guard firstParagraphBreak.location != NSNotFound else { return 0 }
-        return NSMaxRange(firstParagraphBreak)
-    }
-
-    static func completeLineFocusUTF16Offset(
-        runs: [HUDTextRun],
-        sceneID: String,
-        elementID: String
-    ) -> Int? {
-        guard sceneID == "teleprompter.asr",
-              elementID == "teleprompter_body" else { return nil }
-        var offset = 0
-        for run in runs {
-            if run.isFocused { return offset }
-            offset += (run.text as NSString).length
-        }
-        return nil
+        sceneID == "text_adventure.green_signal" && elementID == "game_body"
     }
 }
 
@@ -507,40 +476,6 @@ enum HUDCompleteLineTextPolicy {
     private struct LineFragment {
         let range: NSRange
         let usedRect: CGRect
-    }
-}
-
-/// The teleprompter is a semantic three-line window: the complete line before
-/// the ASR focus is read, the focus line is current, and the following line is
-/// unread. Coloring measured TextKit line fragments here prevents a long
-/// sentence from consuming two bright "current" rows.
-enum HUDTeleprompterLineRunPolicy {
-    static func visibleRuns(
-        fullText: String,
-        selectedLineUTF16Ranges: [NSRange],
-        focusUTF16Offset: Int
-    ) -> [HUDTextRun] {
-        guard selectedLineUTF16Ranges.count == 3 else { return [] }
-        let focusLineIndex = selectedLineUTF16Ranges.firstIndex {
-            focusUTF16Offset >= $0.location
-                && focusUTF16Offset < NSMaxRange($0)
-        } ?? 1
-
-        return selectedLineUTF16Ranges.enumerated().compactMap { index, lineRange in
-            guard let range = Range(lineRange, in: fullText) else { return nil }
-            let opacity = if index < focusLineIndex {
-                0.32
-            } else if index == focusLineIndex {
-                1.0
-            } else {
-                0.68
-            }
-            return HUDTextRun(
-                text: String(fullText[range]),
-                opacity: opacity,
-                isFocused: index == focusLineIndex
-            )
-        }
     }
 }
 

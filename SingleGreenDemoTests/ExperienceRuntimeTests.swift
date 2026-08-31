@@ -542,20 +542,14 @@ final class ExperienceRuntimeTests: XCTestCase {
     }
 
     func testTeleprompterViewportUsesExactlyThreeMeasuredCompleteLines() {
-        XCTAssertEqual(HUDFlowingTextViewportPolicy.teleprompterVisibleLineCount, 3)
+        XCTAssertEqual(TeleprompterHUDStyle.visibleLineCount, 3)
+        XCTAssertEqual(TeleprompterHUDStyle.bodyFontSize, 14)
         XCTAssertEqual(
-            HUDFlowingTextViewportPolicy.teleprompterFollowAnimationDuration,
+            TeleprompterHUDStyle.followAnimationDuration,
             0.18,
             accuracy: 0.000_001
         )
-        XCTAssertTrue(HUDFlowingTextViewportPolicy.usesCompleteLineTail(
-            sceneID: "teleprompter.asr",
-            elementID: "teleprompter_body"
-        ))
-        XCTAssertTrue(HUDFlowingTextViewportPolicy.alignsCompleteLinesToTop(
-            sceneID: "teleprompter.asr",
-            elementID: "teleprompter_body"
-        ))
+        XCTAssertEqual(TeleprompterHUDStyle.sceneID, "teleprompter.asr")
         XCTAssertEqual(
             HUDFlowingTextViewportPolicy.completeLineViewportHeight(
                 availableHeight: 91,
@@ -574,20 +568,52 @@ final class ExperienceRuntimeTests: XCTestCase {
             48,
             accuracy: 0.000_001
         )
-        XCTAssertFalse(HUDFlowingTextViewportPolicy.usesCompleteLineTail(
-            sceneID: "teleprompter.asr",
-            elementID: "teleprompter_footer"
-        ))
         XCTAssertEqual(
-            HUDFlowingTextViewportPolicy.completeLineFocusUTF16Offset(
-                runs: [
+            TeleprompterHUDStyle.focusUTF16Offset(
+                in: [
                     HUDTextRun(text: "▸ 当前句", isFocused: true),
                     HUDTextRun(text: "\n  下一句", opacity: 0.68)
-                ],
-                sceneID: "teleprompter.asr",
-                elementID: "teleprompter_body"
+                ]
             ),
             0
+        )
+    }
+
+    func testDefaultIPhonePreviewFitsThreeTeleprompterLines() throws {
+        let profile = DisplayProfileCatalog.builtIn.defaultProfile
+        let projection = HUDPreviewProjection(profile: profile)
+        let surfaceSize = projection.surfaceSize(
+            in: CGSize(width: 440, height: 956)
+        )
+        let surfaceBounds = CGRect(origin: .zero, size: surfaceSize)
+        let viewport = profile.viewport.rect(in: surfaceBounds)
+        let safeRect = profile.safeArea.inset(viewport)
+        let script = try TeleprompterScript("已读文字。正在读文字。未读文字。")
+        let scene = TeleprompterHUDMapper.scene(
+            for: TeleprompterState(
+                script: script,
+                sentenceIndex: 1,
+                phase: .listening
+            ),
+            revision: 1
+        )
+        let body = try XCTUnwrap(
+            scene.elements.first { $0.id == "teleprompter_body" }
+        )
+        let bodyRect = body.frame.rect(in: safeRect)
+        let lineHeight = TeleprompterHUDStyle.bodyUIFont(
+            textScale: profile.textScale
+        ).lineHeight
+
+        XCTAssertGreaterThanOrEqual(bodyRect.height, lineHeight * 3)
+        XCTAssertEqual(
+            HUDFlowingTextViewportPolicy.completeLineViewportHeight(
+                availableHeight: bodyRect.height,
+                lineHeight: lineHeight,
+                maximumLineCount: 3
+            ),
+            lineHeight * 3,
+            accuracy: 0.001
         )
     }
 
@@ -668,15 +694,41 @@ final class ExperienceRuntimeTests: XCTestCase {
         XCTAssertEqual(runs.map(\.text).joined(), selection.text)
     }
 
+    func testTeleprompterTuningChangesDepthWithoutChangingThreeLineContract() {
+        let text = "已读行\n正在读行\n未读行"
+        let ranges = [
+            NSRange(location: 0, length: 4),
+            NSRange(location: 4, length: 5),
+            NSRange(location: 9, length: 3)
+        ]
+        let tuning = TeleprompterHUDTuning(
+            bodyFontSize: 16,
+            readOpacity: 0.20,
+            currentOpacity: 0.90,
+            unreadOpacity: 0.55,
+            followAnimationDuration: 0.30,
+            glowOpacity: 0.10,
+            glowRadius: 2
+        )
+
+        let runs = HUDTeleprompterLineRunPolicy.visibleRuns(
+            fullText: text,
+            selectedLineUTF16Ranges: ranges,
+            focusUTF16Offset: 4,
+            tuning: tuning
+        )
+
+        XCTAssertEqual(runs.count, 3)
+        XCTAssertEqual(runs.map(\.opacity), [0.20, 0.90, 0.55])
+        XCTAssertEqual(runs.map(\.isFocused), [false, true, false])
+        XCTAssertEqual(runs.map(\.text).joined(), text)
+    }
+
     func testCompleteLinePolicyUsesStructuralParagraphOffsetInsteadOfAuthoredMarker() {
         let font = UIFont.systemFont(ofSize: 17, weight: .medium)
         let text = "  用户正文包含 ▸ 符号\n▸ 当前行\n  下一行\n  不应出现"
         let focusOffset = try! XCTUnwrap(
-            HUDFlowingTextViewportPolicy.completeLineFocusUTF16Offset(
-                text: text,
-                sceneID: "teleprompter.asr",
-                elementID: "teleprompter_body"
-            )
+            TeleprompterHUDStyle.focusUTF16Offset(in: text)
         )
 
         let visible = HUDCompleteLineTextPolicy.visibleText(
@@ -699,11 +751,7 @@ final class ExperienceRuntimeTests: XCTestCase {
         let font = UIFont.systemFont(ofSize: 17, weight: .medium)
         let text = "  上一句很长很长很长 ▸ 用户原文\n▸ 当前句\n  下一句"
         let focusOffset = try XCTUnwrap(
-            HUDFlowingTextViewportPolicy.completeLineFocusUTF16Offset(
-                text: text,
-                sceneID: "teleprompter.asr",
-                elementID: "teleprompter_body"
-            )
+            TeleprompterHUDStyle.focusUTF16Offset(in: text)
         )
 
         let visible = HUDCompleteLineTextPolicy.visibleText(
@@ -733,11 +781,7 @@ final class ExperienceRuntimeTests: XCTestCase {
         ]
         let text = runs.map(\.text).joined()
         let focusOffset = try XCTUnwrap(
-            HUDFlowingTextViewportPolicy.completeLineFocusUTF16Offset(
-                runs: runs,
-                sceneID: "teleprompter.asr",
-                elementID: "teleprompter_body"
-            )
+            TeleprompterHUDStyle.focusUTF16Offset(in: runs)
         )
         let selection = HUDCompleteLineTextPolicy.visibleSelection(
             text,

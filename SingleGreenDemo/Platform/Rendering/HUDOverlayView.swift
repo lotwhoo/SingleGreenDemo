@@ -12,6 +12,27 @@ struct HUDOverlayView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
+        Group {
+            if scene.sceneID == TeleprompterHUDStyle.sceneID {
+                TeleprompterHUDView(
+                    scene: scene,
+                    profile: profile,
+                    intensity: intensity,
+                    showsSafeArea: showsSafeArea
+                )
+            } else {
+                genericOverlay
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(
+            scene.sceneID != "ai_conversation"
+                && scene.sceneID != "text_adventure.green_signal"
+                && scene.sceneID != TeleprompterHUDStyle.sceneID
+        )
+    }
+
+    private var genericOverlay: some View {
         GeometryReader { proxy in
             let bounds = CGRect(origin: .zero, size: proxy.size)
             let viewport = profile.viewport.rect(in: bounds)
@@ -61,12 +82,6 @@ struct HUDOverlayView: View {
                 radius: 3
             )
         }
-        .allowsHitTesting(false)
-        .accessibilityHidden(
-            scene.sceneID != "ai_conversation"
-                && scene.sceneID != "text_adventure.green_signal"
-                && scene.sceneID != "teleprompter.asr"
-        )
     }
 
     @ViewBuilder
@@ -98,68 +113,62 @@ struct HUDOverlayView: View {
                 platformFont: nil,
                 usesCompleteLineTail: false,
                 alignsCompleteLinesToTop: false,
-                completeLineFocusUTF16Offset: nil
+                completeLineFocusUTF16Offset: nil,
+                completeLineTransitionDuration: HUDFlowingTextViewportPolicy.completeLineTransitionDuration,
+                completeLineRunResolver: nil
             )
 
         case let .styledFlowingText(value, isStreaming, footer, style):
+            let platformFont = uiFont(for: style)
             HUDFlowingTextView(
                 text: value,
                 textRuns: nil,
                 isStreaming: isStreaming,
                 footer: footer,
-                font: font(for: style),
+                font: Font(platformFont),
                 cursorColor: profile.tintColor.opacity(intensity),
                 visibleLineCount: style == .answer
                     ? HUDFlowingTextViewportPolicy.answerVisibleLineCount
-                    : teleprompterVisibleLineCount(for: element.id),
+                    : nil,
                 lineHeight: style == .answer
                     ? answerLineHeight
-                    : gameNarrativeLineHeight,
-                platformFont: uiFont(for: style),
+                    : platformFont.lineHeight,
+                platformFont: platformFont,
                 usesCompleteLineTail: HUDFlowingTextViewportPolicy.usesCompleteLineTail(
                     sceneID: scene.sceneID,
                     elementID: element.id
                 ),
-                alignsCompleteLinesToTop: HUDFlowingTextViewportPolicy.alignsCompleteLinesToTop(
-                    sceneID: scene.sceneID,
-                    elementID: element.id
-                ),
-                completeLineFocusUTF16Offset: HUDFlowingTextViewportPolicy.completeLineFocusUTF16Offset(
-                    text: value,
-                    sceneID: scene.sceneID,
-                    elementID: element.id
-                )
+                alignsCompleteLinesToTop: false,
+                completeLineFocusUTF16Offset: nil,
+                completeLineTransitionDuration: HUDFlowingTextViewportPolicy.completeLineTransitionDuration,
+                completeLineRunResolver: nil
             )
 
         case let .styledFlowingTextRuns(runs, isStreaming, footer, style):
             let value = runs.map(\.text).joined()
+            let platformFont = uiFont(for: style)
             HUDFlowingTextView(
                 text: value,
                 textRuns: runs,
                 isStreaming: isStreaming,
                 footer: footer,
-                font: font(for: style),
+                font: Font(platformFont),
                 cursorColor: profile.tintColor.opacity(intensity),
                 visibleLineCount: style == .answer
                     ? HUDFlowingTextViewportPolicy.answerVisibleLineCount
-                    : teleprompterVisibleLineCount(for: element.id),
+                    : nil,
                 lineHeight: style == .answer
                     ? answerLineHeight
-                    : gameNarrativeLineHeight,
-                platformFont: uiFont(for: style),
+                    : platformFont.lineHeight,
+                platformFont: platformFont,
                 usesCompleteLineTail: HUDFlowingTextViewportPolicy.usesCompleteLineTail(
                     sceneID: scene.sceneID,
                     elementID: element.id
                 ),
-                alignsCompleteLinesToTop: HUDFlowingTextViewportPolicy.alignsCompleteLinesToTop(
-                    sceneID: scene.sceneID,
-                    elementID: element.id
-                ),
-                completeLineFocusUTF16Offset: HUDFlowingTextViewportPolicy.completeLineFocusUTF16Offset(
-                    runs: runs,
-                    sceneID: scene.sceneID,
-                    elementID: element.id
-                )
+                alignsCompleteLinesToTop: false,
+                completeLineFocusUTF16Offset: nil,
+                completeLineTransitionDuration: HUDFlowingTextViewportPolicy.completeLineTransitionDuration,
+                completeLineRunResolver: nil
             )
 
         case let .symbol(name):
@@ -225,16 +234,6 @@ struct HUDOverlayView: View {
 
     private var answerLineHeight: CGFloat {
         24 * profile.textScale
-    }
-
-    private var gameNarrativeLineHeight: CGFloat {
-        uiFont(for: .detail).lineHeight
-    }
-
-    private func teleprompterVisibleLineCount(for elementID: String) -> Int? {
-        guard scene.sceneID == "teleprompter.asr",
-              elementID == "teleprompter_body" else { return nil }
-        return HUDFlowingTextViewportPolicy.teleprompterVisibleLineCount
     }
 
     private func lineLimit(for style: HUDTextStyle) -> Int {

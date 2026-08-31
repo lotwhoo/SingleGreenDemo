@@ -48,7 +48,7 @@ public enum TeleprompterHUDMapper {
         if isCompleted {
             bodyRuns = [
                 HUDTextRun(text: previous, opacity: 0.32),
-                HUDTextRun(text: "✓" + currentSentence + "\n", opacity: 0.32, isFocused: true),
+                HUDTextRun(text: currentSentence + "\n", opacity: 0.32, isFocused: true),
                 HUDTextRun(text: "已读完", opacity: 0.68)
             ].filter { !$0.text.isEmpty }
         } else {
@@ -62,7 +62,7 @@ public enum TeleprompterHUDMapper {
             bodyRuns = [
                 HUDTextRun(text: previous, opacity: 0.32),
                 spokenRun,
-                HUDTextRun(text: "▸" + unread, opacity: 1, isFocused: true),
+                HUDTextRun(text: unread, opacity: 1, isFocused: true),
                 HUDTextRun(text: next, opacity: 0.68)
             ].compactMap { $0 }.filter { !$0.text.isEmpty }
         }
@@ -82,15 +82,18 @@ public enum TeleprompterHUDMapper {
             elements: [
                 HUDElement(
                     id: "teleprompter_header",
-                    frame: NormalizedRect(x: 0.03, y: 0.03, width: 0.94, height: 0.14),
-                    content: .text("提词  \(index + 1)/\(script.sentences.count)", .caption),
+                    frame: NormalizedRect(x: 0.03, y: 0.02, width: 0.94, height: 0.12),
+                    content: .text(
+                        "提词  \(index + 1)/\(script.sentences.count) · \(status)",
+                        .caption
+                    ),
                     opacity: 1,
                     alignment: .leading,
                     semanticRole: .status
                 ),
                 HUDElement(
                     id: "teleprompter_body",
-                    frame: NormalizedRect(x: 0.03, y: 0.20, width: 0.94, height: 0.58),
+                    frame: NormalizedRect(x: 0.03, y: 0.17, width: 0.94, height: 0.80),
                     content: .styledFlowingTextRuns(
                         bodyRuns,
                         isStreaming: false,
@@ -99,14 +102,6 @@ public enum TeleprompterHUDMapper {
                     ),
                     opacity: 1,
                     alignment: .leading
-                ),
-                HUDElement(
-                    id: "teleprompter_footer",
-                    frame: NormalizedRect(x: 0.03, y: 0.81, width: 0.94, height: 0.14),
-                    content: .text(status, .caption),
-                    opacity: 1,
-                    alignment: .leading,
-                    semanticRole: .status
                 )
             ]
         )

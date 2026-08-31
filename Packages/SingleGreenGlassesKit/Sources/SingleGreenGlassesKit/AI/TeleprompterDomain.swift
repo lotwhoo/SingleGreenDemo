@@ -10,7 +10,8 @@ public enum TeleprompterScriptError: Error, Equatable, Sendable {
 }
 
 /// An immutable, locally segmented script. Segmentation keeps terminal
-/// punctuation so the HUD preserves the author's speaking rhythm.
+/// punctuation, removes layout whitespace, and renders each authored paragraph
+/// boundary as exactly one slash so the HUD never needs a blank display row.
 public struct TeleprompterScript: Equatable, Sendable {
     public let source: String
     public let sentences: [String]
@@ -27,6 +28,7 @@ public struct TeleprompterScript: Equatable, Sendable {
     private static func segment(_ source: String) -> [String] {
         var result: [String] = []
         var buffer = ""
+        var hasPendingParagraphBreak = false
         let terminalCharacters: Set<Character> = ["。", "！", "？", "!", "?", "；", ";"]
 
         func flush() {
@@ -36,17 +38,49 @@ public struct TeleprompterScript: Equatable, Sendable {
         }
 
         for character in source {
-            if character.isWhitespace {
-                // The single-green HUD treats every whitespace character as a
-                // layout artifact. Newlines, blank paragraphs, spaces and tabs
-                // never create a spoken boundary or an empty display row.
+            if isLineBreak(character) {
+                if !buffer.isEmpty || !result.isEmpty {
+                    hasPendingParagraphBreak = true
+                }
                 continue
             }
+            if character.isWhitespace {
+                // Spaces and tabs are layout artifacts on the single-green HUD.
+                continue
+            }
+
+            if hasPendingParagraphBreak {
+                if !buffer.isEmpty {
+                    if buffer.last != "/", character != "/" { buffer.append("/") }
+                    flush()
+                } else if !result.isEmpty,
+                          !result[result.count - 1].hasSuffix("/"),
+                          character != "/" {
+                    result[result.count - 1].append("/")
+                }
+                hasPendingParagraphBreak = false
+            }
+
+            if character == "/" {
+                if !buffer.isEmpty {
+                    if buffer.last != "/" { buffer.append("/") }
+                    flush()
+                } else if !result.isEmpty,
+                          !result[result.count - 1].hasSuffix("/") {
+                    result[result.count - 1].append("/")
+                }
+                continue
+            }
+
             buffer.append(character)
             if terminalCharacters.contains(character) { flush() }
         }
         flush()
         return result
+    }
+
+    private static func isLineBreak(_ character: Character) -> Bool {
+        character.unicodeScalars.contains { CharacterSet.newlines.contains($0) }
     }
 }
 
