@@ -54,6 +54,12 @@ write_internal_fixture() {
         echo 'debug_toggle_button'
         echo 'DiagnosticsPanelView'
         echo 'ConversationTelemetryStore'
+        echo 'InternalVoiceActivatedDiagnosticsSession'
+        echo 'vad-diagnostics-live-wiring-v2'
+        echo 'InternalTeleprompterASRDiagnosticsSession'
+        echo 'teleprompter-asr-diagnostics-live-wiring-v1'
+        echo 'schema=v2'
+        echo '[vad]'
         echo 'SingleGreenDemo diagnostics'
         echo 'DemoKeychainCredentialProvider'
         echo 'DemoSpeechCredentialProvider'
@@ -125,6 +131,26 @@ write_user_fixture "$user_export_type"
 printf '%s\n' 'ConversationTelemetryStore' >>"$user_export_type/SingleGreenDemo"
 expect_fail "User artifact with diagnostics implementation type" "$user_check" "$user_export_type"
 
+user_vad_diagnostics="$temp_root/UserVADDiagnostics.app"
+write_user_fixture "$user_vad_diagnostics"
+printf '%s\n' 'InternalVoiceActivatedDiagnosticsSession' >>"$user_vad_diagnostics/SingleGreenDemo"
+expect_fail "User artifact with VAD diagnostics implementation marker" "$user_check" "$user_vad_diagnostics"
+
+user_vad_wiring="$temp_root/UserVADWiring.app"
+write_user_fixture "$user_vad_wiring"
+printf '%s\n' 'vad-diagnostics-live-wiring-v2' >>"$user_vad_wiring/SingleGreenDemo"
+expect_fail "User artifact with VAD diagnostics live-wiring marker" "$user_check" "$user_vad_wiring"
+
+user_teleprompter_diagnostics="$temp_root/UserTeleprompterDiagnostics.app"
+write_user_fixture "$user_teleprompter_diagnostics"
+printf '%s\n' 'InternalTeleprompterASRDiagnosticsSession' >>"$user_teleprompter_diagnostics/SingleGreenDemo"
+expect_fail "User artifact with teleprompter ASR diagnostics implementation marker" "$user_check" "$user_teleprompter_diagnostics"
+
+user_teleprompter_wiring="$temp_root/UserTeleprompterWiring.app"
+write_user_fixture "$user_teleprompter_wiring"
+printf '%s\n' 'teleprompter-asr-diagnostics-live-wiring-v1' >>"$user_teleprompter_wiring/SingleGreenDemo"
+expect_fail "User artifact with teleprompter ASR diagnostics live-wiring marker" "$user_check" "$user_teleprompter_wiring"
+
 user_credentials="$temp_root/UserCredentials.app"
 write_user_fixture "$user_credentials"
 printf '%s\n' 'DemoCredentialStore' >>"$user_credentials/SingleGreenDemo"
@@ -172,6 +198,30 @@ write_internal_fixture "$internal_no_diagnostics"
 grep -v 'DiagnosticsPanelView' "$internal_no_diagnostics/SingleGreenDemo" >"$temp_root/internal-no-diagnostics"
 mv "$temp_root/internal-no-diagnostics" "$internal_no_diagnostics/SingleGreenDemo"
 expect_fail "Internal artifact without diagnostics implementation marker" "$internal_check" "$internal_no_diagnostics"
+
+internal_no_vad_diagnostics="$temp_root/InternalNoVADDiagnostics.app"
+write_internal_fixture "$internal_no_vad_diagnostics"
+grep -v 'InternalVoiceActivatedDiagnosticsSession' "$internal_no_vad_diagnostics/SingleGreenDemo" >"$temp_root/internal-no-vad-diagnostics"
+mv "$temp_root/internal-no-vad-diagnostics" "$internal_no_vad_diagnostics/SingleGreenDemo"
+expect_fail "Internal artifact without VAD diagnostics implementation marker" "$internal_check" "$internal_no_vad_diagnostics"
+
+internal_no_vad_wiring="$temp_root/InternalNoVADWiring.app"
+write_internal_fixture "$internal_no_vad_wiring"
+grep -v 'vad-diagnostics-live-wiring-v2' "$internal_no_vad_wiring/SingleGreenDemo" >"$temp_root/internal-no-vad-wiring"
+mv "$temp_root/internal-no-vad-wiring" "$internal_no_vad_wiring/SingleGreenDemo"
+expect_fail "Internal artifact without VAD diagnostics live-wiring marker" "$internal_check" "$internal_no_vad_wiring"
+
+internal_no_teleprompter_diagnostics="$temp_root/InternalNoTeleprompterDiagnostics.app"
+write_internal_fixture "$internal_no_teleprompter_diagnostics"
+grep -v 'InternalTeleprompterASRDiagnosticsSession' "$internal_no_teleprompter_diagnostics/SingleGreenDemo" >"$temp_root/internal-no-teleprompter-diagnostics"
+mv "$temp_root/internal-no-teleprompter-diagnostics" "$internal_no_teleprompter_diagnostics/SingleGreenDemo"
+expect_fail "Internal artifact without teleprompter ASR diagnostics implementation marker" "$internal_check" "$internal_no_teleprompter_diagnostics"
+
+internal_no_teleprompter_wiring="$temp_root/InternalNoTeleprompterWiring.app"
+write_internal_fixture "$internal_no_teleprompter_wiring"
+grep -v 'teleprompter-asr-diagnostics-live-wiring-v1' "$internal_no_teleprompter_wiring/SingleGreenDemo" >"$temp_root/internal-no-teleprompter-wiring"
+mv "$temp_root/internal-no-teleprompter-wiring" "$internal_no_teleprompter_wiring/SingleGreenDemo"
+expect_fail "Internal artifact without teleprompter ASR diagnostics live-wiring marker" "$internal_check" "$internal_no_teleprompter_wiring"
 
 internal_no_export="$temp_root/InternalNoExport.app"
 write_internal_fixture "$internal_no_export"

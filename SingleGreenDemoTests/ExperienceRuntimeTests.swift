@@ -1049,11 +1049,11 @@ final class ExperienceRuntimeTests: XCTestCase {
         XCTAssertEqual(store.events.last?.phase, .lifecycle)
     }
 
-    func testDiagnosticsExportMatchesBuildCapability() throws {
+    func testDiagnosticsExportMatchesBuildCapability() async throws {
         let store = ConversationTelemetryStore(capacity: 2)
         store.record(category: "test", message: "safe-code-only")
 
-        let url = try store.makeExportURL()
+        let url = try await store.makeExportURL()
         let contents = try String(contentsOf: url, encoding: .utf8)
         XCTAssertTrue(contents.contains("safe-code-only"))
         XCTAssertFalse(contents.contains("apiKey"))

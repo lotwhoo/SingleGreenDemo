@@ -268,6 +268,65 @@ final class TeleprompterTests: XCTestCase {
         XCTAssertEqual(controller.state.sentenceIndex, 0)
     }
 
+    func testEnablingConsentClearsOnlyStaleConsentErrorAndWaitsForExplicitRetry() async throws {
+        var isAllowed = false
+        var permissionRequests = 0
+        var sessionPreparations = 0
+        let script = try TeleprompterScript("第一句。第二句。")
+        let controller = TeleprompterController(
+            script: script,
+            dependencies: .init(
+                prepareSpeechSession: {
+                    sessionPreparations += 1
+                    return TeleprompterFakeSpeechSession()
+                },
+                requestMicrophonePermission: {
+                    permissionRequests += 1
+                    return true
+                },
+                cloudSpeechRecognitionAllowed: { isAllowed }
+            )
+        )
+
+        await controller.toggleFollowing()
+        XCTAssertEqual(controller.state.phase, .manualFallback)
+        XCTAssertNotNil(controller.state.userSafeError)
+
+        isAllowed = true
+        await controller.updateCloudSpeechRecognitionConsent(true)
+
+        XCTAssertEqual(controller.state.phase, .manualFallback)
+        XCTAssertNil(controller.state.userSafeError)
+        XCTAssertEqual(permissionRequests, 0)
+        XCTAssertEqual(sessionPreparations, 0)
+
+        await controller.toggleFollowing()
+        XCTAssertEqual(controller.state.phase, .listening)
+        XCTAssertEqual(permissionRequests, 1)
+        XCTAssertEqual(sessionPreparations, 1)
+    }
+
+    func testEnablingConsentDoesNotClearUnrelatedManualFallbackError() async throws {
+        let script = try TeleprompterScript("第一句。第二句。")
+        let controller = TeleprompterController(
+            script: script,
+            dependencies: .init(
+                prepareSpeechSession: { TeleprompterFakeSpeechSession() },
+                requestMicrophonePermission: { false },
+                cloudSpeechRecognitionAllowed: { true }
+            )
+        )
+
+        await controller.toggleFollowing()
+        let microphoneError = controller.state.userSafeError
+        XCTAssertEqual(controller.state.phase, .manualFallback)
+
+        await controller.updateCloudSpeechRecognitionConsent(true)
+
+        XCTAssertEqual(controller.state.phase, .manualFallback)
+        XCTAssertEqual(controller.state.userSafeError, microphoneError)
+    }
+
     func testFinalUtteranceAdvancesImmediatelyAndFailureKeepsAnchorInManualMode() async {
         let session = TeleprompterFakeSpeechSession()
         let controller = makeController(session: session)

@@ -14649,6 +14649,3707 @@
                 "accessorKind": "get",
                 "children": [
                   {
+                    "kind": "TypeNominal",
+                    "name": "UInt64",
+                    "printedName": "Swift.UInt64",
+                    "usr": "s:s6UInt64V"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s13VoiceChatCore0A29ActivatedASRDiagnosticContextV10runOrdinals6UInt64Vvg",
+                "moduleName": "VoiceChatCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:13VoiceChatCore0A29ActivatedASRDiagnosticContextV10runOrdinals6UInt64Vvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UInt64",
+                "printedName": "Swift.UInt64",
+                "usr": "s:s6UInt64V"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A29ActivatedASRDiagnosticContextV10runOrdinals6UInt64Vvp",
+            "moduleName": "VoiceChatCore",
+            "name": "runOrdinal",
+            "printedName": "runOrdinal",
+            "usr": "s:13VoiceChatCore0A29ActivatedASRDiagnosticContextV10runOrdinals6UInt64Vvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UInt64",
+                    "printedName": "Swift.UInt64",
+                    "usr": "s:s6UInt64V"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s13VoiceChatCore0A29ActivatedASRDiagnosticContextV17originNanosecondss6UInt64Vvg",
+                "moduleName": "VoiceChatCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:13VoiceChatCore0A29ActivatedASRDiagnosticContextV17originNanosecondss6UInt64Vvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UInt64",
+                "printedName": "Swift.UInt64",
+                "usr": "s:s6UInt64V"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A29ActivatedASRDiagnosticContextV17originNanosecondss6UInt64Vvp",
+            "moduleName": "VoiceChatCore",
+            "name": "originNanoseconds",
+            "printedName": "originNanoseconds",
+            "usr": "s:13VoiceChatCore0A29ActivatedASRDiagnosticContextV17originNanosecondss6UInt64Vvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRDiagnosticContext",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticContext",
+                "usr": "s:13VoiceChatCore0A29ActivatedASRDiagnosticContextV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UInt64",
+                "printedName": "Swift.UInt64",
+                "usr": "s:s6UInt64V"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UInt64",
+                "printedName": "Swift.UInt64",
+                "usr": "s:s6UInt64V"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s13VoiceChatCore0A29ActivatedASRDiagnosticContextV10runOrdinal17originNanosecondsACs6UInt64V_AGtcfc",
+            "moduleName": "VoiceChatCore",
+            "name": "init",
+            "printedName": "init(runOrdinal:originNanoseconds:)",
+            "usr": "s:13VoiceChatCore0A29ActivatedASRDiagnosticContextV10runOrdinal17originNanosecondsACs6UInt64V_AGtcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRDiagnosticContext",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticContext",
+                "usr": "s:13VoiceChatCore0A29ActivatedASRDiagnosticContextV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRDiagnosticContext",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticContext",
+                "usr": "s:13VoiceChatCore0A29ActivatedASRDiagnosticContextV"
+              }
+            ],
+            "declAttributes": [
+              "Implements"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s13VoiceChatCore0A29ActivatedASRDiagnosticContextV23__derived_struct_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceChatCore",
+            "name": "__derived_struct_equals",
+            "printedName": "__derived_struct_equals(_:_:)",
+            "static": true,
+            "usr": "s:13VoiceChatCore0A29ActivatedASRDiagnosticContextV23__derived_struct_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s13VoiceChatCore0A29ActivatedASRDiagnosticContextV",
+        "moduleName": "VoiceChatCore",
+        "name": "VoiceActivatedASRDiagnosticContext",
+        "printedName": "VoiceActivatedASRDiagnosticContext",
+        "usr": "s:13VoiceChatCore0A29ActivatedASRDiagnosticContextV"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticContext",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticContext",
+                    "usr": "s:13VoiceChatCore0A29ActivatedASRDiagnosticContextV"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s13VoiceChatCore0A31ActivatedASRDiagnosticsObserverV7contextAA0aD20ASRDiagnosticContextVvg",
+                "moduleName": "VoiceChatCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:13VoiceChatCore0A31ActivatedASRDiagnosticsObserverV7contextAA0aD20ASRDiagnosticContextVvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRDiagnosticContext",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticContext",
+                "usr": "s:13VoiceChatCore0A29ActivatedASRDiagnosticContextV"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A31ActivatedASRDiagnosticsObserverV7contextAA0aD20ASRDiagnosticContextVvp",
+            "moduleName": "VoiceChatCore",
+            "name": "context",
+            "printedName": "context",
+            "usr": "s:13VoiceChatCore0A31ActivatedASRDiagnosticsObserverV7contextAA0aD20ASRDiagnosticContextVvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRDiagnosticsObserver",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticsObserver",
+                "usr": "s:13VoiceChatCore0A31ActivatedASRDiagnosticsObserverV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRDiagnosticContext",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticContext",
+                "usr": "s:13VoiceChatCore0A29ActivatedASRDiagnosticContextV"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      }
+                    ],
+                    "kind": "TypeNameAlias",
+                    "name": "Void",
+                    "printedName": "Swift.Void"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticEvent",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                    "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEvent) -> Swift.Void"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s13VoiceChatCore0A31ActivatedASRDiagnosticsObserverV7context7handlerAcA0aD20ASRDiagnosticContextV_yAA0adI5EventOYbctcfc",
+            "moduleName": "VoiceChatCore",
+            "name": "init",
+            "printedName": "init(context:handler:)",
+            "usr": "s:13VoiceChatCore0A31ActivatedASRDiagnosticsObserverV7context7handlerAcA0aD20ASRDiagnosticContextV_yAA0adI5EventOYbctcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRDiagnosticEvent",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s13VoiceChatCore0A31ActivatedASRDiagnosticsObserverV7observeyyAA0aD18ASRDiagnosticEventOF",
+            "moduleName": "VoiceChatCore",
+            "name": "observe",
+            "printedName": "observe(_:)",
+            "usr": "s:13VoiceChatCore0A31ActivatedASRDiagnosticsObserverV7observeyyAA0aD18ASRDiagnosticEventOF"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s13VoiceChatCore0A31ActivatedASRDiagnosticsObserverV",
+        "moduleName": "VoiceChatCore",
+        "name": "VoiceActivatedASRDiagnosticsObserver",
+        "printedName": "VoiceActivatedASRDiagnosticsObserver",
+        "usr": "s:13VoiceChatCore0A31ActivatedASRDiagnosticsObserverV"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticProgressTrigger",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticProgressTrigger",
+                    "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticProgressTrigger",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticProgressTrigger",
+                        "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticProgressTrigger.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticProgressTrigger.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticProgressTrigger"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO13frameAcceptedyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "frameAccepted",
+            "printedName": "frameAccepted",
+            "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO13frameAcceptedyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticProgressTrigger",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticProgressTrigger",
+                    "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticProgressTrigger",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticProgressTrigger",
+                        "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticProgressTrigger.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticProgressTrigger.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticProgressTrigger"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO17detectorProcessedyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "detectorProcessed",
+            "printedName": "detectorProcessed",
+            "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO17detectorProcessedyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticProgressTrigger",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticProgressTrigger",
+                    "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticProgressTrigger?",
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declAttributes": [
+              "Inlinable"
+            ],
+            "declKind": "Constructor",
+            "implicit": true,
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO8rawValueACSgSS_tcfc",
+            "moduleName": "VoiceChatCore",
+            "name": "init",
+            "printedName": "init(rawValue:)",
+            "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO8rawValueACSgSS_tcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "TypeAlias",
+            "implicit": true,
+            "kind": "TypeAlias",
+            "mangledName": "$s13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO8RawValuea",
+            "moduleName": "VoiceChatCore",
+            "name": "RawValue",
+            "printedName": "RawValue",
+            "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO8RawValuea"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declAttributes": [
+                  "Inlinable"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO8rawValueSSvg",
+                "moduleName": "VoiceChatCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO8rawValueSSvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO8rawValueSSvp",
+            "moduleName": "VoiceChatCore",
+            "name": "rawValue",
+            "printedName": "rawValue",
+            "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO8rawValueSSvp"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSH",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "kind": "TypeWitness",
+                "name": "RawValue",
+                "printedName": "RawValue"
+              }
+            ],
+            "kind": "Conformance",
+            "mangledName": "$sSY",
+            "name": "RawRepresentable",
+            "printedName": "RawRepresentable",
+            "usr": "s:SY"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "enumRawTypeName": "String",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO",
+        "moduleName": "VoiceChatCore",
+        "name": "VoiceActivatedASRDiagnosticProgressTrigger",
+        "printedName": "VoiceActivatedASRDiagnosticProgressTrigger",
+        "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV18acceptedFrameCountSivg",
+                "moduleName": "VoiceChatCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV18acceptedFrameCountSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV18acceptedFrameCountSivp",
+            "moduleName": "VoiceChatCore",
+            "name": "acceptedFrameCount",
+            "printedName": "acceptedFrameCount",
+            "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV18acceptedFrameCountSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV19processedFrameCountSivg",
+                "moduleName": "VoiceChatCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV19processedFrameCountSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV19processedFrameCountSivp",
+            "moduleName": "VoiceChatCore",
+            "name": "processedFrameCount",
+            "printedName": "processedFrameCount",
+            "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV19processedFrameCountSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV16speechFrameCountSivg",
+                "moduleName": "VoiceChatCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV16speechFrameCountSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV16speechFrameCountSivp",
+            "moduleName": "VoiceChatCore",
+            "name": "speechFrameCount",
+            "printedName": "speechFrameCount",
+            "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV16speechFrameCountSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV17silenceFrameCountSivg",
+                "moduleName": "VoiceChatCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV17silenceFrameCountSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV17silenceFrameCountSivp",
+            "moduleName": "VoiceChatCore",
+            "name": "silenceFrameCount",
+            "printedName": "silenceFrameCount",
+            "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV17silenceFrameCountSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV20currentSilenceStreakSivg",
+                "moduleName": "VoiceChatCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV20currentSilenceStreakSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV20currentSilenceStreakSivp",
+            "moduleName": "VoiceChatCore",
+            "name": "currentSilenceStreak",
+            "printedName": "currentSilenceStreak",
+            "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV20currentSilenceStreakSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV20maximumSilenceStreakSivg",
+                "moduleName": "VoiceChatCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV20maximumSilenceStreakSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV20maximumSilenceStreakSivp",
+            "moduleName": "VoiceChatCore",
+            "name": "maximumSilenceStreak",
+            "printedName": "maximumSilenceStreak",
+            "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV20maximumSilenceStreakSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV17pendingFrameCountSivg",
+                "moduleName": "VoiceChatCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV17pendingFrameCountSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV17pendingFrameCountSivp",
+            "moduleName": "VoiceChatCore",
+            "name": "pendingFrameCount",
+            "printedName": "pendingFrameCount",
+            "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV17pendingFrameCountSivp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRDiagnosticProgress",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticProgress",
+                "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV18acceptedFrameCount09processedhI006speechhI007silencehI020currentSilenceStreak07maximumnO007pendinghI0ACSi_S6itcfc",
+            "moduleName": "VoiceChatCore",
+            "name": "init",
+            "printedName": "init(acceptedFrameCount:processedFrameCount:speechFrameCount:silenceFrameCount:currentSilenceStreak:maximumSilenceStreak:pendingFrameCount:)",
+            "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV18acceptedFrameCount09processedhI006speechhI007silencehI020currentSilenceStreak07maximumnO007pendinghI0ACSi_S6itcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRDiagnosticProgress",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticProgress",
+                "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRDiagnosticProgress",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticProgress",
+                "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV"
+              }
+            ],
+            "declAttributes": [
+              "Implements"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV23__derived_struct_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceChatCore",
+            "name": "__derived_struct_equals",
+            "printedName": "__derived_struct_equals(_:_:)",
+            "static": true,
+            "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV23__derived_struct_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticProgressV",
+        "moduleName": "VoiceChatCore",
+        "name": "VoiceActivatedASRDiagnosticProgress",
+        "printedName": "VoiceActivatedASRDiagnosticProgress",
+        "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                    "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                        "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO11sourceStartyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "sourceStart",
+            "printedName": "sourceStart",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO11sourceStartyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                    "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                        "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO11sourceEndedyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "sourceEnded",
+            "printedName": "sourceEnded",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO11sourceEndedyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                    "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                        "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO12sourceStreamyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "sourceStream",
+            "printedName": "sourceStream",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO12sourceStreamyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                    "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                        "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO13frameWatchdogyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "frameWatchdog",
+            "printedName": "frameWatchdog",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO13frameWatchdogyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                    "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                        "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO18detectorProcessingyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "detectorProcessing",
+            "printedName": "detectorProcessing",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO18detectorProcessingyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                    "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                        "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO18uploadBackpressureyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "uploadBackpressure",
+            "printedName": "uploadBackpressure",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO18uploadBackpressureyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                    "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                        "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO9transportyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "transport",
+            "printedName": "transport",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO9transportyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                    "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin?",
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declAttributes": [
+              "Inlinable"
+            ],
+            "declKind": "Constructor",
+            "implicit": true,
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO8rawValueACSgSS_tcfc",
+            "moduleName": "VoiceChatCore",
+            "name": "init",
+            "printedName": "init(rawValue:)",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO8rawValueACSgSS_tcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "TypeAlias",
+            "implicit": true,
+            "kind": "TypeAlias",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO8RawValuea",
+            "moduleName": "VoiceChatCore",
+            "name": "RawValue",
+            "printedName": "RawValue",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO8RawValuea"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declAttributes": [
+                  "Inlinable"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO8rawValueSSvg",
+                "moduleName": "VoiceChatCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO8rawValueSSvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO8rawValueSSvp",
+            "moduleName": "VoiceChatCore",
+            "name": "rawValue",
+            "printedName": "rawValue",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO8rawValueSSvp"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSH",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "kind": "TypeWitness",
+                "name": "RawValue",
+                "printedName": "RawValue"
+              }
+            ],
+            "kind": "Conformance",
+            "mangledName": "$sSY",
+            "name": "RawRepresentable",
+            "printedName": "RawRepresentable",
+            "usr": "s:SY"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "enumRawTypeName": "String",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO",
+        "moduleName": "VoiceChatCore",
+        "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+        "printedName": "VoiceActivatedASRDiagnosticFailureOrigin",
+        "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticTerminalStage",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage",
+                    "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticTerminalStage",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage",
+                        "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO6armingyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "arming",
+            "printedName": "arming",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO6armingyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticTerminalStage",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage",
+                    "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticTerminalStage",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage",
+                        "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO5armedyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "armed",
+            "printedName": "armed",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO5armedyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticTerminalStage",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage",
+                    "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticTerminalStage",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage",
+                        "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO17openingRecognizeryA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "openingRecognizer",
+            "printedName": "openingRecognizer",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO17openingRecognizeryA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticTerminalStage",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage",
+                    "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticTerminalStage",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage",
+                        "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO9streamingyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "streaming",
+            "printedName": "streaming",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO9streamingyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticTerminalStage",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage",
+                    "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticTerminalStage",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage",
+                        "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO8drainingyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "draining",
+            "printedName": "draining",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO8drainingyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticTerminalStage",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage",
+                    "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticTerminalStage",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage",
+                        "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO10finalizingyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "finalizing",
+            "printedName": "finalizing",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO10finalizingyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticTerminalStage",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage",
+                    "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage?",
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declAttributes": [
+              "Inlinable"
+            ],
+            "declKind": "Constructor",
+            "implicit": true,
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO8rawValueACSgSS_tcfc",
+            "moduleName": "VoiceChatCore",
+            "name": "init",
+            "printedName": "init(rawValue:)",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO8rawValueACSgSS_tcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "TypeAlias",
+            "implicit": true,
+            "kind": "TypeAlias",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO8RawValuea",
+            "moduleName": "VoiceChatCore",
+            "name": "RawValue",
+            "printedName": "RawValue",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO8RawValuea"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declAttributes": [
+                  "Inlinable"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO8rawValueSSvg",
+                "moduleName": "VoiceChatCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO8rawValueSSvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO8rawValueSSvp",
+            "moduleName": "VoiceChatCore",
+            "name": "rawValue",
+            "printedName": "rawValue",
+            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO8rawValueSSvp"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSH",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "kind": "TypeWitness",
+                "name": "RawValue",
+                "printedName": "RawValue"
+              }
+            ],
+            "kind": "Conformance",
+            "mangledName": "$sSY",
+            "name": "RawRepresentable",
+            "printedName": "RawRepresentable",
+            "usr": "s:SY"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "enumRawTypeName": "String",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO",
+        "moduleName": "VoiceChatCore",
+        "name": "VoiceActivatedASRDiagnosticTerminalStage",
+        "printedName": "VoiceActivatedASRDiagnosticTerminalStage",
+        "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticTerminalOutcome",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome",
+                    "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticTerminalOutcome",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome",
+                        "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO8finishedyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "finished",
+            "printedName": "finished",
+            "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO8finishedyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticTerminalOutcome",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome",
+                    "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticTerminalOutcome",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome",
+                        "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO8noSpeechyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "noSpeech",
+            "printedName": "noSpeech",
+            "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO8noSpeechyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticTerminalOutcome",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome",
+                    "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticTerminalOutcome",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome",
+                        "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO9cancelledyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "cancelled",
+            "printedName": "cancelled",
+            "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO9cancelledyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticTerminalOutcome",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome",
+                        "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                            "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(origin: VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin) -> VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticTerminalOutcome",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome",
+                        "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome.Type) -> (VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin) -> VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO6failedyAcA0adE13FailureOriginO_tcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "failed",
+            "printedName": "failed",
+            "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO6failedyAcA0adE13FailureOriginO_tcACmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRDiagnosticTerminalOutcome",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome",
+                "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRDiagnosticTerminalOutcome",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome",
+                "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceChatCore",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO21__derived_enum_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO",
+        "moduleName": "VoiceChatCore",
+        "name": "VoiceActivatedASRDiagnosticTerminalOutcome",
+        "printedName": "VoiceActivatedASRDiagnosticTerminalOutcome",
+        "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticTransportTerminal",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTransportTerminal",
+                    "usr": "s:13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticTransportTerminal",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTransportTerminal",
+                        "usr": "s:13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTransportTerminal.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticTransportTerminal.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticTransportTerminal"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO8finishedyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "finished",
+            "printedName": "finished",
+            "usr": "s:13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO8finishedyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticTransportTerminal",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTransportTerminal",
+                    "usr": "s:13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticTransportTerminal",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTransportTerminal",
+                        "usr": "s:13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTransportTerminal.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticTransportTerminal.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticTransportTerminal"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO6failedyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "failed",
+            "printedName": "failed",
+            "usr": "s:13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO6failedyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticTransportTerminal",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTransportTerminal",
+                    "usr": "s:13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTransportTerminal?",
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declAttributes": [
+              "Inlinable"
+            ],
+            "declKind": "Constructor",
+            "implicit": true,
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO8rawValueACSgSS_tcfc",
+            "moduleName": "VoiceChatCore",
+            "name": "init",
+            "printedName": "init(rawValue:)",
+            "usr": "s:13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO8rawValueACSgSS_tcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "TypeAlias",
+            "implicit": true,
+            "kind": "TypeAlias",
+            "mangledName": "$s13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO8RawValuea",
+            "moduleName": "VoiceChatCore",
+            "name": "RawValue",
+            "printedName": "RawValue",
+            "usr": "s:13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO8RawValuea"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declAttributes": [
+                  "Inlinable"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO8rawValueSSvg",
+                "moduleName": "VoiceChatCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO8rawValueSSvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO8rawValueSSvp",
+            "moduleName": "VoiceChatCore",
+            "name": "rawValue",
+            "printedName": "rawValue",
+            "usr": "s:13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO8rawValueSSvp"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSH",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "kind": "TypeWitness",
+                "name": "RawValue",
+                "printedName": "RawValue"
+              }
+            ],
+            "kind": "Conformance",
+            "mangledName": "$sSY",
+            "name": "RawRepresentable",
+            "printedName": "RawRepresentable",
+            "usr": "s:SY"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "enumRawTypeName": "String",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO",
+        "moduleName": "VoiceChatCore",
+        "name": "VoiceActivatedASRDiagnosticTransportTerminal",
+        "printedName": "VoiceActivatedASRDiagnosticTransportTerminal",
+        "usr": "s:13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEndpoint",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint",
+                        "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(observedFrameCount: Swift.Int, thresholdFrameCount: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int, Swift.Int) -> VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEndpoint",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint",
+                        "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint.Type) -> (Swift.Int, Swift.Int) -> VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO7silenceyACSi_SitcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "silence",
+            "printedName": "silence",
+            "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO7silenceyACSi_SitcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEndpoint",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint",
+                        "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(observedFrameCount: Swift.Int, thresholdFrameCount: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int, Swift.Int) -> VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEndpoint",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint",
+                        "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint.Type) -> (Swift.Int, Swift.Int) -> VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO15maximumDurationyACSi_SitcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "maximumDuration",
+            "printedName": "maximumDuration",
+            "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO15maximumDurationyACSi_SitcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticEndpoint",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint",
+                    "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEndpoint",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint",
+                        "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint.Type) -> VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO6manualyA2CmF",
+            "moduleName": "VoiceChatCore",
+            "name": "manual",
+            "printedName": "manual",
+            "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO6manualyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRDiagnosticEndpoint",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint",
+                "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRDiagnosticEndpoint",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint",
+                "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceChatCore",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO21__derived_enum_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO",
+        "moduleName": "VoiceChatCore",
+        "name": "VoiceActivatedASRDiagnosticEndpoint",
+        "printedName": "VoiceActivatedASRDiagnosticEndpoint",
+        "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(generation: Swift.UInt64)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type) -> (Swift.UInt64) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO20sourceStartRequestedyACs6UInt64V_tcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "sourceStartRequested",
+            "printedName": "sourceStartRequested",
+            "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO20sourceStartRequestedyACs6UInt64V_tcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(generation: Swift.UInt64, watchdogIntervalMilliseconds: Swift.UInt64)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64, Swift.UInt64) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type) -> (Swift.UInt64, Swift.UInt64) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO13sourceStartedyACs6UInt64V_AFtcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "sourceStarted",
+            "printedName": "sourceStarted",
+            "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO13sourceStartedyACs6UInt64V_AFtcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "VoiceActivatedASRDiagnosticFailureOrigin",
+                            "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin",
+                            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticFailureOriginO"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(generation: Swift.UInt64, origin: VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64, VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type) -> (Swift.UInt64, VoiceChatCore.VoiceActivatedASRDiagnosticFailureOrigin) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO12sourceFailedyACs6UInt64V_AA0adE13FailureOriginOtcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "sourceFailed",
+            "printedName": "sourceFailed",
+            "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO12sourceFailedyACs6UInt64V_AA0adE13FailureOriginOtcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "VoiceActivatedASRDiagnosticProgress",
+                            "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticProgress",
+                            "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(generation: Swift.UInt64, intervalMilliseconds: Swift.UInt64, progress: VoiceChatCore.VoiceActivatedASRDiagnosticProgress)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64, Swift.UInt64, VoiceChatCore.VoiceActivatedASRDiagnosticProgress) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type) -> (Swift.UInt64, Swift.UInt64, VoiceChatCore.VoiceActivatedASRDiagnosticProgress) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO15watchdogExpiredyACs6UInt64V_AfA0adE8ProgressVtcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "watchdogExpired",
+            "printedName": "watchdogExpired",
+            "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO15watchdogExpiredyACs6UInt64V_AfA0adE8ProgressVtcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "VoiceActivatedASRDiagnosticProgressTrigger",
+                            "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticProgressTrigger",
+                            "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticProgressTriggerO"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "VoiceActivatedASRDiagnosticProgress",
+                            "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticProgress",
+                            "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticProgressV"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(generation: Swift.UInt64, trigger: VoiceChatCore.VoiceActivatedASRDiagnosticProgressTrigger, progress: VoiceChatCore.VoiceActivatedASRDiagnosticProgress)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64, VoiceChatCore.VoiceActivatedASRDiagnosticProgressTrigger, VoiceChatCore.VoiceActivatedASRDiagnosticProgress) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type) -> (Swift.UInt64, VoiceChatCore.VoiceActivatedASRDiagnosticProgressTrigger, VoiceChatCore.VoiceActivatedASRDiagnosticProgress) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO8progressyACs6UInt64V_AA0adE15ProgressTriggerOAA0adeI0VtcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "progress",
+            "printedName": "progress",
+            "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO8progressyACs6UInt64V_AA0adE15ProgressTriggerOAA0adeI0VtcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(generation: Swift.UInt64, onsetWindowFrameCount: Swift.Int, onsetRequiredSpeechFrameCount: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64, Swift.Int, Swift.Int) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type) -> (Swift.UInt64, Swift.Int, Swift.Int) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO14segmentStartedyACs6UInt64V_S2itcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "segmentStarted",
+            "printedName": "segmentStarted",
+            "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO14segmentStartedyACs6UInt64V_S2itcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(generation: Swift.UInt64, afterSilentFrameCount: Swift.Int, endpointSilenceFrameCount: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64, Swift.Int, Swift.Int) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type) -> (Swift.UInt64, Swift.Int, Swift.Int) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO13speechResumedyACs6UInt64V_S2itcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "speechResumed",
+            "printedName": "speechResumed",
+            "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO13speechResumedyACs6UInt64V_S2itcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "VoiceActivatedASRDiagnosticEndpoint",
+                            "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint",
+                            "usr": "s:13VoiceChatCore0A30ActivatedASRDiagnosticEndpointO"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(generation: Swift.UInt64, endpoint: VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64, VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type) -> (Swift.UInt64, VoiceChatCore.VoiceActivatedASRDiagnosticEndpoint) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO12segmentEndedyACs6UInt64V_AA0adE8EndpointOtcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "segmentEnded",
+            "printedName": "segmentEnded",
+            "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO12segmentEndedyACs6UInt64V_AA0adE8EndpointOtcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(generation: Swift.UInt64, pendingFrameCount: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64, Swift.Int) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type) -> (Swift.UInt64, Swift.Int) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO16tailFlushStartedyACs6UInt64V_SitcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "tailFlushStarted",
+            "printedName": "tailFlushStarted",
+            "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO16tailFlushStartedyACs6UInt64V_SitcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(generation: Swift.UInt64, flushedFrameCount: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64, Swift.Int) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type) -> (Swift.UInt64, Swift.Int) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO17tailFlushFinishedyACs6UInt64V_SitcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "tailFlushFinished",
+            "printedName": "tailFlushFinished",
+            "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO17tailFlushFinishedyACs6UInt64V_SitcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(generation: Swift.UInt64)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type) -> (Swift.UInt64) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO21finishStreamRequestedyACs6UInt64V_tcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "finishStreamRequested",
+            "printedName": "finishStreamRequested",
+            "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO21finishStreamRequestedyACs6UInt64V_tcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(generation: Swift.UInt64)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type) -> (Swift.UInt64) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO20finishStreamReturnedyACs6UInt64V_tcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "finishStreamReturned",
+            "printedName": "finishStreamReturned",
+            "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO20finishStreamReturnedyACs6UInt64V_tcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "VoiceActivatedASRDiagnosticTransportTerminal",
+                            "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTransportTerminal",
+                            "usr": "s:13VoiceChatCore0A39ActivatedASRDiagnosticTransportTerminalO"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(generation: Swift.UInt64, terminal: VoiceChatCore.VoiceActivatedASRDiagnosticTransportTerminal)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64, VoiceChatCore.VoiceActivatedASRDiagnosticTransportTerminal) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type) -> (Swift.UInt64, VoiceChatCore.VoiceActivatedASRDiagnosticTransportTerminal) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO17transportTerminalyACs6UInt64V_AA0ade9TransportH0OtcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "transportTerminal",
+            "printedName": "transportTerminal",
+            "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO17transportTerminalyACs6UInt64V_AA0ade9TransportH0OtcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "VoiceActivatedASRDiagnosticTerminalStage",
+                            "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage",
+                            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(generation: Swift.UInt64, stage: VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64, VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type) -> (Swift.UInt64, VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO21transportStreamClosedyACs6UInt64V_AA0adE13TerminalStageOtcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "transportStreamClosed",
+            "printedName": "transportStreamClosed",
+            "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO21transportStreamClosedyACs6UInt64V_AA0adE13TerminalStageOtcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt64",
+                            "printedName": "Swift.UInt64",
+                            "usr": "s:s6UInt64V"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "VoiceActivatedASRDiagnosticTerminalStage",
+                            "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage",
+                            "usr": "s:13VoiceChatCore0A35ActivatedASRDiagnosticTerminalStageO"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "VoiceActivatedASRDiagnosticTerminalOutcome",
+                            "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome",
+                            "usr": "s:13VoiceChatCore0A37ActivatedASRDiagnosticTerminalOutcomeO"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(generation: Swift.UInt64, stage: VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage, outcome: VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UInt64, VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage, VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "VoiceActivatedASRDiagnosticEvent",
+                        "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(VoiceChatCore.VoiceActivatedASRDiagnosticEvent.Type) -> (Swift.UInt64, VoiceChatCore.VoiceActivatedASRDiagnosticTerminalStage, VoiceChatCore.VoiceActivatedASRDiagnosticTerminalOutcome) -> VoiceChatCore.VoiceActivatedASRDiagnosticEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO8terminalyACs6UInt64V_AA0adE13TerminalStageOAA0adeI7OutcomeOtcACmF",
+            "moduleName": "VoiceChatCore",
+            "name": "terminal",
+            "printedName": "terminal",
+            "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO8terminalyACs6UInt64V_AA0adE13TerminalStageOAA0adeI7OutcomeOtcACmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRDiagnosticEvent",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRDiagnosticEvent",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticEvent",
+                "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "VoiceChatCore",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO21__derived_enum_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s13VoiceChatCore0A27ActivatedASRDiagnosticEventO",
+        "moduleName": "VoiceChatCore",
+        "name": "VoiceActivatedASRDiagnosticEvent",
+        "printedName": "VoiceActivatedASRDiagnosticEvent",
+        "usr": "s:13VoiceChatCore0A27ActivatedASRDiagnosticEventO"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
                     "children": [
                       {
                         "kind": "TypeNominal",
@@ -14791,6 +18492,56 @@
             "name": "init",
             "printedName": "init(config:detector:policy:)",
             "usr": "s:13VoiceChatCore0A19ActivatedASRSessionC6config8detector6policyAcA0E0C6ConfigV_0A20ActivityDetectionKit0aJ9Detecting_pAA0aD9ASRPolicyVtcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRSession",
+                "printedName": "VoiceChatCore.VoiceActivatedASRSession",
+                "usr": "s:13VoiceChatCore0A19ActivatedASRSessionC"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Config",
+                "printedName": "VoiceChatCore.ASRSession.Config",
+                "usr": "s:13VoiceChatCore10ASRSessionC6ConfigV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivityDetecting",
+                "printedName": "any VoiceActivityDetectionKit.VoiceActivityDetecting",
+                "usr": "s:25VoiceActivityDetectionKit0aB9DetectingP"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRPolicy",
+                "printedName": "VoiceChatCore.VoiceActivatedASRPolicy",
+                "usr": "s:13VoiceChatCore0A18ActivatedASRPolicyV"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "VoiceActivatedASRDiagnosticsObserver",
+                    "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticsObserver",
+                    "usr": "s:13VoiceChatCore0A31ActivatedASRDiagnosticsObserverV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "VoiceChatCore.VoiceActivatedASRDiagnosticsObserver?",
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s13VoiceChatCore0A19ActivatedASRSessionC6config8detector6policy11diagnosticsAcA0E0C6ConfigV_0A20ActivityDetectionKit0aK9Detecting_pAA0aD9ASRPolicyVAA0aD22ASRDiagnosticsObserverVSgtcfc",
+            "moduleName": "VoiceChatCore",
+            "name": "init",
+            "printedName": "init(config:detector:policy:diagnostics:)",
+            "usr": "s:13VoiceChatCore0A19ActivatedASRSessionC6config8detector6policy11diagnosticsAcA0E0C6ConfigV_0A20ActivityDetectionKit0aK9Detecting_pAA0aD9ASRPolicyVAA0aD22ASRDiagnosticsObserverVSgtcfc"
           },
           {
             "children": [

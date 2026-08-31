@@ -6,9 +6,17 @@ import SingleGreenGlassesKit
 import UIKit
 
 @MainActor
-final class ConversationTelemetryStore: ObservableObject, ConversationTelemetrySink {
+final class ConversationTelemetryStore:
+    ObservableObject,
+    ConversationTelemetrySink,
+    InternalDiagnosticsLineSink {
     private let logger = Logger(subsystem: "com.local.SingleGreenDemo", category: "conversation")
     private let capacity: Int
+    private var diagnosticsBarrierFactories: [
+        @Sendable () -> InternalDiagnosticsBarrierHandle
+    ] = []
+    private var snapshotTransactionActive = false
+    private var snapshotTransactionWaiters: [CheckedContinuation<Void, Never>] = []
     private(set) var events: [ConversationTelemetryEvent] = []
     @Published private(set) var diagnosticLines: [String] = []
 
@@ -39,11 +47,35 @@ final class ConversationTelemetryStore: ObservableObject, ConversationTelemetryS
         }
     }
 
-    func removeAllDiagnostics() {
+    func registerDiagnosticsBarrierFactory(
+        _ factory: @escaping @Sendable () -> InternalDiagnosticsBarrierHandle
+    ) {
+        diagnosticsBarrierFactories.append(factory)
+    }
+
+    func removeAllDiagnostics() async {
+        await beginSnapshotTransaction()
+        let barriers = diagnosticsBarrierFactories.map { $0() }
+        defer {
+            barriers.forEach { $0.release() }
+            endSnapshotTransaction()
+        }
+        for barrier in barriers {
+            await barrier.waitUntilReached()
+        }
         diagnosticLines.removeAll(keepingCapacity: true)
     }
 
-    func makeExportURL() throws -> URL {
+    func makeExportURL() async throws -> URL {
+        await beginSnapshotTransaction()
+        let barriers = diagnosticsBarrierFactories.map { $0() }
+        defer {
+            barriers.forEach { $0.release() }
+            endSnapshotTransaction()
+        }
+        for barrier in barriers {
+            await barrier.waitUntilReached()
+        }
         let bundle = Bundle.main
         let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
         let build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown"
@@ -60,9 +92,29 @@ final class ConversationTelemetryStore: ObservableObject, ConversationTelemetryS
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMdd-HHmmss"
         let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent("SingleGreenDemo-logs-\(formatter.string(from: Date())).txt")
+            .appendingPathComponent(
+                "SingleGreenDemo-logs-\(formatter.string(from: Date()))-\(UUID().uuidString).txt"
+            )
         try contents.write(to: url, atomically: true, encoding: .utf8)
         return url
+    }
+
+    private func beginSnapshotTransaction() async {
+        guard snapshotTransactionActive else {
+            snapshotTransactionActive = true
+            return
+        }
+        await withCheckedContinuation { continuation in
+            snapshotTransactionWaiters.append(continuation)
+        }
+    }
+
+    private func endSnapshotTransaction() {
+        guard !snapshotTransactionWaiters.isEmpty else {
+            snapshotTransactionActive = false
+            return
+        }
+        snapshotTransactionWaiters.removeFirst().resume()
     }
 }
 

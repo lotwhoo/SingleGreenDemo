@@ -46,6 +46,9 @@ public actor VoiceActivatedASRSession {
     private let policy: VoiceActivatedASRPolicy
     private let frameLivenessClock: VoiceActivatedASRMonotonicClock
     private let frameLivenessInterval: Duration
+    private let frameLivenessIntervalMilliseconds: UInt64
+    private let diagnostics: VoiceActivatedASRDiagnosticsObserver?
+    private let diagnosticsDetector: VoiceActivatedASRDiagnosticsDetector?
     private let eventContinuation: AsyncStream<VoiceActivatedASREvent>.Continuation
     private let cleanupWaitHook: (
         @Sendable (UInt64, VoiceActivatedASRCleanupWaitPhase) async -> Void
@@ -110,6 +113,55 @@ public actor VoiceActivatedASRSession {
         self.policy = policy
         self.frameLivenessClock = .continuous
         self.frameLivenessInterval = Self.frameLivenessInterval(for: policy)
+        self.frameLivenessIntervalMilliseconds = Self.frameLivenessIntervalMilliseconds(for: policy)
+        self.diagnostics = nil
+        self.diagnosticsDetector = nil
+        self.cleanupWaitHook = nil
+        self.finishWorkerWaitHook = nil
+        self.cancelRetiringWorkerWaitHook = nil
+        self.workerRetirementWaitHook = nil
+        self.workerExitHook = nil
+    }
+
+    public init(
+        config: ASRSession.Config,
+        detector: any VoiceActivityDetecting,
+        policy: VoiceActivatedASRPolicy,
+        diagnostics: VoiceActivatedASRDiagnosticsObserver?
+    ) {
+        let frameSource = AudioCapturePCMFrameSource(
+            maximumBufferedFrameCount: policy.maximumPendingUploadFrameCount
+        )
+        let transport = ASRClient(config: ASRClient.Config(
+            apiKey: config.apiKey,
+            resourceID: config.resourceID,
+            host: config.host,
+            path: config.path,
+            language: config.language,
+            enableITN: config.enableITN,
+            enablePunc: config.enablePunc,
+            showUtterances: config.showUtterances,
+            hotwords: config.hotwords,
+            timeoutInterval: config.timeoutInterval
+        ))
+        let (events, continuation) = AsyncStream<VoiceActivatedASREvent>.makeStream()
+        self.events = events
+        self.eventContinuation = continuation
+        self.frameSource = frameSource
+        self.transport = transport
+        let diagnosticsDetector = diagnostics.map {
+            _ in VoiceActivatedASRDiagnosticsDetector(base: detector)
+        }
+        self.pipeline = VoiceActivityDetectionPipeline(
+            detector: diagnosticsDetector ?? detector,
+            policy: policy.segmentation
+        )
+        self.policy = policy
+        self.frameLivenessClock = .continuous
+        self.frameLivenessInterval = Self.frameLivenessInterval(for: policy)
+        self.frameLivenessIntervalMilliseconds = Self.frameLivenessIntervalMilliseconds(for: policy)
+        self.diagnostics = diagnostics
+        self.diagnosticsDetector = diagnosticsDetector
         self.cleanupWaitHook = nil
         self.finishWorkerWaitHook = nil
         self.cancelRetiringWorkerWaitHook = nil
@@ -123,6 +175,7 @@ public actor VoiceActivatedASRSession {
         transport: any StreamingASRTransport,
         policy: VoiceActivatedASRPolicy,
         frameLivenessClock: VoiceActivatedASRMonotonicClock = .continuous,
+        diagnostics: VoiceActivatedASRDiagnosticsObserver? = nil,
         cleanupWaitHook: (
             @Sendable (UInt64, VoiceActivatedASRCleanupWaitPhase) async -> Void
         )? = nil,
@@ -142,13 +195,19 @@ public actor VoiceActivatedASRSession {
         self.eventContinuation = continuation
         self.frameSource = frameSource
         self.transport = transport
+        let diagnosticsDetector = diagnostics.map {
+            _ in VoiceActivatedASRDiagnosticsDetector(base: detector)
+        }
         self.pipeline = VoiceActivityDetectionPipeline(
-            detector: detector,
+            detector: diagnosticsDetector ?? detector,
             policy: policy.segmentation
         )
         self.policy = policy
         self.frameLivenessClock = frameLivenessClock
         self.frameLivenessInterval = Self.frameLivenessInterval(for: policy)
+        self.frameLivenessIntervalMilliseconds = Self.frameLivenessIntervalMilliseconds(for: policy)
+        self.diagnostics = diagnostics
+        self.diagnosticsDetector = diagnosticsDetector
         self.cleanupWaitHook = cleanupWaitHook
         self.finishWorkerWaitHook = finishWorkerWaitHook
         self.cancelRetiringWorkerWaitHook = cancelRetiringWorkerWaitHook
@@ -198,16 +257,22 @@ public actor VoiceActivatedASRSession {
         resetRunState()
         transition(to: .arming)
 
+        await diagnosticsDetector?.beginRun(generation: runGeneration)
         await pipeline.reset()
         guard activeGeneration == runGeneration else { throw CancellationError() }
 
         do {
+            observeDiagnostic(.sourceStartRequested(generation: runGeneration))
             let streams = try await frameSource.start()
             guard activeGeneration == runGeneration else {
                 await frameSource.stop()
                 throw CancellationError()
             }
             runState.acceptingFrames = true
+            observeDiagnostic(.sourceStarted(
+                generation: runGeneration,
+                watchdogIntervalMilliseconds: frameLivenessIntervalMilliseconds
+            ))
             await startFrameLivenessWatchdog(generation: runGeneration)
             guard activeGeneration == runGeneration, runState.acceptingFrames else {
                 throw CancellationError()
@@ -218,7 +283,8 @@ public actor VoiceActivatedASRSession {
             throw CancellationError()
         } catch {
             let failure = ASRFailure.transport(error)
-            await fail(failure, generation: runGeneration)
+            observeDiagnostic(.sourceFailed(generation: runGeneration, origin: .sourceStart))
+            await fail(failure, generation: runGeneration, origin: .sourceStart)
             throw failure
         }
     }
@@ -282,6 +348,12 @@ public actor VoiceActivatedASRSession {
         }
         let retiringWorker = workerHandle?.task
         let shouldCancelTransport = runState.transportAttempted
+        let terminalStage = diagnosticTerminalStage
+        observeDiagnostic(.terminal(
+            generation: activeGeneration ?? generation,
+            stage: terminalStage,
+            outcome: .cancelled
+        ))
         let workerRetirement = startWorkerRetirement(for: retiringWorker)
         invalidateActiveRun(terminalState: .idle)
         let cleanup = startCleanup(
@@ -316,12 +388,18 @@ public actor VoiceActivatedASRSession {
     }
 
     private static func frameLivenessInterval(for policy: VoiceActivatedASRPolicy) -> Duration {
+        let boundedMilliseconds = frameLivenessIntervalMilliseconds(for: policy)
+        return .milliseconds(Int64(boundedMilliseconds))
+    }
+
+    private static func frameLivenessIntervalMilliseconds(
+        for policy: VoiceActivatedASRPolicy
+    ) -> UInt64 {
         let frameCount = UInt64(policy.noSpeechFrameLimit)
         let frameDuration = UInt64(VADPCMFrame.durationMilliseconds)
         let (milliseconds, overflowed) = frameCount.multipliedReportingOverflow(by: frameDuration)
         let maximumMilliseconds = UInt64(Int64.max)
-        let boundedMilliseconds = overflowed ? maximumMilliseconds : min(milliseconds, maximumMilliseconds)
-        return .milliseconds(Int64(boundedMilliseconds))
+        return overflowed ? maximumMilliseconds : min(milliseconds, maximumMilliseconds)
     }
 
     private func startFrameLivenessWatchdog(generation runGeneration: UInt64) async {
@@ -377,7 +455,16 @@ public actor VoiceActivatedASRSession {
               frameLivenessDeadline == deadline else { return true }
         guard now >= deadline else { return true }
 
-        await fail(.categorized(.audioUnavailable), generation: runGeneration)
+        observeDiagnostic(.watchdogExpired(
+            generation: runGeneration,
+            intervalMilliseconds: frameLivenessIntervalMilliseconds,
+            progress: runState.diagnosticProgress
+        ))
+        await fail(
+            .categorized(.audioUnavailable),
+            generation: runGeneration,
+            origin: .frameWatchdog
+        )
         return false
     }
 
@@ -418,7 +505,11 @@ public actor VoiceActivatedASRSession {
         guard runState.canAcceptFrame(
             maximumPendingFrameCount: policy.maximumPendingUploadFrameCount
         ) else {
-            await fail(.categorized(.uploadBackpressureExceeded), generation: runGeneration)
+            await fail(
+                .categorized(.uploadBackpressureExceeded),
+                generation: runGeneration,
+                origin: .uploadBackpressure
+            )
             return
         }
 
@@ -427,22 +518,39 @@ public actor VoiceActivatedASRSession {
         guard runState.canAcceptFrame(
             maximumPendingFrameCount: policy.maximumPendingUploadFrameCount
         ) else {
-            await fail(.categorized(.uploadBackpressureExceeded), generation: runGeneration)
+            await fail(
+                .categorized(.uploadBackpressureExceeded),
+                generation: runGeneration,
+                origin: .uploadBackpressure
+            )
             return
         }
         if let currentDeadline = frameLivenessDeadline {
             guard acceptedAt < currentDeadline else {
-                await fail(.categorized(.audioUnavailable), generation: runGeneration)
+                await fail(
+                    .categorized(.audioUnavailable),
+                    generation: runGeneration,
+                    origin: .frameWatchdog
+                )
                 return
             }
             frameLivenessDeadline = acceptedAt + frameLivenessInterval
         } else {
             guard isDrainingManualCapture else {
-                await fail(.categorized(.audioUnavailable), generation: runGeneration)
+                await fail(
+                    .categorized(.audioUnavailable),
+                    generation: runGeneration,
+                    origin: .frameWatchdog
+                )
                 return
             }
         }
         runState.enqueueFrame(frame)
+        observeDiagnostic(.progress(
+            generation: runGeneration,
+            trigger: .frameAccepted,
+            progress: runState.diagnosticProgress
+        ))
         startWorkerIfNeeded(generation: runGeneration)
     }
 
@@ -460,7 +568,12 @@ public actor VoiceActivatedASRSession {
     private func sourceEnded(generation runGeneration: UInt64) async {
         guard activeGeneration == runGeneration, runState.acceptingFrames else { return }
         if runState.sourceStopExpected { return }
-        await fail(.categorized(.audioUnavailable), generation: runGeneration)
+        observeDiagnostic(.sourceFailed(generation: runGeneration, origin: .sourceEnded))
+        await fail(
+            .categorized(.audioUnavailable),
+            generation: runGeneration,
+            origin: .sourceEnded
+        )
     }
 
     private func sourceFailed(_ error: any Error, generation runGeneration: UInt64) async {
@@ -479,7 +592,8 @@ public actor VoiceActivatedASRSession {
         } else {
             failure = .categorized(.audioUnavailable)
         }
-        await fail(failure, generation: runGeneration)
+        observeDiagnostic(.sourceFailed(generation: runGeneration, origin: .sourceStream))
+        await fail(failure, generation: runGeneration, origin: .sourceStream)
     }
 
     private func startWorkerIfNeeded(generation runGeneration: UInt64) {
@@ -510,7 +624,11 @@ public actor VoiceActivatedASRSession {
     }
 
     private func runDirectFinalizer(generation runGeneration: UInt64) async {
-        await finalize(reason: .manual, generation: runGeneration)
+        await finalize(
+            reason: .manual,
+            diagnosticEndpoint: .manual,
+            generation: runGeneration
+        )
     }
 
     private func runWorker(generation runGeneration: UInt64) async {
@@ -524,12 +642,24 @@ public actor VoiceActivatedASRSession {
             } catch {
                 await fail(
                     .categorized(.voiceActivityProcessingFailed),
-                    generation: runGeneration
+                    generation: runGeneration,
+                    origin: .detectorProcessing
                 )
                 return
             }
 
             guard activeGeneration == runGeneration, !Task.isCancelled else { return }
+            if let isSpeech = await diagnosticsDetector?.takeClassification(
+                sequence: frame.sequence,
+                generation: runGeneration
+            ) {
+                runState.recordProcessedFrame(isSpeech: isSpeech)
+                observeDiagnostic(.progress(
+                    generation: runGeneration,
+                    trigger: .detectorProcessed,
+                    progress: runState.diagnosticProgress
+                ))
+            }
             if !runState.speechStarted { runState.processedBeforeOnset += 1 }
             do {
                 for event in segmentationEvents {
@@ -552,14 +682,20 @@ public actor VoiceActivatedASRSession {
                 } else {
                     failure = ASRFailure.transport(error)
                 }
-                await fail(failure, generation: runGeneration)
+                let origin: VoiceActivatedASRDiagnosticFailureOrigin =
+                    error is PCMFrameSourceFailure ? .uploadBackpressure : .transport
+                await fail(failure, generation: runGeneration, origin: origin)
                 return
             }
         }
 
         guard activeGeneration == runGeneration else { return }
         if runState.manualFinishRequested {
-            await finalize(reason: .manual, generation: runGeneration)
+            await finalize(
+                reason: .manual,
+                diagnosticEndpoint: .manual,
+                generation: runGeneration
+            )
         }
     }
 
@@ -575,6 +711,12 @@ public actor VoiceActivatedASRSession {
     ) async throws {
         switch event {
         case .segmentStarted:
+            runState.beginSpeechSegment()
+            observeDiagnostic(.segmentStarted(
+                generation: runGeneration,
+                onsetWindowFrameCount: policy.segmentation.onsetWindowFrameCount,
+                onsetRequiredSpeechFrameCount: policy.segmentation.onsetRequiredSpeechFrameCount
+            ))
             runState.speechStarted = true
             runState.transportAttempted = true
             transition(to: .openingRecognizer)
@@ -594,15 +736,41 @@ public actor VoiceActivatedASRSession {
                 throw PCMFrameSourceFailure.bufferOverflow
             }
             try await sendFullBatches(generation: runGeneration)
-        case .speechResumed:
-            break
+        case .speechResumed(_, let afterSilentFrameCount):
+            observeDiagnostic(.speechResumed(
+                generation: runGeneration,
+                afterSilentFrameCount: afterSilentFrameCount,
+                endpointSilenceFrameCount: policy.segmentation.endpointSilenceFrameCount
+            ))
         case .segmentEnded(_, let reason):
             let endpointReason: VoiceActivatedEndpointReason = switch reason {
             case .silence: .silence
             case .maximumDuration: .maximumDuration
             }
+            let diagnosticEndpoint: VoiceActivatedASRDiagnosticEndpoint = switch reason {
+            case .silence(let count):
+                .silence(
+                    observedFrameCount: count,
+                    thresholdFrameCount: policy.segmentation.endpointSilenceFrameCount
+                )
+            case .maximumDuration(let count):
+                .maximumDuration(
+                    observedFrameCount: count,
+                    thresholdFrameCount: policy.segmentation.maximumSegmentFrameCount
+                )
+            }
+            let effectiveReason: VoiceActivatedEndpointReason
+            let effectiveDiagnosticEndpoint: VoiceActivatedASRDiagnosticEndpoint
+            if runState.manualFinishRequested {
+                effectiveReason = .manual
+                effectiveDiagnosticEndpoint = .manual
+            } else {
+                effectiveReason = endpointReason
+                effectiveDiagnosticEndpoint = diagnosticEndpoint
+            }
             await finalize(
-                reason: runState.manualFinishRequested ? .manual : endpointReason,
+                reason: effectiveReason,
+                diagnosticEndpoint: effectiveDiagnosticEndpoint,
                 generation: runGeneration
             )
         }
@@ -620,19 +788,36 @@ public actor VoiceActivatedASRSession {
     }
 
     private func flushPendingUpload(generation runGeneration: UInt64) async throws {
-        guard let batch = runState.takePendingUploadFrames() else { return }
+        let pendingFrameCount = runState.pendingUploadFrames.count
+        observeDiagnostic(.tailFlushStarted(
+            generation: runGeneration,
+            pendingFrameCount: pendingFrameCount
+        ))
+        guard let batch = runState.takePendingUploadFrames() else {
+            observeDiagnostic(.tailFlushFinished(generation: runGeneration, flushedFrameCount: 0))
+            return
+        }
         runState.beginUpload(frameCount: batch.count)
         defer { runState.completeUpload() }
         try await transport.send(frames: batch)
         guard activeGeneration == runGeneration else { throw CancellationError() }
+        observeDiagnostic(.tailFlushFinished(
+            generation: runGeneration,
+            flushedFrameCount: batch.count
+        ))
     }
 
     private func finalize(
         reason: VoiceActivatedEndpointReason,
+        diagnosticEndpoint: VoiceActivatedASRDiagnosticEndpoint,
         generation runGeneration: UInt64
     ) async {
         guard activeGeneration == runGeneration, !runState.finalizationStarted else { return }
         runState.finalizationStarted = true
+        observeDiagnostic(.segmentEnded(
+            generation: runGeneration,
+            endpoint: diagnosticEndpoint
+        ))
         runState.acceptingFrames = false
         cancelFrameLivenessWatchdog()
         runState.manualFinishRequested = false
@@ -648,11 +833,18 @@ public actor VoiceActivatedASRSession {
             try await flushPendingUpload(generation: runGeneration)
             guard activeGeneration == runGeneration else { return }
             transition(to: .finalizing(reason))
+            observeDiagnostic(.finishStreamRequested(generation: runGeneration))
             try await transport.finishStream()
+            guard activeGeneration == runGeneration else { return }
+            observeDiagnostic(.finishStreamReturned(generation: runGeneration))
         } catch is CancellationError {
             return
         } catch {
-            await fail(ASRFailure.transport(error), generation: runGeneration)
+            await fail(
+                ASRFailure.transport(error),
+                generation: runGeneration,
+                origin: .transport
+            )
         }
     }
 
@@ -673,7 +865,15 @@ public actor VoiceActivatedASRSession {
 
     private func transportEventStreamEnded(generation runGeneration: UInt64) async {
         guard activeGeneration == runGeneration else { return }
-        await fail(.categorized(.connectionLost), generation: runGeneration)
+        observeDiagnostic(.transportStreamClosed(
+            generation: runGeneration,
+            stage: diagnosticTerminalStage
+        ))
+        await fail(
+            .categorized(.connectionLost),
+            generation: runGeneration,
+            origin: .transport
+        )
     }
 
     private func receive(
@@ -688,14 +888,21 @@ public actor VoiceActivatedASRSession {
             eventContinuation.yield(.utterance(text))
         case .finished:
             guard case .finalizing = state else { return }
+            observeDiagnostic(.transportTerminal(generation: runGeneration, terminal: .finished))
             completeSuccessfully(generation: runGeneration)
         case .failed(let failure):
-            await fail(failure, generation: runGeneration)
+            observeDiagnostic(.transportTerminal(generation: runGeneration, terminal: .failed))
+            await fail(failure, generation: runGeneration, origin: .transport)
         }
     }
 
     private func completeNoSpeech(generation runGeneration: UInt64) async {
         guard activeGeneration == runGeneration else { return }
+        observeDiagnostic(.terminal(
+            generation: runGeneration,
+            stage: diagnosticTerminalStage,
+            outcome: .noSpeech
+        ))
         eventContinuation.yield(.noSpeech)
         await completeLocallyWithoutOpeningTransport(generation: runGeneration)
     }
@@ -711,6 +918,11 @@ public actor VoiceActivatedASRSession {
 
     private func completeSuccessfully(generation runGeneration: UInt64) {
         guard activeGeneration == runGeneration else { return }
+        observeDiagnostic(.terminal(
+            generation: runGeneration,
+            stage: diagnosticTerminalStage,
+            outcome: .finished
+        ))
         _ = startWorkerRetirement(for: workerHandle?.task)
         activeGeneration = nil
         runState.acceptingFrames = false
@@ -728,8 +940,17 @@ public actor VoiceActivatedASRSession {
         transition(to: .finished)
     }
 
-    private func fail(_ failure: ASRFailure, generation runGeneration: UInt64) async {
+    private func fail(
+        _ failure: ASRFailure,
+        generation runGeneration: UInt64,
+        origin: VoiceActivatedASRDiagnosticFailureOrigin
+    ) async {
         guard activeGeneration == runGeneration else { return }
+        observeDiagnostic(.terminal(
+            generation: runGeneration,
+            stage: diagnosticTerminalStage,
+            outcome: .failed(origin: origin)
+        ))
         let shouldCancelTransport = runState.transportAttempted
         _ = startWorkerRetirement(for: workerHandle?.task)
         invalidateActiveRun(terminalState: .failed(failure))
@@ -835,5 +1056,26 @@ public actor VoiceActivatedASRSession {
         guard state != newState else { return }
         state = newState
         eventContinuation.yield(.state(newState))
+    }
+
+    private func observeDiagnostic(_ event: VoiceActivatedASRDiagnosticEvent) {
+        diagnostics?.observe(event)
+    }
+
+    private var diagnosticTerminalStage: VoiceActivatedASRDiagnosticTerminalStage {
+        switch state {
+        case .idle, .arming:
+            .arming
+        case .armed:
+            .armed
+        case .openingRecognizer:
+            .openingRecognizer
+        case .streaming:
+            .streaming
+        case .draining:
+            .draining
+        case .finalizing, .finished, .failed:
+            .finalizing
+        }
     }
 }

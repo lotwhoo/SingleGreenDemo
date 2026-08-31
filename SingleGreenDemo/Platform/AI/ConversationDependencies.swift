@@ -10,12 +10,30 @@ extension VoiceConversationDependencies {
         telemetry: (any ConversationTelemetrySink)? = nil
     ) -> Self {
         let telemetry = telemetry ?? NoopConversationTelemetry()
+        let monotonicNow: @Sendable () -> UInt64 = {
+            DispatchTime.now().uptimeNanoseconds
+        }
         let credentialProvider = credentialProvider
             ?? AIServiceComposition.makeCredentialProvider(settings: settings)
+        #if INTERNAL_DIAGNOSTICS
+        let diagnosticSink = telemetry as? any InternalDiagnosticsLineSink
+        let vadDiagnosticsWiring = InternalVADDiagnosticsLiveComposition.make(
+            diagnosticSink: diagnosticSink,
+            monotonicNow: monotonicNow
+        )
+        precondition(
+            vadDiagnosticsWiring.marker == InternalVADDiagnosticsLiveComposition.wiringMarker
+        )
+        let makeVoiceActivatedSession = vadDiagnosticsWiring.makeVoiceActivatedSession
+        #else
+        let makeVoiceActivatedSession: ConversationPreparationResolver.VoiceActivatedFactory = {
+            try ProductionVoiceActivatedSessionFactory.make(configuration: $0, diagnostics: nil)
+        }
+        #endif
         let resolver = ConversationPreparationResolver(
             settings: settings,
             credentialProvider: credentialProvider,
-            makeVoiceActivatedSession: ProductionVoiceActivatedSessionFactory.make
+            makeVoiceActivatedSession: makeVoiceActivatedSession
         )
         return VoiceConversationComposition(
             resolver: resolver,
@@ -24,7 +42,7 @@ extension VoiceConversationDependencies {
             reduceMotion: { UIAccessibility.isReduceMotionEnabled },
             telemetry: telemetry,
             presentationCopy: .singleGreenDemo,
-            monotonicNow: { DispatchTime.now().uptimeNanoseconds }
+            monotonicNow: monotonicNow
         ).dependencies
     }
 }
