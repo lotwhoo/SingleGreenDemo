@@ -47,6 +47,21 @@ final class ExperienceRuntimeTests: XCTestCase {
         )
     }
 
+    func testPhoneUndoControlIsVisibleOnlyForUndoableTeleprompterJump() {
+        XCTAssertTrue(TeleprompterUndoControlPolicy.isVisible(
+            selectedKind: TeleprompterExperience.kind,
+            canUndoAutomaticJump: true
+        ))
+        XCTAssertFalse(TeleprompterUndoControlPolicy.isVisible(
+            selectedKind: TeleprompterExperience.kind,
+            canUndoAutomaticJump: false
+        ))
+        XCTAssertFalse(TeleprompterUndoControlPolicy.isVisible(
+            selectedKind: .conversation,
+            canUndoAutomaticJump: true
+        ))
+    }
+
     func testHostFacingMetadataAndActionsAcceptRegisteredFixtureWithoutViewKindBranches() async {
         let customKind = ExperienceKind("test.hostCatalog")
         let customAction = ExperienceActionEvent("test.runHostFixture")

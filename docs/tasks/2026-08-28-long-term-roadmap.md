@@ -219,3 +219,9 @@ The approved minimal WebRTC detector is integrated only at the `SingleGreenDemo`
 - `VoiceActivatedASRRunState` 抽取一次 run 的 FIFO 队列、pending/in-flight upload 与 finalization facts；`VoiceActivatedASRSession` actor 继续拥有 source、VAD、transport、watchdog 和 generation。
 - 当前复核为 `SingleGreenGlassesKit` 184/184、`VoiceChatCore` 109/109；架构、inventory、16 API baselines、repository hygiene、secret scan 和 diff check 通过。
 - 当前未重新运行 App XCTest/build、真机、真实服务或人工体验矩阵；详见 [M9 任务记录](./2026-08-29-runtime-state-decomposition.md)。
+
+## M10–M17：架构、高可用与高可信 Update Plan（规划中，2026-08-31）
+
+M1–M9 的历史范围和证据保持不变。后续工作从当前提词器“向后 50 个规范化字符内唯一精确命中跃迁”工作树继续，依次推进基线收口、提词器可信定位、音频/ASR 分层、LLM/Search 供应商解耦、HUD 视觉可信、Experience 多 Host 架构、发布可观测性和真实眼镜验收。
+
+详细 PR 拆分、依赖关系、验收门、风险和待确认事项见 [M10–M17 Update Plan](./2026-08-31-architecture-reliability-update-plan.md)。该文档是未来规划，不将提案写成当前能力，也不替代本文件中 M1–M9 的历史验证记录。

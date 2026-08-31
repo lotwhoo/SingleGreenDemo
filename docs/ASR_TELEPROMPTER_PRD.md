@@ -1,8 +1,8 @@
 # 单绿眼镜 ASR 智能提词器 PRD
 
-> 版本：MVP Implemented Baseline v1.5（含延期/未验证项）
+> 版本：MVP Implemented Baseline v1.7（含 M11-PR1/PR2 与延期/未验证项）
 >
-> 日期：2026-08-30
+> 日期：2026-08-31
 >
 > 产品定义：用户导入/粘贴讲稿，ASR 只跟踪已说到的位置；系统不生成、不续写、不改写讲稿。
 >
@@ -18,15 +18,16 @@
 手机端粘贴并载入讲稿（TXT 文件导入延期）
   -> 删除空格与 Tab、把连续换行折叠为一个 `/`，再做本地规范化和测量分页
   -> 启动语音跟随（一次话语 Session 自动轮换）
-  -> 在当前锚点附近匹配已说内容
+  -> 在当前已读位置后的 50 个规范化字符内匹配已说内容
   -> partial 驱动句内完整行上移，当前句证据稳定后推进到下一句
   -> 静默/插话/歧义时保持
+  -> 自动跃迁后可在手机端一次性撤销
   -> 四向键纠偏、暂停或切换纯手动
 ```
 
-成功标准不是“ASR 转写看起来准确”，而是演讲者抬眼时，当前要说的内容稳定地处于中间行，且系统绝不因识别猜测向后跳。
+成功标准不是“ASR 转写看起来准确”，而是演讲者抬眼时，当前要说的内容稳定地处于中间行，且系统绝不因识别猜测自动向后跳。向后恢复只允许由用户明确点击手机端的一次性撤销，或使用既有人工纠偏。
 
-当前证据边界：最终 checkout 的 SingleGreenGlassesKit 231/231、App Simulator 91/91，以及此前列出的归档、构建、架构、安全、隐私和 API 基线门禁均已通过。真实 DeepSeek/搜索/ASR 调用、句内自动上移的物理设备复验、长时可读性仍未验证。
+当前证据边界：本次 checkout 的 SingleGreenGlassesKit 256/256、SingleGreenUser App Simulator 86/86、七 Package strict-concurrency/WAE 552/552、User Release Simulator build、架构边界和敏感信息扫描已通过。新增 `ReadingPositionEngine` 与 Controller 撤销入口的 public API 基线因本机工具链低于仓库锁定版本而未生成和审阅。真实 DeepSeek/搜索/ASR 调用、50 字跃迁与撤销的物理设备复验和长时可读性仍未验证。
 
 ## 2. 用户与待完成任务
 
@@ -94,7 +95,7 @@
 
 1. 用户进入“ASR 提词器”，在 App 内粘贴/编辑讲稿并点击“载入稿件”；UTF-8 TXT 文件选择与解析尚未实现。
 2. 系统保留原始稿件副本；载入显示稿时删除空格、Tab 等布局空白，连续 CR/LF 折叠为一个 `/`，开头和结尾的换行不生成 `/`，不生成空句或空白显示行。该规则也会删除英文单词之间的空格，这是当前产品明确选择。
-3. 当前系统建立句子序列并用规范化文本做有界前向匹配；完整 token/range/段落索引仍是后续增强。
+3. 当前系统建立句子序列和确定性脚本版本标识，并由纯值 `ReadingPositionEngine` 用规范化文本做有界前向匹配；版本标识只用于拒绝陈旧事件，不是加密摘要。完整 token/range/段落索引仍是后续增强。
 4. 当前由首句或已在运行中选择的句子开始，查看 8:3 眼镜预览；手机端段落选择尚未实现。
 5. 当前云端 ASR 同意由 App 持久化且默认拒绝。用户明确开启后才请求麦克风并准备 speech-scoped session；设备端 ASR capability 分支尚未实现。
 6. 用户主动开始，才启动音频采集。
@@ -103,11 +104,12 @@
 
 1. Ready 页面显示第一句和操作提示。
 2. 短按上键开始/暂停；当前实现以 `preparing`/`listening` 表示准备与跟随，没有独立暴露 `SEARCHING`。
-3. 对齐器只在当前确认锚点附近搜索；满足稳定条件后进入 `FOLLOWING`。
+3. 对齐器只在当前确认位置向前 50 个规范化字符内搜索；若用户突然朗读窗口内后文，唯一精确命中会立即跃迁到对应位置。重复短语、窗口外内容或不可靠匹配仍保持不动。
 4. partial 转写推进当前句内位置；焦点跨过完整显示行时，以 0.18 秒向上过渡并继续露出未读内容。三行依次为已读、正在读、未读：已读内容为 32% 深绿、当前行为 100% 高亮、未读行为 68% 中绿。正文不自动添加箭头或完成符号，分段只显示规范化后的单个 `/`；首尾不插入空白占位。
 5. 静默、即兴插话或低置信度时冻结页面，不自动完成。
 6. 用户可随时左右纠偏，或下键重新锚定/切换纯手动。
 7. 当前通过暂停、切换体验或宿主 shutdown 结束；长按上键结束和位置 checkpoint 尚未实现。App 未新增音频或识别全文持久化。
+8. 若系统刚执行一次 `jump` 自动跃迁，手机控制面板临时出现“撤销刚才的自动跳转”；点击一次恢复跃迁前锚点并重建识别 Session，随后按钮消失。眼镜按键映射不变。
 
 ### 5.3 脚本预处理与双文本模型
 
@@ -126,6 +128,13 @@
 | 右 | 下一句，并将其设为锚点 | 下一段 | 短按已实现且末尾不越界；长按延期 |
 | 上 | 开始、暂停或继续 | 结束本次提词 | 短按已实现；长按延期 |
 | 下 | 跟随中从当前句重启识别；Ready/Paused 切到手动；Manual 重试 ASR | 预留 | 短按已实现；长按未定义/未实现 |
+
+手机端补充控制：
+
+- “撤销刚才的自动跳转”不占用眼镜按键，只在存在可消费记录时出现；
+- 只撤销最近一次 Engine `jump`，普通 `advance` 不生成撤销记录；
+- 点击后先消费记录并取消当前 Session，再从旧锚点建立新 Session，重复点击不生效；
+- 人工左/右、下键重锚定、脚本替换、reset、shutdown、完成态、后续普通自动推进和不兼容定位代际使按钮失效。
 
 交互约束：
 
@@ -175,10 +184,16 @@
 3. partial 只更新候选；满足稳定门槛才提交确认锚点。初始启发值为“至少 3 个有信息量 token 或 6 个中文字符”，最终阈值由离线语料评估决定。
 4. 多个重复短语同分时选择距离最近且单调向前的候选；仍歧义则进入 `UNCERTAIN`，不得猜测跳转。
 5. ASR 自动推进可以保持或向前，绝不自动向后；向后只能由用户操作。
-6. 识别到明显跳读时，至少两个连续事件支持同一后方位置才允许越句推进。
+6. 识别到明显跳读时，若目标起点位于当前已读位置后 50 个规范化字符内，且 ASR 后缀在窗口内唯一精确命中，则单个事件立即跃迁；非精确候选仍须至少两个连续事件支持同一位置才允许推进。
 7. partial 被后续修订时，只撤销未确认候选，不回滚已确认页面。
 
-当前 MVP 实现是上述目标的受限子集：搜索窗口最多向前 5 句；规范化忽略标点、空格和硬换行并保留字母数字与 CJK 字符；LCS、二元组相似度、覆盖率和长度平衡共同提供小错字、少量口头语容错；短文本使用更高置信门槛，未来句还要求明确分差。partial 会单调更新句内 UTF-16 原文位置并驱动完整行上移；一次话语结束后，新 Session 可从已保存位置继续。累计与增量 ASR 分别只在两个有界候选窗口内做模糊匹配，避免长稿件跳读。两个相同 partial 才提交整句，final utterance 达到句内完成阈值后可立即提交；候选永不小于当前锚点。完整 token 权重、拼音同音模型、跨段落索引和离线评测调参仍属延期项。
+本次实现假设：“50 个字”按匹配用的规范化字符计数，只计算字母、数字和 CJK 字符；空格、标点、换行、段落标记、emoji 和其他符号不占额度。候选起点为第 50 个字符时仍属于窗口内。若后续需要按原稿可见字符计数，应作为独立规则调整。
+
+当前 MVP 实现是上述目标的受限子集：搜索窗口从当前已读位置起最多向前 50 个规范化字符；规范化忽略标点、空格和硬换行并保留字母数字与 CJK 字符。窗口内唯一精确的 ASR 后缀命中可由单个事件立即跃迁到句内或跨句位置；重复短语、窗口外命中和自动后退均保持不动。LCS、二元组相似度、覆盖率和长度平衡继续为普通跟随提供小错字、少量口头语容错；短文本使用更高置信门槛，未来句还要求明确分差。partial 会单调更新句内 UTF-16 原文位置并驱动完整行上移；一次话语结束后，新 Session 可从已保存位置继续。累计与增量 ASR 分别只在有界候选窗口内做模糊匹配，避免长稿件远跳。非精确候选仍需两个相同 partial 才提交整句，final utterance 达到句内完成阈值后可立即提交；候选永不小于当前锚点。完整 token 权重、拼音同音模型、跨段落索引和离线评测调参仍属延期项。
+
+M11-PR1 已把上述定位规则收敛为纯值 `ReadingPositionEngine`：输入为脚本及其版本、当前位置、转写片段、partial/final 语义和只含数值的稳定证据；输出为 `stay / advance / jump`，reason/evidence 不包含稿件或转写文本。脚本版本不一致时 fail-closed 保持。`TeleprompterController` 继续拥有识别 generation、Session 生命周期和状态发布，但不再自行持有候选阈值、稳定计数或跃迁判定，只应用 Engine 的目标位置。保留的 `TeleprompterScriptAligner` 是兼容入口和底层确定性匹配原语。
+
+M11-PR2 在 Controller 边界加入纯值 `ReadingPositionUndoState`：记录只含脚本版本、独立 alignment generation 和跃迁前后锚点。只有 `.jump` 被成功应用且未进入完成态时记录；后续 `.advance` 或不兼容上下文立即清除。兼容的一次话语 rollover 保留记录，避免 final 后按钮在用户操作前消失；消费时仍重新校验脚本版本、定位代际和当前目标锚点。撤销不是 Engine 自动后退，而是手机端用户命令。
 
 ### 8.2 特殊语音行为
 
@@ -189,11 +204,12 @@
 | 静默达到 15 秒 | 继续保持，可降低状态亮度；绝不自动结束 |
 | 即兴插话 | 局部窗口无可靠匹配则保持；回到原稿后恢复 |
 | 重复一句 | 最近单调候选优先；不因重复自动后退 |
-| 跳过一段 | 两个连续稳定事件确认后向前跳；否则 `UNCERTAIN` |
+| 跳读窗口内后文 | 50 个规范化字符内唯一精确命中立即跃迁；重复短语保持 |
+| 跳过窗口外内容 | 不自动跃迁；用户手动纠偏 |
 | 用户改口 | 未确认 partial 可修订；已确认锚点不后退 |
 | 环境声/音量变化 | 只影响状态提示，不作为推进证据 |
 
-上表是目标行为。当前自动化已覆盖即兴/歧义保持、重复 partial 后推进和 final 立即推进；实现中 `level` 事件明确不推进，但没有独立验收结果。显式 2 秒/15 秒静默状态、两个远端 final 的跨段确认、复杂 partial 修订与噪声语料尚未实现或未验证。
+上表是目标行为。当前自动化已覆盖 50 字内唯一精确命中的单事件跃迁、窗口外保持、重复目标保持、即兴/歧义保持、重复 partial 后推进和 final 立即推进；实现中 `level` 事件明确不推进，但没有独立验收结果。显式 2 秒/15 秒静默状态、复杂 partial 修订与噪声语料尚未实现或未验证。
 
 ## 9. 状态机：已实现 MVP 与目标增强
 
@@ -262,7 +278,7 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 | 情况 | 系统行为 | 用户恢复 | 当前状态 |
 |---|---|---|---|
 | 重复短句造成多个候选 | 保持当前行；目标 HUD 显示“未确定” | 左右选句或下键重捕获 | 部分：保持已实现；专用文案延期 |
-| ASR 跳到很远的后文 | 当前有界为向前 5 句；目标要求连续证据 | 当前用右键逐句调整 | 部分：跨段长按延期 |
+| ASR 跳到后文 | 当前只允许在向前 50 个规范化字符内跃迁；唯一精确命中立即生效，非精确候选仍要求连续证据 | 窗口外内容用右键逐句调整 | 50 字跃迁已实现；跨段长按延期 |
 | 用户回讲前文 | ASR 不自动后退 | 左键人工回退 | 已实现并有 Core 自动化覆盖 |
 | 麦克风或 Speech 权限拒绝 | 进入纯手动 | 授权后下键显式重试 | 已实现；真实系统权限 UI 未验证 |
 | 网络断开且只能云端识别 | 保留当前位置并在 stream failure 后转手动 | 下键显式重试 | 部分：失败降级已实现；1 秒目标和网络恢复路径未验证 |
@@ -376,7 +392,7 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 | GWT-11 | 未验证 | 未单独覆盖 partial 被 final 修订的完整序列 |
 | GWT-12 | 通过（Core 自动化） | 对齐器永不提出后退位置 |
 | GWT-13 | 通过（Core 自动化） | 重复/歧义短语保持当前锚点；无独立 Uncertain phase |
-| GWT-14 | 部分实现 | partial 远跳需重复证据；final 当前可立即前跳，未满足完整目标 |
+| GWT-14 | 通过（Core 自动化） | 50 字内唯一精确命中由单个 partial 立即跃迁；窗口外与重复目标保持；非精确候选仍走稳定门槛 |
 | GWT-15 | 通过（Core 自动化） | 即兴文本不匹配时保持锚点 |
 | GWT-16–17 | 延期 | 无 2 秒/15 秒静默计时 phase |
 | GWT-18 | 已实现，未单独验收 | level 事件被忽略；当前测试矩阵无独立结果 |
@@ -387,6 +403,7 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 | GWT-23 | 通过（Core 自动化） | 撤销云端同意后转手动并拒绝迟到事件 |
 | GWT-24 | 通过（Core 自动化） | background 后暂停并拒绝迟到事件；其他 paused 来源未全量覆盖 |
 | GWT-25 | 延期 | 长按结束和 checkpoint 未实现 |
+| GWT-25A–25E | 通过（Core + App Simulator 自动化） | 手机按钮按需出现；一次性恢复跃迁前锚点；重复点击和旧事件无效；人工/脚本/reset/shutdown/完成/普通推进使记录失效；兼容 rollover 保留且不兼容重锚定拒绝。真机触达与真实 ASR 未验证 |
 | GWT-26 | 通过（Core + App 自动化） | 同意默认拒绝；不请求权限/不准备 Session；手动仍可用 |
 | GWT-27 | 部分实现 | stream failure 转手动并保留锚点；1 秒网络目标未验证 |
 | GWT-28 | 已实现，未验证 | 无静默自动恢复上传逻辑；真实网络恢复未跑 |
@@ -414,7 +431,7 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 11. **Given** partial 后续被 final 修订，**When** 候选改变，**Then** 只替换未确认候选，不回滚已确认行。
 12. **Given** 用户重复刚说的一句，**When** ASR 再次命中，**Then** 页面不自动后退。
 13. **Given** 脚本中存在多个相同短语，**When** 评分仍歧义，**Then** 进入 Uncertain 并冻结，不随机选择。
-14. **Given** 用户跳过一段，**When** 只有一个远端匹配事件，**Then** 不提交跳转；连续两个稳定事件同指该位置后才前进。
+14. **Given** 用户突然朗读当前已读位置后 50 个规范化字符内的后文，**When** 一个 ASR 事件的后缀在窗口内唯一精确命中，**Then** 立即跃迁到命中结束位置；若目标起点超过 50 个字符、目标重复或命中不可靠，**Then** 保持当前位置。
 15. **Given** 用户即兴插话，**When** 局部窗口没有可靠匹配，**Then** 保持当前锚点；用户回到讲稿后恢复。
 16. **Given** 连续静默达到 2 秒，**When** 无新匹配，**Then** 进入 Holding，不移动、不结束。
 17. **Given** 静默超过 15 秒，**When** 会话仍有效，**Then** 继续保留位置，不把静默当作完成。
@@ -429,6 +446,11 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 23. **Given** 用户切换纯手动，**When** ASR 仍到达旧事件，**Then** 事件被忽略且页面不动。
 24. **Given** Paused，**When** 收到网络或 ASR 回调，**Then** 不更新锚点；再次继续后从当前句重新定位。
 25. **Given** 任意运行态，**When** 长按上键，**Then** 停止采集、保存 checkpoint、进入 Completed，且不触发短按暂停。
+25A. **Given** 当前发生一次可撤销自动 `jump`，**When** 手机正在显示提词器控制面板，**Then** 显示“撤销刚才的自动跳转”；无记录或已失效时不显示。
+25B. **Given** 撤销记录仍与脚本版本、定位代际和当前锚点兼容，**When** 用户点击手机按钮，**Then** 一次性恢复跃迁前锚点、取消当前 Session，并在原跟随态下创建新 Session。
+25C. **Given** 已完成一次撤销，**When** 用户重复点击或旧 Session 继续发送 partial/final，**Then** 页面不再回退且旧事件被拒绝。
+25D. **Given** 存在撤销记录，**When** 用户左右纠偏、下键重锚定、替换脚本、reset、shutdown、完成或发生后续普通自动推进，**Then** 记录立即失效。
+25E. **Given** 自动 rollover 保持相同脚本与定位上下文，**When** 新 Session 接管，**Then** 撤销仍可用；若脚本版本、定位代际或目标锚点不匹配，**Then** fail-closed。
 
 ### 14.4 故障、隐私与恢复
 
@@ -455,14 +477,14 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 | T06 | Unit/Layout | 极长无空格 token | 固定宽度 | 字素安全换行；不无限循环 | 未单独验证 |
 | T07 | Snapshot/HUD | Ready/Searching/Following | 固定页面 | 状态与进度在预算内，当前行视觉层级明确 | 部分：HUD Mapper 通过；非完整 snapshot |
 | T08 | Snapshot/HUD | 新增显示配置/安全区 | 固定页面 | 必须容纳 3 条完整正文行，否则配置不通过 | 默认配置通过；其他配置待逐项验证 |
-| T09 | Unit/Aligner | 连续唯一句 | 稳定 partial/final | 单调推进到唯一候选 | 通过（Core） |
+| T09 | Unit/Engine | 连续唯一句 | 稳定 partial/final | 单调推进到唯一候选 | 通过（Engine/Core） |
 | T10 | Unit/Aligner | 仅两个常见词 | partial | 候选不提交 | 部分：4 字符阈值已实现 |
-| T11 | Unit/Aligner | partial 被 final 修订 | 两事件 | 未确认候选替换；确认锚点不回滚 | 未单独验证 |
-| T12 | Unit/Aligner | 相同短语出现 3 次 | 命中短语 | 保持/Uncertain，不随机远跳 | 通过（Core，保持但无 Uncertain phase） |
+| T11 | Unit/Engine | partial 被 final 修订 | 两事件 | partial 需稳定证据；final 可立即提交；确认锚点不回滚 | 通过（Engine 的 partial 稳定/final 立即路径）；复杂修订语料延期 |
+| T12 | Unit/Engine | 相同短语出现 3 次 | 命中短语 | 保持/Uncertain，不随机远跳 | 通过（Engine/Core，类型化 ambiguous stay；无独立 Uncertain phase） |
 | T13 | Unit/Aligner | 重复上一句 | ASR 重复 | 自动后跳数为 0 | 通过（Core） |
 | T14 | Unit/Aligner | 即兴插入 20 秒 | 无匹配后回稿 | 插话时保持；回稿后恢复 | 部分：文本保持通过；20 秒计时延期 |
-| T15 | Unit/Aligner | 跳过一段 | 单个远匹配 | 不提交跳转 | 部分：partial 不提交；final 当前可提交 |
-| T16 | Unit/Aligner | 跳过一段 | 两个一致远匹配 | 向前提交一次，不多跳 | 部分：重复 partial 通过；跨段未建模 |
+| T15 | Unit/Engine + Controller | 跳读 50 字内唯一后文 | 单个精确 partial | 立即跃迁到句内或跨句位置 | 通过（Engine/Core，第 50 字边界） |
+| T16 | Unit/Engine | 目标超过 50 字或窗口内重复 | 单个匹配 | 保持当前位置，不猜测跳转 | 通过（Engine/Core，第 51 字与歧义保持） |
 | T17 | Unit/Aligner | 中英文数字/英文产品名 | 规范化事件 | 按定义命中；displayText 未改写 | 部分：字母数字/CJK 规范化已实现 |
 | T18 | Unit/State | 开始双击 | 同 generation 两次 start | 仅一个 session | 未按该语义实现 |
 | T19 | Unit/State | Following | 时钟推进 1.9 秒静默 | 仍 Following，页面不动 | 延期：无静默时钟 |
@@ -484,19 +506,26 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 | T35 | Unit/Storage | 删除讲稿 | delete | 原稿/索引/checkpoint 全删除 | 延期 |
 | T36 | Unit/Telemetry | 正常/错误全路径 | capture events | payload 无文本、音频、文件名/可逆哈希 | 延期：尚无提词器遥测 |
 | T37 | Performance | 60 分钟长稿 | 固定流 | 内存有界；局部搜索耗时不随全文线性恶化 | 未运行 |
-| T38 | App Integration | fake ASR + Experience | 四向操作 | 通用 control state 路由，不读取具体 Controller | 通过（Core/App/架构门禁的相关覆盖） |
+| T38 | App Integration | fake ASR + Experience | 四向操作 | 四向操作继续走通用 control state；仅手机撤销读取提词器可用状态并调用显式命令 | 通过（Core/App/架构门禁的相关覆盖） |
 | T39 | Simulator | 8:3、多状态、Reduce Motion | UI 操作 | 页面完整行、可读、无动画违规 | 部分：App/HUD 逻辑通过；交互式 UI/Reduce Motion 未跑 |
 | T40 | Live Provider | 普通话、静默、插话、噪声 | 真实 ASR | 测量首次定位、p95 延迟、错误跳转；不预设通过 | 未运行 |
 | T41 | Physical Device | 真实眼镜 10/30/45 分钟 | 讲稿+四键 | 分别记录可读性、疲劳、按键、音频路由、热与电量 | 未运行 |
+| T42 | Unit/Engine | 脚本版本不一致 | 陈旧识别事件 | fail-closed 保持；决定对象不含文本 | 通过（Engine） |
+| T43 | Unit/Concurrency | 相同 Engine 输入 | 64 个并发调度任务 | 所有结果完全一致 | 通过（Engine） |
+| T44 | Unit/Undo Contract | 最近自动跃迁 | consume 两次 | 第一次恢复 source；第二次为 nil | 通过（Core） |
+| T45 | Unit/Controller | 自动 jump 后点击手机撤销 | 当前与旧 Session 事件 | 恢复旧锚点；取消当前 Session；旧 partial/final 拒绝 | 通过（Core fake Session） |
+| T46 | Unit/Controller | 人工纠偏、脚本替换、reset、shutdown、完成、普通推进 | 各失效动作 | 撤销不可用且不能改变新位置 | 通过（Core） |
+| T47 | Unit/Controller | 自动 rollover 后撤销 | 三个 fake Session | 兼容 rollover 保留；只取消当前 Session；新 Session 从旧锚点开始 | 通过（Core fake Session）；live provider 未验证 |
+| T48 | App/UI Policy | 提词器/其他体验 × 有/无记录 | 状态组合 | 仅提词器且有记录时显示手机按钮 | 通过（App Simulator 策略）；真机视觉未验证 |
 
 ## 16. 发布门与证据要求
 
 建议按以下顺序验收，任何后层成功都不能替代前层证据：
 
-1. **已通过**：最终 SingleGreenGlassesKit 全量套件 231/231；
-2. **已通过**：最终 App Simulator 全量 91/91，0 failures，0 skips，运行于 iPhone 17 Pro / iOS 26.5；
-3. **已通过**：Debug iphoneos archive/export 与 Release generic iphoneos build；
-4. **已通过**：Release credential isolation、repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates 和 final public API baseline check；
+1. **已通过**：本次 SingleGreenGlassesKit 全量套件 256/256；
+2. **已通过**：本次 SingleGreenUser App Simulator 全量 86/86，0 failures，0 skips，运行于 iPhone 17 Pro / iOS 26.5；
+3. **已通过**：本次 Internal Debug iphoneos archive/export、Internal Debug Simulator build/能力扫描和 User Release Simulator build；历史 Release generic iphoneos build 仍只作为历史证据；
+4. **部分通过**：本次 credential isolation、repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates 和 public API updater 安全自检已通过；final public API baseline 因本机工具链低于仓库锁定版本而按设计未运行；
 5. **未运行**：live provider 的 DeepSeek、搜索和 ASR 调用，包括普通话、噪声、静默、插话、跳读与 rollover 连续性；
 6. **部分通过**：历史用户版 Build 8 与本次三行修复内部版均已安装到 `kemin‘s phone`（iPhone 17 Pro Max）；本次内部版因设备锁屏未能自动启动，物理眼镜显示、音频路由和人工可读性仍未验证。安装通过不能替代这些证据。
 
@@ -509,12 +538,12 @@ PromptSmart 对 VoiceTrack 使用专利表述。商业发布前应由合格人�
 | 证据类别 | 当前状态 | 备注 |
 |---|---|---|
 | 文档静态检查 | 已通过：逐文件 whitespace check 与敏感信息模式扫描 | 未发现 diff 空白错误或常见密钥模式；不验证业务 |
-| 最终 Core 自动化 | 历史全量已通过：SingleGreenGlassesKit 231/231；本次提词器聚焦复测 29/29 | 覆盖句内跟随、跨 ASR Session 续读、累计长转写防跳读、短句推进、整句推进、完成/重启、小错字与口头语容错、空格/Tab/空段落处理、超长无标点稿件和并发隔离；不代表真实服务通过 |
-| 最终 App Simulator 全量 | 已通过：91/91，0 failures，0 skips；iPhone 17 Pro，iOS 26.5；`/private/tmp/SingleGreenDemo-TeleprompterThreeRowsFinal/Logs/Test/Test-SingleGreenDemo-2026.08.30_11-35-21-+0800.xcresult` | App test target 全量通过，含固定的已读/正在读/未读三行深度、完整行渲染、句内焦点、向上过渡与异常富文本降级；不等于 live provider 或设备验证 |
+| 最终 Core 自动化 | 本次全量已通过：SingleGreenGlassesKit 256/256；Engine 聚焦 9/9；提词器聚焦回归 42/42 | 在 M11-PR1 定位覆盖之外，新增一次性消费、脚本/代际/目标兼容校验、旧事件拒绝、manual/script/reset/shutdown/completion/advance 失效和兼容 rollover 覆盖；不代表真实服务通过 |
+| 最终 App Simulator 全量 | 本次已通过：86/86，0 failures，0 skips；iPhone 17 Pro，iOS 26.5；`/tmp/SingleGreenDemo-M11-PR2-Final-AppTests/Logs/Test/Test-SingleGreenUser-2026.08.31_22-51-58-+0800.xcresult` | SingleGreenUser App test target 全量通过，含撤销按钮显示策略、提词器装配、HUD 三行、句内焦点和显示配置回归；不等于 live provider 或设备验证 |
 | 本次内部版 App/HUD 聚焦复测 | 已通过：49/49，0 failures，0 skips；iPhone 17 Pro Max Simulator，iOS 26.5；`/private/tmp/SingleGreenDemo-ThreeLineFixTests/Logs/Test/Test-SingleGreenInternal-2026.08.31_14-27-37-+0800.xcresult` | 使用默认显示 Profile 与 440×956 容器计算实际投影，验证 14 pt 正文可完整容纳 3 行 |
-| iphoneos 构建与导出 | Debug archive/export 成功；Release generic build 成功；Build 8 IPA 已导出并核验包内版本 | 构建与签名通过不等于具体设备 install/launch |
-| 发布与隐私门禁 | 已通过：Release credential isolation、repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates、final public API baseline check | 凭据隔离、仓库卫生、隐私与公共 API 静态门禁通过；不替代运行时验证 |
+| iphoneos 构建与导出 | 本次 Internal Debug archive/export 成功；版本 0.1（9）的 `SingleGreenInternal-Build9-M10.ipa` 已核验签名、内部 Bundle ID、能力标记和 SHA-256；历史 Release generic iphoneos build 仍为历史证据 | 测试包路径：`/Users/chenkemin/Documents/ChatGPT/单绿眼镜 Demo/测试包/Build-9-M10/SingleGreenInternal-Build9-M10.ipa`；构建与签名通过不等于具体设备 install/launch |
+| 发布与隐私门禁 | 本次已通过：secret scan、repository hygiene、privacy logging、VAD privacy、architecture gates 与 11 个负向 fixture、七 Package strict-concurrency/WAE 552/552、User Release Simulator build、diff whitespace 和 public API updater 安全自检 | 实际 public API baseline 已尝试但因当前 Xcode 26.5（17F42）/ Swift 6.3.2 低于锁定 Xcode 26.6（17F113）/ Swift 6.3.3 而按设计 fail-closed；未改写 baseline |
 | Live provider | 未运行 | 未验证真实 DeepSeek、搜索、普通话 ASR、延迟、噪声或 one-shot auto-rotation 连续性 |
 | 物理设备 install/launch | 三行修复内部版 install 已通过；launch 因设备锁屏被系统拒绝 | `SingleGreenInternal` 已于 2026-08-31 覆盖安装到 `kemin‘s phone`；尚未人工确认手机画面，也未验证眼镜可读性、按键、音频路由、热与电量 |
 
-最终 checkout 的 Core/App 自动化、公共 API 基线、Debug 体验包和 Release 隔离门已刷新；下一步由用户进行真实普通话 ASR、物理设备显示、音频路由和人工可读性体验。
+本次 checkout 的 Core/App 自动化、架构边界、严格并发和敏感信息扫描已刷新；公共 API 基线仍需在仓库锁定工具链上复验。真实普通话 ASR、50 字跃迁与撤销、物理设备显示、音频路由和人工可读性体验继续作为独立证据门。
