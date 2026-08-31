@@ -13,7 +13,7 @@ struct DiagnosticsPanelView: View {
             List {
                 Section("运行状态") {
                     LabeledContent("日志数量", value: "\(diagnostics.diagnosticLines.count)")
-                    Text("日志只记录阶段、耗时、错误码和生命周期，不记录对话正文、提词稿、音频或 API Key。")
+                    Text("日志只记录阶段、耗时、错误码、生命周期，以及内部 VAD 和提词器 ASR 的无内容里程碑；不记录对话正文、识别文字、提词稿、音频、音量值或 API Key。")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -38,15 +38,19 @@ struct DiagnosticsPanelView: View {
                 }
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button(role: .destructive) {
-                        diagnostics.removeAllDiagnostics()
+                        Task { await diagnostics.removeAllDiagnostics() }
                     } label: {
                         Image(systemName: "trash")
                     }
                     Button {
-                        do {
-                            exportItem = DiagnosticsExportItem(url: try diagnostics.makeExportURL())
-                        } catch {
-                            exportError = "日志导出失败"
+                        Task {
+                            do {
+                                exportItem = DiagnosticsExportItem(
+                                    url: try await diagnostics.makeExportURL()
+                                )
+                            } catch {
+                                exportError = "日志导出失败"
+                            }
                         }
                     } label: {
                         Label("导出全部日志", systemImage: "square.and.arrow.up")

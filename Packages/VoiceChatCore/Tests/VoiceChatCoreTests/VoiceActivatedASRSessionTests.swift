@@ -758,7 +758,14 @@ final class VoiceActivatedASRSessionTests: XCTestCase {
         let source = FakePCMFrameSource()
         let detector = FakeVoiceActivityDetector(defaultSpeech: true)
         let transport = FakeStreamingASRTransport(finishFailure: true)
-        let session = try makeSession(source: source, detector: detector, transport: transport)
+        let diagnostics = VoiceActivatedDiagnosticsEventRecorder()
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: try makePolicy(),
+            diagnostics: diagnostics.observer
+        )
 
         try await session.arm()
         for sequence in 0..<3 { await source.emit(try frame(UInt64(sequence))) }
@@ -775,13 +782,28 @@ final class VoiceActivatedASRSessionTests: XCTestCase {
         XCTAssertEqual(failure.code, .connectionLost)
         let metrics = await transport.metrics()
         XCTAssertEqual(metrics.finishCount, 1)
+        let diagnosticEvents = diagnostics.values
+        XCTAssertTrue(diagnosticEvents.contains(.finishStreamRequested(generation: 1)))
+        XCTAssertFalse(diagnosticEvents.contains(.finishStreamReturned(generation: 1)))
+        XCTAssertTrue(diagnosticEvents.contains(.terminal(
+            generation: 1,
+            stage: .finalizing,
+            outcome: .failed(origin: .transport)
+        )))
     }
 
     func testTransportEventStreamClosureWithoutTerminalEventFailsOnceAndCancels() async throws {
         let source = FakePCMFrameSource()
         let detector = FakeVoiceActivityDetector(defaultSpeech: true)
         let transport = FakeStreamingASRTransport(autoFinishEvent: false)
-        let session = try makeSession(source: source, detector: detector, transport: transport)
+        let diagnostics = VoiceActivatedDiagnosticsEventRecorder()
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: try makePolicy(),
+            diagnostics: diagnostics.observer
+        )
         let terminalEvents = collectEvents(from: session) { event in
             if case .state(.failed) = event { return true }
             return false
@@ -809,6 +831,17 @@ final class VoiceActivatedASRSessionTests: XCTestCase {
         await Task.yield()
         let metricsAfterRepeatedClosure = await transport.metrics()
         XCTAssertEqual(metricsAfterRepeatedClosure.cancelCount, 1)
+        let diagnosticEvents = diagnostics.values
+        XCTAssertEqual(diagnosticEvents.filter {
+            $0 == .transportStreamClosed(generation: 1, stage: .streaming)
+        }.count, 1)
+        XCTAssertEqual(diagnosticEvents.filter {
+            $0 == .terminal(
+                generation: 1,
+                stage: .streaming,
+                outcome: .failed(origin: .transport)
+            )
+        }.count, 1)
     }
 
     func testStaleEventStreamClosureCannotFailRearmedGeneration() async throws {
@@ -835,6 +868,58 @@ final class VoiceActivatedASRSessionTests: XCTestCase {
         let metricsAfterStaleClosure = await transport.metrics()
         XCTAssertEqual(stateAfterStaleClosure, .streaming)
         XCTAssertEqual(metricsAfterStaleClosure.cancelCount, 1)
+        await session.cancel()
+    }
+
+    func testDiagnosticsRejectLateOldWatchdogSourceAndTransportActivityAfterRearm() async throws {
+        let source = FakePCMFrameSource(finishStreamsOnStop: false)
+        let detector = FakeVoiceActivityDetector(defaultSpeech: true)
+        let transport = FakeStreamingASRTransport(
+            autoFinishEvent: false,
+            finishEventStreamOnCancel: false
+        )
+        let clock = ManualMonotonicClock()
+        let diagnostics = VoiceActivatedDiagnosticsEventRecorder()
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: try makePolicy(noSpeech: 5),
+            frameLivenessClock: clock.injectedClock,
+            diagnostics: diagnostics.observer
+        )
+
+        try await session.arm()
+        await waitUntil { await clock.sleepCallCount == 1 }
+        for sequence in 0..<3 { await source.emit(try frame(UInt64(sequence))) }
+        await waitUntil { await session.state == .streaming }
+        await session.cancel()
+        await clock.advance(by: .milliseconds(50))
+
+        try await session.arm()
+        await waitUntil { await clock.sleepCallCount == 2 }
+        await waitUntil {
+            diagnostics.values.contains(.sourceStartRequested(generation: 3))
+        }
+        let newRunStartIndex = try XCTUnwrap(
+            diagnostics.values.lastIndex(of: .sourceStartRequested(generation: 3))
+        )
+
+        await clock.advance(by: .milliseconds(50))
+        await source.emit(try frame(99), atRun: 0)
+        await source.endFrameStream(atRun: 0)
+        await transport.endEventStream(at: 0)
+        for _ in 0..<100 { await Task.yield() }
+
+        let eventsAfterNewRunStarted = Array(diagnostics.values[newRunStartIndex...])
+        XCTAssertFalse(eventsAfterNewRunStarted.contains {
+            diagnosticGeneration(of: $0) == 1
+        })
+        XCTAssertTrue(eventsAfterNewRunStarted.allSatisfy {
+            diagnosticGeneration(of: $0) == 3
+        })
+        let stateAfterLateActivity = await session.state
+        XCTAssertEqual(stateAfterLateActivity, .armed)
         await session.cancel()
     }
 
@@ -1455,6 +1540,350 @@ final class VoiceActivatedASRSessionTests: XCTestCase {
         XCTAssertNil(weakSession)
     }
 
+    func testDiagnosticsDistinguishInterruptedSilenceFromHealthyEndpoint() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(
+            speechBySequence: [
+                0: true, 1: true, 2: true,
+                3: false, 4: true, 5: false, 6: false
+            ],
+            defaultSpeech: false
+        )
+        let transport = FakeStreamingASRTransport()
+        let diagnostics = VoiceActivatedDiagnosticsEventRecorder()
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: try makePolicy(preRoll: 3, endpointSilence: 2),
+            diagnostics: diagnostics.observer
+        )
+
+        try await session.arm()
+        for sequence in 0...6 { await source.emit(try frame(UInt64(sequence))) }
+        await waitUntil { await transport.metrics().finishCount == 1 }
+        await transport.emit(.finished)
+        await waitUntil { await session.state == .finished }
+
+        let values = diagnostics.values
+        XCTAssertTrue(values.contains(.speechResumed(
+            generation: 1,
+            afterSilentFrameCount: 1,
+            endpointSilenceFrameCount: 2
+        )))
+        XCTAssertTrue(values.contains(.segmentEnded(
+            generation: 1,
+            endpoint: .silence(observedFrameCount: 2, thresholdFrameCount: 2)
+        )))
+        let finalProgress = values.compactMap { event -> VoiceActivatedASRDiagnosticProgress? in
+            guard case .progress(_, .detectorProcessed, let progress) = event else { return nil }
+            return progress
+        }.last
+        XCTAssertEqual(finalProgress?.speechFrameCount, 4)
+        XCTAssertEqual(finalProgress?.silenceFrameCount, 3)
+        XCTAssertEqual(finalProgress?.currentSilenceStreak, 2)
+        XCTAssertEqual(finalProgress?.maximumSilenceStreak, 2)
+        XCTAssertTrue(values.contains(.finishStreamRequested(generation: 1)))
+        XCTAssertTrue(values.contains(.finishStreamReturned(generation: 1)))
+        XCTAssertTrue(values.contains(.tailFlushStarted(
+            generation: 1,
+            pendingFrameCount: 1
+        )))
+        XCTAssertTrue(values.contains(.tailFlushFinished(
+            generation: 1,
+            flushedFrameCount: 1
+        )))
+        XCTAssertTrue(values.contains(.transportTerminal(generation: 1, terminal: .finished)))
+    }
+
+    func testDiagnosticsDirectPostOnsetManualFinishEmitsExactlyOneManualEndpoint() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: true)
+        let transport = FakeStreamingASRTransport(autoFinishEvent: false)
+        let diagnostics = VoiceActivatedDiagnosticsEventRecorder()
+        let workerExitRecorder = WorkerExitRecorder()
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: try makePolicy(
+                preRoll: 1,
+                onsetWindow: 1,
+                onsetRequired: 1,
+                batch: 1
+            ),
+            diagnostics: diagnostics.observer,
+            workerExitHook: { workerID, generation in
+                await workerExitRecorder.record(workerID: workerID, generation: generation)
+            }
+        )
+
+        try await session.arm()
+        await source.emit(try frame(0))
+        _ = await workerExitRecorder.waitUntilExit(generation: 1)
+        await session.finish()
+
+        let endpoints: [VoiceActivatedASRDiagnosticEndpoint] = diagnostics.values.compactMap { event in
+            guard case .segmentEnded(let generation, let endpoint) = event,
+                  generation == 1 else { return nil }
+            return endpoint
+        }
+        XCTAssertEqual(endpoints, [.manual])
+        let state = await session.state
+        XCTAssertEqual(state, .finalizing(.manual))
+        let metrics = await transport.metrics()
+        XCTAssertEqual(metrics.finishCount, 1)
+    }
+
+    func testDiagnosticsQueuedAutomaticEndpointDuringManualFinishStillClaimsOnlyManual() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(
+            speechBySequence: [0: true, 1: false, 2: false],
+            defaultSpeech: false,
+            gatedSequences: [1]
+        )
+        let transport = FakeStreamingASRTransport(autoFinishEvent: false)
+        let diagnostics = VoiceActivatedDiagnosticsEventRecorder()
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: try makePolicy(
+                preRoll: 1,
+                onsetWindow: 1,
+                onsetRequired: 1,
+                endpointSilence: 2,
+                maximumSegment: 20,
+                pending: 8,
+                batch: 1
+            ),
+            diagnostics: diagnostics.observer
+        )
+
+        try await session.arm()
+        await source.emit(try frame(0))
+        await waitUntil { await session.state == .streaming }
+        await source.emit(try frame(1))
+        await detector.waitUntilObserved(sequence: 1)
+        await source.emit(try frame(2))
+        await waitUntil {
+            diagnostics.values.contains { event in
+                guard case .progress(_, .frameAccepted, let progress) = event else {
+                    return false
+                }
+                return progress.acceptedFrameCount == 3
+            }
+        }
+
+        let finish = Task { await session.finish() }
+        await waitUntil { await session.state == .draining(.manual) }
+        await detector.release(sequence: 1)
+        await finish.value
+
+        let endpoints: [VoiceActivatedASRDiagnosticEndpoint] = diagnostics.values.compactMap { event in
+            guard case .segmentEnded(let generation, let endpoint) = event,
+                  generation == 1 else { return nil }
+            return endpoint
+        }
+        XCTAssertEqual(endpoints, [.manual])
+        XCTAssertFalse(endpoints.contains { endpoint in
+            switch endpoint {
+            case .silence, .maximumDuration: true
+            case .manual: false
+            }
+        })
+        let state = await session.state
+        XCTAssertEqual(state, .finalizing(.manual))
+        let metrics = await transport.metrics()
+        XCTAssertEqual(metrics.sentSequences, [0, 1, 2])
+        XCTAssertEqual(metrics.finishCount, 1)
+    }
+
+    func testDiagnosticsSilenceStreakResetsAtOnsetAndTracksThirtyNineOfFortyEndpointFrames() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(
+            speechBySequence: [45: true],
+            defaultSpeech: false
+        )
+        let transport = FakeStreamingASRTransport(autoFinishEvent: false)
+        let diagnostics = VoiceActivatedDiagnosticsEventRecorder()
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: try makePolicy(
+                preRoll: 1,
+                onsetWindow: 1,
+                onsetRequired: 1,
+                endpointSilence: 40,
+                maximumSegment: 100,
+                noSpeech: 100,
+                pending: 150,
+                batch: 1
+            ),
+            diagnostics: diagnostics.observer
+        )
+
+        try await session.arm()
+        for sequence in 0...84 { await source.emit(try frame(UInt64(sequence))) }
+        await waitUntil {
+            diagnostics.values.contains { event in
+                guard case .progress(_, .detectorProcessed, let progress) = event else {
+                    return false
+                }
+                return progress.processedFrameCount == 85
+            }
+        }
+
+        let progressAtThirtyNine = diagnostics.values.compactMap {
+            event -> VoiceActivatedASRDiagnosticProgress? in
+            guard case .progress(_, .detectorProcessed, let progress) = event,
+                  progress.processedFrameCount == 85 else { return nil }
+            return progress
+        }.last
+        XCTAssertEqual(progressAtThirtyNine?.currentSilenceStreak, 39)
+        XCTAssertEqual(progressAtThirtyNine?.maximumSilenceStreak, 39)
+        XCTAssertFalse(diagnostics.values.contains { event in
+            if case .segmentEnded = event { return true }
+            return false
+        })
+
+        await source.emit(try frame(85))
+        await waitUntil {
+            diagnostics.values.contains(.segmentEnded(
+                generation: 1,
+                endpoint: .silence(observedFrameCount: 40, thresholdFrameCount: 40)
+            ))
+        }
+        let progressAtForty = diagnostics.values.compactMap {
+            event -> VoiceActivatedASRDiagnosticProgress? in
+            guard case .progress(_, .detectorProcessed, let progress) = event,
+                  progress.processedFrameCount == 86 else { return nil }
+            return progress
+        }.last
+        XCTAssertEqual(progressAtForty?.currentSilenceStreak, 40)
+        XCTAssertEqual(progressAtForty?.maximumSilenceStreak, 40)
+        await session.cancel()
+    }
+
+    func testDiagnosticsDistinguishAcceptedButUnprocessedBacklogAndCancellation() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(
+            defaultSpeech: true,
+            gatedSequences: [0]
+        )
+        let transport = FakeStreamingASRTransport()
+        let diagnostics = VoiceActivatedDiagnosticsEventRecorder()
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: try makePolicy(),
+            diagnostics: diagnostics.observer
+        )
+
+        try await session.arm()
+        for sequence in 0..<3 { await source.emit(try frame(UInt64(sequence))) }
+        await detector.waitUntilObserved(sequence: 0)
+        await waitUntil {
+            diagnostics.values.contains { event in
+                guard case .progress(_, .frameAccepted, let progress) = event else { return false }
+                return progress.acceptedFrameCount == 3
+                    && progress.processedFrameCount == 0
+                    && progress.pendingFrameCount == 3
+            }
+        }
+        await session.cancel()
+
+        XCTAssertTrue(diagnostics.values.contains(.terminal(
+            generation: 1,
+            stage: .armed,
+            outcome: .cancelled
+        )))
+        XCTAssertFalse(diagnostics.values.contains { event in
+            guard case .progress(_, .detectorProcessed, _) = event else { return false }
+            return true
+        })
+    }
+
+    func testDiagnosticsIdentifyPerpetualSpeechWithoutEndpointProgress() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: true)
+        let transport = FakeStreamingASRTransport()
+        let diagnostics = VoiceActivatedDiagnosticsEventRecorder()
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: try makePolicy(maximumSegment: 50),
+            diagnostics: diagnostics.observer
+        )
+
+        try await session.arm()
+        for sequence in 0..<10 { await source.emit(try frame(UInt64(sequence))) }
+        await waitUntil {
+            diagnostics.values.contains { event in
+                guard case .progress(_, .detectorProcessed, let progress) = event else {
+                    return false
+                }
+                return progress.processedFrameCount == 10
+            }
+        }
+
+        let finalProgress = diagnostics.values.compactMap { event -> VoiceActivatedASRDiagnosticProgress? in
+            guard case .progress(_, .detectorProcessed, let progress) = event else { return nil }
+            return progress
+        }.last
+        XCTAssertEqual(finalProgress?.speechFrameCount, 10)
+        XCTAssertEqual(finalProgress?.silenceFrameCount, 0)
+        XCTAssertEqual(finalProgress?.currentSilenceStreak, 0)
+        XCTAssertFalse(diagnostics.values.contains { event in
+            if case .segmentEnded = event { return true }
+            return false
+        })
+        await session.cancel()
+    }
+
+    func testDiagnosticsAttributeNoFrameFailureToWatchdogInterval() async throws {
+        let source = FakePCMFrameSource()
+        let detector = FakeVoiceActivityDetector(defaultSpeech: false)
+        let transport = FakeStreamingASRTransport()
+        let clock = ManualMonotonicClock()
+        let diagnostics = VoiceActivatedDiagnosticsEventRecorder()
+        let session = VoiceActivatedASRSession(
+            frameSource: source,
+            detector: detector,
+            transport: transport,
+            policy: try makePolicy(noSpeech: 5),
+            frameLivenessClock: clock.injectedClock,
+            diagnostics: diagnostics.observer
+        )
+
+        try await session.arm()
+        await waitUntil { await clock.sleepCallCount == 1 }
+        await clock.advance(by: .milliseconds(100))
+        await waitUntil { await session.state.isFailedForDiagnosticsTest }
+
+        XCTAssertTrue(diagnostics.values.contains(.watchdogExpired(
+            generation: 1,
+            intervalMilliseconds: 100,
+            progress: VoiceActivatedASRDiagnosticProgress(
+                acceptedFrameCount: 0,
+                processedFrameCount: 0,
+                speechFrameCount: 0,
+                silenceFrameCount: 0,
+                currentSilenceStreak: 0,
+                maximumSilenceStreak: 0,
+                pendingFrameCount: 0
+            )
+        )))
+        XCTAssertTrue(diagnostics.values.contains(.terminal(
+            generation: 1,
+            stage: .armed,
+            outcome: .failed(origin: .frameWatchdog)
+        )))
+    }
+
     func testLegacyASRSessionStillUsesOriginalClientLifecycle() async throws {
         let client = LegacyCompatibilityClient()
         let session = ASRSession(client: client)
@@ -1468,6 +1897,55 @@ final class VoiceActivatedASRSessionTests: XCTestCase {
         XCTAssertEqual(counts.start, 1)
         XCTAssertEqual(counts.push, 1)
         XCTAssertEqual(counts.finish, 1)
+    }
+}
+
+private final class VoiceActivatedDiagnosticsEventRecorder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var storage: [VoiceActivatedASRDiagnosticEvent] = []
+
+    var observer: VoiceActivatedASRDiagnosticsObserver {
+        VoiceActivatedASRDiagnosticsObserver(
+            context: VoiceActivatedASRDiagnosticContext(
+                runOrdinal: 17,
+                originNanoseconds: 23
+            )
+        ) { [weak self] event in
+            guard let self else { return }
+            self.lock.withLock { self.storage.append(event) }
+        }
+    }
+
+    var values: [VoiceActivatedASRDiagnosticEvent] {
+        lock.withLock { storage }
+    }
+}
+
+private extension VoiceActivatedASRState {
+    var isFailedForDiagnosticsTest: Bool {
+        if case .failed = self { return true }
+        return false
+    }
+}
+
+private func diagnosticGeneration(of event: VoiceActivatedASRDiagnosticEvent) -> UInt64 {
+    switch event {
+    case .sourceStartRequested(let generation),
+         .sourceStarted(let generation, _),
+         .sourceFailed(let generation, _),
+         .watchdogExpired(let generation, _, _),
+         .progress(let generation, _, _),
+         .segmentStarted(let generation, _, _),
+         .speechResumed(let generation, _, _),
+         .segmentEnded(let generation, _),
+         .tailFlushStarted(let generation, _),
+         .tailFlushFinished(let generation, _),
+         .finishStreamRequested(let generation),
+         .finishStreamReturned(let generation),
+         .transportTerminal(let generation, _),
+         .transportStreamClosed(let generation, _),
+         .terminal(let generation, _, _):
+        generation
     }
 }
 
@@ -1787,8 +2265,12 @@ private actor CleanupWaitGate {
 }
 
 private actor FakePCMFrameSource: PCMFrameSource {
+    private let finishStreamsOnStop: Bool
     private var frameContinuation: AsyncThrowingStream<VADPCMFrame, any Error>.Continuation?
     private var levelContinuation: AsyncStream<Float>.Continuation?
+    private var frameContinuations: [
+        AsyncThrowingStream<VADPCMFrame, any Error>.Continuation
+    ] = []
     private(set) var startCount = 0
     private(set) var stopCount = 0
     private(set) var activeRunCount = 0
@@ -1798,6 +2280,10 @@ private actor FakePCMFrameSource: PCMFrameSource {
     private var suspendedStopContinuation: CheckedContinuation<Void, Never>?
     private var stopSuspensionWaiters: [CheckedContinuation<Void, Never>] = []
 
+    init(finishStreamsOnStop: Bool = true) {
+        self.finishStreamsOnStop = finishStreamsOnStop
+    }
+
     func start() async throws -> PCMFrameSourceStreams {
         startCount += 1
         activeRunCount += 1
@@ -1806,14 +2292,17 @@ private actor FakePCMFrameSource: PCMFrameSource {
         let (levels, levelContinuation) = AsyncStream<Float>.makeStream()
         self.frameContinuation = frameContinuation
         self.levelContinuation = levelContinuation
+        frameContinuations.append(frameContinuation)
         return PCMFrameSourceStreams(frames: frames, levels: levels)
     }
 
     func stop() async {
         stopCount += 1
         if activeRunCount > 0 { activeRunCount -= 1 }
-        frameContinuation?.finish()
-        levelContinuation?.finish()
+        if finishStreamsOnStop {
+            frameContinuation?.finish()
+            levelContinuation?.finish()
+        }
         frameContinuation = nil
         levelContinuation = nil
         guard shouldSuspendNextStop else { return }
@@ -1857,6 +2346,14 @@ private actor FakePCMFrameSource: PCMFrameSource {
 
     func fail(_ error: any Error) {
         frameContinuation?.finish(throwing: error)
+    }
+
+    func emit(_ frame: VADPCMFrame, atRun index: Int) {
+        frameContinuations[index].yield(frame)
+    }
+
+    func endFrameStream(atRun index: Int) {
+        frameContinuations[index].finish()
     }
 }
 
@@ -1914,6 +2411,10 @@ private actor FakeVoiceActivityDetector: VoiceActivityDetecting {
         await withCheckedContinuation { continuation in
             waiters[sequence, default: []].append(continuation)
         }
+    }
+
+    func release(sequence: UInt64) {
+        gates.removeValue(forKey: sequence)?.resume()
     }
 }
 

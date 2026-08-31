@@ -47,6 +47,9 @@ public final class TeleprompterController: ObservableObject {
     private var tentativeObservationCount = 0
     private var isShutdown = false
 
+    private static let consentDeniedError = "未同意云端语音识别，已保持手动模式。"
+    private static let consentRevokedError = "云端语音识别授权已关闭，已保持手动模式。"
+
     var pendingHostLifecycleCleanupCount: Int { cleanupTasks.count }
     var pendingPreparationTaskCount: Int { preparationTasks.count }
 
@@ -114,11 +117,18 @@ public final class TeleprompterController: ObservableObject {
     }
 
     public func updateCloudSpeechRecognitionConsent(_ isAllowed: Bool) async {
-        guard !isShutdown, !isAllowed else { return }
+        guard !isShutdown else { return }
+        if isAllowed {
+            let isStaleConsentError = state.userSafeError == Self.consentDeniedError
+                || state.userSafeError == Self.consentRevokedError
+            guard state.phase == .manualFallback, isStaleConsentError else { return }
+            setPhase(.manualFallback, error: nil)
+            return
+        }
         let operation = await invalidateAllWork(cancelSession: true)
         guard isCurrent(operation) else { return }
         let phase: TeleprompterPhase = state.script == nil ? .ready : .manualFallback
-        setPhase(phase, error: "云端语音识别授权已关闭，已保持手动模式。")
+        setPhase(phase, error: Self.consentRevokedError)
     }
 
     public func updateHostLifecycle(_ lifecycle: ExperienceHostLifecycleState) {
@@ -194,7 +204,7 @@ public final class TeleprompterController: ObservableObject {
         guard isCurrent(operation), !Task.isCancelled else { return }
         guard dependencies.cloudSpeechRecognitionAllowed() else {
             guard isCurrent(operation) else { return }
-            setPhase(.manualFallback, error: "未同意云端语音识别，已保持手动模式。")
+            setPhase(.manualFallback, error: Self.consentDeniedError)
             return
         }
 

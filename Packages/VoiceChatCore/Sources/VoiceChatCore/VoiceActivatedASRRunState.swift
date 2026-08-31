@@ -8,6 +8,12 @@ struct VoiceActivatedASRRunState: Equatable, Sendable {
     var transportAttempted = false
     var sourceStopExpected = false
     var processedBeforeOnset = 0
+    var acceptedFrameCount = 0
+    var processedFrameCount = 0
+    var speechFrameCount = 0
+    var silenceFrameCount = 0
+    var currentSilenceStreak = 0
+    var maximumSilenceStreak = 0
     private(set) var frameQueue: [VADPCMFrame] = []
     private(set) var pendingUploadFrames: [VADPCMFrame] = []
     private(set) var inFlightUploadFrameCount = 0
@@ -28,6 +34,12 @@ struct VoiceActivatedASRRunState: Equatable, Sendable {
         transportAttempted = false
         sourceStopExpected = false
         processedBeforeOnset = 0
+        acceptedFrameCount = 0
+        processedFrameCount = 0
+        speechFrameCount = 0
+        silenceFrameCount = 0
+        currentSilenceStreak = 0
+        maximumSilenceStreak = 0
         frameQueue.removeAll(keepingCapacity: true)
         pendingUploadFrames.removeAll(keepingCapacity: true)
         inFlightUploadFrameCount = 0
@@ -41,6 +53,36 @@ struct VoiceActivatedASRRunState: Equatable, Sendable {
 
     mutating func enqueueFrame(_ frame: VADPCMFrame) {
         frameQueue.append(frame)
+        acceptedFrameCount += 1
+    }
+
+    mutating func recordProcessedFrame(isSpeech: Bool) {
+        processedFrameCount += 1
+        if isSpeech {
+            speechFrameCount += 1
+            currentSilenceStreak = 0
+        } else {
+            silenceFrameCount += 1
+            currentSilenceStreak += 1
+            maximumSilenceStreak = max(maximumSilenceStreak, currentSilenceStreak)
+        }
+    }
+
+    mutating func beginSpeechSegment() {
+        currentSilenceStreak = 0
+        maximumSilenceStreak = 0
+    }
+
+    var diagnosticProgress: VoiceActivatedASRDiagnosticProgress {
+        VoiceActivatedASRDiagnosticProgress(
+            acceptedFrameCount: acceptedFrameCount,
+            processedFrameCount: processedFrameCount,
+            speechFrameCount: speechFrameCount,
+            silenceFrameCount: silenceFrameCount,
+            currentSilenceStreak: currentSilenceStreak,
+            maximumSilenceStreak: maximumSilenceStreak,
+            pendingFrameCount: pendingFrameCount
+        )
     }
 
     mutating func dequeueFrame() -> VADPCMFrame? {

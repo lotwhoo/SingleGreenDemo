@@ -15,6 +15,7 @@ struct SingleGreenDemoApp: App {
     @StateObject private var teleprompterController: TeleprompterController
     #if INTERNAL_DIAGNOSTICS
     @StateObject private var diagnostics: ConversationTelemetryStore
+    private let teleprompterDiagnosticsObserver: InternalTeleprompterStateDiagnosticsObserver
     #endif
 
     init() {
@@ -49,25 +50,42 @@ struct SingleGreenDemoApp: App {
             ),
             reduceMotion: { UIAccessibility.isReduceMotionEnabled }
         )
+        let baseTeleprompterDependencies = LiveSpeechInputComposition.makeTeleprompterDependencies(
+            configurationProvider: {
+                TeleprompterSpeechConfiguration(
+                    resourceID: settings.asrResourceID,
+                    language: settings.asrLanguage,
+                    hotwords: settings.hotwords
+                )
+            },
+            speechCredentialProvider: speechCredentialProvider,
+            cloudSpeechRecognitionAllowed: {
+                teleprompterSettings.allowsCloudSpeechRecognition
+            }
+        )
+        #if INTERNAL_DIAGNOSTICS
+        let teleprompterDiagnosticsWiring = InternalTeleprompterASRDiagnosticsLiveComposition.make(
+            diagnosticSink: diagnostics,
+            base: baseTeleprompterDependencies
+        )
+        precondition(
+            teleprompterDiagnosticsWiring.marker
+                == InternalTeleprompterASRDiagnosticsLiveComposition.wiringMarker
+        )
+        let teleprompterDependencies = teleprompterDiagnosticsWiring.dependencies
+        #else
+        let teleprompterDependencies = baseTeleprompterDependencies
+        #endif
         let teleprompterController = TeleprompterController(
             script: try? TeleprompterScript(teleprompterSettings.scriptDraft),
-            dependencies: LiveSpeechInputComposition.makeTeleprompterDependencies(
-                configurationProvider: {
-                    TeleprompterSpeechConfiguration(
-                        resourceID: settings.asrResourceID,
-                        language: settings.asrLanguage,
-                        hotwords: settings.hotwords
-                    )
-                },
-                speechCredentialProvider: speechCredentialProvider,
-                cloudSpeechRecognitionAllowed: {
-                    teleprompterSettings.allowsCloudSpeechRecognition
-                }
-            )
+            dependencies: teleprompterDependencies
         )
         _teleprompterSettings = StateObject(wrappedValue: teleprompterSettings)
         #if INTERNAL_DIAGNOSTICS
         _diagnostics = StateObject(wrappedValue: diagnostics)
+        teleprompterDiagnosticsObserver = teleprompterDiagnosticsWiring.makeStateObserver(
+            teleprompterController
+        )
         #endif
         _conversationController = StateObject(wrappedValue: controller)
         _textAdventureController = StateObject(wrappedValue: gameController)

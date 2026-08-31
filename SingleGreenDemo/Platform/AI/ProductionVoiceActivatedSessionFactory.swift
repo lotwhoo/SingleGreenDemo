@@ -14,14 +14,19 @@ enum ProductionVoiceActivatedSessionFactory {
     static let policy: VoiceActivatedASRPolicy = .standard
 
     static func make(
-        configuration: SpeechProviderConfiguration
+        configuration: SpeechProviderConfiguration,
+        diagnostics: VoiceActivatedASRDiagnosticsObserver? = nil
     ) throws -> any VoiceActivatedSpeechRecognitionSession {
-        let base = try makeCoreSession(configuration: configuration)
+        let base = try makeCoreSession(
+            configuration: configuration,
+            diagnostics: diagnostics
+        )
         return VoiceChatVoiceActivatedSpeechRecognitionAdapter(session: base)
     }
 
     static func makeCoreSession(
-        configuration: SpeechProviderConfiguration
+        configuration: SpeechProviderConfiguration,
+        diagnostics: VoiceActivatedASRDiagnosticsObserver? = nil
     ) throws -> VoiceActivatedASRSession {
         let detector = try WebRTCVoiceActivityDetector(
             aggressiveness: aggressiveness
@@ -34,7 +39,8 @@ enum ProductionVoiceActivatedSessionFactory {
                 hotwords: configuration.hotwords
             ),
             detector: detector,
-            policy: policy
+            policy: policy,
+            diagnostics: diagnostics
         )
     }
 }

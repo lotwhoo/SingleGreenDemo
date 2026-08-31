@@ -65,7 +65,7 @@ artifact_contains_pattern() {
     LC_ALL=C grep -aEr -m 1 -- "$pattern" "$artifact" >/dev/null 2>&1
 }
 
-internal_patterns='diagnostics-demo-credentials-v1|DiagnosticsPanelView|ConversationTelemetryStore|DiagnosticsExportItem|DiagnosticsExportError|ActivityShareView|diagnosticLines|removeAllDiagnostics|diagnostics_button|diagnostics_export_button|debug_toggle_button|SingleGreenDemo diagnostics|makeExportURL|Debug 与日志|导出全部日志|日志导出失败'
+internal_patterns='diagnostics-demo-credentials-v1|DiagnosticsPanelView|ConversationTelemetryStore|DiagnosticsExportItem|DiagnosticsExportError|ActivityShareView|InternalVoiceActivatedDiagnosticsSession|vad-diagnostics-live-wiring-v[12]|InternalTeleprompterASRDiagnosticsSession|teleprompter-asr-diagnostics-live-wiring-v1|diagnosticLines|removeAllDiagnostics|diagnostics_button|diagnostics_export_button|debug_toggle_button|SingleGreenDemo diagnostics|makeExportURL|Debug 与日志|导出全部日志|日志导出失败'
 if artifact_contains_pattern "$internal_patterns"; then
     echo "error: User artifact contains an internal diagnostics or export marker" >&2
     exit 1

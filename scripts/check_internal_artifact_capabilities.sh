@@ -87,6 +87,10 @@ require_marker() {
 # owner-only diagnostics surface and its export action were linked.
 require_marker "DiagnosticsPanelView" "the diagnostics panel type marker"
 require_marker "ConversationTelemetryStore" "the diagnostics store type marker"
+require_marker "InternalVoiceActivatedDiagnosticsSession" "the VAD diagnostics implementation marker"
+require_marker "vad-diagnostics-live-wiring-v2" "the VAD diagnostics live-wiring marker"
+require_marker "InternalTeleprompterASRDiagnosticsSession" "the teleprompter ASR diagnostics implementation marker"
+require_marker "teleprompter-asr-diagnostics-live-wiring-v1" "the teleprompter ASR diagnostics live-wiring marker"
 require_marker "diagnostics_button" "the diagnostics accessibility marker"
 require_marker "diagnostics_export_button" "the diagnostics export marker"
 require_marker "debug_toggle_button" "the debug-toggle accessibility marker"

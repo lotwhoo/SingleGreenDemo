@@ -73,11 +73,100 @@ token is not retained while waiting.
 
 ## Log privacy contract
 
-Internal export contains only timestamps, app/build metadata, lifecycle
-changes, conversation phase/outcome, elapsed milliseconds, and typed failure
-codes. It must never contain API keys, credentials, speech audio, transcripts,
-user or assistant message bodies, teleprompter scripts, search results, or
-prompts. User variants have no storage or export path.
+Internal export is an exhaustive allowlist; its VAD-specific fields and
+forbidden payloads are defined below. The existing system name/version and
+device model class in the export header are coarse environment metadata, not
+stable device identifiers. User variants have no storage or export path.
+
+## VAD diagnostics v2
+
+`VoiceChatCore` owns the provider-neutral, synchronous
+`VoiceActivatedASRDiagnosticsObserver` port. It receives content-free events
+emitted by the core `VoiceActivatedASRSession`; it does not synthesize recognition events, alter
+endpointing, or await persistence/UI. The observer context supplies one
+ephemeral process run ordinal and one monotonic origin timestamp shared by the
+Internal App aggregation and export records. Neither is a user, device,
+account, provider, route, or resource identifier.
+
+Only Internal configurations install the observer and the App-private
+aggregator/writer. User configurations pass a `nil` observer and compile no
+VAD diagnostics implementation path. The live Internal marker is
+`vad-diagnostics-live-wiring-v2`; the existing artifact isolation/capability
+checks remain required.
+
+The Internal `schema=v2` lines allowlist these typed facts:
+
+- source start/started/failed, including typed origins (`source_start`,
+  `source_ended`, `source_stream`, `frame_watchdog`, `detector_processing`,
+  `upload_backpressure`, `transport`), watchdog interval, and watchdog
+  expiration;
+- sparse progress snapshots with accepted versus detector-processed frame
+  counts, speech versus silence counts, current and maximum silence streaks,
+  and pending-frame count; each snapshot identifies whether it was triggered
+  by `frameAccepted` or `detectorProcessed`;
+- segment start, speech resume with the interrupted silence streak and
+  endpoint threshold, and segment end with typed `silence`,
+  `maximum_duration`, or `manual` endpoint facts;
+- tail-flush start/finish counts, finish-stream requested/returned, transport
+  `finished`/`failed`, transport-stream closure stage, and the final typed
+  terminal stage (`arming`, `armed`, `openingRecognizer`, `streaming`,
+  `draining`, or `finalizing`) and outcome (`finished`, `no_speech`,
+  `cancelled`, or failed with origin); and
+- the existing Internal policy snapshot and arm/finish/cancel plus
+  phase-to-phase timing milestones, where available.
+
+Lifecycle, endpoint, terminal, and source-closure facts are submitted
+immediately. Frame-rate progress is aggregated and exported at most every 25
+accepted or processed frames, or every 500 ms, whichever comes first; the
+latest progress is flushed before a later lifecycle event. A source that
+closes without a terminal event is recorded with `cancel_requested=true|false`.
+
+Device-log triage for “stuck after speech” is therefore evidence-driven:
+
+- `speech_frames` increasing with `current_silence_streak` below the endpoint
+  threshold means the detector has not observed enough consecutive silence;
+  `speech_resumed` shows that silence was interrupted.
+- `accepted_frames` increasing while `processed_frames` lags is consistent
+  with a detector/worker backlog; a rising `pending_frames` and no
+  segment/endpoint event points to capture-to-processing or upload pressure,
+  rather than a provider terminal problem.
+- `segment_ended` followed by `tail_flush_started/finished` and
+  `finish_stream_requested/returned` proves local endpointing and handoff;
+  missing `transport_terminal` or a `transport_stream_closed` at
+  `finalizing` points to provider transport completion/closure.
+- `transport_terminal=finished` followed by `terminal outcome=finished` is a
+  completed run. `terminal outcome=failed` names the typed origin; a
+  `source_closed_without_terminal` line identifies an unannounced source
+  closure. A watchdog expiry with no recent accepted frames identifies frame
+  liveness starvation.
+
+The export must never contain raw PCM/audio, transcripts or utterances,
+speech levels, probabilities, prompts, user/assistant message bodies,
+teleprompter scripts, search results, provider requests/responses or other
+provider/framework payloads, API keys, credentials, account/user identifiers,
+resource IDs, network routes, or stable device identifiers. Typed failure
+codes/origins and coarse system/version/device-model-class header metadata are
+the permitted substitutes.
+
+### Export and clear semantics
+
+The diagnostics writer is bounded and asynchronous. Both
+`makeExportURL()` and `removeAllDiagnostics()` asynchronously await all
+registered, ordered writer barriers before taking their snapshot or clearing
+the store. The transaction first enqueues every writer barrier; all writer
+workers remain paused at those barriers until the export or clear snapshot
+transaction completes. Concurrent export and clear transactions are serialized
+and release all barriers only after their respective snapshot or clear has
+finished. Each barrier includes every FIFO record queued before that barrier;
+records submitted later remain after it and cannot enter the current export
+snapshot or be erased by the current clear.
+
+The writer queue is bounded. Under saturation, post-barrier records may be
+coalesced or dropped, but they cannot cross the active cutoff; records protected
+by a pre-barrier snapshot are preserved. Export therefore represents the
+ordered store state at its completed barrier, and clear removes the ordered
+store state at its completed barrier. Export filenames include a UUID, so
+snapshots created in the same second do not overwrite one another.
 
 ## Validation and maintenance
 
