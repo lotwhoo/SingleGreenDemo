@@ -62,6 +62,21 @@ final class ExperienceRuntimeTests: XCTestCase {
         ))
     }
 
+    func testDeleteControlIsVisibleForDraftOrLoadedScriptOnly() {
+        XCTAssertFalse(TeleprompterDeleteControlPolicy.isVisible(
+            hasDraft: false,
+            hasLoadedScript: false
+        ))
+        XCTAssertTrue(TeleprompterDeleteControlPolicy.isVisible(
+            hasDraft: true,
+            hasLoadedScript: false
+        ))
+        XCTAssertTrue(TeleprompterDeleteControlPolicy.isVisible(
+            hasDraft: false,
+            hasLoadedScript: true
+        ))
+    }
+
     func testHostFacingMetadataAndActionsAcceptRegisteredFixtureWithoutViewKindBranches() async {
         let customKind = ExperienceKind("test.hostCatalog")
         let customAction = ExperienceActionEvent("test.runHostFixture")

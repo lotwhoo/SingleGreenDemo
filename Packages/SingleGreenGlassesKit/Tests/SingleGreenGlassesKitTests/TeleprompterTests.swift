@@ -1097,6 +1097,184 @@ final class TeleprompterTests: XCTestCase {
         XCTAssertEqual(experience.descriptor.actions.filter { $0.placement == .primary }.map(\.id), ["up"])
     }
 
+    func testControllerRestoresCompatibleCheckpointAndRejectsChangedContent() throws {
+        let identity = TeleprompterScriptIdentity(rawValue: "restore-script")
+        let script = try TeleprompterScript("第一句。第二句。", identity: identity)
+        let checkpoint = TeleprompterPositionCheckpoint(
+            scriptIdentity: identity,
+            contentVersion: script.version,
+            sentenceIndex: 1,
+            originalUTF16Offset: 2
+        )
+        let store = TeleprompterCheckpointStoreFixture(loadResult: .loaded(checkpoint))
+        let controller = TeleprompterController(
+            script: script,
+            dependencies: .init(
+                prepareSpeechSession: { throw TeleprompterFixtureError.unused },
+                requestMicrophonePermission: { false }
+            ),
+            checkpointStore: store
+        )
+
+        XCTAssertEqual(controller.state.sentenceIndex, 1)
+        XCTAssertEqual(controller.state.readingUTF16Offset, 2)
+        XCTAssertEqual(
+            controller.checkpointRestoreResult,
+            .restored(.init(sentenceIndex: 1, utf16Offset: 2))
+        )
+
+        let revised = try TeleprompterScript("第一句已修改。第二句。", identity: identity)
+        store.loadResult = .loaded(checkpoint)
+        let changed = TeleprompterController(
+            script: revised,
+            dependencies: .init(
+                prepareSpeechSession: { throw TeleprompterFixtureError.unused },
+                requestMicrophonePermission: { false }
+            ),
+            checkpointStore: store
+        )
+        XCTAssertEqual(changed.state.sentenceIndex, 0)
+        XCTAssertEqual(changed.state.readingUTF16Offset, 0)
+        XCTAssertEqual(
+            changed.checkpointRestoreResult,
+            .rejected(.contentVersionMismatch)
+        )
+    }
+
+    func testCheckpointWritesOnlyAtLifecycleBoundariesAndDeduplicatesPosition() async throws {
+        let identity = TeleprompterScriptIdentity(rawValue: "frequency-script")
+        let script = try TeleprompterScript(
+            "第一句从这里开始。第二句现在开始。",
+            identity: identity
+        )
+        let session = TeleprompterFakeSpeechSession()
+        let store = TeleprompterCheckpointStoreFixture()
+        let controller = TeleprompterController(
+            script: script,
+            dependencies: .init(
+                prepareSpeechSession: { session },
+                requestMicrophonePermission: { true },
+                cloudSpeechRecognitionAllowed: { true }
+            ),
+            checkpointStore: store
+        )
+
+        await controller.toggleFollowing()
+        session.emit(.transcript("第一句从这里"))
+        await settle()
+        XCTAssertGreaterThan(controller.state.readingUTF16Offset, 0)
+        XCTAssertEqual(store.saveAttemptCount, 0)
+        XCTAssertTrue(store.savedCheckpoints.isEmpty)
+
+        await controller.reset()
+        XCTAssertEqual(store.saveAttemptCount, 0)
+
+        await controller.toggleFollowing()
+        session.emit(.transcript("第一句从这里"))
+        await settle()
+        await controller.toggleFollowing()
+        XCTAssertEqual(store.saveAttemptCount, 1)
+        XCTAssertEqual(store.savedCheckpoints.count, 1)
+
+        controller.updateHostLifecycle(.background)
+        await controller.waitForPendingHostLifecycleTransition()
+        XCTAssertEqual(store.saveAttemptCount, 2)
+        XCTAssertEqual(store.savedCheckpoints.count, 1)
+
+        await controller.shutdown()
+        XCTAssertEqual(store.saveAttemptCount, 3)
+        XCTAssertEqual(store.savedCheckpoints.count, 1)
+    }
+
+    func testCompletionPersistsFinalAuthoredPosition() async throws {
+        let identity = TeleprompterScriptIdentity(rawValue: "completion-script")
+        let script = try TeleprompterScript("第一句。第二句。", identity: identity)
+        let session = TeleprompterFakeSpeechSession()
+        let store = TeleprompterCheckpointStoreFixture()
+        let controller = TeleprompterController(
+            script: script,
+            dependencies: .init(
+                prepareSpeechSession: { session },
+                requestMicrophonePermission: { true },
+                cloudSpeechRecognitionAllowed: { true }
+            ),
+            checkpointStore: store
+        )
+
+        await controller.toggleFollowing()
+        session.emit(.utterance("第一句。"))
+        await settle()
+        session.emit(.utterance("第二句。"))
+        await settle()
+
+        XCTAssertEqual(controller.state.phase, .completed)
+        let saved = try XCTUnwrap(store.savedCheckpoints.last)
+        XCTAssertEqual(saved.sentenceIndex, 1)
+        XCTAssertEqual(
+            saved.originalUTF16Offset,
+            (script.sentences[1] as NSString).length
+        )
+    }
+
+    func testExplicitCompletionCancelsRecognitionAndPersistsExactlyOnce() async throws {
+        let identity = TeleprompterScriptIdentity(rawValue: "explicit-completion-script")
+        let script = try TeleprompterScript("第一句。第二句。", identity: identity)
+        let session = TeleprompterFakeSpeechSession()
+        let store = TeleprompterCheckpointStoreFixture()
+        let controller = TeleprompterController(
+            script: script,
+            dependencies: .init(
+                prepareSpeechSession: { session },
+                requestMicrophonePermission: { true },
+                cloudSpeechRecognitionAllowed: { true }
+            ),
+            checkpointStore: store
+        )
+
+        await controller.toggleFollowing()
+        await controller.complete()
+
+        XCTAssertEqual(controller.state.phase, .completed)
+        XCTAssertEqual(controller.state.sentenceIndex, 1)
+        XCTAssertEqual(
+            controller.state.readingUTF16Offset,
+            (script.sentences[1] as NSString).length
+        )
+        XCTAssertEqual(session.cancelCount, 1)
+        XCTAssertEqual(store.saveAttemptCount, 1)
+        XCTAssertEqual(store.savedCheckpoints.count, 1)
+    }
+
+    func testAtomicDeleteClearsStateAndRejectsLateSessionEvents() async throws {
+        let identity = TeleprompterScriptIdentity(rawValue: "delete-script")
+        let script = try TeleprompterScript("第一句。第二句。", identity: identity)
+        let session = TeleprompterFakeSpeechSession()
+        let store = TeleprompterCheckpointStoreFixture()
+        let controller = TeleprompterController(
+            script: script,
+            dependencies: .init(
+                prepareSpeechSession: { session },
+                requestMicrophonePermission: { true },
+                cloudSpeechRecognitionAllowed: { true }
+            ),
+            checkpointStore: store
+        )
+
+        await controller.toggleFollowing()
+        let deletionResult = await controller.deleteScript()
+        XCTAssertEqual(deletionResult, .deleted)
+        XCTAssertNil(controller.state.script)
+        XCTAssertEqual(controller.state.sentenceIndex, 0)
+        XCTAssertEqual(store.deletedIdentities, [identity])
+        XCTAssertEqual(session.cancelCount, 1)
+
+        session.emit(.utterance("第二句。"))
+        session.emit(.finished)
+        await settle()
+        XCTAssertNil(controller.state.script)
+        XCTAssertEqual(controller.state.sentenceIndex, 0)
+    }
+
     private func makeController(session: TeleprompterFakeSpeechSession) -> TeleprompterController {
         makeController { session }
     }
@@ -1128,6 +1306,39 @@ final class TeleprompterTests: XCTestCase {
             await Task.yield()
         }
         XCTFail("等待异步状态超时")
+    }
+}
+
+@MainActor
+private final class TeleprompterCheckpointStoreFixture: TeleprompterCheckpointStore {
+    var loadResult: TeleprompterCheckpointLoadResult
+    var deletionResult: TeleprompterScriptDeletionResult = .deleted
+    private(set) var saveAttemptCount = 0
+    private(set) var savedCheckpoints: [TeleprompterPositionCheckpoint] = []
+    private(set) var deletedIdentities: [TeleprompterScriptIdentity] = []
+
+    init(loadResult: TeleprompterCheckpointLoadResult = .missing) {
+        self.loadResult = loadResult
+    }
+
+    func loadCheckpoint(for script: TeleprompterScript) -> TeleprompterCheckpointLoadResult {
+        loadResult
+    }
+
+    func saveCheckpoint(
+        _ checkpoint: TeleprompterPositionCheckpoint
+    ) -> TeleprompterCheckpointWriteResult {
+        saveAttemptCount += 1
+        guard savedCheckpoints.last != checkpoint else { return .unchanged }
+        savedCheckpoints.append(checkpoint)
+        return .saved
+    }
+
+    func deleteScriptArtifacts(
+        for identity: TeleprompterScriptIdentity
+    ) -> TeleprompterScriptDeletionResult {
+        deletedIdentities.append(identity)
+        return deletionResult
     }
 }
 

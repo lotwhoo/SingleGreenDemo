@@ -1,12 +1,16 @@
 import SingleGreenGlassesKit
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 
 struct ControlPanelView: View {
     @EnvironmentObject private var runtime: ExperienceRuntime
     @EnvironmentObject private var profileStore: DisplayProfileStore
     @EnvironmentObject private var teleprompterSettings: TeleprompterSettings
     @EnvironmentObject private var teleprompterController: TeleprompterController
+    @State private var isConfirmingTeleprompterDeletion = false
+    @State private var isImportingTeleprompterScript = false
+    @State private var teleprompterImportMessage: String?
     #if INTERNAL_DIAGNOSTICS
     @Binding var debugMode: Bool
     #endif
@@ -332,6 +336,58 @@ struct ControlPanelView: View {
             .buttonStyle(.borderedProminent)
             .accessibilityIdentifier("teleprompter_load_script_button")
 
+            Button {
+                isImportingTeleprompterScript = true
+            } label: {
+                Label("导入 TXT / Markdown", systemImage: "doc.badge.plus")
+                    .frame(maxWidth: .infinity, minHeight: 40)
+            }
+            .buttonStyle(.bordered)
+            .accessibilityIdentifier("teleprompter_import_script_button")
+            .fileImporter(
+                isPresented: $isImportingTeleprompterScript,
+                allowedContentTypes: [
+                    .plainText,
+                    UTType(filenameExtension: "md") ?? .plainText
+                ],
+                allowsMultipleSelection: false
+            ) { result in
+                handleTeleprompterImport(result)
+            }
+
+            if let teleprompterImportMessage {
+                Text(teleprompterImportMessage)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("teleprompter_import_result_message")
+            }
+
+            if TeleprompterDeleteControlPolicy.isVisible(
+                hasDraft: !teleprompterSettings.scriptDraft.isEmpty,
+                hasLoadedScript: teleprompterController.state.script != nil
+            ) {
+                Button(role: .destructive) {
+                    isConfirmingTeleprompterDeletion = true
+                } label: {
+                    Label("删除稿件和阅读位置", systemImage: "trash")
+                        .frame(maxWidth: .infinity, minHeight: 40)
+                }
+                .buttonStyle(.bordered)
+                .accessibilityIdentifier("teleprompter_delete_script_button")
+                .confirmationDialog(
+                    "删除这份稿件？",
+                    isPresented: $isConfirmingTeleprompterDeletion,
+                    titleVisibility: .visible
+                ) {
+                    Button("删除稿件和阅读位置", role: .destructive) {
+                        Task { await teleprompterController.deleteScript() }
+                    }
+                    Button("取消", role: .cancel) {}
+                } message: {
+                    Text("稿件、阅读位置和本地派生缓存会一起删除，无法撤销。")
+                }
+            }
+
             Toggle(
                 "允许云端语音跟随",
                 isOn: $teleprompterSettings.allowsCloudSpeechRecognition
@@ -358,6 +414,47 @@ struct ControlPanelView: View {
         .accessibilityIdentifier("teleprompter_undo_automatic_jump_button")
     }
 
+    private func handleTeleprompterImport(_ result: Result<[URL], any Error>) {
+        guard case .success(let urls) = result, let url = urls.first else {
+            teleprompterImportMessage = TeleprompterScriptImportResult
+                .rejected(.unreadable)
+                .userMessage
+            return
+        }
+        let accessed = url.startAccessingSecurityScopedResource()
+        defer {
+            if accessed { url.stopAccessingSecurityScopedResource() }
+        }
+        let kind: TeleprompterScriptImportKind
+        switch url.pathExtension.lowercased() {
+        case "txt":
+            kind = .plainText
+        case "md", "markdown":
+            kind = .markdown
+        default:
+            teleprompterImportMessage = TeleprompterScriptImportResult
+                .rejected(.unsupportedType)
+                .userMessage
+            return
+        }
+        guard let data = try? Data(contentsOf: url, options: [.mappedIfSafe]) else {
+            teleprompterImportMessage = TeleprompterScriptImportResult
+                .rejected(.unreadable)
+                .userMessage
+            return
+        }
+        let importResult = TeleprompterScriptImporter.parse(
+            data: data,
+            kind: kind,
+            existingSource: teleprompterSettings.scriptDraft
+        )
+        if case .imported(let source) = importResult {
+            teleprompterSettings.scriptDraft = source
+            teleprompterSettings.applyScriptDraft()
+        }
+        teleprompterImportMessage = importResult.userMessage
+    }
+
     private var secondaryActions: [ResolvedExperienceAction] {
         runtime.activeActions.filter { $0.placement == .secondary }
     }
@@ -370,6 +467,13 @@ enum TeleprompterUndoControlPolicy {
         canUndoAutomaticJump: Bool
     ) -> Bool {
         selectedKind == TeleprompterExperience.kind && canUndoAutomaticJump
+    }
+}
+
+@MainActor
+enum TeleprompterDeleteControlPolicy {
+    static func isVisible(hasDraft: Bool, hasLoadedScript: Bool) -> Bool {
+        hasDraft || hasLoadedScript
     }
 }
 

@@ -77,8 +77,12 @@ struct SingleGreenDemoApp: App {
         let teleprompterDependencies = baseTeleprompterDependencies
         #endif
         let teleprompterController = TeleprompterController(
-            script: try? TeleprompterScript(teleprompterSettings.scriptDraft),
-            dependencies: teleprompterDependencies
+            script: try? TeleprompterScript(
+                teleprompterSettings.scriptDraft,
+                identity: teleprompterSettings.scriptIdentity
+            ),
+            dependencies: teleprompterDependencies,
+            checkpointStore: teleprompterSettings
         )
         _teleprompterSettings = StateObject(wrappedValue: teleprompterSettings)
         #if INTERNAL_DIAGNOSTICS
@@ -145,7 +149,10 @@ struct SingleGreenDemoApp: App {
                 }
                 .onChange(of: teleprompterSettings.scriptConfigurationRevision) { _, _ in
                     let script = teleprompterSettings.scriptDraft
-                    Task { await teleprompterController.loadScript(script) }
+                    let identity = teleprompterSettings.scriptIdentity
+                    Task {
+                        await teleprompterController.loadScript(script, identity: identity)
+                    }
                 }
                 .onChange(of: teleprompterSettings.allowsCloudSpeechRecognition) { _, isAllowed in
                     Task {

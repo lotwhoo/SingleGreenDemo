@@ -24,6 +24,249 @@ final class TeleprompterIntegrationTests: XCTestCase {
         XCTAssertEqual(restored.scriptConfigurationRevision, 0)
     }
 
+    func testLegacyDraftMigratesOnceIntoVersionedEnvelope() throws {
+        let suiteName = "TeleprompterLegacyMigration.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let legacyKey = "legacy-script"
+        let envelopeKey = "migrated-envelope"
+        defaults.set("旧版稿件。", forKey: legacyKey)
+
+        let settings = TeleprompterSettings(
+            defaults: defaults,
+            scriptStorageKey: legacyKey,
+            envelopeStorageKey: envelopeKey
+        )
+        XCTAssertEqual(settings.scriptDraft, "旧版稿件。")
+        XCTAssertNil(defaults.object(forKey: legacyKey))
+
+        let data = try XCTUnwrap(defaults.data(forKey: envelopeKey))
+        let envelope = try JSONDecoder().decode(
+            TeleprompterLocalArtifactEnvelope.self,
+            from: data
+        )
+        XCTAssertEqual(
+            envelope.schemaVersion,
+            TeleprompterLocalArtifactEnvelope.currentSchemaVersion
+        )
+        XCTAssertEqual(envelope.scriptSource, "旧版稿件。")
+        XCTAssertNil(envelope.checkpointData)
+    }
+
+    func testCheckpointPersistsInSingleEnvelopeAndIdenticalWriteIsIdempotent() throws {
+        let suiteName = "TeleprompterCheckpointEnvelope.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let envelopeKey = "checkpoint-envelope"
+        let settings = TeleprompterSettings(
+            defaults: defaults,
+            envelopeStorageKey: envelopeKey
+        )
+        settings.scriptDraft = "第一句。第二句。"
+        let script = try TeleprompterScript(
+            settings.scriptDraft,
+            identity: settings.scriptIdentity
+        )
+        let checkpoint = try XCTUnwrap(TeleprompterCheckpointResolver.makeCheckpoint(
+            script: script,
+            anchor: .init(sentenceIndex: 1, utf16Offset: 2)
+        ))
+
+        XCTAssertEqual(settings.saveCheckpoint(checkpoint), .saved)
+        let firstData = defaults.data(forKey: envelopeKey)
+        XCTAssertEqual(settings.saveCheckpoint(checkpoint), .unchanged)
+        XCTAssertEqual(defaults.data(forKey: envelopeKey), firstData)
+
+        let restored = TeleprompterSettings(
+            defaults: defaults,
+            envelopeStorageKey: envelopeKey
+        )
+        let restoredScript = try TeleprompterScript(
+            restored.scriptDraft,
+            identity: restored.scriptIdentity
+        )
+        XCTAssertEqual(restored.scriptIdentity, settings.scriptIdentity)
+        XCTAssertEqual(restored.loadCheckpoint(for: restoredScript), .loaded(checkpoint))
+    }
+
+    func testEditingScriptInvalidatesCheckpointAndDerivedCaches() throws {
+        let suiteName = "TeleprompterEditInvalidation.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let envelopeKey = "edit-envelope"
+        let settings = TeleprompterSettings(
+            defaults: defaults,
+            envelopeStorageKey: envelopeKey
+        )
+        settings.scriptDraft = "旧稿第一句。"
+        let script = try TeleprompterScript(
+            settings.scriptDraft,
+            identity: settings.scriptIdentity
+        )
+        let checkpoint = try XCTUnwrap(TeleprompterCheckpointResolver.makeCheckpoint(
+            script: script,
+            anchor: .init(sentenceIndex: 0, utf16Offset: 2)
+        ))
+        XCTAssertEqual(settings.saveCheckpoint(checkpoint), .saved)
+        settings.replaceDerivedArtifactsForTesting(
+            normalizedIndexCache: Data("index".utf8),
+            evaluationCache: Data("evaluation".utf8)
+        )
+
+        settings.scriptDraft = "新稿第一句。"
+        let revised = try TeleprompterScript(
+            settings.scriptDraft,
+            identity: settings.scriptIdentity
+        )
+        XCTAssertEqual(settings.loadCheckpoint(for: revised), .missing)
+        let envelopeData = try XCTUnwrap(defaults.data(forKey: envelopeKey))
+        let envelope = try JSONDecoder().decode(
+            TeleprompterLocalArtifactEnvelope.self,
+            from: envelopeData
+        )
+        XCTAssertNil(envelope.checkpointData)
+        XCTAssertNil(envelope.normalizedIndexCache)
+        XCTAssertNil(envelope.evaluationCache)
+    }
+
+    func testCorruptCheckpointFailsClosedWithoutLosingScript() throws {
+        let suiteName = "TeleprompterCorruptCheckpoint.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let envelopeKey = "corrupt-checkpoint-envelope"
+        var envelope = TeleprompterLocalArtifactEnvelope.empty(
+            identity: .init(rawValue: "corrupt-checkpoint-script")
+        )
+        envelope.scriptSource = "仍然可用的稿件。"
+        envelope.checkpointData = Data([0x00, 0x01])
+        defaults.set(try JSONEncoder().encode(envelope), forKey: envelopeKey)
+
+        let settings = TeleprompterSettings(
+            defaults: defaults,
+            envelopeStorageKey: envelopeKey
+        )
+        let script = try TeleprompterScript(
+            settings.scriptDraft,
+            identity: settings.scriptIdentity
+        )
+        XCTAssertEqual(settings.scriptDraft, "仍然可用的稿件。")
+        XCTAssertEqual(settings.loadCheckpoint(for: script), .rejected(.corruptData))
+
+        let controller = TeleprompterController(
+            script: script,
+            dependencies: .init(
+                prepareSpeechSession: { throw ServerCredentialError.transportNotConfigured },
+                requestMicrophonePermission: { false }
+            ),
+            checkpointStore: settings
+        )
+        XCTAssertEqual(controller.state.sentenceIndex, 0)
+        XCTAssertEqual(controller.checkpointRestoreResult, .rejected(.corruptData))
+    }
+
+    func testAtomicDeleteClearsScriptCheckpointIndexAndEvaluationCache() throws {
+        let suiteName = "TeleprompterAtomicDelete.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let envelopeKey = "delete-envelope"
+        let settings = TeleprompterSettings(
+            defaults: defaults,
+            envelopeStorageKey: envelopeKey
+        )
+        settings.scriptDraft = "需要删除的稿件。"
+        let identity = settings.scriptIdentity
+        let script = try TeleprompterScript(settings.scriptDraft, identity: identity)
+        let checkpoint = try XCTUnwrap(TeleprompterCheckpointResolver.makeCheckpoint(
+            script: script,
+            anchor: .init(sentenceIndex: 0, utf16Offset: 2)
+        ))
+        XCTAssertEqual(settings.saveCheckpoint(checkpoint), .saved)
+        settings.replaceDerivedArtifactsForTesting(
+            normalizedIndexCache: Data("index".utf8),
+            evaluationCache: Data("evaluation".utf8)
+        )
+
+        XCTAssertEqual(settings.deleteScriptArtifacts(for: identity), .deleted)
+        XCTAssertEqual(settings.scriptDraft, "")
+        XCTAssertNotEqual(settings.scriptIdentity, identity)
+
+        let data = try XCTUnwrap(defaults.data(forKey: envelopeKey))
+        let envelope = try JSONDecoder().decode(
+            TeleprompterLocalArtifactEnvelope.self,
+            from: data
+        )
+        XCTAssertEqual(envelope.scriptSource, "")
+        XCTAssertNil(envelope.checkpointData)
+        XCTAssertNil(envelope.normalizedIndexCache)
+        XCTAssertNil(envelope.evaluationCache)
+        XCTAssertEqual(settings.deleteScriptArtifacts(for: identity), .alreadyDeleted)
+    }
+
+    func testTXTAndMarkdownImportReturnTypedResultsWithoutOverwritingOnFailure() {
+        let current = "当前仍可使用的稿件。"
+        XCTAssertEqual(
+            TeleprompterScriptImporter.parse(
+                data: Data(" 新导入的 TXT。 ".utf8),
+                kind: .plainText,
+                existingSource: current
+            ),
+            .imported(source: "新导入的 TXT。")
+        )
+        XCTAssertEqual(
+            TeleprompterScriptImporter.parse(
+                data: Data("# Markdown\n正文。".utf8),
+                kind: .markdown,
+                existingSource: current
+            ),
+            .imported(source: "# Markdown\n正文。")
+        )
+        XCTAssertEqual(
+            TeleprompterScriptImporter.parse(
+                data: Data(" \n\t ".utf8),
+                kind: .plainText,
+                existingSource: current
+            ),
+            .rejected(.empty)
+        )
+        XCTAssertEqual(
+            TeleprompterScriptImporter.parse(
+                data: Data([0xff, 0xfe, 0xfd]),
+                kind: .plainText,
+                existingSource: current
+            ),
+            .rejected(.invalidUTF8)
+        )
+        XCTAssertEqual(
+            TeleprompterScriptImporter.parse(
+                data: Data(String(
+                    repeating: "字",
+                    count: TeleprompterLimits.maximumScriptCharacters + 1
+                ).utf8),
+                kind: .plainText,
+                existingSource: current
+            ),
+            .rejected(.exceedsCharacterLimit(
+                maximum: TeleprompterLimits.maximumScriptCharacters
+            ))
+        )
+        XCTAssertEqual(
+            TeleprompterScriptImporter.parse(
+                data: Data("其他格式".utf8),
+                kind: .unsupported,
+                existingSource: current
+            ),
+            .rejected(.unsupportedType)
+        )
+        XCTAssertEqual(
+            TeleprompterScriptImporter.parse(
+                data: Data("\n当前仍可使用的稿件。\n".utf8),
+                kind: .plainText,
+                existingSource: current
+            ),
+            .duplicate
+        )
+    }
+
     func testSpeechCredentialLeaseIsCapabilityScopedAndRedactsSecret() {
         let lease = SpeechCredentialLease(
             apiKey: "speech-fixture-secret",

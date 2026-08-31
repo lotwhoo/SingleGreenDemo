@@ -32,9 +32,11 @@ public final class TeleprompterController: ObservableObject {
     @Published public private(set) var state: TeleprompterState
     @Published public private(set) var snapshot: ExperienceSnapshot
     @Published public private(set) var canUndoAutomaticJump = false
+    @Published public private(set) var checkpointRestoreResult: TeleprompterCheckpointRestoreResult
 
     private let dependencies: TeleprompterDependencies
     private let positionEngine: ReadingPositionEngine
+    private let checkpointStore: any TeleprompterCheckpointStore
     private var revision = 0
     private var generation = 0
     private var session: (any SpeechRecognitionSession)?
@@ -58,24 +60,40 @@ public final class TeleprompterController: ObservableObject {
     public init(
         script: TeleprompterScript? = nil,
         dependencies: TeleprompterDependencies,
-        aligner: TeleprompterScriptAligner = .init()
+        aligner: TeleprompterScriptAligner = .init(),
+        checkpointStore: any TeleprompterCheckpointStore = NoopTeleprompterCheckpointStore()
     ) {
         self.dependencies = dependencies
         self.positionEngine = ReadingPositionEngine(aligner: aligner)
-        let initialState = TeleprompterState(script: script)
+        self.checkpointStore = checkpointStore
+        let restoration = Self.restoredState(script: script, checkpointStore: checkpointStore)
+        let initialState = restoration.state
         self.state = initialState
         self.snapshot = Self.makeSnapshot(state: initialState, revision: 0)
+        self.checkpointRestoreResult = restoration.result
     }
 
-    public func loadScript(_ source: String) async {
+    public func loadScript(
+        _ source: String,
+        identity: TeleprompterScriptIdentity? = nil
+    ) async {
         guard !isShutdown else { return }
         beginIncompatibleAlignmentContext()
         let operation = await invalidateAllWork(cancelSession: true)
         guard isCurrent(operation) else { return }
         do {
-            state = TeleprompterState(script: try TeleprompterScript(source))
+            let script = try identity.map {
+                try TeleprompterScript(source, identity: $0)
+            } ?? TeleprompterScript(source)
+            let restoration = Self.restoredState(
+                script: script,
+                checkpointStore: checkpointStore
+            )
+            state = restoration.state
+            checkpointRestoreResult = restoration.result
         } catch {
             state = TeleprompterState(userSafeError: "稿件为空，请先粘贴文字。")
+            checkpointRestoreResult = .noCheckpoint
         }
         publish()
     }
@@ -181,6 +199,7 @@ public final class TeleprompterController: ObservableObject {
         oldEventTask?.cancel()
         eventTask = nil
         setPhase(state.script == nil ? .ready : .paused, error: nil)
+        persistCheckpointIfPossible()
         cleanupTaskGeneration += 1
         let cleanupID = cleanupTaskGeneration
         let cleanup = Task { [weak self] in
@@ -206,8 +225,27 @@ public final class TeleprompterController: ObservableObject {
         publish()
     }
 
+    /// Explicitly ends the current reading run at the authored end position.
+    /// Host gestures may adopt this boundary without coupling persistence to UI.
+    public func complete() async {
+        guard !isShutdown, let script = state.script,
+              let lastSentenceIndex = script.sentences.indices.last else { return }
+        beginIncompatibleAlignmentContext()
+        let operation = await invalidateAllWork(cancelSession: true)
+        guard isCurrent(operation) else { return }
+        state = TeleprompterState(
+            script: script,
+            sentenceIndex: lastSentenceIndex,
+            readingUTF16Offset: (script.sentences[lastSentenceIndex] as NSString).length,
+            phase: .completed
+        )
+        publish()
+        persistCheckpointIfPossible()
+    }
+
     public func shutdown() async {
         guard !isShutdown else { return }
+        persistCheckpointIfPossible()
         beginIncompatibleAlignmentContext()
         isShutdown = true
         generation += 1
@@ -228,6 +266,35 @@ public final class TeleprompterController: ObservableObject {
         for cleanup in pendingCleanups { await cleanup.value }
         cleanupTasks.removeAll()
         preparationTasks.removeAll()
+    }
+
+    /// Deletes the script and every persisted artifact behind one abstract,
+    /// atomic store operation. Runtime state is cleared only after persistence
+    /// confirms deletion; stale recognition events have already been isolated.
+    @discardableResult
+    public func deleteScript() async -> TeleprompterScriptDeletionResult {
+        guard !isShutdown, let script = state.script else { return .alreadyDeleted }
+        beginIncompatibleAlignmentContext()
+        let operation = await invalidateAllWork(cancelSession: true)
+        guard isCurrent(operation) else { return .failed }
+
+        let result = checkpointStore.deleteScriptArtifacts(for: script.identity)
+        switch result {
+        case .deleted, .alreadyDeleted:
+            state = TeleprompterState()
+            checkpointRestoreResult = .noCheckpoint
+            publish()
+        case .rejectedIdentity, .failed:
+            state = TeleprompterState(
+                script: script,
+                sentenceIndex: state.sentenceIndex,
+                readingUTF16Offset: state.readingUTF16Offset,
+                phase: .paused,
+                userSafeError: "稿件删除失败，请稍后重试。"
+            )
+            publish()
+        }
+        return result
     }
 
     private func startFollowing() async {
@@ -293,6 +360,7 @@ public final class TeleprompterController: ObservableObject {
         let operation = await invalidateAllWork(cancelSession: true)
         guard isCurrent(operation) else { return }
         setPhase(state.script == nil ? .ready : .paused, error: nil)
+        persistCheckpointIfPossible()
     }
 
     private func correctAnchor(to index: Int) async {
@@ -433,9 +501,11 @@ public final class TeleprompterController: ObservableObject {
             state = TeleprompterState(
                 script: script,
                 sentenceIndex: lastSentenceIndex,
+                readingUTF16Offset: lastSentenceLength,
                 phase: .completed
             )
             publish()
+            persistCheckpointIfPossible()
             await completedSession?.cancel()
             return true
         }
@@ -486,6 +556,45 @@ public final class TeleprompterController: ObservableObject {
             alignmentGeneration: alignmentGeneration,
             currentAnchor: readingAnchor
         )
+    }
+
+    @discardableResult
+    private func persistCheckpointIfPossible() -> TeleprompterCheckpointWriteResult {
+        guard let script = state.script,
+              let checkpoint = TeleprompterCheckpointResolver.makeCheckpoint(
+                script: script,
+                anchor: readingAnchor
+              ) else {
+            return .unchanged
+        }
+        return checkpointStore.saveCheckpoint(checkpoint)
+    }
+
+    private static func restoredState(
+        script: TeleprompterScript?,
+        checkpointStore: any TeleprompterCheckpointStore
+    ) -> (state: TeleprompterState, result: TeleprompterCheckpointRestoreResult) {
+        guard let script else {
+            return (TeleprompterState(), .noCheckpoint)
+        }
+        let result = TeleprompterCheckpointResolver.resolve(
+            checkpointStore.loadCheckpoint(for: script),
+            for: script
+        )
+        switch result {
+        case .restored(let anchor):
+            return (
+                TeleprompterState(
+                    script: script,
+                    sentenceIndex: anchor.sentenceIndex,
+                    readingUTF16Offset: anchor.utf16Offset,
+                    phase: .ready
+                ),
+                result
+            )
+        case .noCheckpoint, .rejected:
+            return (TeleprompterState(script: script), result)
+        }
     }
 
     private func hostLifecycleCleanupDidFinish(_ cleanupID: Int) {

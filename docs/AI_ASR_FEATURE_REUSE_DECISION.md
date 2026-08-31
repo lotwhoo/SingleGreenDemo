@@ -1,8 +1,8 @@
 # AI 对话、文字冒险与 ASR 提词器架构复用决策
 
-> 状态：已采纳并完成首版 MVP；M11-PR1 定位契约与 M11-PR2 手机端一次性撤销已本机实现，仍有锁定工具链和真实环境缺口
+> 状态：已采纳并完成首版 MVP；M11-PR1–PR3 与 M11-PR4 第一阶段已本机实现，仍有锁定工具链和真实环境缺口
 >
-> 日期：2026-08-31
+> 日期：2026-09-01
 >
 > 范围：`SingleGreenGlassesKit`、`SingleGreenConversationAdapters`、`LLMKit` 与 App 组合层
 >
@@ -69,18 +69,19 @@ Shared presentation primitives
 
 ### 2.3 当前实现快照
 
-截至 2026-08-31，首版 MVP 与 M11-PR1 已按上述边界落地：
+截至 2026-09-01，首版 MVP 与 M11-PR1–PR4 第一阶段已按上述边界落地：
 
 - `SingleGreenGlassesKit` 已拥有独立的 Teleprompter Domain、纯值 `ReadingPositionEngine`、保留的确定性前向对齐器、Controller、HUD Mapper 与 Experience；
 - Engine 输入显式包含脚本版本、锚点、转写片段、partial/final 语义和数值稳定证据，输出为不含文本的 `stay / advance / jump`；脚本版本不一致时保持当前位置；
 - 最近一次 Engine `jump` 可生成不含文本的一次性撤销记录；手机控制面板按需显示入口，眼镜四键映射不变；
-- App 持有脚本草稿和云端 ASR 同意设置；云端同意持久化且默认拒绝；
+- Core 提供 text-free、versioned checkpoint 及抽象 store；Controller 只在暂停、完成、后台、reset 和 shutdown 写入，不在每个 partial 上持久化；
+- App 持有单稿件 versioned envelope、旧草稿迁移、云端 ASR 同意与具体 codec；删除以一次记录替换清理稿件、checkpoint、索引与评测缓存；
 - Live Composition 只接收 speech-scoped credential provider，提词器拿不到 DeepSeek/搜索等其他能力的凭据；
 - 后台与 shutdown 会立即使当前 generation 失效、取消事件消费并发起 session cancellation；
 - 当前供应商仍是一次话语 Session，Controller 在 `.finished` 后自动创建下一次 Session；自动化已覆盖旧 Session 事件隔离，但真实服务与真机上的连续性尚未验证；
 - 控制面板的四向操作继续通过通用 Experience actions；M11-PR2 仅为手机撤销显式读取 Teleprompter Controller 发布的可用状态并调用一次性命令，不把对齐算法或 Session 生命周期搬入视图；脚本编辑和同意开关属于 App 自有设置；
 - HUD 已用 TextKit 的真实 line fragment 测量，只选择完整行，并以结构化 UTF-16 段落偏移居中选择 3 行；高度不足时自然退化为 2 条完整行；
-- 当前只支持手机端粘贴/编辑并载入稿件和四键短按；TXT 文件导入、长按段落跳转/结束/模式切换尚未实现。
+- 当前支持手机端粘贴/编辑、UTF-8 TXT/Markdown 导入并载入稿件和四键短按；DOCX/PDF/云盘、多稿件列表、长按段落跳转/结束/模式切换尚未实现。
 - 为保留既有调用方，后续补入了 retained public initializer 的 compatibility overloads；补丁后 LLM stateless 与 Teleprompter 聚焦套件重新执行并通过。
 
 ## 3. 能力复用矩阵
@@ -97,7 +98,7 @@ Shared presentation primitives
 | LLMKit 流式对话/上下文事务 | 使用 | 不使用会话上下文 | 禁止 | 提词器必须可解释、可复现、离线降级 |
 | LLMKit transport | 经 Agent 使用 | 用于结构化故事节点 | 禁止 | 提词器的讲稿是用户提供的唯一文本真相 |
 | 有界无状态工具循环 | 不作为主会话 | 用于开局准备/趋势检索 | 禁止 | 只服务文字冒险的运行简报，不成为通用业务状态机 |
-| 本地 checkpoint | 对话上下文另管 | 游戏存档 | 目标保存脚本位置；MVP 未实现 | 三者数据模型和清理策略分开，不能把脚本草稿持久化误称为位置 checkpoint |
+| 本地 checkpoint | 对话上下文另管 | 游戏存档 | 已实现 versioned 位置 checkpoint | 三者数据模型和清理策略分开；提词器只保存身份、内容版本和数值位置，不保存 ASR/音频/payload |
 
 ## 4. 各体验的状态所有权
 
@@ -141,7 +142,7 @@ Controller 拥有：
 - transcript/utterance 的 generation 隔离、Engine 输入映射和决定应用；显式供应商 sequence/stability 尚未引入；
 - 人工纠偏与重捕获；即兴/歧义保持、partial 稳定、前向确认和当前已读位置后 50 个规范化字符内的唯一精确命中跃迁由 Engine 判定；显式静默计时和窗口外跨段跳读规则尚未引入；
 - 最近一次自动跃迁的纯值撤销状态、脚本/定位代际校验和手机命令消费；撤销会取消当前 Session 并按需建立新 Session，不复活旧 Session；
-- 暂停、恢复和会话清理；位置 checkpoint 与显式完成态仍属延期；
+- 暂停、恢复和会话清理；位置 checkpoint、兼容恢复和原子删除；长按显式结束仍属延期；
 - HUD 页面模型，不持有 SwiftUI 测量实现。
 
 `ReadingPositionEngine` 是对外的纯值定位契约：相同脚本版本、脚本、锚点、事件语义、转写片段和数值稳定证据必须得到相同结果。它不得联网、读取设置、调用 LLM、持久化或直接写 UI，reason/evidence 不得携带原始稿件或转写。`ScriptAligner` 继续作为保留的兼容入口和底层确定性匹配原语。当前实现已覆盖有界向前、歧义保持、partial 稳定、final 立即和陈旧脚本拒绝；显式静默状态、完整 token/range 索引和跨段落稳定规则仍属增强项。
@@ -229,9 +230,11 @@ public protocol TeleprompterRecognitionSession: Sendable {
 2. **已完成（MVP 形态）**：在 App 组合层接入 speech-scoped credential 和一次话语 ASR Session；权限、凭据和云端同意不进入 Core。
 3. **已完成**：在 HUD 层用 TextKit 测量完整行，焦点居中最多取 3 行，高度不足时取 2 行。
 4. **已完成**：通过 Experience descriptor 注册提词器并接入四向短按；四向操作不读取具体 Controller，手机撤销按 M11-PR2 走提词器专用显式命令。
-5. **本次 checkout 本机自动化与编译已完成**：Engine 聚焦 9/9、提词器聚焦 42/42、SingleGreenGlassesKit 256/256、App Simulator 86/86、七 Package strict-concurrency/WAE 552/552、User Release Simulator build 和列出的架构/安全门禁均通过。新增 public API 的最终 baseline 因工具链不匹配而待补；live provider 调用和物理设备/眼镜验证仍待执行。
+5. **本次 checkout 本机自动化与编译已完成**：checkpoint 聚焦 4/4、提词器聚焦 47/47、SingleGreenGlassesKit 265/265、App Simulator 93/93、七 Package strict-concurrency/WAE 561/561、User Release Simulator build 和列出的架构/安全门禁均通过。新增 public API 的最终 baseline 与物理设备检查按用户决定延期至 2026-09-02；live provider 调用和眼镜验证仍待执行。
 6. **已完成（M11-PR2 本机实现）**：手机控制面板按需显示一次性自动跃迁撤销；没有新增眼镜按键映射。
-7. **延期**：TXT 文件导入、长按动作、连续 ASR 专用端口、checkpoint/删除闭环和独立 `TeleprompterKit` Package。
+7. **已完成（M11-PR3 本机实现）**：纯值 checkpoint、抽象 store、生命周期写入、类型化恢复、旧草稿迁移和单 envelope 删除闭环。
+8. **已完成（M11-PR4 第一阶段）**：UTF-8 TXT/Markdown 文件选择与 bytes 解析；失败/重复不覆盖当前稿件，文件名与路径不进入 Feature/结果对象。
+9. **延期**：多稿件列表、DOCX/PDF/云盘、长按动作、连续 ASR 专用端口和独立 `TeleprompterKit` Package。
 
 ## 9. 主要风险与控制
 
@@ -245,18 +248,18 @@ public protocol TeleprompterRecognitionSession: Sendable {
 | 云端隐私 | 明示模式、暂停即停采集、默认不保存音频/转写、只记录聚合遥测 |
 | 与现有体验产生回归 | 独立 Controller/ports；保持依赖方向；先跑窄测试再跑相关全量门禁 |
 
-## 10. 验证状态（2026-08-31）
+## 10. 验证状态（2026-09-01）
 
-本节区分自动化实现证据、构建证据和仍未执行的真实环境验证。以下结果来自 M11-PR1/PR2 当前工作树的本机复验。
+本节区分自动化实现证据、构建证据和仍未执行的真实环境验证。以下结果来自 M11-PR1–PR4 当前工作树的本机复验；PR3/PR4 最终全量数字将在本批次门禁后刷新。
 
 | 证据类别 | 当前状态 | 可以说明什么 | 不能说明什么 |
 |---|---|---|---|
 | 文档静态检查 | 已通过：逐文件 whitespace check 与敏感信息模式扫描 | 三份相关 Markdown 未发现 diff 空白错误或常见密钥模式 | 不验证产品逻辑或运行时行为 |
-| 最终 Core 自动化 | 已通过：Engine 9/9、提词器 42/42、SingleGreenGlassesKit 256/256 | 当前 checkout 的纯值定位/撤销契约、Controller 兼容和相关回归通过 | 不代表真实 DeepSeek、搜索或 ASR 服务可用 |
-| 最终 App Simulator 全量 | 已通过：86/86，0 failures，0 skips；iPhone 17 Pro，iOS 26.5；证据：`/tmp/SingleGreenDemo-M11-PR2-Final-AppTests/Logs/Test/Test-SingleGreenUser-2026.08.31_22-51-58-+0800.xcresult` | 当前 checkout 的 App test target 全量及撤销按钮显示策略通过 | 不等于 live provider 或物理设备验证 |
+| 最终 Core 自动化 | 已通过：checkpoint 4/4、提词器 47/47、SingleGreenGlassesKit 265/265 | 当前 checkout 的定位/撤销、checkpoint、显式完成、删除与迟到事件隔离通过 | 不代表真实 DeepSeek、搜索或 ASR 服务可用 |
+| 最终 App Simulator 全量 | 已通过：93/93，0 failures，0 skips；iPhone 17 Pro，iOS 26.5；证据：`/tmp/SingleGreenDemo-M11-PR34-Final3-AppTests/Logs/Test/Test-SingleGreenUser-2026.09.01_00-21-14-+0800.xcresult` | 当前 checkout 的 App test target 全量、versioned envelope、迁移/删除、TXT/Markdown parser 与 UI 策略通过 | 不等于真实文件提供器、live provider 或物理设备验证 |
 | Simulator 编译 | User Release generic iOS Simulator build 成功 | 当前 checkout 可完成已执行的 Release Simulator 编译 | Simulator build 不等于 iphoneos、安装或启动 |
-| 发布与隐私门禁 | 已通过：repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates、11 个负向 fixture、七 Package strict-concurrency/WAE 552/552、diff whitespace 和 public API updater 安全自检；actual public API baseline fail-closed | 当前 checkout 满足已执行的仓库卫生、隐私、架构和并发静态门禁 | 工具链为 Xcode 26.5（17F42）/ Swift 6.3.2，低于锁定 Xcode 26.6（17F113）/ Swift 6.3.3，不能据此确认或改写新增 public API baseline |
+| 发布与隐私门禁 | 已通过：repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates、11 个负向 fixture、七 Package strict-concurrency/WAE 561/561、diff whitespace 和 public API updater安全自检；actual public API baseline 本轮未运行 | 当前 checkout 满足已执行的仓库卫生、隐私、架构和并发静态门禁 | 锁定 Xcode 26.6（17F113）/ Swift 6.3.3 的 baseline 按用户决定延期至 2026-09-02，本轮不能确认或改写新增 public API baseline |
 | Live provider | 未运行 | 无 | 不能宣称真实 DeepSeek、搜索或 ASR 的准确率、延迟与轮换连续性 |
 | 物理设备 install/launch | 本批次未运行 | M11-PR1 未新增设备侧证据 | 不能宣称安装、启动、眼镜可读性、按键或音频路由通过 |
 
-当前 checkout 已形成 M11-PR1/PR2 可审查本机实施批次。剩余证据缺口是锁定工具链上的 public API baseline 与审阅、live DeepSeek/搜索/ASR 调用，以及物理设备 install/launch 和真实眼镜人工可读性/音频路由验证。
+当前 checkout 已形成 M11-PR1–PR4 第一阶段可审查本机实施批次。Xcode 26.6 public API baseline 与真机检查按用户决定延期至 2026-09-02；live DeepSeek/搜索/ASR、真实眼镜人工可读性和音频路由仍是独立证据缺口。
