@@ -16,7 +16,7 @@
 
 ```text
 手机端粘贴并载入讲稿（TXT 文件导入延期）
-  -> 删除全部空白字符与空段落、本地规范化和测量分页
+  -> 删除空格与 Tab、把连续换行折叠为一个 `/`，再做本地规范化和测量分页
   -> 启动语音跟随（一次话语 Session 自动轮换）
   -> 在当前锚点附近匹配已说内容
   -> partial 驱动句内完整行上移，当前句证据稳定后推进到下一句
@@ -93,7 +93,7 @@
 ### 5.1 手机端准备
 
 1. 用户进入“ASR 提词器”，在 App 内粘贴/编辑讲稿并点击“载入稿件”；UTF-8 TXT 文件选择与解析尚未实现。
-2. 系统保留原始稿件副本；载入显示稿时删除全部 Unicode 空白字符（包括空格、Tab、CR/LF）与空段落，不生成空句或空白显示行。该规则也会删除英文单词之间的空格，这是当前产品明确选择。
+2. 系统保留原始稿件副本；载入显示稿时删除空格、Tab 等布局空白，连续 CR/LF 折叠为一个 `/`，开头和结尾的换行不生成 `/`，不生成空句或空白显示行。该规则也会删除英文单词之间的空格，这是当前产品明确选择。
 3. 当前系统建立句子序列并用规范化文本做有界前向匹配；完整 token/range/段落索引仍是后续增强。
 4. 当前由首句或已在运行中选择的句子开始，查看 8:3 眼镜预览；手机端段落选择尚未实现。
 5. 当前云端 ASR 同意由 App 持久化且默认拒绝。用户明确开启后才请求麦克风并准备 speech-scoped session；设备端 ASR capability 分支尚未实现。
@@ -104,7 +104,7 @@
 1. Ready 页面显示第一句和操作提示。
 2. 短按上键开始/暂停；当前实现以 `preparing`/`listening` 表示准备与跟随，没有独立暴露 `SEARCHING`。
 3. 对齐器只在当前确认锚点附近搜索；满足稳定条件后进入 `FOLLOWING`。
-4. partial 转写推进当前句内位置；焦点跨过完整显示行时，以 0.18 秒向上过渡并继续露出未读内容。已读内容为 32% 深绿、当前未读位置为 100% 高亮、下一句为 68% 中绿；首尾不插入空白占位。
+4. partial 转写推进当前句内位置；焦点跨过完整显示行时，以 0.18 秒向上过渡并继续露出未读内容。三行依次为已读、正在读、未读：已读内容为 32% 深绿、当前行为 100% 高亮、未读行为 68% 中绿。正文不自动添加箭头或完成符号，分段只显示规范化后的单个 `/`；首尾不插入空白占位。
 5. 静默、即兴插话或低置信度时冻结页面，不自动完成。
 6. 用户可随时左右纠偏，或下键重新锚定/切换纯手动。
 7. 当前通过暂停、切换体验或宿主 shutdown 结束；长按上键结束和位置 checkpoint 尚未实现。App 未新增音频或识别全文持久化。
@@ -142,9 +142,8 @@
 ┌────────────────────────────────────────┐
 │ 设备端 · 42%                            │  状态/进度
 │      上一完整行（35–45% 亮度）          │
-│ ▶    当前完整行（100% 亮度）            │
+│      当前完整行（100% 亮度）            │
 │      下一完整行（70–80% 亮度）          │
-│ 上:暂停  下:重捕获                       │  最多一条操作提示
 └────────────────────────────────────────┘
 ```
 
@@ -152,21 +151,20 @@
 
 | 区域 | 预算 | 规则 |
 |---|---:|---|
-| 正文 | 3 条完整测量行 | 每行建议 15–20 个中文全角字符；实际以设备字体测量为准，总可见约 45–60 字 |
-| 顶部状态 | 最多 12 个中文字符 | 模式 + 百分比；网络错误优先于进度 |
-| 底部提示 | 最多 14 个中文字符 | 一次只给一个可执行动作 |
-| 字号 | `.detail` 约 17 pt 为起始下限 | 不为塞入更多内容继续缩小字号 |
+| 正文 | 固定 3 条完整测量行 | 每行实际字数以设备字体测量为准 |
+| 顶部状态 | 单行 | 合并进度、模式和当前可执行动作；网络错误优先 |
+| 字号 | 14 pt | 单绿 HUD 的题词正文专用字号；物理眼镜可读性待验证 |
 | 换页 | 完整行吸附 | 禁止连续像素滚动、半行、半字、尾部省略号 |
 
 进一步约束：
 
 - 可见行数由真实字体、行距和安全高度计算，不能用“字符数/常数”代替测量。
-- 如果安全区不足 3 行，宁可进入明确的 2 行布局，也不得显示第三条半行。
+- 所有受支持的显示配置必须为 3 条完整正文行预留安全高度；不得在受支持配置中降为 2 行。新增显示配置上线前必须通过三行高度测试。
 - 状态颜色在单绿色 HUD 上不能作为唯一信息，必须配合文字/图标或亮度层级。
 - `Reduce Motion` 开启时直接切换到新页面，不做逐字或滑动动画。
 - 眼镜端永远显示原稿，不显示 ASR 的 partial/final 转写。
 
-当前实现状态：TextKit 使用与 HUD 一致的字体度量枚举完整 line fragments；提词器通过结构化 `isFocused` 文本片段传递句内位置，不依赖用户原文中的符号或空行。三行窗口把焦点上一完整行固定为 32% 深绿已读、焦点行固定为 100% 高亮正在读、焦点下一完整行固定为 68% 中绿未读；开头和结尾使用“尚未朗读”“已到稿尾/已读完”补足语义行。焦点跨行后旧窗口向上退出、新窗口从下方进入；Reduce Motion 下直接刷新。若物理安全区确实不足 3 行，仍降级到 2 条完整行而不显示半行。App/HUD 自动化已覆盖三档绿色、三行语义、3 行高度、2 行 fallback、完整 Unicode 行片段、句内焦点选择和向上过渡时长；物理眼镜上的最终字号、疲劳和安全区仍未验证。
+当前实现状态：TextKit 使用与 HUD 一致的字体度量枚举完整 line fragments；提词器通过结构化 `isFocused` 文本片段传递句内位置，不依赖正文中的箭头、完成符号或空行。空格与 Tab 被删除，连续换行折叠为一个 `/`，ASR 匹配时忽略该分段符。三行窗口把焦点上一完整行固定为 32% 深绿已读、焦点行固定为 100% 高亮正在读、焦点下一完整行固定为 68% 中绿未读；开头和结尾使用“尚未朗读”“已到稿尾/已读完”补足语义行。状态与进度合并到顶部，正文使用独立的 14pt 字体和 80% 安全区高度，确保默认 iPhone 17 Pro Max 的 8:3 预览容纳 3 条完整行。焦点跨行后旧窗口向上退出、新窗口从下方进入；Reduce Motion 下直接刷新。App/HUD 自动化覆盖三档绿色、三行语义、默认真机投影尺寸、完整 Unicode 行片段、句内焦点选择和向上过渡时长；物理眼镜上的最终字号、疲劳和安全区仍未验证。
 
 ## 8. ASR 位置跟踪算法
 
@@ -307,11 +305,11 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 ### 12.1 已实现的首版 MVP
 
 - 手机端粘贴/编辑并载入讲稿，脚本草稿本地持久化并限制为 20,000 个 `Character`；
-- 删除全部空白字符与空段落的本地分句、规范化、有界向前模糊匹配和重复 partial 稳定门槛；
+- 删除空格与 Tab、把连续换行折叠为一个 `/` 的本地分句、规范化、有界向前模糊匹配和重复 partial 稳定门槛；
 - 复用供应商中立的一次话语 `SpeechRecognitionSession`，结束后自动轮换；
 - App 持久化云端 ASR 同意且默认拒绝；拒绝时保留纯手动模式；
 - speech-scoped credential boundary，不向提词器暴露 LLM/搜索凭据；
-- 8:3 HUD 使用 TextKit 完整行测量，已读/当前/未读采用 32%/100%/68% 三档绿色，焦点最多 3 行，高度不足时 2 行 fallback；
+- 8:3 HUD 使用 TextKit 完整行测量，固定显示已读/当前/未读 3 行，采用 32%/100%/68% 三档绿色；
 - 四向键短按、暂停/继续、当前句重启识别、末句完成/从头重启和纯手动降级；
 - background/shutdown/撤销同意的立即取消、generation 隔离和迟到事件拒绝；
 - Core fake session、聚焦 App/HUD 自动化覆盖；无 LLM。
@@ -369,7 +367,7 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 | GWT-02 | 部分实现 | 空稿安全失败已实现；文件解码路径延期 |
 | GWT-03 | 部分实现 | TextKit 完整 Unicode 行片段自动化通过；完整预处理 range 索引延期 |
 | GWT-04 | 通过（聚焦 App/HUD 自动化） | 3 条完整测量行有覆盖 |
-| GWT-05 | 通过（聚焦 App/HUD 自动化） | 高度不足时 2 条完整行 fallback 有覆盖 |
+| GWT-05 | 通过（聚焦 App/HUD 自动化） | 默认 iPhone 17 Pro Max 投影尺寸可容纳 3 条完整正文行 |
 | GWT-06 | 未验证 | 本轮聚焦证据未单独证明提词器 Reduce Motion 路径 |
 | GWT-07 | 通过（Core 自动化） | fake session 启动后进入 listening |
 | GWT-08 | 部分实现 | preparing 再按会取消/暂停，不是原规格中的重复 start 幂等 |
@@ -404,7 +402,7 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 2. **Given** 空白或无法解码的文件，**When** 导入，**Then** 不进入 Ready，并给出可操作错误，不修改原文件。
 3. **Given** 一句包含 emoji、组合附加符或罕见汉字，**When** 分行，**Then** 所有 range 位于 Swift `Character` 边界。
 4. **Given** 安全高度可容纳 3 行，**When** 任意页面渲染，**Then** 恰好显示 3 条完整正文行，无半行、半字和省略号。
-5. **Given** 安全高度不足 3 行，**When** 渲染，**Then** 使用明确的 2 行完整布局，不裁切第三行。
+5. **Given** 默认 iPhone 17 Pro Max 的 8:3 投影，**When** 渲染题词器，**Then** 正文区域按 14 pt 字体完整容纳 3 行；新增显示配置若无法满足该条件，不得作为受支持配置发布。
 6. **Given** 开启 Reduce Motion，**When** 锚点推进，**Then** 页面直接吸附到新完整行，无逐字或滑动动画。
 
 ### 14.2 ASR 跟随
@@ -450,13 +448,13 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 | ID | 层级 | 语料/条件 | 注入事件 | 预期不变量 | 当前状态 |
 |---|---|---|---|---|---|
 | T01 | Unit/Parser | 空字符串、纯空白 | 导入 | typed invalid-script；不建 run | 通过（Core） |
-| T02 | Unit/Parser | CRLF、Tab、连续空格、空段落、中英文标点 | 预处理 | displayText 不含任何空白字符或空句；matchTokens 规范化 | 通过（Core）；完整原文映射延期 |
+| T02 | Unit/Parser | CRLF、Tab、连续空格、空段落、中英文标点 | 预处理 | displayText 不含空格、Tab 或空句；连续段落边界只保留一个 `/`；matchTokens 忽略 `/` | 通过（Core）；完整原文映射延期 |
 | T03 | Unit/Parser | emoji、组合字符 | 分句/分行 | range 均为 `Character` 边界 | 部分：HUD TextKit 通过；预处理 range 延期 |
 | T04 | Unit/Layout | 可放 3 行 | 固定测量 | 3 完整行；无截断/省略号 | 通过（聚焦 App/HUD） |
-| T05 | Unit/Layout | 仅可放 2 行 | 固定测量 | 显式 2 行布局；无第三条半行 | 通过（聚焦 App/HUD） |
+| T05 | Unit/Layout | iPhone 17 Pro Max 默认投影 | 固定测量 | 14 pt 正文完整容纳 3 行 | 通过（聚焦 App/HUD） |
 | T06 | Unit/Layout | 极长无空格 token | 固定宽度 | 字素安全换行；不无限循环 | 未单独验证 |
 | T07 | Snapshot/HUD | Ready/Searching/Following | 固定页面 | 状态与进度在预算内，当前行视觉层级明确 | 部分：HUD Mapper 通过；非完整 snapshot |
-| T08 | Snapshot/HUD | 最大动态字体/安全区 | 固定页面 | 完整行规则仍成立或切 2 行模式 | 未单独验证 |
+| T08 | Snapshot/HUD | 新增显示配置/安全区 | 固定页面 | 必须容纳 3 条完整正文行，否则配置不通过 | 默认配置通过；其他配置待逐项验证 |
 | T09 | Unit/Aligner | 连续唯一句 | 稳定 partial/final | 单调推进到唯一候选 | 通过（Core） |
 | T10 | Unit/Aligner | 仅两个常见词 | partial | 候选不提交 | 部分：4 字符阈值已实现 |
 | T11 | Unit/Aligner | partial 被 final 修订 | 两事件 | 未确认候选替换；确认锚点不回滚 | 未单独验证 |
@@ -500,22 +498,23 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 3. **已通过**：Debug iphoneos archive/export 与 Release generic iphoneos build；
 4. **已通过**：Release credential isolation、repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates 和 final public API baseline check；
 5. **未运行**：live provider 的 DeepSeek、搜索和 ASR 调用，包括普通话、噪声、静默、插话、跳读与 rollover 连续性；
-6. **部分通过**：Build 8 已安装到 `kemin‘s phone`（iPhone 17 Pro Max）并回读为 `0.1 (8)`；本轮未启动应用，物理眼镜显示、音频路由和人工可读性仍未验证。安装通过不能替代这些证据。
+6. **部分通过**：历史用户版 Build 8 与本次三行修复内部版均已安装到 `kemin‘s phone`（iPhone 17 Pro Max）；本次内部版因设备锁屏未能自动启动，物理眼镜显示、音频路由和人工可读性仍未验证。安装通过不能替代这些证据。
 
 PromptSmart 对 VoiceTrack 使用专利表述。商业发布前应由合格人员做独立的专利/自由实施审查；本文不是法律意见，也不据此判断侵权与否。
 
-## 17. 当前验证状态（2026-08-30）
+## 17. 当前验证状态（2026-08-31）
 
 本文同时记录产品规格与目前实现证据，但不把自动化通过外推为真实服务或物理设备通过。本次修复已重新运行 Core 与 App 自动化；真实服务和物理设备仍是独立门。
 
 | 证据类别 | 当前状态 | 备注 |
 |---|---|---|
 | 文档静态检查 | 已通过：逐文件 whitespace check 与敏感信息模式扫描 | 未发现 diff 空白错误或常见密钥模式；不验证业务 |
-| 最终 Core 自动化 | 已通过：SingleGreenGlassesKit 231/231 | 覆盖句内跟随、跨 ASR Session 续读、累计长转写防跳读、短句推进、整句推进、完成/重启、小错字与口头语容错、全部空白字符/空段落删除、超长无标点稿件和并发隔离；不代表真实服务通过 |
+| 最终 Core 自动化 | 历史全量已通过：SingleGreenGlassesKit 231/231；本次提词器聚焦复测 29/29 | 覆盖句内跟随、跨 ASR Session 续读、累计长转写防跳读、短句推进、整句推进、完成/重启、小错字与口头语容错、空格/Tab/空段落处理、超长无标点稿件和并发隔离；不代表真实服务通过 |
 | 最终 App Simulator 全量 | 已通过：91/91，0 failures，0 skips；iPhone 17 Pro，iOS 26.5；`/private/tmp/SingleGreenDemo-TeleprompterThreeRowsFinal/Logs/Test/Test-SingleGreenDemo-2026.08.30_11-35-21-+0800.xcresult` | App test target 全量通过，含固定的已读/正在读/未读三行深度、完整行渲染、句内焦点、向上过渡与异常富文本降级；不等于 live provider 或设备验证 |
+| 本次内部版 App/HUD 聚焦复测 | 已通过：49/49，0 failures，0 skips；iPhone 17 Pro Max Simulator，iOS 26.5；`/private/tmp/SingleGreenDemo-ThreeLineFixTests/Logs/Test/Test-SingleGreenInternal-2026.08.31_14-27-37-+0800.xcresult` | 使用默认显示 Profile 与 440×956 容器计算实际投影，验证 14 pt 正文可完整容纳 3 行 |
 | iphoneos 构建与导出 | Debug archive/export 成功；Release generic build 成功；Build 8 IPA 已导出并核验包内版本 | 构建与签名通过不等于具体设备 install/launch |
 | 发布与隐私门禁 | 已通过：Release credential isolation、repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates、final public API baseline check | 凭据隔离、仓库卫生、隐私与公共 API 静态门禁通过；不替代运行时验证 |
 | Live provider | 未运行 | 未验证真实 DeepSeek、搜索、普通话 ASR、延迟、噪声或 one-shot auto-rotation 连续性 |
-| 物理设备 install/launch | install 已通过；launch 未运行 | Build 8 已安装到 `kemin‘s phone` 并回读为 `0.1 (8)`；未验证启动、眼镜可读性、按键、音频路由、热与电量 |
+| 物理设备 install/launch | 三行修复内部版 install 已通过；launch 因设备锁屏被系统拒绝 | `SingleGreenInternal` 已于 2026-08-31 覆盖安装到 `kemin‘s phone`；尚未人工确认手机画面，也未验证眼镜可读性、按键、音频路由、热与电量 |
 
 最终 checkout 的 Core/App 自动化、公共 API 基线、Debug 体验包和 Release 隔离门已刷新；下一步由用户进行真实普通话 ASR、物理设备显示、音频路由和人工可读性体验。

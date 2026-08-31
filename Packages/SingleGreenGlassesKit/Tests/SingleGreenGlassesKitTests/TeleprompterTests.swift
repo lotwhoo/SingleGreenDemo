@@ -3,34 +3,41 @@ import XCTest
 
 @MainActor
 final class TeleprompterTests: XCTestCase {
-    func testScriptSegmentationPreservesPunctuationAndParagraphs() throws {
+    func testScriptSegmentationPreservesPunctuationAndMarksParagraphsWithOneSlash() throws {
         let script = try TeleprompterScript("第一句。第二句！\nThird line? Final line")
 
         XCTAssertEqual(
             script.sentences,
-            ["第一句。", "第二句！", "Thirdline?", "Finalline"]
+            ["第一句。", "第二句！/", "Thirdline?", "Finalline"]
         )
     }
 
-    func testScriptSegmentationIgnoresHardWrapsAndBlankLines() throws {
+    func testScriptSegmentationCollapsesHardWrapsAndBlankLinesToOneSlash() throws {
         let script = try TeleprompterScript(
             "没有标点的第一部分\n\n继续同一句。\r\n下一句结束。"
         )
 
         XCTAssertEqual(
             script.sentences,
-            ["没有标点的第一部分继续同一句。", "下一句结束。"]
+            ["没有标点的第一部分/", "继续同一句。/", "下一句结束。"]
         )
         XCTAssertFalse(script.sentences.contains(where: { $0.isEmpty }))
     }
 
-    func testScriptSegmentationRemovesAllWhitespaceAndEmptyParagraphs() throws {
+    func testScriptSegmentationRemovesSpacingAndKeepsOnlySingleParagraphSlashes() throws {
         let script = try TeleprompterScript(
             "  第一 段\t继续  \n\n\r\n  第二段。  \n   第三 段结束。  "
         )
 
-        XCTAssertEqual(script.sentences, ["第一段继续第二段。", "第三段结束。"])
+        XCTAssertEqual(script.sentences, ["第一段继续/", "第二段。/", "第三段结束。"])
         XCTAssertFalse(script.sentences.joined().contains(where: { $0.isWhitespace }))
+        XCTAssertFalse(script.sentences.joined().contains("//"))
+    }
+
+    func testScriptSegmentationIgnoresLeadingAndTrailingBreaksAndCollapsesAuthoredSlashes() throws {
+        let script = try TeleprompterScript("\n\n第一段///\r\n\n第二段\n\n")
+
+        XCTAssertEqual(script.sentences, ["第一段/", "第二段"])
     }
 
     func testAlignerMovesOnlyForwardAndHoldsAmbiguousOrAdLibSpeech() throws {
@@ -660,7 +667,7 @@ final class TeleprompterTests: XCTestCase {
 
         XCTAssertEqual(scene.sceneID, "teleprompter.asr")
         if case .styledFlowingTextRuns(let runs, _, _, let style) = body.content {
-            XCTAssertEqual(runs.map(\.text).joined(), "第一句。\n▸第二句。\n第三句。")
+            XCTAssertEqual(runs.map(\.text).joined(), "第一句。\n第二句。\n第三句。")
             XCTAssertEqual(runs.map(\.opacity), [0.32, 1, 0.68])
             XCTAssertEqual(runs.map(\.isFocused), [false, true, false])
             XCTAssertEqual(style, .detail)
@@ -679,7 +686,7 @@ final class TeleprompterTests: XCTestCase {
         if case .styledFlowingTextRuns(let runs, _, _, _) = firstBody.content {
             let text = runs.map(\.text).joined()
             XCTAssertFalse(text.hasPrefix("\n"))
-            XCTAssertEqual(text, "尚未朗读\n▸第一句。\n第二句。")
+            XCTAssertEqual(text, "尚未朗读\n第一句。\n第二句。")
             XCTAssertFalse(text.contains(" "))
             XCTAssertEqual(runs.map(\.isFocused), [false, true, false])
         } else {
@@ -694,7 +701,7 @@ final class TeleprompterTests: XCTestCase {
             completedScene.elements.first { $0.id == "teleprompter_body" }
         )
         if case .styledFlowingTextRuns(let runs, _, _, _) = completedBody.content {
-            XCTAssertEqual(runs.map(\.text).joined(), "第二句。\n✓第三句。\n已读完")
+            XCTAssertEqual(runs.map(\.text).joined(), "第二句。\n第三句。\n已读完")
             XCTAssertEqual(runs.count, 3)
         } else {
             XCTFail("Expected completed three-line text runs")
