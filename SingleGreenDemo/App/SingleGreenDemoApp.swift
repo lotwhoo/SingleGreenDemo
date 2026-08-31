@@ -133,6 +133,7 @@ struct SingleGreenDemoApp: App {
                 .environmentObject(profileStore)
                 .environmentObject(aiSettings)
                 .environmentObject(teleprompterSettings)
+                .environmentObject(teleprompterController)
                 #if INTERNAL_DIAGNOSTICS
                 .environmentObject(diagnostics)
                 #endif

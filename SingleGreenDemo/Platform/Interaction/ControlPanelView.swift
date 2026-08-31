@@ -6,6 +6,7 @@ struct ControlPanelView: View {
     @EnvironmentObject private var runtime: ExperienceRuntime
     @EnvironmentObject private var profileStore: DisplayProfileStore
     @EnvironmentObject private var teleprompterSettings: TeleprompterSettings
+    @EnvironmentObject private var teleprompterController: TeleprompterController
     #if INTERNAL_DIAGNOSTICS
     @Binding var debugMode: Bool
     #endif
@@ -16,6 +17,12 @@ struct ControlPanelView: View {
                 experienceMenu
                 if runtime.selectedKind == TeleprompterExperience.kind {
                     teleprompterScriptEditor
+                }
+                if TeleprompterUndoControlPolicy.isVisible(
+                    selectedKind: runtime.selectedKind,
+                    canUndoAutomaticJump: teleprompterController.canUndoAutomaticJump
+                ) {
+                    teleprompterUndoControl
                 }
                 if let controlState = runtime.controlState {
                     VStack(spacing: 12) {
@@ -340,8 +347,29 @@ struct ControlPanelView: View {
         .background(.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 16))
     }
 
+    private var teleprompterUndoControl: some View {
+        Button {
+            Task { await teleprompterController.undoLastAutomaticJump() }
+        } label: {
+            Label("撤销刚才的自动跳转", systemImage: "arrow.uturn.backward")
+                .frame(maxWidth: .infinity, minHeight: 40)
+        }
+        .buttonStyle(.bordered)
+        .accessibilityIdentifier("teleprompter_undo_automatic_jump_button")
+    }
+
     private var secondaryActions: [ResolvedExperienceAction] {
         runtime.activeActions.filter { $0.placement == .secondary }
+    }
+}
+
+@MainActor
+enum TeleprompterUndoControlPolicy {
+    static func isVisible(
+        selectedKind: ExperienceKind,
+        canUndoAutomaticJump: Bool
+    ) -> Bool {
+        selectedKind == TeleprompterExperience.kind && canUndoAutomaticJump
     }
 }
 

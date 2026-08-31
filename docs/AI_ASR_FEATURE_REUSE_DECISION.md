@@ -1,8 +1,8 @@
 # AI 对话、文字冒险与 ASR 提词器架构复用决策
 
-> 状态：已采纳并完成首版 MVP；仍有明确延期项与未验证项
+> 状态：已采纳并完成首版 MVP；M11-PR1 定位契约与 M11-PR2 手机端一次性撤销已本机实现，仍有锁定工具链和真实环境缺口
 >
-> 日期：2026-08-30
+> 日期：2026-08-31
 >
 > 范围：`SingleGreenGlassesKit`、`SingleGreenConversationAdapters`、`LLMKit` 与 App 组合层
 >
@@ -50,7 +50,8 @@ SingleGreenDemo composition root
   └─ ASR Teleprompter
       └─ TeleprompterController + Teleprompter domain
           ├─ SpeechRecognitionSession（MVP：一次话语后自动轮换）
-          ├─ deterministic ScriptAligner
+          ├─ deterministic ReadingPositionEngine
+          │   └─ retained ScriptAligner（兼容入口/匹配原语）
           └─ App live adapter
               └─ VoiceChatCore / provider ASR（按能力适配）
 
@@ -68,14 +69,16 @@ Shared presentation primitives
 
 ### 2.3 当前实现快照
 
-截至 2026-08-30，首版 MVP 已按上述边界落地：
+截至 2026-08-31，首版 MVP 与 M11-PR1 已按上述边界落地：
 
-- `SingleGreenGlassesKit` 已拥有独立的 Teleprompter Domain、确定性前向对齐器、Controller、HUD Mapper 与 Experience；
+- `SingleGreenGlassesKit` 已拥有独立的 Teleprompter Domain、纯值 `ReadingPositionEngine`、保留的确定性前向对齐器、Controller、HUD Mapper 与 Experience；
+- Engine 输入显式包含脚本版本、锚点、转写片段、partial/final 语义和数值稳定证据，输出为不含文本的 `stay / advance / jump`；脚本版本不一致时保持当前位置；
+- 最近一次 Engine `jump` 可生成不含文本的一次性撤销记录；手机控制面板按需显示入口，眼镜四键映射不变；
 - App 持有脚本草稿和云端 ASR 同意设置；云端同意持久化且默认拒绝；
 - Live Composition 只接收 speech-scoped credential provider，提词器拿不到 DeepSeek/搜索等其他能力的凭据；
 - 后台与 shutdown 会立即使当前 generation 失效、取消事件消费并发起 session cancellation；
 - 当前供应商仍是一次话语 Session，Controller 在 `.finished` 后自动创建下一次 Session；自动化已覆盖旧 Session 事件隔离，但真实服务与真机上的连续性尚未验证；
-- 控制面板通过通用 Experience actions 操作体验，没有读取具体 Teleprompter Controller；脚本编辑和同意开关属于 App 自有设置；
+- 控制面板的四向操作继续通过通用 Experience actions；M11-PR2 仅为手机撤销显式读取 Teleprompter Controller 发布的可用状态并调用一次性命令，不把对齐算法或 Session 生命周期搬入视图；脚本编辑和同意开关属于 App 自有设置；
 - HUD 已用 TextKit 的真实 line fragment 测量，只选择完整行，并以结构化 UTF-16 段落偏移居中选择 3 行；高度不足时自然退化为 2 条完整行；
 - 当前只支持手机端粘贴/编辑并载入稿件和四键短按；TXT 文件导入、长按段落跳转/结束/模式切换尚未实现。
 - 为保留既有调用方，后续补入了 retained public initializer 的 compatibility overloads；补丁后 LLM stateless 与 Teleprompter 聚焦套件重新执行并通过。
@@ -84,7 +87,7 @@ Shared presentation primitives
 
 | 能力 | AI Conversation | Text Adventure | ASR Teleprompter | 决策 |
 |---|---|---|---|---|
-| Experience 注册、选择与通用动作 | 复用 | 复用 | 复用 | 保持通用 `ExperienceControlState`，模拟器不读取具体 Controller |
+| Experience 注册、选择与通用动作 | 复用 | 复用 | 复用 | 四向操作保持通用 `ExperienceControlState`；手机撤销是提词器专用的显式命令边界 |
 | 8:3 `DisplayProfile` 与安全区 | 复用 | 复用 | 复用 | 所有体验共享显示边界，但页面预算由各体验定义 |
 | 完整行、字素安全排版 | 复用 | 复用 | 复用并强化 | 提词器必须只显示完整行，不使用省略号或半行裁切 |
 | ASR 音频采集/供应商适配 | 复用适配层 | 当前非必要 | 复用底层能力 | 共享 transport/capture，不共享会话结束语义 |
@@ -134,13 +137,16 @@ ImportedScript
 
 Controller 拥有：
 
-- 脚本准备、当前确认锚点、候选锚点、识别代际和模式；
-- transcript/utterance 的 generation 隔离、重复 partial 计数和前向确认；显式供应商 sequence/stability 尚未引入；
-- 即兴/歧义保持、人工纠偏与重捕获；显式静默计时和跨段跳读规则尚未引入；
+- 脚本准备、当前确认锚点、识别代际、Session 生命周期和模式；
+- transcript/utterance 的 generation 隔离、Engine 输入映射和决定应用；显式供应商 sequence/stability 尚未引入；
+- 人工纠偏与重捕获；即兴/歧义保持、partial 稳定、前向确认和当前已读位置后 50 个规范化字符内的唯一精确命中跃迁由 Engine 判定；显式静默计时和窗口外跨段跳读规则尚未引入；
+- 最近一次自动跃迁的纯值撤销状态、脚本/定位代际校验和手机命令消费；撤销会取消当前 Session 并按需建立新 Session，不复活旧 Session；
 - 暂停、恢复和会话清理；位置 checkpoint 与显式完成态仍属延期；
 - HUD 页面模型，不持有 SwiftUI 测量实现。
 
-`ScriptAligner` 是纯确定性组件：相同脚本、锚点、事件序列和参数必须得到相同结果。它不得联网、读取设置、调用 LLM 或直接写 UI。当前 MVP 已实现有界向前、歧义保持的子集；显式静默状态、完整 token/range 索引和跨段落稳定规则仍属增强项。
+`ReadingPositionEngine` 是对外的纯值定位契约：相同脚本版本、脚本、锚点、事件语义、转写片段和数值稳定证据必须得到相同结果。它不得联网、读取设置、调用 LLM、持久化或直接写 UI，reason/evidence 不得携带原始稿件或转写。`ScriptAligner` 继续作为保留的兼容入口和底层确定性匹配原语。当前实现已覆盖有界向前、歧义保持、partial 稳定、final 立即和陈旧脚本拒绝；显式静默状态、完整 token/range 索引和跨段落稳定规则仍属增强项。
+
+`ReadingPositionUndoState` 同样是纯值契约，但不属于 Engine 的自动决策：它只保存脚本版本、alignment generation 与前后锚点，并由 Controller 在手机用户命令到达时一次性消费。人工纠偏、脚本替换、reset、shutdown、完成、后续普通推进和不兼容重锚定都会清除记录。兼容的一次话语 rollover 可保留记录；真实供应商 rollover 连续性仍需 live/device 证据。
 
 ## 5. 提词器识别端口：目标与当前实现
 
@@ -219,12 +225,13 @@ public protocol TeleprompterRecognitionSession: Sendable {
 
 ## 8. 分阶段落地顺序
 
-1. **已完成**：在 `SingleGreenGlassesKit` 定义 Teleprompter Domain、纯 `ScriptAligner`、Controller、HUD Mapper 与 fake-session 测试。
+1. **已完成**：在 `SingleGreenGlassesKit` 定义 Teleprompter Domain、纯值 `ReadingPositionEngine`、保留的 `ScriptAligner`、Controller、HUD Mapper 与 fake-session 测试。
 2. **已完成（MVP 形态）**：在 App 组合层接入 speech-scoped credential 和一次话语 ASR Session；权限、凭据和云端同意不进入 Core。
 3. **已完成**：在 HUD 层用 TextKit 测量完整行，焦点居中最多取 3 行，高度不足时取 2 行。
-4. **已完成**：通过 Experience descriptor 注册提词器并接入四向短按；控制面板不读取具体 Controller。
-5. **最终 checkout 自动化与编译已完成**：SingleGreenGlassesKit 222/222、App Simulator 87/87、Debug/Release generic iphoneos build 和全部列出的架构/安全/发布门禁均通过。live provider 调用和物理设备 install/launch 仍待执行。
-6. **延期**：TXT 文件导入、长按动作、连续 ASR 专用端口、checkpoint/删除闭环和独立 `TeleprompterKit` Package。
+4. **已完成**：通过 Experience descriptor 注册提词器并接入四向短按；四向操作不读取具体 Controller，手机撤销按 M11-PR2 走提词器专用显式命令。
+5. **本次 checkout 本机自动化与编译已完成**：Engine 聚焦 9/9、提词器聚焦 42/42、SingleGreenGlassesKit 256/256、App Simulator 86/86、七 Package strict-concurrency/WAE 552/552、User Release Simulator build 和列出的架构/安全门禁均通过。新增 public API 的最终 baseline 因工具链不匹配而待补；live provider 调用和物理设备/眼镜验证仍待执行。
+6. **已完成（M11-PR2 本机实现）**：手机控制面板按需显示一次性自动跃迁撤销；没有新增眼镜按键映射。
+7. **延期**：TXT 文件导入、长按动作、连续 ASR 专用端口、checkpoint/删除闭环和独立 `TeleprompterKit` Package。
 
 ## 9. 主要风险与控制
 
@@ -238,18 +245,18 @@ public protocol TeleprompterRecognitionSession: Sendable {
 | 云端隐私 | 明示模式、暂停即停采集、默认不保存音频/转写、只记录聚合遥测 |
 | 与现有体验产生回归 | 独立 Controller/ports；保持依赖方向；先跑窄测试再跑相关全量门禁 |
 
-## 10. 验证状态（2026-08-30）
+## 10. 验证状态（2026-08-31）
 
-本节区分自动化实现证据、构建证据和仍未执行的真实环境验证。测试计数来自父任务提供的本轮结果；本文没有重新运行产品测试。
+本节区分自动化实现证据、构建证据和仍未执行的真实环境验证。以下结果来自 M11-PR1/PR2 当前工作树的本机复验。
 
 | 证据类别 | 当前状态 | 可以说明什么 | 不能说明什么 |
 |---|---|---|---|
-| 文档静态检查 | 已通过：逐文件 whitespace check 与敏感信息模式扫描 | 两份 Markdown 未发现 diff 空白错误或常见密钥模式 | 不验证产品逻辑或运行时行为 |
-| 最终 Core 自动化 | 已通过：SingleGreenGlassesKit 222/222 | 最终 checkout 的 Core 提词器、体验与相关回归测试通过 | 不代表真实 DeepSeek、搜索或 ASR 服务可用 |
-| 最终 App Simulator 全量 | 已通过：87/87，0 failures，0 skips；iPhone 17 Pro，iOS 26.5；证据：`/private/tmp/SingleGreenDemo-ControlPanelFullTests/Logs/Test/Test-SingleGreenDemo-2026.08.30_10-05-03-+0800.xcresult` | 最终 checkout 的 App test target 全量通过 | 不等于 live provider 或物理设备验证 |
-| generic iphoneos 编译 | Debug exit 0；Release exit 0 | 最终 checkout 可为 generic iphoneos 编译两种配置 | generic build 不等于在具体设备 install/launch |
-| 发布与隐私门禁 | 已通过：Release credential isolation、repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates、final public API baseline check | 最终 checkout 满足已执行的凭据隔离、仓库卫生、隐私与 API 基线静态门禁 | 静态门禁不替代真实服务或设备行为验证 |
+| 文档静态检查 | 已通过：逐文件 whitespace check 与敏感信息模式扫描 | 三份相关 Markdown 未发现 diff 空白错误或常见密钥模式 | 不验证产品逻辑或运行时行为 |
+| 最终 Core 自动化 | 已通过：Engine 9/9、提词器 42/42、SingleGreenGlassesKit 256/256 | 当前 checkout 的纯值定位/撤销契约、Controller 兼容和相关回归通过 | 不代表真实 DeepSeek、搜索或 ASR 服务可用 |
+| 最终 App Simulator 全量 | 已通过：86/86，0 failures，0 skips；iPhone 17 Pro，iOS 26.5；证据：`/tmp/SingleGreenDemo-M11-PR2-Final-AppTests/Logs/Test/Test-SingleGreenUser-2026.08.31_22-51-58-+0800.xcresult` | 当前 checkout 的 App test target 全量及撤销按钮显示策略通过 | 不等于 live provider 或物理设备验证 |
+| Simulator 编译 | User Release generic iOS Simulator build 成功 | 当前 checkout 可完成已执行的 Release Simulator 编译 | Simulator build 不等于 iphoneos、安装或启动 |
+| 发布与隐私门禁 | 已通过：repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates、11 个负向 fixture、七 Package strict-concurrency/WAE 552/552、diff whitespace 和 public API updater 安全自检；actual public API baseline fail-closed | 当前 checkout 满足已执行的仓库卫生、隐私、架构和并发静态门禁 | 工具链为 Xcode 26.5（17F42）/ Swift 6.3.2，低于锁定 Xcode 26.6（17F113）/ Swift 6.3.3，不能据此确认或改写新增 public API baseline |
 | Live provider | 未运行 | 无 | 不能宣称真实 DeepSeek、搜索或 ASR 的准确率、延迟与轮换连续性 |
-| 物理设备 install/launch | 未运行 | generic iphoneos Debug/Release build 已通过 | 不能宣称安装、启动、眼镜可读性、按键或音频路由通过 |
+| 物理设备 install/launch | 本批次未运行 | M11-PR1 未新增设备侧证据 | 不能宣称安装、启动、眼镜可读性、按键或音频路由通过 |
 
-最终 checkout 的 Core、App Simulator 全量、Debug/Release generic iphoneos 编译和列出的发布门禁已经补齐。剩余证据缺口是 live DeepSeek/搜索/ASR 调用，以及物理设备 install/launch 和人工可读性/音频路由验证。
+当前 checkout 已形成 M11-PR1/PR2 可审查本机实施批次。剩余证据缺口是锁定工具链上的 public API baseline 与审阅、live DeepSeek/搜索/ASR 调用，以及物理设备 install/launch 和真实眼镜人工可读性/音频路由验证。

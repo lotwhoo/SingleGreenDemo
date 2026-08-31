@@ -31,9 +31,10 @@ public struct TeleprompterDependencies {
 public final class TeleprompterController: ObservableObject {
     @Published public private(set) var state: TeleprompterState
     @Published public private(set) var snapshot: ExperienceSnapshot
+    @Published public private(set) var canUndoAutomaticJump = false
 
     private let dependencies: TeleprompterDependencies
-    private let aligner: TeleprompterScriptAligner
+    private let positionEngine: ReadingPositionEngine
     private var revision = 0
     private var generation = 0
     private var session: (any SpeechRecognitionSession)?
@@ -43,8 +44,9 @@ public final class TeleprompterController: ObservableObject {
     private var preparationTaskGeneration = 0
     private var preparationTasks: [Int: Task<Void, Never>] = [:]
     private var activePreparationTaskID: Int?
-    private var tentativeSentenceIndex: Int?
-    private var tentativeObservationCount = 0
+    private var positionStability = ReadingPositionStability()
+    private var positionUndo = ReadingPositionUndoState()
+    private var alignmentGeneration: UInt64 = 0
     private var isShutdown = false
 
     private static let consentDeniedError = "未同意云端语音识别，已保持手动模式。"
@@ -59,7 +61,7 @@ public final class TeleprompterController: ObservableObject {
         aligner: TeleprompterScriptAligner = .init()
     ) {
         self.dependencies = dependencies
-        self.aligner = aligner
+        self.positionEngine = ReadingPositionEngine(aligner: aligner)
         let initialState = TeleprompterState(script: script)
         self.state = initialState
         self.snapshot = Self.makeSnapshot(state: initialState, revision: 0)
@@ -67,6 +69,7 @@ public final class TeleprompterController: ObservableObject {
 
     public func loadScript(_ source: String) async {
         guard !isShutdown else { return }
+        beginIncompatibleAlignmentContext()
         let operation = await invalidateAllWork(cancelSession: true)
         guard isCurrent(operation) else { return }
         do {
@@ -98,6 +101,40 @@ public final class TeleprompterController: ObservableObject {
     public func moveNext() async {
         guard let script = state.script else { return }
         await correctAnchor(to: min(script.sentences.count - 1, state.sentenceIndex + 1))
+    }
+
+    /// Consumes the latest automatic jump exactly once. If recognition was
+    /// active, the old session is cancelled and a fresh session starts from the
+    /// restored anchor; cancelled callbacks can never mutate the new run.
+    public func undoLastAutomaticJump() async {
+        guard !isShutdown, let script = state.script else {
+            invalidateAutomaticJumpUndo()
+            return
+        }
+        let currentAnchor = readingAnchor
+        guard let source = positionUndo.consume(
+            scriptVersion: script.version,
+            alignmentGeneration: alignmentGeneration,
+            currentAnchor: currentAnchor
+        ) else {
+            refreshUndoAvailability()
+            return
+        }
+
+        canUndoAutomaticJump = false
+        alignmentGeneration &+= 1
+        let wasFollowing = state.phase == .listening || state.phase == .preparing
+        let operation = await invalidateAllWork(cancelSession: true)
+        guard isCurrent(operation) else { return }
+        state = TeleprompterState(
+            script: script,
+            sentenceIndex: source.sentenceIndex,
+            readingUTF16Offset: source.utf16Offset,
+            phase: wasFollowing ? .paused : state.phase,
+            userSafeError: nil
+        )
+        publish()
+        if wasFollowing { await startFollowing() }
     }
 
     /// While listening this restarts recognition at the current sentence. In a
@@ -162,6 +199,7 @@ public final class TeleprompterController: ObservableObject {
 
     public func reset() async {
         guard !isShutdown else { return }
+        beginIncompatibleAlignmentContext()
         let operation = await invalidateAllWork(cancelSession: true)
         guard isCurrent(operation) else { return }
         state = TeleprompterState(script: state.script)
@@ -170,6 +208,7 @@ public final class TeleprompterController: ObservableObject {
 
     public func shutdown() async {
         guard !isShutdown else { return }
+        beginIncompatibleAlignmentContext()
         isShutdown = true
         generation += 1
         let currentPreparationTasks = Array(preparationTasks.values)
@@ -258,6 +297,7 @@ public final class TeleprompterController: ObservableObject {
 
     private func correctAnchor(to index: Int) async {
         guard !isShutdown, let script = state.script else { return }
+        beginIncompatibleAlignmentContext()
         let wasFollowing = state.phase == .listening || state.phase == .preparing
         let operation = await invalidateAllWork(cancelSession: true)
         guard isCurrent(operation) else { return }
@@ -272,6 +312,7 @@ public final class TeleprompterController: ObservableObject {
     }
 
     private func restartFollowingAtCurrentAnchor() async {
+        beginIncompatibleAlignmentContext()
         let operation = await invalidateAllWork(cancelSession: true)
         guard isCurrent(operation) else { return }
         setPhase(.paused, error: nil)
@@ -280,6 +321,7 @@ public final class TeleprompterController: ObservableObject {
 
     private func restartCompletedScript() async {
         guard let script = state.script else { return }
+        beginIncompatibleAlignmentContext()
         let operation = await invalidateAllWork(cancelSession: true)
         guard isCurrent(operation) else { return }
         state = TeleprompterState(script: script, sentenceIndex: 0, phase: .ready)
@@ -295,57 +337,18 @@ public final class TeleprompterController: ObservableObject {
         switch event {
         case .transcript(let text):
             guard let script = state.script else { return false }
-            let match = aligner.bestMatch(
-                transcript: text,
-                script: script,
-                anchor: state.sentenceIndex
+            return await consumeReadingPosition(
+                text,
+                semantics: .partial,
+                script: script
             )
-            let progress = match?.sentenceIndex == state.sentenceIndex || match == nil
-                ? updateReadingProgress(text, script: script)
-                : nil
-            guard let match else {
-                clearTentativeAlignment()
-                return false
-            }
-            let completionFraction = max(
-                progress?.fraction ?? currentSentenceReadingFraction(script: script),
-                match.confidence >= 0.95 ? 1 : 0
-            )
-            if match.sentenceIndex == state.sentenceIndex,
-               completionFraction < 0.88 {
-                clearTentativeAlignment()
-                return false
-            }
-            if tentativeSentenceIndex == match.sentenceIndex {
-                tentativeObservationCount += 1
-            } else {
-                tentativeSentenceIndex = match.sentenceIndex
-                tentativeObservationCount = 1
-            }
-            guard tentativeObservationCount >= 2 else { return false }
-            return await acceptAlignment(match.sentenceIndex, script: script)
         case .utterance(let text):
             guard let script = state.script else { return false }
-            let match = aligner.bestMatch(
-                transcript: text,
-                script: script,
-                anchor: state.sentenceIndex
+            return await consumeReadingPosition(
+                text,
+                semantics: .final,
+                script: script
             )
-            let progress = match?.sentenceIndex == state.sentenceIndex || match == nil
-                ? updateReadingProgress(text, script: script)
-                : nil
-            if let match, match.sentenceIndex > state.sentenceIndex {
-                return await acceptAlignment(match.sentenceIndex, script: script)
-            }
-            let completionFraction = max(
-                progress?.fraction ?? currentSentenceReadingFraction(script: script),
-                (match?.confidence ?? 0) >= 0.95 ? 1 : 0
-            )
-            guard completionFraction >= 0.82 else {
-                clearTentativeAlignment()
-                return false
-            }
-            return await acceptAlignment(state.sentenceIndex, script: script)
         case .finished:
             generation += 1
             clearTentativeAlignment()
@@ -370,70 +373,119 @@ public final class TeleprompterController: ObservableObject {
         }
     }
 
-    private func acceptAlignment(
-        _ matchedSentenceIndex: Int,
+    private func consumeReadingPosition(
+        _ transcriptFragment: String,
+        semantics: ReadingRecognitionEventSemantics,
         script: TeleprompterScript
     ) async -> Bool {
-        clearTentativeAlignment()
-        let nextSentenceIndex = matchedSentenceIndex + 1
-        if nextSentenceIndex >= script.sentences.count {
+        let evaluation = positionEngine.evaluate(
+            ReadingPositionInput(
+                script: script,
+                scriptVersion: script.version,
+                anchor: ReadingPositionAnchor(
+                    sentenceIndex: state.sentenceIndex,
+                    utf16Offset: state.readingUTF16Offset
+                ),
+                transcriptFragment: transcriptFragment,
+                eventSemantics: semantics
+            ),
+            stability: positionStability
+        )
+        positionStability = evaluation.nextStability
+
+        switch evaluation.decision {
+        case .stay:
+            return false
+        case .advance(let target, _, _):
+            invalidateAutomaticJumpUndo()
+            return await applyReadingPosition(target, script: script)
+        case .jump(let target, _, _, _):
+            let source = readingAnchor
+            invalidateAutomaticJumpUndo()
+            let didFinish = await applyReadingPosition(target, script: script)
+            if !didFinish, readingAnchor != source, readingAnchor == target {
+                positionUndo.record(
+                    scriptVersion: script.version,
+                    alignmentGeneration: alignmentGeneration,
+                    source: source,
+                    target: target
+                )
+                refreshUndoAvailability()
+            }
+            return didFinish
+        }
+    }
+
+    private func applyReadingPosition(
+        _ target: ReadingPositionAnchor,
+        script: TeleprompterScript
+    ) async -> Bool {
+        let lastSentenceIndex = script.sentences.count - 1
+        let lastSentenceLength = (script.sentences[lastSentenceIndex] as NSString).length
+        if target.sentenceIndex == lastSentenceIndex,
+           target.utf16Offset >= lastSentenceLength {
+            beginIncompatibleAlignmentContext()
             generation += 1
-            let completedSession = session
+            clearTentativeAlignment()
+            let completedSession = self.session
             session = nil
             eventTask = nil
             state = TeleprompterState(
                 script: script,
-                sentenceIndex: script.sentences.count - 1,
+                sentenceIndex: lastSentenceIndex,
                 phase: .completed
             )
             publish()
             await completedSession?.cancel()
             return true
         }
+
+        guard target.sentenceIndex != state.sentenceIndex
+                || target.utf16Offset > state.readingUTF16Offset else {
+            return false
+        }
         state = TeleprompterState(
             script: script,
-            sentenceIndex: nextSentenceIndex,
-            readingUTF16Offset: 0,
-            phase: .listening
+            sentenceIndex: target.sentenceIndex,
+            readingUTF16Offset: target.utf16Offset,
+            phase: state.phase,
+            userSafeError: state.userSafeError
         )
         publish()
         return false
     }
 
     private func clearTentativeAlignment() {
-        tentativeSentenceIndex = nil
-        tentativeObservationCount = 0
+        positionStability = ReadingPositionStability()
     }
 
-    @discardableResult
-    private func updateReadingProgress(
-        _ transcript: String,
-        script: TeleprompterScript
-    ) -> TeleprompterSentenceProgressMatch? {
-        let sentence = script.sentences[state.sentenceIndex]
-        guard let match = aligner.readingProgress(
-            transcript: transcript,
-            sentence: sentence,
-            minimumUTF16Offset: state.readingUTF16Offset
-        ) else { return nil }
-        guard match.utf16Offset > state.readingUTF16Offset else { return match }
-        state = TeleprompterState(
-            script: script,
+    private var readingAnchor: ReadingPositionAnchor {
+        ReadingPositionAnchor(
             sentenceIndex: state.sentenceIndex,
-            readingUTF16Offset: match.utf16Offset,
-            phase: state.phase,
-            userSafeError: state.userSafeError
+            utf16Offset: state.readingUTF16Offset
         )
-        publish()
-        return match
     }
 
-    private func currentSentenceReadingFraction(script: TeleprompterScript) -> Double {
-        let sentenceLength = max(
-            (script.sentences[state.sentenceIndex] as NSString).length,
-            1
+    private func beginIncompatibleAlignmentContext() {
+        alignmentGeneration &+= 1
+        invalidateAutomaticJumpUndo()
+    }
+
+    private func invalidateAutomaticJumpUndo() {
+        positionUndo.invalidate()
+        canUndoAutomaticJump = false
+    }
+
+    private func refreshUndoAvailability() {
+        guard let script = state.script else {
+            canUndoAutomaticJump = false
+            return
+        }
+        canUndoAutomaticJump = positionUndo.isAvailable(
+            scriptVersion: script.version,
+            alignmentGeneration: alignmentGeneration,
+            currentAnchor: readingAnchor
         )
-        return Double(state.readingUTF16Offset) / Double(sentenceLength)
     }
 
     private func hostLifecycleCleanupDidFinish(_ cleanupID: Int) {

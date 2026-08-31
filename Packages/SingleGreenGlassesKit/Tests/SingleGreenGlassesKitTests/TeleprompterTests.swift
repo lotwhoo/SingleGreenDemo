@@ -109,6 +109,85 @@ final class TeleprompterTests: XCTestCase {
         )
     }
 
+    func testForwardJumpFindsUniqueTextWithinFiftyCharactersAcrossSentences() throws {
+        let script = try TeleprompterScript(
+            "当前内容还没有读完。这里是过渡句。用户突然开始朗读目标内容然后继续。"
+        )
+
+        let match = try XCTUnwrap(TeleprompterScriptAligner().forwardJumpMatch(
+            transcript: "目标内容然后",
+            script: script,
+            anchor: 0,
+            minimumUTF16Offset: 0
+        ))
+
+        XCTAssertEqual(match.sentenceIndex, 2)
+        XCTAssertGreaterThan(match.skippedCharacterCount, 0)
+        XCTAssertLessThanOrEqual(
+            match.skippedCharacterCount,
+            TeleprompterLimits.maximumAlignmentLookahead
+        )
+        XCTAssertFalse(match.reachesSentenceEnd)
+    }
+
+    func testForwardJumpRejectsTextBeyondFiftyCharacters() throws {
+        let gap = String(repeating: "甲", count: 51)
+        let script = try TeleprompterScript("\(gap)目标内容继续。")
+
+        XCTAssertNil(TeleprompterScriptAligner().forwardJumpMatch(
+            transcript: "目标内容",
+            script: script,
+            anchor: 0,
+            minimumUTF16Offset: 0
+        ))
+    }
+
+    func testForwardJumpIncludesTargetStartingAtFiftiethCharacter() throws {
+        let gap = String(repeating: "甲", count: 50)
+        let script = try TeleprompterScript("\(gap)目标内容继续。")
+
+        let match = try XCTUnwrap(TeleprompterScriptAligner().forwardJumpMatch(
+            transcript: "目标内容",
+            script: script,
+            anchor: 0,
+            minimumUTF16Offset: 0
+        ))
+
+        XCTAssertEqual(
+            match.skippedCharacterCount,
+            TeleprompterLimits.maximumAlignmentLookahead
+        )
+    }
+
+    func testForwardJumpDoesNotCountPunctuationWhitespaceOrEmojiInWindow() throws {
+        let gap = String(repeating: "甲", count: 50)
+        let ignoredLayout = "， 。\n🙂 / "
+        let script = try TeleprompterScript("\(gap)\(ignoredLayout)目标内容继续。")
+
+        let match = try XCTUnwrap(TeleprompterScriptAligner().forwardJumpMatch(
+            transcript: "目标内容",
+            script: script,
+            anchor: 0,
+            minimumUTF16Offset: 0
+        ))
+
+        XCTAssertEqual(
+            match.skippedCharacterCount,
+            TeleprompterLimits.maximumAlignmentLookahead
+        )
+    }
+
+    func testForwardJumpHoldsWhenLocalTargetIsAmbiguous() throws {
+        let script = try TeleprompterScript("开场目标内容过渡目标内容结束。")
+
+        XCTAssertNil(TeleprompterScriptAligner().forwardJumpMatch(
+            transcript: "目标内容",
+            script: script,
+            anchor: 0,
+            minimumUTF16Offset: 0
+        ))
+    }
+
     func testAlignerBoundsFuzzyWorkForLongUnpunctuatedSentence() throws {
         let sentence = String(repeating: "长", count: 9_999) + "文。"
         let transcript = String(repeating: "长", count: 9_999) + "闻"
@@ -201,6 +280,305 @@ final class TeleprompterTests: XCTestCase {
         session.emit(.utterance("然后继续展示未读文本直到最后结束"))
         await settle()
         XCTAssertEqual(controller.state.phase, .completed)
+    }
+
+    func testSinglePartialImmediatelyJumpsToUniqueTextWithinFiftyCharacters() async throws {
+        let session = TeleprompterFakeSpeechSession()
+        let script = try TeleprompterScript(
+            "当前内容还没有读完。这里是过渡句。用户突然开始朗读目标内容然后继续。"
+        )
+        let controller = TeleprompterController(
+            script: script,
+            dependencies: .init(
+                prepareSpeechSession: { session },
+                requestMicrophonePermission: { true },
+                cloudSpeechRecognitionAllowed: { true }
+            )
+        )
+
+        await controller.toggleFollowing()
+        session.emit(.transcript("目标内容然后"))
+        await settle()
+
+        XCTAssertEqual(controller.state.sentenceIndex, 2)
+        XCTAssertGreaterThan(controller.state.readingUTF16Offset, 0)
+        XCTAssertEqual(controller.state.phase, .listening)
+    }
+
+    func testSingleFinalImmediatelyJumpsToUniqueTextWithinFiftyCharacters() async throws {
+        let session = TeleprompterFakeSpeechSession()
+        let script = try TeleprompterScript(
+            "当前内容还没有读完。这里是过渡句。用户突然开始朗读目标内容然后继续。"
+        )
+        let controller = TeleprompterController(
+            script: script,
+            dependencies: .init(
+                prepareSpeechSession: { session },
+                requestMicrophonePermission: { true },
+                cloudSpeechRecognitionAllowed: { true }
+            )
+        )
+
+        await controller.toggleFollowing()
+        session.emit(.utterance("目标内容然后"))
+        await settle()
+
+        XCTAssertEqual(controller.state.sentenceIndex, 2)
+        XCTAssertGreaterThan(controller.state.readingUTF16Offset, 0)
+        XCTAssertEqual(controller.state.phase, .listening)
+    }
+
+    func testPhoneUndoRestoresPreJumpAnchorOnceAndRejectsOldPartialAndFinal() async throws {
+        let first = TeleprompterFakeSpeechSession()
+        let restarted = TeleprompterFakeSpeechSession()
+        var sessions = [first, restarted]
+        let script = try TeleprompterScript(
+            "当前内容还没有读完。这里是过渡句。用户突然开始朗读目标内容然后继续。"
+        )
+        let controller = TeleprompterController(
+            script: script,
+            dependencies: .init(
+                prepareSpeechSession: { sessions.removeFirst() },
+                requestMicrophonePermission: { true },
+                cloudSpeechRecognitionAllowed: { true }
+            )
+        )
+
+        await controller.toggleFollowing()
+        first.emit(.transcript("目标内容然后"))
+        await settle()
+        XCTAssertTrue(controller.canUndoAutomaticJump)
+        XCTAssertEqual(controller.state.sentenceIndex, 2)
+
+        await controller.undoLastAutomaticJump()
+        XCTAssertFalse(controller.canUndoAutomaticJump)
+        XCTAssertEqual(controller.state.sentenceIndex, 0)
+        XCTAssertEqual(controller.state.readingUTF16Offset, 0)
+        XCTAssertEqual(controller.state.phase, .listening)
+        XCTAssertEqual(first.cancelCount, 1)
+        XCTAssertEqual(restarted.startCount, 1)
+
+        first.emit(.transcript("目标内容然后"))
+        first.emit(.utterance("目标内容然后继续"))
+        await settle()
+        XCTAssertEqual(controller.state.sentenceIndex, 0)
+        XCTAssertEqual(controller.state.readingUTF16Offset, 0)
+
+        await controller.undoLastAutomaticJump()
+        XCTAssertEqual(first.cancelCount, 1)
+        XCTAssertEqual(restarted.startCount, 1)
+        XCTAssertEqual(controller.state.sentenceIndex, 0)
+    }
+
+    func testCompatibleSessionRotationKeepsUndoButUndoCancelsOnlyCurrentSession() async throws {
+        let first = TeleprompterFakeSpeechSession()
+        let rotated = TeleprompterFakeSpeechSession()
+        let restarted = TeleprompterFakeSpeechSession()
+        var sessions = [first, rotated, restarted]
+        let script = try TeleprompterScript(
+            "当前内容还没有读完。这里是过渡句。用户突然开始朗读目标内容然后继续。"
+        )
+        let controller = TeleprompterController(
+            script: script,
+            dependencies: .init(
+                prepareSpeechSession: { sessions.removeFirst() },
+                requestMicrophonePermission: { true },
+                cloudSpeechRecognitionAllowed: { true }
+            )
+        )
+
+        await controller.toggleFollowing()
+        first.emit(.transcript("目标内容然后"))
+        await settle()
+        XCTAssertTrue(controller.canUndoAutomaticJump)
+
+        first.emit(.finished)
+        await waitUntil { rotated.startCount == 1 }
+        XCTAssertTrue(controller.canUndoAutomaticJump)
+        XCTAssertEqual(controller.state.phase, .listening)
+
+        await controller.undoLastAutomaticJump()
+        XCTAssertFalse(controller.canUndoAutomaticJump)
+        XCTAssertEqual(first.cancelCount, 0)
+        XCTAssertEqual(rotated.cancelCount, 1)
+        XCTAssertEqual(restarted.startCount, 1)
+        XCTAssertEqual(controller.state.sentenceIndex, 0)
+
+        first.emit(.utterance("目标内容然后继续"))
+        rotated.emit(.transcript("目标内容然后"))
+        await settle()
+        XCTAssertEqual(controller.state.sentenceIndex, 0)
+    }
+
+    func testManualCorrectionsAndExplicitReanchorInvalidateAutomaticJumpUndo() async throws {
+        let script = try TeleprompterScript(
+            "当前内容还没有读完。这里是过渡句。用户突然开始朗读目标内容然后继续。收尾内容。"
+        )
+
+        for correction in ["previous", "next", "reanchor"] {
+            let first = TeleprompterFakeSpeechSession()
+            let restarted = TeleprompterFakeSpeechSession()
+            var sessions = [first, restarted]
+            let controller = TeleprompterController(
+                script: script,
+                dependencies: .init(
+                    prepareSpeechSession: { sessions.removeFirst() },
+                    requestMicrophonePermission: { true },
+                    cloudSpeechRecognitionAllowed: { true }
+                )
+            )
+
+            await controller.toggleFollowing()
+            first.emit(.transcript("目标内容然后"))
+            await settle()
+            XCTAssertTrue(controller.canUndoAutomaticJump)
+
+            if correction == "previous" {
+                await controller.movePrevious()
+            } else if correction == "next" {
+                await controller.moveNext()
+            } else {
+                await controller.reanchorOrToggleManualFallback()
+            }
+
+            XCTAssertFalse(controller.canUndoAutomaticJump)
+            let correctedIndex = controller.state.sentenceIndex
+            await controller.undoLastAutomaticJump()
+            XCTAssertEqual(controller.state.sentenceIndex, correctedIndex)
+            XCTAssertEqual(first.cancelCount, 1)
+            XCTAssertEqual(restarted.startCount, 1)
+        }
+    }
+
+    func testScriptReplacementResetAndCompletionInvalidateAutomaticJumpUndo() async throws {
+        let jumpScript = try TeleprompterScript(
+            "当前内容还没有读完。这里是过渡句。用户突然开始朗读目标内容然后继续。"
+        )
+
+        do {
+            let session = TeleprompterFakeSpeechSession()
+            let controller = TeleprompterController(
+                script: jumpScript,
+                dependencies: .init(
+                    prepareSpeechSession: { session },
+                    requestMicrophonePermission: { true },
+                    cloudSpeechRecognitionAllowed: { true }
+                )
+            )
+            await controller.toggleFollowing()
+            session.emit(.transcript("目标内容然后"))
+            await settle()
+            XCTAssertTrue(controller.canUndoAutomaticJump)
+            await controller.loadScript("替换后的第一句。替换后的第二句。")
+            XCTAssertFalse(controller.canUndoAutomaticJump)
+            await controller.undoLastAutomaticJump()
+            XCTAssertEqual(controller.state.sentenceIndex, 0)
+        }
+
+        do {
+            let session = TeleprompterFakeSpeechSession()
+            let controller = TeleprompterController(
+                script: jumpScript,
+                dependencies: .init(
+                    prepareSpeechSession: { session },
+                    requestMicrophonePermission: { true },
+                    cloudSpeechRecognitionAllowed: { true }
+                )
+            )
+            await controller.toggleFollowing()
+            session.emit(.transcript("目标内容然后"))
+            await settle()
+            XCTAssertTrue(controller.canUndoAutomaticJump)
+            await controller.shutdown()
+            XCTAssertFalse(controller.canUndoAutomaticJump)
+        }
+
+        do {
+            let session = TeleprompterFakeSpeechSession()
+            let controller = TeleprompterController(
+                script: jumpScript,
+                dependencies: .init(
+                    prepareSpeechSession: { session },
+                    requestMicrophonePermission: { true },
+                    cloudSpeechRecognitionAllowed: { true }
+                )
+            )
+            await controller.toggleFollowing()
+            session.emit(.transcript("目标内容然后"))
+            await settle()
+            XCTAssertTrue(controller.canUndoAutomaticJump)
+            await controller.reset()
+            XCTAssertFalse(controller.canUndoAutomaticJump)
+            await controller.undoLastAutomaticJump()
+            XCTAssertEqual(controller.state.sentenceIndex, 0)
+        }
+
+        do {
+            let session = TeleprompterFakeSpeechSession()
+            let controller = TeleprompterController(
+                script: try TeleprompterScript("开场内容。目标内容。"),
+                dependencies: .init(
+                    prepareSpeechSession: { session },
+                    requestMicrophonePermission: { true },
+                    cloudSpeechRecognitionAllowed: { true }
+                )
+            )
+            await controller.toggleFollowing()
+            session.emit(.utterance("目标内容"))
+            await settle()
+            XCTAssertEqual(controller.state.phase, .completed)
+            XCTAssertFalse(controller.canUndoAutomaticJump)
+        }
+    }
+
+    func testLaterAutomaticAdvanceInvalidatesEarlierJumpUndo() async throws {
+        let session = TeleprompterFakeSpeechSession()
+        let script = try TeleprompterScript(
+            "当前内容。目标句现在开始。后续句继续。最后结束。"
+        )
+        let controller = TeleprompterController(
+            script: script,
+            dependencies: .init(
+                prepareSpeechSession: { session },
+                requestMicrophonePermission: { true },
+                cloudSpeechRecognitionAllowed: { true }
+            )
+        )
+
+        await controller.toggleFollowing()
+        session.emit(.transcript("目标句现在"))
+        await settle()
+        XCTAssertTrue(controller.canUndoAutomaticJump)
+
+        session.emit(.utterance("目标句现在开始"))
+        await settle()
+        XCTAssertEqual(controller.state.sentenceIndex, 2)
+        XCTAssertFalse(controller.canUndoAutomaticJump)
+    }
+
+    func testRepeatedTargetHoldsForPartialAndFinalInsteadOfFallingThrough() async throws {
+        let session = TeleprompterFakeSpeechSession()
+        let script = try TeleprompterScript("开场目标内容过渡目标内容结束。")
+        let controller = TeleprompterController(
+            script: script,
+            dependencies: .init(
+                prepareSpeechSession: { session },
+                requestMicrophonePermission: { true },
+                cloudSpeechRecognitionAllowed: { true }
+            )
+        )
+
+        await controller.toggleFollowing()
+        session.emit(.transcript("目标内容"))
+        await settle()
+        XCTAssertEqual(controller.state.sentenceIndex, 0)
+        XCTAssertEqual(controller.state.readingUTF16Offset, 0)
+
+        session.emit(.utterance("目标内容"))
+        await settle()
+        XCTAssertEqual(controller.state.sentenceIndex, 0)
+        XCTAssertEqual(controller.state.readingUTF16Offset, 0)
+        XCTAssertEqual(controller.state.phase, .listening)
     }
 
     func testShortCompleteUtteranceStillAdvancesWithoutIntraSentenceScrolling() async throws {

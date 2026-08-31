@@ -2,11 +2,25 @@ import Foundation
 
 public enum TeleprompterLimits {
     public static let maximumScriptCharacters = 20_000
-    public static let maximumAlignmentLookahead = 5
+    /// Automatic alignment may only search this many normalized characters
+    /// ahead of the confirmed reading position. Punctuation and layout
+    /// whitespace do not consume the budget.
+    public static let maximumAlignmentLookahead = 50
 }
 
 public enum TeleprompterScriptError: Error, Equatable, Sendable {
     case empty
+}
+
+/// Stable, non-text identity for one exact locally prepared script revision.
+/// It is suitable for stale-event checks but is not a cryptographic content
+/// signature and must not be treated as an authentication or integrity proof.
+public struct TeleprompterScriptVersion: Equatable, Hashable, Sendable {
+    public let rawValue: UInt64
+
+    public init(rawValue: UInt64) {
+        self.rawValue = rawValue
+    }
 }
 
 /// An immutable, locally segmented script. Segmentation keeps terminal
@@ -15,6 +29,7 @@ public enum TeleprompterScriptError: Error, Equatable, Sendable {
 public struct TeleprompterScript: Equatable, Sendable {
     public let source: String
     public let sentences: [String]
+    public let version: TeleprompterScriptVersion
 
     public init(_ source: String) throws {
         let limited = String(source.prefix(TeleprompterLimits.maximumScriptCharacters))
@@ -23,6 +38,7 @@ public struct TeleprompterScript: Equatable, Sendable {
         guard !sentences.isEmpty else { throw TeleprompterScriptError.empty }
         self.source = limited
         self.sentences = sentences
+        self.version = Self.makeVersion(for: limited)
     }
 
     private static func segment(_ source: String) -> [String] {
@@ -81,6 +97,20 @@ public struct TeleprompterScript: Equatable, Sendable {
 
     private static func isLineBreak(_ character: Character) -> Bool {
         character.unicodeScalars.contains { CharacterSet.newlines.contains($0) }
+    }
+
+    private static func makeVersion(for source: String) -> TeleprompterScriptVersion {
+        // FNV-1a is deliberately used only as a deterministic local revision
+        // marker. ReadingPositionEngine also receives the prepared script and
+        // never treats this value as a security boundary.
+        var value: UInt64 = 0xcbf29ce484222325
+        for byte in source.utf8 {
+            value ^= UInt64(byte)
+            value &*= 0x100000001b3
+        }
+        value ^= UInt64(source.utf8.count)
+        value &*= 0x100000001b3
+        return TeleprompterScriptVersion(rawValue: value)
     }
 }
 
@@ -150,6 +180,19 @@ struct TeleprompterSentenceProgressMatch: Equatable {
     let confidence: Double
 }
 
+struct TeleprompterForwardJumpMatch: Equatable {
+    let sentenceIndex: Int
+    let utf16Offset: Int
+    let skippedCharacterCount: Int
+    let reachesSentenceEnd: Bool
+}
+
+enum TeleprompterForwardJumpResolution: Equatable {
+    case noExactMatch
+    case unique(TeleprompterForwardJumpMatch)
+    case ambiguous
+}
+
 public struct TeleprompterAlignmentMatch: Equatable, Sendable {
     public let sentenceIndex: Int
     public let confidence: Double
@@ -165,6 +208,8 @@ public struct TeleprompterAlignmentMatch: Equatable, Sendable {
 public struct TeleprompterScriptAligner: Sendable {
     private static let maximumFuzzyCharacters = 256
     private static let maximumProgressProbeCharacters = 128
+    private static let maximumForwardJumpProbeCharacters = 32
+    private static let minimumForwardJumpProbeCharacters = 4
 
     public init() {}
 
@@ -173,15 +218,30 @@ public struct TeleprompterScriptAligner: Sendable {
         script: TeleprompterScript,
         anchor: Int
     ) -> TeleprompterAlignmentMatch? {
+        bestMatch(
+            transcript: transcript,
+            script: script,
+            anchor: anchor,
+            minimumUTF16Offset: 0
+        )
+    }
+
+    func bestMatch(
+        transcript: String,
+        script: TeleprompterScript,
+        anchor: Int,
+        minimumUTF16Offset: Int
+    ) -> TeleprompterAlignmentMatch? {
         let safeAnchor = min(max(anchor, 0), script.sentences.count - 1)
         let normalizedTranscript = Self.normalize(transcript)
         guard normalizedTranscript.count >= 2 else { return nil }
 
-        let upperBound = min(
-            script.sentences.count - 1,
-            safeAnchor + TeleprompterLimits.maximumAlignmentLookahead
+        let candidateIndices = Self.forwardSentenceIndices(
+            script: script,
+            anchor: safeAnchor,
+            minimumUTF16Offset: minimumUTF16Offset
         )
-        let scored = (safeAnchor...upperBound).compactMap { index -> ScoredCandidate? in
+        let scored = candidateIndices.compactMap { index -> ScoredCandidate? in
             let text = Self.normalize(script.sentences[index])
             guard !text.isEmpty else { return nil }
             return ScoredCandidate(
@@ -214,6 +274,91 @@ public struct TeleprompterScriptAligner: Sendable {
         )
     }
 
+    /// Finds an exact, unique transcript suffix whose start is no more than 50
+    /// normalized characters ahead of the current reading position. The
+    /// returned original-text offset lets the controller jump within a sentence
+    /// as well as across sentence boundaries without exposing ASR text to the
+    /// renderer.
+    func forwardJumpMatch(
+        transcript: String,
+        script: TeleprompterScript,
+        anchor: Int,
+        minimumUTF16Offset: Int
+    ) -> TeleprompterForwardJumpMatch? {
+        guard case .unique(let match) = forwardJumpResolution(
+            transcript: transcript,
+            script: script,
+            anchor: anchor,
+            minimumUTF16Offset: minimumUTF16Offset
+        ) else {
+            return nil
+        }
+        return match
+    }
+
+    func forwardJumpResolution(
+        transcript: String,
+        script: TeleprompterScript,
+        anchor: Int,
+        minimumUTF16Offset: Int
+    ) -> TeleprompterForwardJumpResolution {
+        let normalizedTranscript = Array(Self.normalize(transcript))
+        guard normalizedTranscript.count >= Self.minimumForwardJumpProbeCharacters else {
+            return .noExactMatch
+        }
+        let probeLength = min(
+            normalizedTranscript.count,
+            Self.maximumForwardJumpProbeCharacters
+        )
+        let positions = Self.forwardPositions(
+            script: script,
+            anchor: anchor,
+            minimumUTF16Offset: minimumUTF16Offset,
+            limit: TeleprompterLimits.maximumAlignmentLookahead + probeLength
+        )
+        guard positions.count >= Self.minimumForwardJumpProbeCharacters else {
+            return .noExactMatch
+        }
+
+        var foundAmbiguousExactMatch = false
+
+        for length in stride(
+            from: probeLength,
+            through: Self.minimumForwardJumpProbeCharacters,
+            by: -1
+        ) {
+            let needle = normalizedTranscript.suffix(length)
+            let lastStart = min(
+                TeleprompterLimits.maximumAlignmentLookahead,
+                positions.count - length
+            )
+            guard lastStart >= 0 else { continue }
+
+            var matchingStarts: [Int] = []
+            for candidateStart in 0...lastStart where
+                positions[candidateStart..<(candidateStart + length)]
+                    .map(\.character)
+                    .elementsEqual(needle) {
+                matchingStarts.append(candidateStart)
+                if matchingStarts.count > 1 { break }
+            }
+            if matchingStarts.count > 1 {
+                foundAmbiguousExactMatch = true
+                continue
+            }
+            guard let matchStart = matchingStarts.first else { continue }
+
+            let endPosition = positions[matchStart + length - 1]
+            return .unique(TeleprompterForwardJumpMatch(
+                sentenceIndex: endPosition.sentenceIndex,
+                utf16Offset: endPosition.utf16EndOffset,
+                skippedCharacterCount: matchStart,
+                reachesSentenceEnd: endPosition.isLastNormalizedCharacterInSentence
+            ))
+        }
+        return foundAmbiguousExactMatch ? .ambiguous : .noExactMatch
+    }
+
     public func proposedSentenceIndex(
         transcript: String,
         script: TeleprompterScript,
@@ -243,12 +388,24 @@ public struct TeleprompterScriptAligner: Sendable {
         guard normalizedTranscript.count >= 4, !source.characters.isEmpty else { return nil }
 
         let minimumIndex = source.normalizedIndex(atOrBeforeUTF16Offset: minimumUTF16Offset)
+        let cumulativePrefixLength = min(
+            max(minimumIndex, 8),
+            normalizedTranscript.count,
+            source.characters.count
+        )
+        let hasCumulativePrefix = cumulativePrefixLength >= 4
+            && normalizedTranscript.prefix(cumulativePrefixLength)
+                .elementsEqual(source.characters.prefix(cumulativePrefixLength))
+        let maximumCandidateStart = hasCumulativePrefix
+            ? source.characters.count
+            : minimumIndex + TeleprompterLimits.maximumAlignmentLookahead
         let searchStart = max(0, minimumIndex - transcriptCharacters.count)
         if let exactEnd = Self.firstExactEnd(
             needle: transcriptCharacters,
             haystack: source.characters,
             startingAt: searchStart,
-            after: minimumIndex
+            after: minimumIndex,
+            maximumStart: maximumCandidateStart
         ) {
             return source.progressMatch(normalizedEndIndex: exactEnd, confidence: 1)
         }
@@ -271,6 +428,9 @@ public struct TeleprompterScriptAligner: Sendable {
         var bestScore = 0.0
         for candidateEnd in candidateEnds.sorted() {
             let candidateStart = max(0, candidateEnd - fuzzyNeedle.count)
+            guard candidateStart <= maximumCandidateStart else {
+                continue
+            }
             let candidate = Array(source.characters[candidateStart..<candidateEnd])
             let score = Self.matchScore(
                 transcript: String(fuzzyNeedle),
@@ -293,6 +453,56 @@ public struct TeleprompterScriptAligner: Sendable {
             }
             return nil
         }.reduce(into: "") { $0.append($1) }
+    }
+
+    private static func forwardSentenceIndices(
+        script: TeleprompterScript,
+        anchor: Int,
+        minimumUTF16Offset: Int
+    ) -> [Int] {
+        let safeAnchor = min(max(anchor, 0), script.sentences.count - 1)
+        var result = [safeAnchor]
+        let anchorSource = NormalizedSource(script.sentences[safeAnchor])
+        var distance = anchorSource.characters.count
+            - anchorSource.normalizedIndex(atOrBeforeUTF16Offset: minimumUTF16Offset)
+
+        guard safeAnchor + 1 < script.sentences.count else { return result }
+        for index in (safeAnchor + 1)..<script.sentences.count {
+            guard distance <= TeleprompterLimits.maximumAlignmentLookahead else { break }
+            result.append(index)
+            distance += NormalizedSource(script.sentences[index]).characters.count
+        }
+        return result
+    }
+
+    private static func forwardPositions(
+        script: TeleprompterScript,
+        anchor: Int,
+        minimumUTF16Offset: Int,
+        limit: Int
+    ) -> [NormalizedScriptPosition] {
+        let safeAnchor = min(max(anchor, 0), script.sentences.count - 1)
+        var result: [NormalizedScriptPosition] = []
+
+        for sentenceIndex in safeAnchor..<script.sentences.count {
+            let source = NormalizedSource(script.sentences[sentenceIndex])
+            let start = sentenceIndex == safeAnchor
+                ? source.normalizedIndex(atOrBeforeUTF16Offset: minimumUTF16Offset)
+                : 0
+            guard start < source.characters.count else { continue }
+
+            for normalizedIndex in start..<source.characters.count {
+                result.append(NormalizedScriptPosition(
+                    character: source.characters[normalizedIndex],
+                    sentenceIndex: sentenceIndex,
+                    utf16EndOffset: source.utf16EndOffsets[normalizedIndex],
+                    isLastNormalizedCharacterInSentence: normalizedIndex
+                        == source.characters.count - 1
+                ))
+                if result.count >= limit { return result }
+            }
+        }
+        return result
     }
 
     private static func matchScore(transcript: String, sentence: String) -> Double {
@@ -368,12 +578,14 @@ public struct TeleprompterScriptAligner: Sendable {
         needle: [Character],
         haystack: [Character],
         startingAt start: Int,
-        after minimumEnd: Int
+        after minimumEnd: Int,
+        maximumStart: Int
     ) -> Int? {
         guard needle.count <= haystack.count else { return nil }
         let lastStart = haystack.count - needle.count
         guard start <= lastStart else { return nil }
         for candidateStart in start...lastStart {
+            guard candidateStart <= maximumStart else { break }
             let candidateEnd = candidateStart + needle.count
             guard candidateEnd > minimumEnd else { continue }
             if haystack[candidateStart..<candidateEnd].elementsEqual(needle) {
@@ -382,6 +594,13 @@ public struct TeleprompterScriptAligner: Sendable {
         }
         return nil
     }
+}
+
+private struct NormalizedScriptPosition {
+    let character: Character
+    let sentenceIndex: Int
+    let utf16EndOffset: Int
+    let isLastNormalizedCharacterInSentence: Bool
 }
 
 private struct NormalizedSource {
