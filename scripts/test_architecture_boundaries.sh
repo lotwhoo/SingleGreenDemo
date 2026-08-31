@@ -114,6 +114,25 @@ do
     fi
 done
 
+evaluation_support="$temporary_root/teleprompter-evaluation-offline"
+cp -R "$base" "$evaluation_support"
+cat >"$evaluation_support/Packages/SingleGreenGlassesKit/Sources/TeleprompterEvaluationSupport/FixtureViolation.swift" <<'SWIFT'
+import SwiftUI
+import Network
+import LLMKit
+SWIFT
+expect_failure "$evaluation_support" 'Packages/SingleGreenGlassesKit/Sources/TeleprompterEvaluationSupport/FixtureViolation.swift:1: import rule teleprompter-evaluation-offline-only forbids module SwiftUI'
+for evaluation_violation in \
+    'FixtureViolation.swift:2: import rule teleprompter-evaluation-offline-only forbids module Network' \
+    'FixtureViolation.swift:3: import rule teleprompter-evaluation-offline-only forbids module LLMKit'
+do
+    if ! grep -Fq "$evaluation_violation" "$evaluation_support/check-output.txt"; then
+        echo "error: offline evaluation boundary violation was not detected: $evaluation_violation" >&2
+        cat "$evaluation_support/check-output.txt" >&2
+        exit 1
+    fi
+done
+
 voice_llm="$temporary_root/voice-core-llm"
 cp -R "$base" "$voice_llm"
 python3 - "$voice_llm/Packages/VoiceChatCore/Package.swift" <<'PY'
@@ -267,4 +286,4 @@ path.write_text(text.replace(old, new, 1))
 PY
 expect_failure "$ownership_drift" 'App product ownership rule: SingleGreenDemo product LLMKit expected local owner .*Packages/LLMKit.*got Packages/VoiceChatCore'
 
-echo "Architecture boundary self-tests passed (legal import syntax, valid graph, and 11 negative fixtures)."
+echo "Architecture boundary self-tests passed (legal import syntax, valid graph, and 12 negative fixtures)."

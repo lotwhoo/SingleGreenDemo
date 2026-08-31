@@ -1,6 +1,34 @@
 import Foundation
 import SingleGreenGlassesKit
 
+enum TeleprompterScriptRepositoryRejection: Equatable, Sendable {
+    case empty
+    case exceedsCharacterLimit(maximum: Int)
+}
+
+enum TeleprompterScriptRepositoryResult: Equatable, Sendable {
+    case applied
+    case duplicate
+    case rejected(TeleprompterScriptRepositoryRejection)
+}
+
+/// App-side draft and script-management boundary. File URLs, security-scoped
+/// access, and decoders stay outside this protocol; Core receives only a
+/// normalized source string and the repository's stable identity.
+@MainActor
+protocol TeleprompterScriptRepository: AnyObject {
+    var scriptDraft: String { get set }
+    var loadedScriptSource: String { get }
+    var scriptIdentity: TeleprompterScriptIdentity { get }
+    var scriptConfigurationRevision: Int { get }
+
+    @discardableResult
+    func applyScriptDraft() -> TeleprompterScriptRepositoryResult
+
+    @discardableResult
+    func replaceScript(with normalizedSource: String) -> TeleprompterScriptRepositoryResult
+}
+
 /// One local record owns the draft plus every derived artifact. Replacing this
 /// record is the atomic boundary used by script deletion.
 struct TeleprompterLocalArtifactEnvelope: Codable, Equatable {
@@ -27,7 +55,9 @@ struct TeleprompterLocalArtifactEnvelope: Codable, Equatable {
 }
 
 @MainActor
-final class TeleprompterSettings: ObservableObject, TeleprompterCheckpointStore {
+final class TeleprompterSettings: ObservableObject,
+    TeleprompterCheckpointStore,
+    TeleprompterScriptRepository {
     @Published private(set) var scriptConfigurationRevision = 0
     @Published var scriptDraft: String {
         didSet { scriptDraftDidChange() }
@@ -47,6 +77,7 @@ final class TeleprompterSettings: ObservableObject, TeleprompterCheckpointStore 
     private var envelope: TeleprompterLocalArtifactEnvelope
     private var envelopeLoadFailure: TeleprompterCheckpointRejectionReason?
     private var isApplyingEnvelope = false
+    private(set) var loadedScriptSource = ""
 
     init(
         defaults: UserDefaults = .standard,
@@ -77,6 +108,7 @@ final class TeleprompterSettings: ObservableObject, TeleprompterCheckpointStore 
             envelopeLoadFailure = reason
         }
         scriptDraft = envelope.scriptSource
+        loadedScriptSource = envelope.scriptSource
         allowsCloudSpeechRecognition = defaults.bool(forKey: consentStorageKey)
 
         if defaults.data(forKey: envelopeStorageKey) == nil {
@@ -85,8 +117,36 @@ final class TeleprompterSettings: ObservableObject, TeleprompterCheckpointStore 
         }
     }
 
-    func applyScriptDraft() {
+    @discardableResult
+    func applyScriptDraft() -> TeleprompterScriptRepositoryResult {
+        let normalized = scriptDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalized.isEmpty else { return .rejected(.empty) }
+        guard normalized.count <= TeleprompterLimits.maximumScriptCharacters else {
+            return .rejected(.exceedsCharacterLimit(
+                maximum: TeleprompterLimits.maximumScriptCharacters
+            ))
+        }
+        guard normalized != loadedScriptSource else { return .duplicate }
+        if normalized != scriptDraft { scriptDraft = normalized }
+        loadedScriptSource = normalized
         scriptConfigurationRevision &+= 1
+        return .applied
+    }
+
+    @discardableResult
+    func replaceScript(
+        with normalizedSource: String
+    ) -> TeleprompterScriptRepositoryResult {
+        let normalized = normalizedSource.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalized.isEmpty else { return .rejected(.empty) }
+        guard normalized.count <= TeleprompterLimits.maximumScriptCharacters else {
+            return .rejected(.exceedsCharacterLimit(
+                maximum: TeleprompterLimits.maximumScriptCharacters
+            ))
+        }
+        guard normalized != loadedScriptSource else { return .duplicate }
+        scriptDraft = normalized
+        return applyScriptDraft()
     }
 
     func loadCheckpoint(
@@ -134,6 +194,7 @@ final class TeleprompterSettings: ObservableObject, TeleprompterCheckpointStore 
         isApplyingEnvelope = true
         scriptDraft = ""
         isApplyingEnvelope = false
+        loadedScriptSource = ""
         return .deleted
     }
 

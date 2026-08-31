@@ -37,3 +37,10 @@ swift build \
     --product ASRCLI \
     -Xswiftc -strict-concurrency=complete \
     -Xswiftc -warnings-as-errors
+
+echo "==> Strict concurrency: SingleGreenGlassesKit/TeleprompterBenchmark product"
+swift build \
+    --package-path "$repository_root/Packages/SingleGreenGlassesKit" \
+    --product TeleprompterBenchmark \
+    -Xswiftc -strict-concurrency=complete \
+    -Xswiftc -warnings-as-errors

@@ -77,6 +77,25 @@ final class ExperienceRuntimeTests: XCTestCase {
         ))
     }
 
+    func testCompletionControlRequiresLoadedUnfinishedScript() {
+        XCTAssertFalse(TeleprompterCompletionControlPolicy.isVisible(
+            hasLoadedScript: false,
+            phase: .ready
+        ))
+        XCTAssertTrue(TeleprompterCompletionControlPolicy.isVisible(
+            hasLoadedScript: true,
+            phase: .ready
+        ))
+        XCTAssertTrue(TeleprompterCompletionControlPolicy.isVisible(
+            hasLoadedScript: true,
+            phase: .listening
+        ))
+        XCTAssertFalse(TeleprompterCompletionControlPolicy.isVisible(
+            hasLoadedScript: true,
+            phase: .completed
+        ))
+    }
+
     func testHostFacingMetadataAndActionsAcceptRegisteredFixtureWithoutViewKindBranches() async {
         let customKind = ExperienceKind("test.hostCatalog")
         let customAction = ExperienceActionEvent("test.runHostFixture")
