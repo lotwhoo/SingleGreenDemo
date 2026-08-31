@@ -9,7 +9,8 @@ let package = Package(
         .macOS(.v14)
     ],
     products: [
-        .library(name: "SingleGreenGlassesKit", targets: ["SingleGreenGlassesKit"])
+        .library(name: "SingleGreenGlassesKit", targets: ["SingleGreenGlassesKit"]),
+        .executable(name: "TeleprompterBenchmark", targets: ["TeleprompterBenchmark"])
     ],
     dependencies: [
         .package(path: "../VoiceChatDomain"),
@@ -20,9 +21,22 @@ let package = Package(
             name: "SingleGreenGlassesKit",
             dependencies: ["VoiceChatDomain", "StreamingTextKit"]
         ),
+        .target(
+            name: "TeleprompterEvaluationSupport",
+            dependencies: ["SingleGreenGlassesKit"]
+        ),
+        .executableTarget(
+            name: "TeleprompterBenchmark",
+            dependencies: ["TeleprompterEvaluationSupport"]
+        ),
         .testTarget(
             name: "SingleGreenGlassesKitTests",
-            dependencies: ["SingleGreenGlassesKit", "VoiceChatDomain", "StreamingTextKit"]
+            dependencies: [
+                "SingleGreenGlassesKit",
+                "TeleprompterEvaluationSupport",
+                "VoiceChatDomain",
+                "StreamingTextKit"
+            ]
         )
     ],
     swiftLanguageModes: [.v6]

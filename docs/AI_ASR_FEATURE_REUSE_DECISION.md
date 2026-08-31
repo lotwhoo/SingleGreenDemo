@@ -1,6 +1,6 @@
 # AI 对话、文字冒险与 ASR 提词器架构复用决策
 
-> 状态：已采纳并完成首版 MVP；M11-PR1–PR3 与 M11-PR4 第一阶段已本机实现，仍有锁定工具链和真实环境缺口
+> 状态：已采纳并完成首版 MVP；M11-PR1–PR5 已完成当前主机实现与离线基线，仍有锁定工具链和真实环境缺口
 >
 > 日期：2026-09-01
 >
@@ -69,19 +69,21 @@ Shared presentation primitives
 
 ### 2.3 当前实现快照
 
-截至 2026-09-01，首版 MVP 与 M11-PR1–PR4 第一阶段已按上述边界落地：
+截至 2026-09-01，首版 MVP 与 M11-PR1–PR5 已按上述边界落地：
 
 - `SingleGreenGlassesKit` 已拥有独立的 Teleprompter Domain、纯值 `ReadingPositionEngine`、保留的确定性前向对齐器、Controller、HUD Mapper 与 Experience；
 - Engine 输入显式包含脚本版本、锚点、转写片段、partial/final 语义和数值稳定证据，输出为不含文本的 `stay / advance / jump`；脚本版本不一致时保持当前位置；
 - 最近一次 Engine `jump` 可生成不含文本的一次性撤销记录；手机控制面板按需显示入口，眼镜四键映射不变；
-- Core 提供 text-free、versioned checkpoint 及抽象 store；Controller 只在暂停、完成、后台、reset 和 shutdown 写入，不在每个 partial 上持久化；
+- Core 提供 text-free、versioned checkpoint 及抽象 store；Controller 只在暂停、完成、后台和 shutdown 写入，reset 与普通 partial/final 不直接持久化；
 - App 持有单稿件 versioned envelope、旧草稿迁移、云端 ASR 同意与具体 codec；删除以一次记录替换清理稿件、checkpoint、索引与评测缓存；
+- App 侧类型化 `TeleprompterScriptRepository` 管理粘贴/导入结果与稳定 identity；文件 URL、安全作用域和解码不进入 Core，失败或重复不会覆盖当前可用稿件；
 - Live Composition 只接收 speech-scoped credential provider，提词器拿不到 DeepSeek/搜索等其他能力的凭据；
 - 后台与 shutdown 会立即使当前 generation 失效、取消事件消费并发起 session cancellation；
 - 当前供应商仍是一次话语 Session，Controller 在 `.finished` 后自动创建下一次 Session；自动化已覆盖旧 Session 事件隔离，但真实服务与真机上的连续性尚未验证；
 - 控制面板的四向操作继续通过通用 Experience actions；M11-PR2 仅为手机撤销显式读取 Teleprompter Controller 发布的可用状态并调用一次性命令，不把对齐算法或 Session 生命周期搬入视图；脚本编辑和同意开关属于 App 自有设置；
 - HUD 已用 TextKit 的真实 line fragment 测量，只选择完整行，并以结构化 UTF-16 段落偏移居中选择 3 行；高度不足时自然退化为 2 条完整行；
-- 当前支持手机端粘贴/编辑、UTF-8 TXT/Markdown 导入并载入稿件和四键短按；DOCX/PDF/云盘、多稿件列表、长按段落跳转/结束/模式切换尚未实现。
+- 当前支持手机端粘贴/编辑、UTF-8 TXT/Markdown 导入并载入稿件、二次确认显式完成和四键短按；DOCX/PDF/云盘、多稿件列表、眼镜长按段落跳转/结束/模式切换尚未实现。
+- 离线评测 support 与 CLI 只运行合成/脱敏 fixture，并输出版本、场景 ID/分类和聚合指标；不含稿件、转写、音频、文件信息或供应商 payload，也未设置验收阈值。
 - 为保留既有调用方，后续补入了 retained public initializer 的 compatibility overloads；补丁后 LLM stateless 与 Teleprompter 聚焦套件重新执行并通过。
 
 ## 3. 能力复用矩阵
@@ -230,11 +232,12 @@ public protocol TeleprompterRecognitionSession: Sendable {
 2. **已完成（MVP 形态）**：在 App 组合层接入 speech-scoped credential 和一次话语 ASR Session；权限、凭据和云端同意不进入 Core。
 3. **已完成**：在 HUD 层用 TextKit 测量完整行，焦点居中最多取 3 行，高度不足时取 2 行。
 4. **已完成**：通过 Experience descriptor 注册提词器并接入四向短按；四向操作不读取具体 Controller，手机撤销按 M11-PR2 走提词器专用显式命令。
-5. **本次 checkout 本机自动化与编译已完成**：checkpoint 聚焦 4/4、提词器聚焦 47/47、SingleGreenGlassesKit 265/265、App Simulator 93/93、七 Package strict-concurrency/WAE 561/561、User Release Simulator build 和列出的架构/安全门禁均通过。新增 public API 的最终 baseline 与物理设备检查按用户决定延期至 2026-09-02；live provider 调用和眼镜验证仍待执行。
+5. **本次 checkout 本机自动化与编译已完成**：SingleGreenGlassesKit 269/269、App Simulator 96/96、七 Package strict-concurrency/WAE 565/565、User Release Simulator build 和列出的架构/安全门禁均通过。新增 public API 的最终 baseline 与物理设备检查按用户决定延期至 2026-09-02；live provider 调用和眼镜验证仍待执行。
 6. **已完成（M11-PR2 本机实现）**：手机控制面板按需显示一次性自动跃迁撤销；没有新增眼镜按键映射。
 7. **已完成（M11-PR3 本机实现）**：纯值 checkpoint、抽象 store、生命周期写入、类型化恢复、旧草稿迁移和单 envelope 删除闭环。
-8. **已完成（M11-PR4 第一阶段）**：UTF-8 TXT/Markdown 文件选择与 bytes 解析；失败/重复不覆盖当前稿件，文件名与路径不进入 Feature/结果对象。
-9. **延期**：多稿件列表、DOCX/PDF/云盘、长按动作、连续 ASR 专用端口和独立 `TeleprompterKit` Package。
+8. **已完成（M11-PR4）**：App 侧类型化 ScriptRepository、UTF-8 TXT/Markdown 文件选择与 bytes 解析、手机显式完成；失败/重复不覆盖当前稿件，文件名与路径不进入 Feature/结果对象，眼镜长按映射未改变。
+9. **已完成（M11-PR5）**：20 个合成/脱敏场景、5,424 次离线决策与 versioned JSON 基线；只采集指标，不设通过阈值。
+10. **延期**：多稿件列表、DOCX/PDF/云盘、眼镜长按动作、连续 ASR 专用端口和独立 `TeleprompterKit` Package。
 
 ## 9. 主要风险与控制
 
@@ -250,16 +253,17 @@ public protocol TeleprompterRecognitionSession: Sendable {
 
 ## 10. 验证状态（2026-09-01）
 
-本节区分自动化实现证据、构建证据和仍未执行的真实环境验证。以下结果来自 M11-PR1–PR4 当前工作树的本机复验；PR3/PR4 最终全量数字将在本批次门禁后刷新。
+本节区分自动化实现证据、构建证据和仍未执行的真实环境验证。以下结果来自 M11-PR1–PR5 当前工作树的本机复验。
 
 | 证据类别 | 当前状态 | 可以说明什么 | 不能说明什么 |
 |---|---|---|---|
 | 文档静态检查 | 已通过：逐文件 whitespace check 与敏感信息模式扫描 | 三份相关 Markdown 未发现 diff 空白错误或常见密钥模式 | 不验证产品逻辑或运行时行为 |
-| 最终 Core 自动化 | 已通过：checkpoint 4/4、提词器 47/47、SingleGreenGlassesKit 265/265 | 当前 checkout 的定位/撤销、checkpoint、显式完成、删除与迟到事件隔离通过 | 不代表真实 DeepSeek、搜索或 ASR 服务可用 |
-| 最终 App Simulator 全量 | 已通过：93/93，0 failures，0 skips；iPhone 17 Pro，iOS 26.5；证据：`/tmp/SingleGreenDemo-M11-PR34-Final3-AppTests/Logs/Test/Test-SingleGreenUser-2026.09.01_00-21-14-+0800.xcresult` | 当前 checkout 的 App test target 全量、versioned envelope、迁移/删除、TXT/Markdown parser 与 UI 策略通过 | 不等于真实文件提供器、live provider 或物理设备验证 |
+| 最终 Core 自动化 | 已通过：SingleGreenGlassesKit 269/269 | 当前 checkout 的定位/撤销、checkpoint、显式完成、离线评测结构与迟到事件隔离通过 | 不代表真实 DeepSeek、搜索或 ASR 服务可用 |
+| 最终 App Simulator 全量 | 已通过：96/96，0 failures，0 skips；iPhone 17 Pro，iOS 26.5；证据：`/private/tmp/SingleGreenDemo-M11-PR45-Final2.xcresult` | 当前 checkout 的 App test target 全量、versioned envelope、ScriptRepository、迁移/删除、TXT/Markdown parser 与手机完成策略通过 | 不等于真实文件提供器、live provider 或物理设备验证 |
+| 合成离线评测 | 已运行：20 场景、5,424 决策；误跃迁 2、漏跃迁 0、最大位置误差 10 UTF-16、P50 2,209 ns、P95 2,333 ns | 建立可重复回归起点，并暴露多字/增量转写的非预期 jump | 不代表真实语料发生率、真机性能或验收阈值 |
 | Simulator 编译 | User Release generic iOS Simulator build 成功 | 当前 checkout 可完成已执行的 Release Simulator 编译 | Simulator build 不等于 iphoneos、安装或启动 |
-| 发布与隐私门禁 | 已通过：repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates、11 个负向 fixture、七 Package strict-concurrency/WAE 561/561、diff whitespace 和 public API updater安全自检；actual public API baseline 本轮未运行 | 当前 checkout 满足已执行的仓库卫生、隐私、架构和并发静态门禁 | 锁定 Xcode 26.6（17F113）/ Swift 6.3.3 的 baseline 按用户决定延期至 2026-09-02，本轮不能确认或改写新增 public API baseline |
+| 发布与隐私门禁 | 已通过：repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates、12 个负向 fixture、七 Package strict-concurrency/WAE 565/565、diff whitespace 和 public API updater 安全自检；actual public API baseline 本轮未运行 | 当前 checkout 满足已执行的仓库卫生、隐私、架构和并发静态门禁 | 锁定 Xcode 26.6（17F113）/ Swift 6.3.3 的 baseline 按用户决定延期至 2026-09-02，本轮不能确认或改写新增 public API baseline |
 | Live provider | 未运行 | 无 | 不能宣称真实 DeepSeek、搜索或 ASR 的准确率、延迟与轮换连续性 |
 | 物理设备 install/launch | 本批次未运行 | M11-PR1 未新增设备侧证据 | 不能宣称安装、启动、眼镜可读性、按键或音频路由通过 |
 
-当前 checkout 已形成 M11-PR1–PR4 第一阶段可审查本机实施批次。Xcode 26.6 public API baseline 与真机检查按用户决定延期至 2026-09-02；live DeepSeek/搜索/ASR、真实眼镜人工可读性和音频路由仍是独立证据缺口。
+当前 checkout 已形成 M11-PR1–PR5 可审查本机实施批次。Xcode 26.6 public API baseline 与真机检查按用户决定延期至 2026-09-02；live DeepSeek/搜索/ASR、真实眼镜人工可读性和音频路由仍是独立证据缺口。

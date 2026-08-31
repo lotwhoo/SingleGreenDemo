@@ -53,6 +53,89 @@ final class TeleprompterIntegrationTests: XCTestCase {
         XCTAssertNil(envelope.checkpointData)
     }
 
+    func testScriptRepositoryRejectsInvalidOrDuplicateReplacementWithoutOverwriting() {
+        let suiteName = "TeleprompterScriptRepository.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let settings = TeleprompterSettings(defaults: defaults)
+
+        XCTAssertEqual(settings.replaceScript(with: " 当前稿件。 "), .applied)
+        XCTAssertEqual(settings.scriptDraft, "当前稿件。")
+        XCTAssertEqual(settings.scriptConfigurationRevision, 1)
+
+        XCTAssertEqual(settings.replaceScript(with: "当前稿件。"), .duplicate)
+        XCTAssertEqual(settings.replaceScript(with: " \n\t "), .rejected(.empty))
+        XCTAssertEqual(
+            settings.replaceScript(with: String(
+                repeating: "字",
+                count: TeleprompterLimits.maximumScriptCharacters + 1
+            )),
+            .rejected(.exceedsCharacterLimit(
+                maximum: TeleprompterLimits.maximumScriptCharacters
+            ))
+        )
+        XCTAssertEqual(settings.scriptDraft, "当前稿件。")
+        XCTAssertEqual(settings.scriptConfigurationRevision, 1)
+
+        settings.scriptDraft = "尚未载入的编辑稿。"
+        let parsed = TeleprompterScriptImporter.parse(
+            data: Data(settings.scriptDraft.utf8),
+            kind: .plainText,
+            existingSource: settings.loadedScriptSource
+        )
+        guard case .imported(let source) = parsed else {
+            return XCTFail("An un-applied draft must not make a matching file look loaded.")
+        }
+        XCTAssertEqual(settings.replaceScript(with: source), .applied)
+        XCTAssertEqual(settings.loadedScriptSource, "尚未载入的编辑稿。")
+        XCTAssertEqual(settings.scriptConfigurationRevision, 2)
+    }
+
+    func testPhoneExplicitCompletionPersistsRestorableEndCheckpoint() async throws {
+        let suiteName = "TeleprompterExplicitCompletion.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let settings = TeleprompterSettings(defaults: defaults)
+        XCTAssertEqual(settings.replaceScript(with: "第一句。第二句。"), .applied)
+        let script = try TeleprompterScript(
+            settings.scriptDraft,
+            identity: settings.scriptIdentity
+        )
+        let controller = TeleprompterController(
+            script: script,
+            dependencies: .init(
+                prepareSpeechSession: { throw ServerCredentialError.transportNotConfigured },
+                requestMicrophonePermission: { false }
+            ),
+            checkpointStore: settings
+        )
+
+        await controller.complete()
+
+        XCTAssertEqual(controller.state.phase, .completed)
+        let restoredSettings = TeleprompterSettings(defaults: defaults)
+        let restoredScript = try TeleprompterScript(
+            restoredSettings.scriptDraft,
+            identity: restoredSettings.scriptIdentity
+        )
+        let restoredController = TeleprompterController(
+            script: restoredScript,
+            dependencies: .init(
+                prepareSpeechSession: { throw ServerCredentialError.transportNotConfigured },
+                requestMicrophonePermission: { false }
+            ),
+            checkpointStore: restoredSettings
+        )
+        XCTAssertEqual(restoredController.state.sentenceIndex, 1)
+        XCTAssertEqual(
+            restoredController.checkpointRestoreResult,
+            .restored(.init(
+                sentenceIndex: 1,
+                utf16Offset: (restoredScript.sentences[1] as NSString).length
+            ))
+        )
+    }
+
     func testCheckpointPersistsInSingleEnvelopeAndIdenticalWriteIsIdempotent() throws {
         let suiteName = "TeleprompterCheckpointEnvelope.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!

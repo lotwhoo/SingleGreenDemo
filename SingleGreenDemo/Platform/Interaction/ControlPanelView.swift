@@ -9,6 +9,7 @@ struct ControlPanelView: View {
     @EnvironmentObject private var teleprompterSettings: TeleprompterSettings
     @EnvironmentObject private var teleprompterController: TeleprompterController
     @State private var isConfirmingTeleprompterDeletion = false
+    @State private var isConfirmingTeleprompterCompletion = false
     @State private var isImportingTeleprompterScript = false
     @State private var teleprompterImportMessage: String?
     #if INTERNAL_DIAGNOSTICS
@@ -328,7 +329,8 @@ struct ControlPanelView: View {
                 .accessibilityIdentifier("teleprompter_script_editor")
 
             Button {
-                teleprompterSettings.applyScriptDraft()
+                let result = teleprompterSettings.applyScriptDraft()
+                teleprompterImportMessage = result.userMessage
             } label: {
                 Label("载入稿件", systemImage: "arrow.down.doc.fill")
                     .frame(maxWidth: .infinity, minHeight: 40)
@@ -360,6 +362,32 @@ struct ControlPanelView: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .accessibilityIdentifier("teleprompter_import_result_message")
+            }
+
+            if TeleprompterCompletionControlPolicy.isVisible(
+                hasLoadedScript: teleprompterController.state.script != nil,
+                phase: teleprompterController.state.phase
+            ) {
+                Button {
+                    isConfirmingTeleprompterCompletion = true
+                } label: {
+                    Label("完成本次提词", systemImage: "checkmark.circle")
+                        .frame(maxWidth: .infinity, minHeight: 40)
+                }
+                .buttonStyle(.bordered)
+                .accessibilityIdentifier("teleprompter_complete_script_button")
+                .confirmationDialog(
+                    "完成本次提词？",
+                    isPresented: $isConfirmingTeleprompterCompletion,
+                    titleVisibility: .visible
+                ) {
+                    Button("标记为已完成") {
+                        Task { await teleprompterController.complete() }
+                    }
+                    Button("取消", role: .cancel) {}
+                } message: {
+                    Text("阅读位置会保存到稿件末尾，之后仍可从头重新开始。")
+                }
             }
 
             if TeleprompterDeleteControlPolicy.isVisible(
@@ -446,11 +474,12 @@ struct ControlPanelView: View {
         let importResult = TeleprompterScriptImporter.parse(
             data: data,
             kind: kind,
-            existingSource: teleprompterSettings.scriptDraft
+            existingSource: teleprompterSettings.loadedScriptSource
         )
         if case .imported(let source) = importResult {
-            teleprompterSettings.scriptDraft = source
-            teleprompterSettings.applyScriptDraft()
+            let repositoryResult = teleprompterSettings.replaceScript(with: source)
+            teleprompterImportMessage = repositoryResult.userMessage
+            return
         }
         teleprompterImportMessage = importResult.userMessage
     }
@@ -474,6 +503,31 @@ enum TeleprompterUndoControlPolicy {
 enum TeleprompterDeleteControlPolicy {
     static func isVisible(hasDraft: Bool, hasLoadedScript: Bool) -> Bool {
         hasDraft || hasLoadedScript
+    }
+}
+
+@MainActor
+enum TeleprompterCompletionControlPolicy {
+    static func isVisible(
+        hasLoadedScript: Bool,
+        phase: TeleprompterPhase
+    ) -> Bool {
+        hasLoadedScript && phase != .completed
+    }
+}
+
+extension TeleprompterScriptRepositoryResult {
+    var userMessage: String {
+        switch self {
+        case .applied:
+            return "稿件已载入。"
+        case .duplicate:
+            return "这份稿件已经载入，无需重复操作。"
+        case .rejected(.empty):
+            return "稿件中没有可用文字。"
+        case .rejected(.exceedsCharacterLimit(let maximum)):
+            return "稿件超过 \(maximum) 字，请精简后重试。"
+        }
     }
 }
 

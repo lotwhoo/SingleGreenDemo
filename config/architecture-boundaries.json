@@ -30,11 +30,14 @@
       "path": "Packages/SingleGreenGlassesKit",
       "local_dependencies": ["StreamingTextKit", "VoiceChatDomain"],
       "products": [
-        { "name": "SingleGreenGlassesKit", "type": "library", "targets": ["SingleGreenGlassesKit"] }
+        { "name": "SingleGreenGlassesKit", "type": "library", "targets": ["SingleGreenGlassesKit"] },
+        { "name": "TeleprompterBenchmark", "type": "executable", "targets": ["TeleprompterBenchmark"] }
       ],
       "targets": [
         { "name": "SingleGreenGlassesKit", "type": "regular", "dependencies": ["StreamingTextKit", "VoiceChatDomain"] },
-        { "name": "SingleGreenGlassesKitTests", "type": "test", "dependencies": ["SingleGreenGlassesKit", "StreamingTextKit", "VoiceChatDomain"] }
+        { "name": "SingleGreenGlassesKitTests", "type": "test", "dependencies": ["SingleGreenGlassesKit", "StreamingTextKit", "TeleprompterEvaluationSupport", "VoiceChatDomain"] },
+        { "name": "TeleprompterBenchmark", "type": "executable", "dependencies": ["TeleprompterEvaluationSupport"] },
+        { "name": "TeleprompterEvaluationSupport", "type": "regular", "dependencies": ["SingleGreenGlassesKit"] }
       ]
     },
     {
@@ -108,6 +111,13 @@
       "roots": ["Packages/SingleGreenGlassesKit/Sources/SingleGreenGlassesKit"],
       "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "Network", "OSLog", "Security", "LLMKit", "VoiceChatCore", "VoiceActivityDetectionKit", "WebRTCVoiceActivityDetection"],
       "forbidden_prefixes": ["OpenAI", "DeepSeek", "Doubao", "Bocha", "Ark"]
+    },
+    {
+      "id": "teleprompter-evaluation-offline-only",
+      "roots": ["Packages/SingleGreenGlassesKit/Sources/TeleprompterEvaluationSupport"],
+      "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "Network", "OSLog", "Security", "LLMKit", "VoiceChatCore", "VoiceActivityDetectionKit", "WebRTCVoiceActivityDetection"],
+      "forbidden_prefixes": ["OpenAI", "DeepSeek", "Doubao", "Bocha", "Ark"],
+      "allowed_project_modules": ["SingleGreenGlassesKit"]
     },
     {
       "id": "vad-core-framework-neutral",
