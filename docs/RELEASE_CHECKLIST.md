@@ -2,6 +2,36 @@
 
 This checklist records evidence; it does not imply that a GitHub runner, device, or real service was exercised.
 
+## Build 10 current device checkpoint (2026-09-01)
+
+- [x] `com.local.SingleGreenDemo` version `0.1 (10)` installed on iPhone 17 Pro Max; the device application inventory reports bundle version 10.
+- [x] Build 10 launched from the current installation path after the phone was unlocked; PID 49477. The first locked-device attempt was rejected and the device later relocked, so no long-duration process-stability claim is made.
+- [x] M12-PR4 deterministic checkpoint passed 268/268: audio Core 92, Feature/lifecycle 156, Adapter 16, and App microphone lease 4.
+- [ ] Physical microphone, Bluetooth/wired route, interruption, media reset, foreground/background behavior, real network switching, real ASR, M11 feature flows, accessibility, and glasses validation remain unverified. See the [M12-PR4 matrix](./tasks/2026-09-01-m12-pr4-real-audio-fault-matrix.md).
+
+Install and launch are deployment evidence only; they do not establish audio, provider, Feature, UI, or glasses acceptance.
+The installed User Release intentionally uses fail-closed server/speech credential providers; without the reviewed server endpoint it cannot run the real ASR/audio matrix. An explicitly authorized Internal test build with device-local non-production credentials is the lab alternative.
+
+## Build 10 Internal lab checkpoint (2026-09-01)
+
+- [x] `SingleGreenInternal` / `Internal-Debug` archived and exported as `SingleGreenInternal-Debug-Build10-M12.ipa`.
+- [x] Identity is `com.local.SingleGreenDemo.internal`, display name `单绿内部版`, version `0.1 (10)`, iphoneos arm64; codesign, Team/profile match, device provisioning and Internal capability scan passed.
+- [x] SHA-256: `f7a996c5993a1328fff7f4378c85566a2e11edc86188f14ca3f0d6a350ba7cd0`.
+- [x] Installed on iPhone 17 Pro Max; device inventory reports bundle version 10.
+- [x] User subsequently reported the Internal Build 10 physical-device smoke test was broadly OK.
+- [ ] The user report did not include steps or per-layer evidence, so real credentials, microphone/ASR details, routes and fault scenarios remain unverified in the structured matrix.
+
+An `Internal-Release` export was rejected before installation because optimization removed the current scanner's `KeychainHelper` type-name marker. The lab candidate uses Internal Debug and passes the existing fail-closed capability gate; a future Internal Release requires a durable optimized-artifact marker and regression coverage.
+
+## M12-PR5 offline ASR feasibility checkpoint (2026-09-01)
+
+- [x] Apple `SpeechAnalyzer` / `SpeechTranscriber` capability probe is compiled only under `INTERNAL_DIAGNOSTICS` and is manually triggered from the diagnostics panel.
+- [x] The probe does not download assets, request microphone access, record audio, or produce/store transcripts; its diagnostic line contains only reviewed capability and timing fields.
+- [x] Focused probe tests 2/2, Internal App 135/135, and User App 100/100 passed.
+- [x] User Release and Internal Debug/Release universal Simulator builds passed. Fresh User isolation and Internal capability scans passed; build-flavor checker fixtures passed 41/41.
+- [x] Build 11 Internal Debug IPA was archived, exported, signed, capability-scanned, and installed on iPhone 17 Pro Max; device inventory confirms `com.local.SingleGreenDemo.internal` version `0.1 (11)`. SHA-256: `b472e6a8525975f6c7e934c649355f6db8bb0255b5f6c4fac4b45935ed308ab4`.
+- [ ] Build 11 was not launched and the capability probe was not run. Chinese availability, model storage, first/warm preparation, accuracy, latency, peak memory, power, thermal, and minimum-device evidence remain unverified. See the [M12-PR5 record](./tasks/2026-09-01-m12-pr5-offline-asr-feasibility.md).
+
 ## Provider-neutral post-audit evidence (historical PR1 snapshot, 2026-08-28)
 
 - Six local Package strict-concurrency/WAE suites: **377/377** (`StreamingTextKit` 7, `VoiceChatDomain` 16, `VoiceActivityDetectionKit` 43, `SingleGreenGlassesKit` 150, `LLMKit` 70, `VoiceChatCore` 91).
@@ -80,7 +110,7 @@ The concurrent-only simulator timing warning was followed by an isolated **55/55
 
 | Area | Minimum candidate evidence | Status |
 | --- | --- | --- |
-| iPhone compact / regular / max | Launch, 8:3 HUD layout, control accessibility labels | Not run |
+| iPhone compact / regular / max | Launch, 8:3 HUD layout, control accessibility labels | Max: Build 10 install/launch passed; HUD/accessibility not run. Compact/regular not run |
 | Physical microphone | Built-in, Bluetooth route change, interruption, media reset | Not run |
 | App lifecycle | Background cancels uncommitted work; foreground does not auto-resume | Not run |
 | Network | Offline, timeout, HTTP 401 before content, disconnect after content | Not run |
