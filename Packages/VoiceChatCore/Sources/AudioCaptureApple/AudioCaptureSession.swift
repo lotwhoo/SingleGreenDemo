@@ -1,4 +1,5 @@
 import AVFoundation
+import Foundation
 
 protocol AudioSessionActivating {
     func activate() throws
@@ -24,25 +25,47 @@ struct PlatformAudioSessionActivation: AudioSessionActivating {
     }
 }
 
-struct AudioSessionActivationLifecycle {
+/// Sole owner of AVAudioSession activation for one AudioCapture instance. Its lock makes activation
+/// and deactivation serialized and makes repeated activate/deactivate requests idempotent.
+final class AudioSessionActivationLifecycle: @unchecked Sendable {
     private let activation: any AudioSessionActivating
+    private let stateLock = NSLock()
+    private var isActive = false
 
     init(activation: any AudioSessionActivating) {
         self.activation = activation
     }
 
+    deinit {
+        deactivate()
+    }
+
     func withActivatedSession<Result>(_ operation: () throws -> Result) throws -> Result {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        if isActive {
+            return try operation()
+        }
         do {
             try activation.activate()
+            isActive = true
             return try operation()
         } catch {
+            isActive = false
             activation.deactivate()
             throw error
         }
     }
 
     func deactivate() {
+        stateLock.lock()
+        guard isActive else {
+            stateLock.unlock()
+            return
+        }
+        isActive = false
         activation.deactivate()
+        stateLock.unlock()
     }
 }
 

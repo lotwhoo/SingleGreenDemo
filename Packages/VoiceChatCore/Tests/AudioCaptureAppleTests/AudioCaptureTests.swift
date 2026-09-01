@@ -1,7 +1,7 @@
 import AVFoundation
 import os
 import XCTest
-@testable import VoiceChatCore
+@testable import AudioCaptureApple
 
 final class AudioCaptureTests: XCTestCase {
     func testSnapshotRoundTripsMonoAndStereoInterleavedAndNonInterleavedPCM() throws {
@@ -102,35 +102,48 @@ final class AudioCaptureTests: XCTestCase {
         bridge.stop()
     }
 
-    func testAudioAndProviderFailuresMapToTypedPrivacySafeCodes() {
-        XCTAssertEqual(ASRFailure.audioCapture(.noInput).code, .audioUnavailable)
-        XCTAssertEqual(ASRFailure.audioCapture(.engineFailed).code, .audioUnavailable)
-        XCTAssertEqual(ASRFailure.audioCapture(.converterFailed).code, .audioUnavailable)
-        XCTAssertEqual(ASRFailure.audioSystemEvent(.interruptionBegan)?.code, .audioInterrupted)
-        XCTAssertEqual(ASRFailure.audioSystemEvent(.routeChanged)?.code, .audioUnavailable)
-        XCTAssertNil(ASRFailure.audioSystemEvent(.interruptionEnded))
-        XCTAssertEqual(ASRFailure.providerStatus(401).code, .unauthorized)
-        XCTAssertEqual(ASRFailure.providerStatus(403).code, .unauthorized)
-        XCTAssertEqual(ASRFailure.providerStatus(500).code, .protocolFailure)
-        for code: ASRFailure.Code in [
-            .voiceActivityUnavailable,
-            .voiceActivityProcessingFailed,
-            .audioCaptureOverrun,
-            .uploadBackpressureExceeded
-        ] {
-            let failure = ASRFailure.categorized(code)
-            XCTAssertEqual(failure.code, code)
-            XCTAssertFalse(failure.userSafeMessage?.isEmpty ?? true)
-        }
-    }
-
     func testAudioSessionActivationFailureAlwaysAttemptsDeactivation() {
         let activation = RecordingAudioSessionActivation(failActivation: true)
         let lifecycle = AudioSessionActivationLifecycle(activation: activation)
 
         XCTAssertThrowsError(try lifecycle.withActivatedSession {})
+        lifecycle.deactivate()
 
         XCTAssertEqual(activation.operations, ["activate", "deactivate"])
+    }
+
+    func testAudioSessionLifecycleActivationAndDeactivationAreIdempotent() throws {
+        let activation = RecordingAudioSessionActivation()
+        let lifecycle = AudioSessionActivationLifecycle(activation: activation)
+
+        try lifecycle.withActivatedSession {}
+        try lifecycle.withActivatedSession {}
+        lifecycle.deactivate()
+        lifecycle.deactivate()
+
+        XCTAssertEqual(activation.operations, ["activate", "deactivate"])
+    }
+
+    func testAudioSessionLifecycleDeinitReleasesActiveSessionExactlyOnce() throws {
+        let activation = RecordingAudioSessionActivation()
+        var lifecycle: AudioSessionActivationLifecycle? = AudioSessionActivationLifecycle(
+            activation: activation
+        )
+
+        try lifecycle?.withActivatedSession {}
+        lifecycle = nil
+
+        XCTAssertEqual(activation.operations, ["activate", "deactivate"])
+    }
+
+    func testRepeatedStopBeforeStartDoesNotDeactivateAudioSession() {
+        let activation = RecordingAudioSessionActivation()
+        let capture = AudioCapture(audioSessionActivation: activation)
+
+        capture.stop(flushRemainder: false)
+        capture.stop(flushRemainder: false)
+
+        XCTAssertTrue(activation.operations.isEmpty)
     }
 
     func testInvalidCaptureContractDoesNotActivateAudioSession() {
@@ -365,6 +378,30 @@ final class AudioCaptureTests: XCTestCase {
         )
         XCTAssertEqual(levels.withLock { $0.map(\.0) }, [22])
         XCTAssertEqual(levels.withLock { $0.map(\.1) }, [0.25])
+    }
+
+    func testRunStateRejectsDuplicateStartAdmissionUntilStopped() throws {
+        let runState = AudioCaptureRunState()
+        let firstRunID = try XCTUnwrap(runState.begin(
+            callbackToken: 1,
+            chunkByteCount: AudioCapture.vadFrameBytes,
+            chunkHandler: { _, _ in },
+            levelHandler: nil
+        ))
+
+        XCTAssertNil(runState.begin(
+            callbackToken: 2,
+            chunkByteCount: AudioCapture.vadFrameBytes,
+            chunkHandler: { _, _ in },
+            levelHandler: nil
+        ))
+        _ = runState.stop(captureRunID: firstRunID, flushRemainder: false)
+        XCTAssertNotNil(runState.begin(
+            callbackToken: 3,
+            chunkByteCount: AudioCapture.vadFrameBytes,
+            chunkHandler: { _, _ in },
+            levelHandler: nil
+        ))
     }
 
     func testRunStateStopWithoutFlushClearsPendingPCMAndReleasesHandlers() throws {

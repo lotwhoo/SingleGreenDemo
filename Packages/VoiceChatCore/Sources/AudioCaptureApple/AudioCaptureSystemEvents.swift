@@ -6,7 +6,8 @@ protocol AudioSystemEventSource: Sendable {
     func stop()
 }
 
-/// Owns the platform notification subscription for one capture run. Notification delivery can race
+/// Owns the platform notification subscription for one capture run. Its fields are immutable and
+/// all mutable run state is synchronized by `AudioCaptureRunState`; notification delivery can race
 /// stop/rearm, so every callback is validated against the immutable capture run ID before emission.
 final class AudioCaptureAudioSystemEventBridge: @unchecked Sendable {
     private let source: any AudioSystemEventSource
@@ -44,8 +45,12 @@ final class AudioCaptureAudioSystemEventBridge: @unchecked Sendable {
     }
 }
 
+/// NotificationCenter callbacks can arrive concurrently. Observer generation and token replacement
+/// are guarded by `observerState`; NotificationCenter owns callback registration/removal safety.
 final class PlatformAudioSystemEventSource: AudioSystemEventSource, @unchecked Sendable {
     #if os(iOS)
+    /// NotificationCenter owns these opaque tokens. They are only replaced while `observerState`
+    /// is locked and are only passed back to NotificationCenter for removal.
     private struct ObserverTokens: @unchecked Sendable {
         let values: [NSObjectProtocol]
 

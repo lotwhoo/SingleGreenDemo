@@ -45,7 +45,7 @@
 - 主链路为 `DemoEvent / 外部事件 → Experience 状态 → HUDScene → Renderer + DisplayProfile → VST 预览`。
 - 当前有七个本地 Swift Package：`SingleGreenGlassesKit`、`VoiceChatDomain`、`VoiceChatCore`、`LLMKit`、`StreamingTextKit`、`VoiceActivityDetectionKit` 和 `SingleGreenConversationAdapters`。
 - `SingleGreenGlassesKit` 仍同时承载 HUD 领域、Experience Runtime、内置 Experience、AI 对话编排、文字冒险和提词器。
-- `VoiceChatCore` 仍承载 ASR 会话编排、Voice Activated ASR、AVFoundation 音频采集和部分平台生命周期适配；provider-neutral 的错误、会话状态/事件、VAD 策略、帧源与流式传输契约已拆入同 Package 的 `ASRDomain` Target。
+- `VoiceChatCore` 仍承载 ASR 会话编排、Voice Activated ASR 和供应商传输映射；provider-neutral 契约已拆入同 Package 的 `ASRDomain` Target，AVAudioEngine/AVAudioSession、PCM Converter、系统音频通知和具体帧源适配器已拆入 `AudioCaptureApple` Target。
 - `LLMKit` 同时承载通用 LLM/Agent 契约和博查搜索具体实现。
 - User/Internal 构建通过不同 Bundle ID 和 capability flags 隔离内部诊断与本地演示凭证入口。
 
@@ -61,7 +61,7 @@
 ### 3.3 证据基线
 
 - 本次跃迁规则修复后的 SingleGreenGlassesKit 为 273/273，七 Package strict-concurrency/WAE 合计 569/569；规则修复前同一 M11 工作树的 SingleGreenUser App Simulator 为 96/96，本次受限环境无法连接 CoreSimulatorService，未冒充为当前复验。
-- 当前架构 inventory、import boundary 和 13 个负向 fixture 已通过；新增负向 fixture 固定 `ASRDomain` 不得导入 AVFoundation、Network 或反向依赖 `VoiceChatCore`。
+- 当前架构 inventory、import boundary 和 15 个负向 fixture 已通过；`ASRDomain` 不得导入平台框架，`AudioCaptureApple` 不得导入 UI、网络、供应商或反向依赖 `VoiceChatCore`，`VoiceChatCore` 不得重新直接导入 AVFoundation。
 - 当前机器为 Xcode 26.5 / Swift 6.3.2，仓库锁定 Xcode 26.6 / Swift 6.3.3；公共 API 基线必须在锁定工具链重新执行。
 - 七个 Package 的覆盖率表属于此前测量基线；最新提词器变化后应重新测量受影响 Package，不能直接把历史数字作为当前结果。
 - 已生成并核验内部测试 IPA；生成、安装、启动、真实功能验收仍是不同门禁。
@@ -113,6 +113,17 @@
 - 七 Package strict-concurrency/WAE 共 570/570，`VoiceChatCore` Package 122/122（含 `ASRDomainTests` 3/3）；Package inventory、架构主检查和 13 个负向 fixture 通过。
 - 本次没有改变重试、超时、rollover、音频采集或 UI 行为；M12-PR2 才迁移 Apple 音频实现，M12-PR3 才新增 Supervisor 恢复策略。
 - 当前 Xcode 26.5 / Swift 6.3.2 与仓库锁定 Xcode 26.6 / Swift 6.3.3 不一致，API baseline 未更新；当前受限环境也不能连接 CoreSimulatorService，本次 App build/test、真机、真实 ASR 和物理眼镜均未验证。
+
+### 3.9 M12-PR2 当前执行快照（2026-09-01）
+
+- 在现有 `VoiceChatCore` Package 内新增内部 `AudioCaptureApple` Target 和独立测试 Target，没有新增 Package、公开产品或生产依赖。
+- AVAudioEngine、AVAudioSession、PCM Converter、PCM snapshot、系统中断/路由/media-services-reset 通知、采集 run state 和具体 PCM frame source 已整体迁移；`VoiceChatCore` 通过兼容导出保留现有 `import VoiceChatCore` 与 `AudioCapture` 调用方式。
+- `ApplePCMFrameSourceFactory` 只向 Core 返回 `any PCMFrameSource`，具体 `AudioCapturePCMFrameSource` 不进入 Core；架构门禁同时禁止 Core 重新导入 AVFoundation。
+- `AudioCapture` 使用独立生命周期锁串行 graph start/stop；`AudioSessionActivationLifecycle` 是每个 capture 实例唯一的 AudioSession owner，重复 activation/deactivation、重复 stop 和重复 start admission 均为幂等。所有 `@unchecked Sendable` 跨线程桥均补充同步依据注释。
+- 仓库内 `setCategory/setActive` 已收口到上述唯一实现路径；多个 Feature 同时请求麦克风时的进程级租约/抢占仲裁尚未实现，不把“单一实现 owner”扩大声明为“多会话仲裁完成”。
+- 发现并修复既有 `finishStreamReturned` 诊断竞态：成功返回现在必定先记录诊断再检查活跃 generation；状态、重试和终态行为不变。该聚焦竞态回归 10/10。
+- `AudioCaptureAppleTests` 28/28、`VoiceChatCore` Package 126/126、上层 Adapter 24/24、七 Package strict-concurrency/WAE 574/574；架构主检查与 15 个负向 fixture 通过。VAD 外部消费者夹具需在当前受限环境为其嵌套 `swift build` 显式传入 `--disable-sandbox`，随后 43/43 通过。
+- User-Release generic Simulator build 已尝试，但在源码编译前因 CoreSimulatorService connection invalid 和用户级 SwiftPM manifest cache 无写权限而失败；本批次仍未取得锁定工具链 public API baseline、App test/build、真机、蓝牙 HFP/电话抢占/route matrix、真实 ASR 或物理眼镜验证，这些证据不由 Package 自动化替代。
 
 ## 4. 本计划的边界
 
@@ -432,6 +443,8 @@ jump(target, distance, confidence, evidence)
 - start/stop/deactivate 幂等；
 - 回调跨线程边界的 `@unchecked Sendable` 必须有同步依据、审计注释和测试；
 - 真实路由名称、设备标识和 PCM 不进入默认日志。
+
+实施状态（2026-09-01）：已在现有 Package 内完成内部 Target 拆分、兼容导出、抽象帧源工厂、唯一 AudioSession owner 和幂等生命周期；独立 Target 28/28、整包 126/126、七 Package 574/574 与 15 个架构负向 fixture 通过。锁定工具链 API baseline、App、真机和真实路由故障矩阵仍是独立证据门。
 
 #### M12-PR3：ASRSessionSupervisor
 
@@ -989,6 +1002,20 @@ Core 只输出类型化、无内容事件：
 | 回滚方式 | 将契约文件移回 `VoiceChatCore` Target 并移除兼容导出；不涉及数据迁移、供应商配置或运行时状态。 |
 | 证据状态 | Domain 3/3、VoiceChatCore Package 122/122、上层 Adapter 24/24、七 Package 570/570 与 13 个负向 fixture 通过；锁定工具链 API baseline、App、真机和真实 ASR 未验证。 |
 
+### DEC-M12-002：Apple 音频作为内部 Adapter Target 并保留兼容导出
+
+| 字段 | 内容 |
+| --- | --- |
+| 日期 / 里程碑 | 2026-09-01 / M12-PR2 |
+| 问题 | Apple 音频实现应继续留在 Core、立即拆成独立 Package/产品，还是先作为同 Package 的基础设施 Adapter Target？ |
+| 所选方案 | 新增内部 `AudioCaptureApple` Target，迁移 AVAudioEngine/AVAudioSession、Converter、系统通知、run state 和具体帧源；`VoiceChatCore` 兼容导出公开 `AudioCapture`，并仅通过工厂取得抽象 `PCMFrameSource`。 |
+| 理由 | 形成独立编译、测试和依赖门禁，Core 不再直接导入 AVFoundation；同时不扩大 Package、产品和分发面，现有源码调用入口保持不变。 |
+| 生命周期判断 | `AudioCapture` 串行拥有 graph start/stop；每个实例只有一个 `AudioSessionActivationLifecycle`，显式锁和 active 状态保证 start admission、stop、activate/deactivate 幂等；仓库内 AudioSession 调用只有这一实现路径。多 Feature 并发麦克风仲裁仍待 Supervisor/故障矩阵。 |
+| 备选方案 | 只移动文件夹不新增 Target；保留 Core 内公开 facade 并复制一层平台实现类型；立即新增第八个 Package/公开产品；把具体音频对象交给 App composition root。 |
+| 影响范围 | `VoiceChatCore` manifest、Apple 音频与帧源文件、公开类型模块归属、上层兼容编译、架构 inventory/负向 fixture 和后续 API baseline 审阅。 |
+| 回滚方式 | 将 Apple 音频与帧源文件移回 `VoiceChatCore` Target，移除兼容导出、工厂和新门禁；不涉及数据迁移、凭证或供应商配置。 |
+| 证据状态 | Apple 音频/帧源 28/28、整包 126/126、上层 Adapter 24/24、诊断竞态 10/10、七 Package 574/574 与 15 个负向 fixture 通过；App、锁定工具链 API baseline、真机、真实路由和真实 ASR 未验证。 |
+
 ### DEC-PLATFORM-001：低风险可逆判断采用推荐方案并连续留痕
 
 | 字段 | 内容 |
@@ -1019,9 +1046,9 @@ Core 只输出类型化、无内容事件：
 
 1. 2026-09-02 在锁定 Xcode 26.6 / Swift 6.3.3 环境审阅 M11 新增 public API baseline；同日再补真机 checkpoint/导入/删除与 M11-PR2 撤销体验，不在本批次自动执行设备操作。
 2. 用真实普通话 ASR 复核已在合成基线修复的多字/短增量误跃迁，并采集 partial 形态；没有真实分布前不设发布阈值。
-3. 继续 M12-PR2 `AudioCaptureApple`：先识别唯一 AudioSession owner 与幂等 start/stop/deactivate 契约，再机械迁移 AVFoundation 实现；多稿件、生产级长稿索引和导入拆分继续评审，DOCX/PDF/云盘保持待确认（责任方未指定）。
+3. 启动 M12-PR3 `ASRSessionSupervisor`：先定义 provider-neutral 状态、重试资格和旧 Session 拒绝规则，不在未取得故障基线前拍定重试次数/超时/退避；多稿件、生产级长稿索引和导入拆分继续评审，DOCX/PDF/云盘保持待确认（责任方未指定）。
 
-M11-PR1–PR5 已完成当前主机可执行的实现、合成离线基线与最终门禁；M12-PR1 已完成内部 Target 拆分，M12-PR2 尚未开始。锁定工具链、App/真机、真实 ASR 与物理眼镜继续作为独立证据门，不阻塞当前本机模块化提交。
+M11-PR1–PR5 已完成当前主机可执行的实现、合成离线基线与最终门禁；M12-PR1/PR2 已完成两个内部 Target 拆分，M12-PR3 尚未开始。锁定工具链、App/真机、真实 ASR 与物理眼镜继续作为独立证据门，不阻塞当前本机模块化提交。
 
 ## 23. 参考来源
 

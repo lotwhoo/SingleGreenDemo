@@ -1,5 +1,6 @@
 import Foundation
 import ASRDomain
+import AudioCaptureApple
 import VoiceActivityDetectionKit
 
 enum VoiceActivatedASRFinishWorkerWaitPhase: Equatable, Sendable {
@@ -87,7 +88,7 @@ public actor VoiceActivatedASRSession {
         detector: any VoiceActivityDetecting,
         policy: VoiceActivatedASRPolicy = .standard
     ) {
-        let frameSource = AudioCapturePCMFrameSource(
+        let frameSource = ApplePCMFrameSourceFactory.make(
             maximumBufferedFrameCount: policy.maximumPendingUploadFrameCount
         )
         let transport = ASRClient(config: ASRClient.Config(
@@ -130,7 +131,7 @@ public actor VoiceActivatedASRSession {
         policy: VoiceActivatedASRPolicy,
         diagnostics: VoiceActivatedASRDiagnosticsObserver?
     ) {
-        let frameSource = AudioCapturePCMFrameSource(
+        let frameSource = ApplePCMFrameSourceFactory.make(
             maximumBufferedFrameCount: policy.maximumPendingUploadFrameCount
         )
         let transport = ASRClient(config: ASRClient.Config(
@@ -836,8 +837,8 @@ public actor VoiceActivatedASRSession {
             transition(to: .finalizing(reason))
             observeDiagnostic(.finishStreamRequested(generation: runGeneration))
             try await transport.finishStream()
-            guard activeGeneration == runGeneration else { return }
             observeDiagnostic(.finishStreamReturned(generation: runGeneration))
+            guard activeGeneration == runGeneration else { return }
         } catch is CancellationError {
             return
         } catch {

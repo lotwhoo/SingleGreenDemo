@@ -1,7 +1,8 @@
+import ASRDomain
 import Foundation
 import VoiceActivityDetectionKit
 import XCTest
-@testable import VoiceChatCore
+@testable import AudioCaptureApple
 
 final class PCMFrameSourceTests: XCTestCase {
     func testRelayBuildsExactTwentyMillisecondLittleEndianFrames() async throws {

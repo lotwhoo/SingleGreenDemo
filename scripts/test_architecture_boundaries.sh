@@ -152,6 +152,32 @@ do
     fi
 done
 
+audio_capture_apple="$temporary_root/audio-capture-apple-adapter-only"
+cp -R "$base" "$audio_capture_apple"
+cat >"$audio_capture_apple/Packages/VoiceChatCore/Sources/AudioCaptureApple/FixtureViolation.swift" <<'SWIFT'
+import SwiftUI
+import Network
+import VoiceChatCore
+SWIFT
+expect_failure "$audio_capture_apple" 'Packages/VoiceChatCore/Sources/AudioCaptureApple/FixtureViolation.swift:1: import rule audio-capture-apple-adapter-only forbids module SwiftUI'
+for audio_capture_violation in \
+    'FixtureViolation.swift:2: import rule audio-capture-apple-adapter-only forbids module Network' \
+    'FixtureViolation.swift:3: import rule audio-capture-apple-adapter-only forbids module VoiceChatCore'
+do
+    if ! grep -Fq "$audio_capture_violation" "$audio_capture_apple/check-output.txt"; then
+        echo "error: Apple audio adapter boundary violation was not detected: $audio_capture_violation" >&2
+        cat "$audio_capture_apple/check-output.txt" >&2
+        exit 1
+    fi
+done
+
+voice_core_audio_framework="$temporary_root/voice-core-audio-framework"
+cp -R "$base" "$voice_core_audio_framework"
+cat >"$voice_core_audio_framework/Packages/VoiceChatCore/Sources/VoiceChatCore/FixtureViolation.swift" <<'SWIFT'
+import AVFoundation
+SWIFT
+expect_failure "$voice_core_audio_framework" 'Packages/VoiceChatCore/Sources/VoiceChatCore/FixtureViolation.swift:1: import rule voice-core-no-ui-or-reverse-edge forbids module AVFoundation'
+
 voice_llm="$temporary_root/voice-core-llm"
 cp -R "$base" "$voice_llm"
 python3 - "$voice_llm/Packages/VoiceChatCore/Package.swift" <<'PY'
@@ -159,8 +185,8 @@ from pathlib import Path
 import sys
 path = Path(sys.argv[1])
 text = path.read_text()
-old = 'name: "VoiceChatCore",\n            dependencies: ["ASRDomain", "VoiceActivityDetectionKit"]'
-new = 'name: "VoiceChatCore",\n            dependencies: ["ASRDomain", "VoiceActivityDetectionKit", "LLMKit"]'
+old = 'name: "VoiceChatCore",\n            dependencies: ["ASRDomain", "AudioCaptureApple", "VoiceActivityDetectionKit"]'
+new = 'name: "VoiceChatCore",\n            dependencies: ["ASRDomain", "AudioCaptureApple", "VoiceActivityDetectionKit", "LLMKit"]'
 if old not in text:
     raise SystemExit("fixture mutation anchor missing")
 path.write_text(text.replace(old, new, 1))
@@ -305,4 +331,4 @@ path.write_text(text.replace(old, new, 1))
 PY
 expect_failure "$ownership_drift" 'App product ownership rule: SingleGreenDemo product LLMKit expected local owner .*Packages/LLMKit.*got Packages/VoiceChatCore'
 
-echo "Architecture boundary self-tests passed (legal import syntax, valid graph, and 13 negative fixtures)."
+echo "Architecture boundary self-tests passed (legal import syntax, valid graph, and 15 negative fixtures)."
