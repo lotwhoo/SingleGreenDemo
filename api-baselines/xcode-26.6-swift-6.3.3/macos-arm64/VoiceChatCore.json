@@ -13615,6 +13615,13 @@
         "conformances": [
           {
             "kind": "Conformance",
+            "mangledName": "$s14ASRSupervision34SupervisedVoiceActivatedASRSessionP",
+            "name": "SupervisedVoiceActivatedASRSession",
+            "printedName": "SupervisedVoiceActivatedASRSession",
+            "usr": "s:14ASRSupervision34SupervisedVoiceActivatedASRSessionP"
+          },
+          {
+            "kind": "Conformance",
             "mangledName": "$ss8CopyableP",
             "name": "Copyable",
             "printedName": "Copyable",

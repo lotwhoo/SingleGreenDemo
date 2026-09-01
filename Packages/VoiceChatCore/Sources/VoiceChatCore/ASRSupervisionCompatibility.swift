@@ -1,6 +1,7 @@
 @_exported import ASRSupervision
 
 extension ASRSession: SupervisedASRSession {}
+extension VoiceActivatedASRSession: SupervisedVoiceActivatedASRSession {}
 
 public extension ASRSessionSupervisor {
     /// Builds a fresh concrete provider session for every admitted attempt. The recovery policy is

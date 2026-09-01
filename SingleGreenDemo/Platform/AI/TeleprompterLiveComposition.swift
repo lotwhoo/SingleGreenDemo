@@ -31,6 +31,7 @@ enum LiveSpeechInputComposition {
     static func makeTeleprompterDependencies(
         configurationProvider: @escaping @MainActor () -> TeleprompterSpeechConfiguration,
         speechCredentialProvider: any SpeechCredentialProvider,
+        microphoneLeaseCoordinator: MicrophoneLeaseCoordinator? = nil,
         cloudSpeechRecognitionAllowed: @escaping () -> Bool
     ) -> TeleprompterDependencies {
         return TeleprompterDependencies(
@@ -62,9 +63,16 @@ enum LiveSpeechInputComposition {
                     config: config,
                     policy: .disabled(disposition: .manualControl)
                 )
-                return VoiceChatSupervisedSpeechRecognitionAdapter(
+                let session: any SpeechRecognitionSession = VoiceChatSupervisedSpeechRecognitionAdapter(
                     supervisor: supervisor
                 )
+                if let microphoneLeaseCoordinator {
+                    return MicrophoneLeasedSpeechRecognitionSession(
+                        base: session,
+                        coordinator: microphoneLeaseCoordinator
+                    )
+                }
+                return session
             },
             requestMicrophonePermission: requestMicrophonePermission,
             cloudSpeechRecognitionAllowed: cloudSpeechRecognitionAllowed
