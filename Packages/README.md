@@ -20,7 +20,7 @@
 
 ```text
 VoiceChatDomain   独立
-LLMKit            独立
+LLMKit Package    LLMCore ← AgentCore；LLMKit 兼容入口 → LLMCore + AgentCore
 VoiceChatCore     → ../LLMKit（仅 ASRCLI 工具使用）
 StreamingTextKit  独立
 VoiceActivityDetectionKit 独立（M6 Stage 1/2A；WebRTC 实现只在 App composition root 注入）
@@ -32,6 +32,8 @@ SingleGreenDemo   → SingleGreenConversationAdapters + SingleGreenGlassesKit + 
 `SingleGreenConversationAdapters` 的复用接口包括 `VoiceChatSpeechRecognitionAdapter`、`VoiceChatSupervisedSpeechRecognitionAdapter`、`VoiceChatVoiceActivatedSpeechRecognitionAdapter`、`LLMKitConversationAgentAdapter` 和 `LLMKitConversationAgentAdapterPolicy`。它们只桥接核心 ports 与已配置的 VoiceChat/LLM 实现；凭证、租约、恢复预算与降级选择、模型/资源配置、WebRTC factory、raw tool name 和展示文案仍由 App composition root 提供。
 
 M12 恢复契约位于 `VoiceChatCore` 内部 `ASRSupervision` Target：PTT 与 Voice Activated 均通过 generation 拒绝旧事件，并在旧 Session cancel 完成后才允许新 Session。Voice Activated 一旦接受本地 VAD 起音就不再换 Session，避免丢失当前话语 pre-roll。多 Feature 的麦克风租约位于 App，不属于 Package 契约；当前采用非抢占模式，生产自动恢复预算保持 0，等待真机故障矩阵后再定参数。
+
+M13-PR1 将 `LLMKit` Package 内部拆为两个可独立引用的 Core Target：`LLMCore` 保有 Message、Tool、StreamingEvent、Transport 和类型化错误；`AgentCore` 只依赖 `LLMCore`，保有上下文事务、Tool Round、commit/abort 和终态规则。`LLMKit` 继续兼容导出两个 Core，并暂时承载 OpenAI-compatible HTTP/SSE 与 Bocha 实现；它们外移到独立 Adapter 属于 M13-PR2。
 
 ## 升级流程
 
@@ -51,6 +53,6 @@ Provider-neutral 约束：`SingleGreenGlassesKit` 只接收宿主准备好的 PT
 
 ## Public API baseline procedure
 
-The reviewed public API contract is generated with `swift-api-digester` for the eight library modules listed in `config/architecture-boundaries.json`, on macOS arm64 and iOS Simulator arm64. Exact snapshots are stored under `api-baselines/xcode-26.6-swift-6.3.3/`; additions and removals are both review items.
+The reviewed public API contract is generated with `swift-api-digester` for the ten library modules listed in `config/architecture-boundaries.json`, on macOS arm64 and iOS Simulator arm64. Exact snapshots are stored under `api-baselines/xcode-26.6-swift-6.3.3/`; additions and removals are both review items.
 
 Run `scripts/check_public_api_baselines.sh` during normal validation. To intentionally accept a reviewed API change, run `scripts/update_public_api_baselines.sh --accept-current-api`, inspect the generated JSON diff and compatibility impact, then run the checker and relevant package tests. The update command is never automatic and is rejected in CI. The updater stages and preserves a rollback copy on replacement failure; concurrent invocations remain a known P3 limitation.

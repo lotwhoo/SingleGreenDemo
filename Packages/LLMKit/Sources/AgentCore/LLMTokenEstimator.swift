@@ -1,4 +1,5 @@
 import Foundation
+import LLMCore
 
 /// 轻量 token 估算器。
 /// 不引入 tiktoken 等重依赖，用近似估算：

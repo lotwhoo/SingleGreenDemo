@@ -18,5 +18,3 @@ public protocol LLMChatTransport: Sendable {
         tools: [LLMTool]?
     ) -> AsyncThrowingStream<LLMStreamingEvent, Error>
 }
-
-extension LLMChatClient: LLMChatTransport {}

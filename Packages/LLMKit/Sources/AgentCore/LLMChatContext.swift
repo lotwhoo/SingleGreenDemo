@@ -1,4 +1,5 @@
 import Foundation
+import LLMCore
 
 /// 多轮对话上下文管理：自动维护消息历史、裁剪长度、过滤空消息。
 ///

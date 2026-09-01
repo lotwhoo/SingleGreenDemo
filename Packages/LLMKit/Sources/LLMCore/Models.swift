@@ -1,5 +1,7 @@
 import Foundation
 
+// Provider-neutral chat and streaming value types.
+
 // MARK: - 消息
 
 /// LLM 对话消息（OpenAI 兼容格式）。
@@ -318,6 +320,11 @@ public struct LLMErrorResponse: Codable, Sendable {
 public struct LLMAPIError: Error, LocalizedError, Sendable {
     public let statusCode: Int
     public let message: String
+
+    public init(statusCode: Int, message: String) {
+        self.statusCode = statusCode
+        self.message = message
+    }
 
     public var errorDescription: String? {
         "API 错误 (\(statusCode)): \(message)"

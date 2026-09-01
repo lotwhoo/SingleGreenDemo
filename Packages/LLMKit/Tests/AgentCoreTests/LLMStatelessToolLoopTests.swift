@@ -1,6 +1,7 @@
 import Foundation
 import XCTest
-@testable import LLMKit
+import LLMCore
+@testable import AgentCore
 
 final class LLMStatelessToolLoopTests: XCTestCase {
     func testStatelessLoopExecutesToolAndForwardsBudgets() async throws {

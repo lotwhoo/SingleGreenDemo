@@ -133,6 +133,44 @@ do
     fi
 done
 
+llm_core="$temporary_root/llm-core-provider-neutral"
+cp -R "$base" "$llm_core"
+cat >"$llm_core/Packages/LLMKit/Sources/LLMCore/FixtureViolation.swift" <<'SWIFT'
+import Network
+import AgentCore
+import DeepSeekSDK
+SWIFT
+expect_failure "$llm_core" 'Packages/LLMKit/Sources/LLMCore/FixtureViolation.swift:1: import rule llm-core-provider-neutral-leaf forbids module Network'
+for llm_core_violation in \
+    'FixtureViolation.swift:2: import rule llm-core-provider-neutral-leaf forbids module AgentCore' \
+    'FixtureViolation.swift:3: import rule llm-core-provider-neutral-leaf forbids module DeepSeekSDK'
+do
+    if ! grep -Fq "$llm_core_violation" "$llm_core/check-output.txt"; then
+        echo "error: LLM core boundary violation was not detected: $llm_core_violation" >&2
+        cat "$llm_core/check-output.txt" >&2
+        exit 1
+    fi
+done
+
+agent_core="$temporary_root/agent-core-provider-neutral"
+cp -R "$base" "$agent_core"
+cat >"$agent_core/Packages/LLMKit/Sources/AgentCore/FixtureViolation.swift" <<'SWIFT'
+import Network
+import LLMKit
+import BochaSearchAdapter
+SWIFT
+expect_failure "$agent_core" 'Packages/LLMKit/Sources/AgentCore/FixtureViolation.swift:1: import rule agent-core-provider-neutral forbids module Network'
+for agent_core_violation in \
+    'FixtureViolation.swift:2: import rule agent-core-provider-neutral forbids module LLMKit' \
+    'FixtureViolation.swift:3: import rule agent-core-provider-neutral forbids module BochaSearchAdapter'
+do
+    if ! grep -Fq "$agent_core_violation" "$agent_core/check-output.txt"; then
+        echo "error: Agent core boundary violation was not detected: $agent_core_violation" >&2
+        cat "$agent_core/check-output.txt" >&2
+        exit 1
+    fi
+done
+
 asr_domain="$temporary_root/asr-domain-framework-neutral"
 cp -R "$base" "$asr_domain"
 cat >"$asr_domain/Packages/VoiceChatCore/Sources/ASRDomain/FixtureViolation.swift" <<'SWIFT'
@@ -251,7 +289,7 @@ from pathlib import Path
 import sys
 path = Path(sys.argv[1])
 text = path.read_text()
-old = 'products: [\n        .library(name: "LLMKit", targets: ["LLMKit"])\n    ],'
+old = 'products: [\n        .library(name: "LLMCore", targets: ["LLMCore"]),\n        .library(name: "AgentCore", targets: ["AgentCore"]),\n        .library(name: "LLMKit", targets: ["LLMKit"])\n    ],'
 new = old + '\n    dependencies: [.package(url: "https://example.invalid/Remote.git", exact: "1.0.0")],'
 if old not in text:
     raise SystemExit("fixture mutation anchor missing")

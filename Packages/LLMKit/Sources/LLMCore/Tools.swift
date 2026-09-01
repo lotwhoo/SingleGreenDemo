@@ -1,5 +1,7 @@
 import Foundation
 
+// Provider-neutral tool contracts and JSON values.
+
 // MARK: - 工具调用（OpenAI 兼容 Function Calling）
 
 /// 工具定义（请求侧）：`{"type":"function","function":{...}}`
@@ -48,19 +50,30 @@ public struct LLMToolCall: Codable, Sendable, Equatable {
         public var name: String
         /// 参数的 JSON 字符串（如 `{"query":"北京天气"}`）。
         public var arguments: String
+
+        public init(name: String, arguments: String) {
+            self.name = name
+            self.arguments = arguments
+        }
     }
 
     public var id: String
     public var type: String?
     public var function: FunctionCall
+
+    public init(id: String, type: String?, function: FunctionCall) {
+        self.id = id
+        self.type = type
+        self.function = function
+    }
 }
 
-enum LLMToolCallValidationFailure: Equatable {
+package enum LLMToolCallValidationFailure: Equatable {
     case incomplete
     case malformedArguments
 }
 
-extension LLMToolCall {
+package extension LLMToolCall {
     /// Validation is intentionally deferred until every streamed fragment has
     /// been assembled. Function arguments must be a complete JSON object before
     /// an agent may hand the call to an executor.

@@ -1,4 +1,5 @@
 import Foundation
+import LLMCore
 
 /// OpenAI 兼容 Chat Completions 客户端。
 /// 默认指向 DeepSeek（https://api.deepseek.com/v1，模型 deepseek-v4-flash），

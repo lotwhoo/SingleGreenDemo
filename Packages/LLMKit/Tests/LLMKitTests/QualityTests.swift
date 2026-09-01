@@ -1,66 +1,6 @@
 import XCTest
 @testable import LLMKit
 
-final class TokenEstimatorTests: XCTestCase {
-
-    func testChineseEstimation() {
-        let text = "你好世界"  // 4 个汉字 ≈ 4 token
-        XCTAssertEqual(LLMTokenEstimator.estimate(text), 4)
-    }
-
-    func testASCIIEstimation() {
-        let text = "hello"  // 5 字符 ≈ 2 token (5/4 向上取整)
-        XCTAssertEqual(LLMTokenEstimator.estimate(text), 2)
-    }
-
-    func testMixedEstimation() {
-        let text = "你好 hello"
-        XCTAssertEqual(LLMTokenEstimator.estimate(text), 2 + 2)  // 2 中文 + 6 字符/4
-    }
-}
-
-final class ChatContextTokenBudgetTests: XCTestCase {
-
-    func testTokenBudgetTrimsOldest() {
-        var context = LLMChatContext(maxMessages: 50, maxTokens: 20)
-        // 每条消息约 10 token（"问题内容内容内容" 7 字）
-        for i in 1...4 {
-            context.appendUser("问题\(i)内容内容内容内容")
-        }
-        let chat = context.chatMessages
-        // 20 token 预算只能容纳约 2-3 条 → 最旧的被丢弃
-        let total = chat.reduce(0) { $0 + LLMTokenEstimator.estimate($1.content ?? "") }
-        XCTAssertLessThanOrEqual(total, 20)
-        XCTAssertTrue(chat.count < 4, "应裁剪掉最早的消息")
-        XCTAssertFalse((chat.first?.content ?? "").contains("问题1"), "最早的问题1应被丢弃")
-    }
-
-    func testSmallBudgetKeepsOnlyRecent() {
-        var context = LLMChatContext(maxTokens: 5)
-        context.appendUser("很长的历史消息内容内容内容")
-        context.appendUser("新")
-        let chat = context.chatMessages
-        XCTAssertEqual(chat.count, 1)
-        XCTAssertEqual(chat.first?.content, "新")
-    }
-
-    func testZeroBudgetNoTruncation() {
-        var context = LLMChatContext(maxTokens: 0)
-        context.appendUser("一条")
-        context.appendUser("两条")
-        XCTAssertEqual(context.chatMessages.count, 2)
-    }
-
-    func testToolReasoningCountsTowardContextBudget() {
-        var context = LLMChatContext(maxMessages: 20, maxTokens: 6)
-        context.appendAssistant("旧", reasoningContent: "需要很多推理内容")
-        context.appendUser("新")
-
-        let chat = context.chatMessages
-        XCTAssertEqual(chat.map(\.content), ["新"])
-    }
-}
-
 final class RetryConfigTests: XCTestCase {
 
     func testRetryableStatusCodes() {

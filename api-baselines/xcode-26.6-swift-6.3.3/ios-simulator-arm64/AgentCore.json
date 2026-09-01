@@ -1,0 +1,4260 @@
+{
+  "ABIRoot": {
+    "children": [
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "AgentCore",
+        "name": "Foundation",
+        "printedName": "Foundation"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "AgentCore",
+        "name": "LLMCore",
+        "printedName": "LLMCore"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "AgentCore",
+        "name": "SwiftOnoneSupport",
+        "printedName": "SwiftOnoneSupport"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "AgentCore",
+        "name": "_Concurrency",
+        "printedName": "_Concurrency"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "AgentCore",
+        "name": "_StringProcessing",
+        "printedName": "_StringProcessing"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "AgentCore",
+        "name": "_SwiftConcurrencyShims",
+        "printedName": "_SwiftConcurrencyShims"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.String?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore8LLMAgentC6ConfigV12systemPromptSSSgvg",
+                    "moduleName": "AgentCore",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:9AgentCore8LLMAgentC6ConfigV12systemPromptSSSgvg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.String?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore8LLMAgentC6ConfigV12systemPromptSSSgvs",
+                    "moduleName": "AgentCore",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:9AgentCore8LLMAgentC6ConfigV12systemPromptSSSgvs"
+                  }
+                ],
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "HasInitialValue",
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s9AgentCore8LLMAgentC6ConfigV12systemPromptSSSgvp",
+                "moduleName": "AgentCore",
+                "name": "systemPrompt",
+                "printedName": "systemPrompt",
+                "usr": "s:9AgentCore8LLMAgentC6ConfigV12systemPromptSSSgvp"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore8LLMAgentC6ConfigV11maxMessagesSivg",
+                    "moduleName": "AgentCore",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:9AgentCore8LLMAgentC6ConfigV11maxMessagesSivg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore8LLMAgentC6ConfigV11maxMessagesSivs",
+                    "moduleName": "AgentCore",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:9AgentCore8LLMAgentC6ConfigV11maxMessagesSivs"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s9AgentCore8LLMAgentC6ConfigV11maxMessagesSivp",
+                "moduleName": "AgentCore",
+                "name": "maxMessages",
+                "printedName": "maxMessages",
+                "usr": "s:9AgentCore8LLMAgentC6ConfigV11maxMessagesSivp"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore8LLMAgentC6ConfigV9maxTokensSivg",
+                    "moduleName": "AgentCore",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:9AgentCore8LLMAgentC6ConfigV9maxTokensSivg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore8LLMAgentC6ConfigV9maxTokensSivs",
+                    "moduleName": "AgentCore",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:9AgentCore8LLMAgentC6ConfigV9maxTokensSivs"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s9AgentCore8LLMAgentC6ConfigV9maxTokensSivp",
+                "moduleName": "AgentCore",
+                "name": "maxTokens",
+                "printedName": "maxTokens",
+                "usr": "s:9AgentCore8LLMAgentC6ConfigV9maxTokensSivp"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.Int?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore8LLMAgentC6ConfigV19completionMaxTokensSiSgvg",
+                    "moduleName": "AgentCore",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:9AgentCore8LLMAgentC6ConfigV19completionMaxTokensSiSgvg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.Int?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore8LLMAgentC6ConfigV19completionMaxTokensSiSgvs",
+                    "moduleName": "AgentCore",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:9AgentCore8LLMAgentC6ConfigV19completionMaxTokensSiSgvs"
+                  }
+                ],
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.Int?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "HasInitialValue",
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s9AgentCore8LLMAgentC6ConfigV19completionMaxTokensSiSgvp",
+                "moduleName": "AgentCore",
+                "name": "completionMaxTokens",
+                "printedName": "completionMaxTokens",
+                "usr": "s:9AgentCore8LLMAgentC6ConfigV19completionMaxTokensSiSgvp"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore8LLMAgentC6ConfigV13maxToolRoundsSivg",
+                    "moduleName": "AgentCore",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:9AgentCore8LLMAgentC6ConfigV13maxToolRoundsSivg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore8LLMAgentC6ConfigV13maxToolRoundsSivs",
+                    "moduleName": "AgentCore",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:9AgentCore8LLMAgentC6ConfigV13maxToolRoundsSivs"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s9AgentCore8LLMAgentC6ConfigV13maxToolRoundsSivp",
+                "moduleName": "AgentCore",
+                "name": "maxToolRounds",
+                "printedName": "maxToolRounds",
+                "usr": "s:9AgentCore8LLMAgentC6ConfigV13maxToolRoundsSivp"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Double",
+                        "printedName": "Swift.Double",
+                        "usr": "s:Sd"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore8LLMAgentC6ConfigV11temperatureSdvg",
+                    "moduleName": "AgentCore",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:9AgentCore8LLMAgentC6ConfigV11temperatureSdvg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Double",
+                        "printedName": "Swift.Double",
+                        "usr": "s:Sd"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore8LLMAgentC6ConfigV11temperatureSdvs",
+                    "moduleName": "AgentCore",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:9AgentCore8LLMAgentC6ConfigV11temperatureSdvs"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
+                  }
+                ],
+                "declAttributes": [
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s9AgentCore8LLMAgentC6ConfigV11temperatureSdvp",
+                "moduleName": "AgentCore",
+                "name": "temperature",
+                "printedName": "temperature",
+                "usr": "s:9AgentCore8LLMAgentC6ConfigV11temperatureSdvp"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Config",
+                    "printedName": "AgentCore.LLMAgent.Config",
+                    "usr": "s:9AgentCore8LLMAgentC6ConfigV"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "usr": "s:Sq"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
+                  }
+                ],
+                "declKind": "Constructor",
+                "init_kind": "Designated",
+                "kind": "Constructor",
+                "mangledName": "$s9AgentCore8LLMAgentC6ConfigV12systemPrompt11maxMessages0G6Tokens0G10ToolRounds11temperatureAESSSg_S3iSdtcfc",
+                "moduleName": "AgentCore",
+                "name": "init",
+                "printedName": "init(systemPrompt:maxMessages:maxTokens:maxToolRounds:temperature:)",
+                "usr": "s:9AgentCore8LLMAgentC6ConfigV12systemPrompt11maxMessages0G6Tokens0G10ToolRounds11temperatureAESSSg_S3iSdtcfc"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Config",
+                    "printedName": "AgentCore.LLMAgent.Config",
+                    "usr": "s:9AgentCore8LLMAgentC6ConfigV"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "usr": "s:Sq"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.Int?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Constructor",
+                "init_kind": "Designated",
+                "kind": "Constructor",
+                "mangledName": "$s9AgentCore8LLMAgentC6ConfigV12systemPrompt11maxMessages0G6Tokens0G10ToolRounds11temperature013completionMaxI0AESSSg_S3iSdSiSgtcfc",
+                "moduleName": "AgentCore",
+                "name": "init",
+                "printedName": "init(systemPrompt:maxMessages:maxTokens:maxToolRounds:temperature:completionMaxTokens:)",
+                "usr": "s:9AgentCore8LLMAgentC6ConfigV12systemPrompt11maxMessages0G6Tokens0G10ToolRounds11temperature013completionMaxI0AESSSg_S3iSdSiSgtcfc"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Config",
+                    "printedName": "AgentCore.LLMAgent.Config",
+                    "usr": "s:9AgentCore8LLMAgentC6ConfigV"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Config",
+                    "printedName": "AgentCore.LLMAgent.Config",
+                    "usr": "s:9AgentCore8LLMAgentC6ConfigV"
+                  }
+                ],
+                "declAttributes": [
+                  "Implements"
+                ],
+                "declKind": "Func",
+                "funcSelfKind": "NonMutating",
+                "implicit": true,
+                "kind": "Function",
+                "mangledName": "$s9AgentCore8LLMAgentC6ConfigV23__derived_struct_equalsySbAE_AEtFZ",
+                "moduleName": "AgentCore",
+                "name": "__derived_struct_equals",
+                "printedName": "__derived_struct_equals(_:_:)",
+                "static": true,
+                "usr": "s:9AgentCore8LLMAgentC6ConfigV23__derived_struct_equalsySbAE_AEtFZ"
+              }
+            ],
+            "conformances": [
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8CopyableP",
+                "name": "Copyable",
+                "printedName": "Copyable",
+                "usr": "s:s8CopyableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$sSQ",
+                "name": "Equatable",
+                "printedName": "Equatable",
+                "usr": "s:SQ"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss9EscapableP",
+                "name": "Escapable",
+                "printedName": "Escapable",
+                "usr": "s:s9EscapableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8SendableP",
+                "name": "Sendable",
+                "printedName": "Sendable",
+                "usr": "s:s8SendableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss16SendableMetatypeP",
+                "name": "SendableMetatype",
+                "printedName": "SendableMetatype",
+                "usr": "s:s16SendableMetatypeP"
+              }
+            ],
+            "declKind": "Struct",
+            "kind": "TypeDecl",
+            "mangledName": "$s9AgentCore8LLMAgentC6ConfigV",
+            "moduleName": "AgentCore",
+            "name": "Config",
+            "printedName": "Config",
+            "usr": "s:9AgentCore8LLMAgentC6ConfigV"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "LLMAgent",
+                "printedName": "AgentCore.LLMAgent",
+                "usr": "s:9AgentCore8LLMAgentC"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMChatTransport",
+                "printedName": "any LLMCore.LLMChatTransport",
+                "usr": "s:7LLMCore16LLMChatTransportP"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMToolExecutor",
+                "printedName": "any LLMCore.LLMToolExecutor",
+                "usr": "s:7LLMCore15LLMToolExecutorP"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Config",
+                "printedName": "AgentCore.LLMAgent.Config",
+                "usr": "s:9AgentCore8LLMAgentC6ConfigV"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s9AgentCore8LLMAgentC9transport8executor6configAC7LLMCore16LLMChatTransport_p_AG15LLMToolExecutor_pAC6ConfigVtcfc",
+            "moduleName": "AgentCore",
+            "name": "init",
+            "printedName": "init(transport:executor:config:)",
+            "usr": "s:9AgentCore8LLMAgentC9transport8executor6configAC7LLMCore16LLMChatTransport_p_AG15LLMToolExecutor_pAC6ConfigVtcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Void",
+                            "printedName": "()"
+                          }
+                        ],
+                        "kind": "TypeNameAlias",
+                        "name": "Void",
+                        "printedName": "Swift.Void"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.String) async -> Swift.Void"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "((Swift.String) async -> Swift.Void)?",
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s9AgentCore8LLMAgentC4send_10onToolCallS2S_ySSYaYbcSgtYaKF",
+            "moduleName": "AgentCore",
+            "name": "send",
+            "printedName": "send(_:onToolCall:)",
+            "throwing": true,
+            "usr": "s:9AgentCore8LLMAgentC4send_10onToolCallS2S_ySSYaYbcSgtYaKF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "LLMAgentStreamingTransaction",
+                "printedName": "AgentCore.LLMAgentStreamingTransaction",
+                "usr": "s:9AgentCore28LLMAgentStreamingTransactionV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s9AgentCore8LLMAgentC13sendStreamingyAA0cE11TransactionVSSF",
+            "moduleName": "AgentCore",
+            "name": "sendStreaming",
+            "printedName": "sendStreaming(_:)",
+            "usr": "s:9AgentCore8LLMAgentC13sendStreamingyAA0cE11TransactionVSSF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMAgentTransactionToken",
+                "printedName": "AgentCore.LLMAgentTransactionToken",
+                "usr": "s:9AgentCore24LLMAgentTransactionTokenV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s9AgentCore8LLMAgentC6commityyAA0C16TransactionTokenVKF",
+            "moduleName": "AgentCore",
+            "name": "commit",
+            "printedName": "commit(_:)",
+            "throwing": true,
+            "usr": "s:9AgentCore8LLMAgentC6commityyAA0C16TransactionTokenVKF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMAgentTransactionToken",
+                "printedName": "AgentCore.LLMAgentTransactionToken",
+                "usr": "s:9AgentCore24LLMAgentTransactionTokenV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s9AgentCore8LLMAgentC5abortyyAA0C16TransactionTokenVF",
+            "moduleName": "AgentCore",
+            "name": "abort",
+            "printedName": "abort(_:)",
+            "usr": "s:9AgentCore8LLMAgentC5abortyyAA0C16TransactionTokenVF"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMMessage",
+                        "printedName": "LLMCore.LLMMessage",
+                        "usr": "s:7LLMCore10LLMMessageV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[LLMCore.LLMMessage]",
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore8LLMAgentC12chatMessagesSay7LLMCore10LLMMessageVGvg",
+                "moduleName": "AgentCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:9AgentCore8LLMAgentC12chatMessagesSay7LLMCore10LLMMessageVGvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMMessage",
+                    "printedName": "LLMCore.LLMMessage",
+                    "usr": "s:7LLMCore10LLMMessageV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[LLMCore.LLMMessage]",
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Var",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore8LLMAgentC12chatMessagesSay7LLMCore10LLMMessageVGvp",
+            "moduleName": "AgentCore",
+            "name": "chatMessages",
+            "printedName": "chatMessages",
+            "usr": "s:9AgentCore8LLMAgentC12chatMessagesSay7LLMCore10LLMMessageVGvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s9AgentCore8LLMAgentC12clearContextyyF",
+            "moduleName": "AgentCore",
+            "name": "clearContext",
+            "printedName": "clearContext()",
+            "usr": "s:9AgentCore8LLMAgentC12clearContextyyF"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UnownedSerialExecutor",
+                    "printedName": "_Concurrency.UnownedSerialExecutor",
+                    "usr": "s:Sce"
+                  }
+                ],
+                "declAttributes": [
+                  "Final"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore8LLMAgentC15unownedExecutorScevg",
+                "moduleName": "AgentCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:9AgentCore8LLMAgentC15unownedExecutorScevg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UnownedSerialExecutor",
+                "printedName": "_Concurrency.UnownedSerialExecutor",
+                "usr": "s:Sce"
+              }
+            ],
+            "declAttributes": [
+              "Available",
+              "Available",
+              "Available",
+              "Available",
+              "Final",
+              "Nonisolated",
+              "Semantics"
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "intro_Macosx": "10.15",
+            "intro_iOS": "13.0",
+            "intro_tvOS": "13.0",
+            "intro_watchOS": "6.0",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore8LLMAgentC15unownedExecutorScevp",
+            "moduleName": "AgentCore",
+            "name": "unownedExecutor",
+            "printedName": "unownedExecutor",
+            "usr": "s:9AgentCore8LLMAgentC15unownedExecutorScevp"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sScA",
+            "name": "Actor",
+            "printedName": "Actor",
+            "usr": "s:ScA"
+          }
+        ],
+        "declKind": "Class",
+        "kind": "TypeDecl",
+        "mangledName": "$s9AgentCore8LLMAgentC",
+        "moduleName": "AgentCore",
+        "name": "LLMAgent",
+        "printedName": "LLMAgent",
+        "usr": "s:9AgentCore8LLMAgentC"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMAgentTransactionToken",
+                "printedName": "AgentCore.LLMAgentTransactionToken",
+                "usr": "s:9AgentCore24LLMAgentTransactionTokenV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMAgentTransactionToken",
+                "printedName": "AgentCore.LLMAgentTransactionToken",
+                "usr": "s:9AgentCore24LLMAgentTransactionTokenV"
+              }
+            ],
+            "declAttributes": [
+              "Implements"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s9AgentCore24LLMAgentTransactionTokenV23__derived_struct_equalsySbAC_ACtFZ",
+            "moduleName": "AgentCore",
+            "name": "__derived_struct_equals",
+            "printedName": "__derived_struct_equals(_:_:)",
+            "static": true,
+            "usr": "s:9AgentCore24LLMAgentTransactionTokenV23__derived_struct_equalsySbAC_ACtFZ"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Hasher",
+                "paramValueOwnership": "InOut",
+                "printedName": "Swift.Hasher",
+                "usr": "s:s6HasherV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s9AgentCore24LLMAgentTransactionTokenV4hash4intoys6HasherVz_tF",
+            "moduleName": "AgentCore",
+            "name": "hash",
+            "printedName": "hash(into:)",
+            "usr": "s:9AgentCore24LLMAgentTransactionTokenV4hash4intoys6HasherVz_tF"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore24LLMAgentTransactionTokenV9hashValueSivg",
+                "moduleName": "AgentCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:9AgentCore24LLMAgentTransactionTokenV9hashValueSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "kind": "Var",
+            "mangledName": "$s9AgentCore24LLMAgentTransactionTokenV9hashValueSivp",
+            "moduleName": "AgentCore",
+            "name": "hashValue",
+            "printedName": "hashValue",
+            "usr": "s:9AgentCore24LLMAgentTransactionTokenV9hashValueSivp"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSH",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s9AgentCore24LLMAgentTransactionTokenV",
+        "moduleName": "AgentCore",
+        "name": "LLMAgentTransactionToken",
+        "printedName": "LLMAgentTransactionToken",
+        "usr": "s:9AgentCore24LLMAgentTransactionTokenV"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "LLMAgentEvent",
+                "printedName": "AgentCore.LLMAgentEvent",
+                "usr": "s:9AgentCore13LLMAgentEventO"
+              }
+            ],
+            "declKind": "TypeAlias",
+            "kind": "TypeAlias",
+            "mangledName": "$s9AgentCore28LLMAgentStreamingTransactionV7Elementa",
+            "moduleName": "AgentCore",
+            "name": "Element",
+            "printedName": "Element",
+            "usr": "s:9AgentCore28LLMAgentStreamingTransactionV7Elementa"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Iterator",
+                "printedName": "_Concurrency.AsyncThrowingStream<AgentCore.LLMAgentEvent, any Swift.Error>.Iterator",
+                "usr": "s:Scs8IteratorV"
+              }
+            ],
+            "declKind": "TypeAlias",
+            "kind": "TypeAlias",
+            "mangledName": "$s9AgentCore28LLMAgentStreamingTransactionV13AsyncIteratora",
+            "moduleName": "AgentCore",
+            "name": "AsyncIterator",
+            "printedName": "AsyncIterator",
+            "usr": "s:9AgentCore28LLMAgentStreamingTransactionV13AsyncIteratora"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMAgentTransactionToken",
+                    "printedName": "AgentCore.LLMAgentTransactionToken",
+                    "usr": "s:9AgentCore24LLMAgentTransactionTokenV"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore28LLMAgentStreamingTransactionV5tokenAA0cE5TokenVvg",
+                "moduleName": "AgentCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:9AgentCore28LLMAgentStreamingTransactionV5tokenAA0cE5TokenVvg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "LLMAgentTransactionToken",
+                "printedName": "AgentCore.LLMAgentTransactionToken",
+                "usr": "s:9AgentCore24LLMAgentTransactionTokenV"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s9AgentCore28LLMAgentStreamingTransactionV5tokenAA0cE5TokenVvp",
+            "moduleName": "AgentCore",
+            "name": "token",
+            "printedName": "token",
+            "usr": "s:9AgentCore28LLMAgentStreamingTransactionV5tokenAA0cE5TokenVvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentEvent",
+                        "printedName": "AgentCore.LLMAgentEvent",
+                        "usr": "s:9AgentCore13LLMAgentEventO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Error",
+                        "printedName": "any Swift.Error",
+                        "usr": "s:s5ErrorP"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "AsyncThrowingStream",
+                    "printedName": "_Concurrency.AsyncThrowingStream<AgentCore.LLMAgentEvent, any Swift.Error>",
+                    "usr": "s:Scs"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore28LLMAgentStreamingTransactionV6eventsScsyAA0C5EventOs5Error_pGvg",
+                "moduleName": "AgentCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:9AgentCore28LLMAgentStreamingTransactionV6eventsScsyAA0C5EventOs5Error_pGvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMAgentEvent",
+                    "printedName": "AgentCore.LLMAgentEvent",
+                    "usr": "s:9AgentCore13LLMAgentEventO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Error",
+                    "printedName": "any Swift.Error",
+                    "usr": "s:s5ErrorP"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "AsyncThrowingStream",
+                "printedName": "_Concurrency.AsyncThrowingStream<AgentCore.LLMAgentEvent, any Swift.Error>",
+                "usr": "s:Scs"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s9AgentCore28LLMAgentStreamingTransactionV6eventsScsyAA0C5EventOs5Error_pGvp",
+            "moduleName": "AgentCore",
+            "name": "events",
+            "printedName": "events",
+            "usr": "s:9AgentCore28LLMAgentStreamingTransactionV6eventsScsyAA0C5EventOs5Error_pGvp"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Iterator",
+                    "printedName": "_Concurrency.AsyncThrowingStream<AgentCore.LLMAgentEvent, any Swift.Error>.Iterator",
+                    "usr": "s:Scs8IteratorV"
+                  }
+                ],
+                "kind": "TypeNameAlias",
+                "name": "AsyncIterator",
+                "printedName": "AgentCore.LLMAgentStreamingTransaction.AsyncIterator"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s9AgentCore28LLMAgentStreamingTransactionV17makeAsyncIteratorScs0H0VyAA0C5EventOs5Error_p_GyF",
+            "moduleName": "AgentCore",
+            "name": "makeAsyncIterator",
+            "printedName": "makeAsyncIterator()",
+            "usr": "s:9AgentCore28LLMAgentStreamingTransactionV17makeAsyncIteratorScs0H0VyAA0C5EventOs5Error_p_GyF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Error",
+                    "printedName": "any Swift.Error",
+                    "usr": "s:s5ErrorP"
+                  }
+                ],
+                "kind": "TypeNameAlias",
+                "name": "__AsyncIteratorProtocol_Failure",
+                "printedName": "_Concurrency.AsyncThrowingStream<AgentCore.LLMAgentEvent, any Swift.Error>.Iterator.__AsyncIteratorProtocol_Failure"
+              }
+            ],
+            "declAttributes": [
+              "Available",
+              "Available",
+              "Available",
+              "Available",
+              "Available",
+              "Implements"
+            ],
+            "declKind": "TypeAlias",
+            "implicit": true,
+            "intro_Macosx": "15.0",
+            "intro_iOS": "18.0",
+            "intro_tvOS": "18.0",
+            "intro_watchOS": "11.0",
+            "kind": "TypeAlias",
+            "mangledName": "$s9AgentCore28LLMAgentStreamingTransactionV23__AsyncSequence_Failurea",
+            "moduleName": "AgentCore",
+            "name": "__AsyncSequence_Failure",
+            "printedName": "__AsyncSequence_Failure",
+            "usr": "s:9AgentCore28LLMAgentStreamingTransactionV23__AsyncSequence_Failurea"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Iterator",
+                        "printedName": "_Concurrency.AsyncThrowingStream<AgentCore.LLMAgentEvent, any Swift.Error>.Iterator",
+                        "usr": "s:Scs8IteratorV"
+                      }
+                    ],
+                    "kind": "TypeNameAlias",
+                    "name": "AsyncIterator",
+                    "printedName": "AgentCore.LLMAgentStreamingTransaction.AsyncIterator"
+                  }
+                ],
+                "kind": "TypeWitness",
+                "name": "AsyncIterator",
+                "printedName": "AsyncIterator"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentEvent",
+                        "printedName": "AgentCore.LLMAgentEvent",
+                        "usr": "s:9AgentCore13LLMAgentEventO"
+                      }
+                    ],
+                    "kind": "TypeNameAlias",
+                    "name": "Element",
+                    "printedName": "AgentCore.LLMAgentStreamingTransaction.Element"
+                  }
+                ],
+                "kind": "TypeWitness",
+                "name": "Element",
+                "printedName": "Element"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Error",
+                        "printedName": "any Swift.Error",
+                        "usr": "s:s5ErrorP"
+                      }
+                    ],
+                    "kind": "TypeNameAlias",
+                    "name": "__AsyncIteratorProtocol_Failure",
+                    "printedName": "_Concurrency.AsyncThrowingStream<AgentCore.LLMAgentEvent, any Swift.Error>.Iterator.__AsyncIteratorProtocol_Failure"
+                  }
+                ],
+                "kind": "TypeWitness",
+                "name": "Failure",
+                "printedName": "Failure"
+              }
+            ],
+            "kind": "Conformance",
+            "mangledName": "$sSci",
+            "name": "AsyncSequence",
+            "printedName": "AsyncSequence",
+            "usr": "s:Sci"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s9AgentCore28LLMAgentStreamingTransactionV",
+        "moduleName": "AgentCore",
+        "name": "LLMAgentStreamingTransaction",
+        "printedName": "LLMAgentStreamingTransaction",
+        "usr": "s:9AgentCore28LLMAgentStreamingTransactionV"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMAgentTransactionError",
+                    "printedName": "AgentCore.LLMAgentTransactionError",
+                    "usr": "s:9AgentCore24LLMAgentTransactionErrorO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentTransactionError",
+                        "printedName": "AgentCore.LLMAgentTransactionError",
+                        "usr": "s:9AgentCore24LLMAgentTransactionErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "AgentCore.LLMAgentTransactionError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(AgentCore.LLMAgentTransactionError.Type) -> AgentCore.LLMAgentTransactionError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore24LLMAgentTransactionErrorO10notPendingyA2CmF",
+            "moduleName": "AgentCore",
+            "name": "notPending",
+            "printedName": "notPending",
+            "usr": "s:9AgentCore24LLMAgentTransactionErrorO10notPendingyA2CmF"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore24LLMAgentTransactionErrorO16errorDescriptionSSSgvg",
+                "moduleName": "AgentCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:9AgentCore24LLMAgentTransactionErrorO16errorDescriptionSSSgvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore24LLMAgentTransactionErrorO16errorDescriptionSSSgvp",
+            "moduleName": "AgentCore",
+            "name": "errorDescription",
+            "printedName": "errorDescription",
+            "usr": "s:9AgentCore24LLMAgentTransactionErrorO16errorDescriptionSSSgvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMAgentTransactionError",
+                "printedName": "AgentCore.LLMAgentTransactionError",
+                "usr": "s:9AgentCore24LLMAgentTransactionErrorO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMAgentTransactionError",
+                "printedName": "AgentCore.LLMAgentTransactionError",
+                "usr": "s:9AgentCore24LLMAgentTransactionErrorO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s9AgentCore24LLMAgentTransactionErrorO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "AgentCore",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:9AgentCore24LLMAgentTransactionErrorO21__derived_enum_equalsySbAC_ACtFZ"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Hasher",
+                "paramValueOwnership": "InOut",
+                "printedName": "Swift.Hasher",
+                "usr": "s:s6HasherV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s9AgentCore24LLMAgentTransactionErrorO4hash4intoys6HasherVz_tF",
+            "moduleName": "AgentCore",
+            "name": "hash",
+            "printedName": "hash(into:)",
+            "usr": "s:9AgentCore24LLMAgentTransactionErrorO4hash4intoys6HasherVz_tF"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore24LLMAgentTransactionErrorO9hashValueSivg",
+                "moduleName": "AgentCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:9AgentCore24LLMAgentTransactionErrorO9hashValueSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "kind": "Var",
+            "mangledName": "$s9AgentCore24LLMAgentTransactionErrorO9hashValueSivp",
+            "moduleName": "AgentCore",
+            "name": "hashValue",
+            "printedName": "hashValue",
+            "usr": "s:9AgentCore24LLMAgentTransactionErrorO9hashValueSivp"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$s10Foundation14LocalizedErrorP",
+            "name": "LocalizedError",
+            "printedName": "LocalizedError",
+            "usr": "s:10Foundation14LocalizedErrorP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss5ErrorP",
+            "name": "Error",
+            "printedName": "Error",
+            "usr": "s:s5ErrorP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSH",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s9AgentCore24LLMAgentTransactionErrorO",
+        "moduleName": "AgentCore",
+        "name": "LLMAgentTransactionError",
+        "printedName": "LLMAgentTransactionError",
+        "usr": "s:9AgentCore24LLMAgentTransactionErrorO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMAgentError",
+                    "printedName": "AgentCore.LLMAgentError",
+                    "usr": "s:9AgentCore13LLMAgentErrorO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentError",
+                        "printedName": "AgentCore.LLMAgentError",
+                        "usr": "s:9AgentCore13LLMAgentErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "AgentCore.LLMAgentError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(AgentCore.LLMAgentError.Type) -> AgentCore.LLMAgentError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore13LLMAgentErrorO17tooManyToolRoundsyA2CmF",
+            "moduleName": "AgentCore",
+            "name": "tooManyToolRounds",
+            "printedName": "tooManyToolRounds",
+            "usr": "s:9AgentCore13LLMAgentErrorO17tooManyToolRoundsyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMAgentError",
+                    "printedName": "AgentCore.LLMAgentError",
+                    "usr": "s:9AgentCore13LLMAgentErrorO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentError",
+                        "printedName": "AgentCore.LLMAgentError",
+                        "usr": "s:9AgentCore13LLMAgentErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "AgentCore.LLMAgentError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(AgentCore.LLMAgentError.Type) -> AgentCore.LLMAgentError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore13LLMAgentErrorO13emptyResponseyA2CmF",
+            "moduleName": "AgentCore",
+            "name": "emptyResponse",
+            "printedName": "emptyResponse",
+            "usr": "s:9AgentCore13LLMAgentErrorO13emptyResponseyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMAgentError",
+                    "printedName": "AgentCore.LLMAgentError",
+                    "usr": "s:9AgentCore13LLMAgentErrorO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentError",
+                        "printedName": "AgentCore.LLMAgentError",
+                        "usr": "s:9AgentCore13LLMAgentErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "AgentCore.LLMAgentError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(AgentCore.LLMAgentError.Type) -> AgentCore.LLMAgentError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore13LLMAgentErrorO23missingCompletedMessageyA2CmF",
+            "moduleName": "AgentCore",
+            "name": "missingCompletedMessage",
+            "printedName": "missingCompletedMessage",
+            "usr": "s:9AgentCore13LLMAgentErrorO23missingCompletedMessageyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMAgentError",
+                    "printedName": "AgentCore.LLMAgentError",
+                    "usr": "s:9AgentCore13LLMAgentErrorO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentError",
+                        "printedName": "AgentCore.LLMAgentError",
+                        "usr": "s:9AgentCore13LLMAgentErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "AgentCore.LLMAgentError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(AgentCore.LLMAgentError.Type) -> AgentCore.LLMAgentError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore13LLMAgentErrorO23mixedContentAndToolCallyA2CmF",
+            "moduleName": "AgentCore",
+            "name": "mixedContentAndToolCall",
+            "printedName": "mixedContentAndToolCall",
+            "usr": "s:9AgentCore13LLMAgentErrorO23mixedContentAndToolCallyA2CmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentError",
+                        "printedName": "AgentCore.LLMAgentError",
+                        "usr": "s:9AgentCore13LLMAgentErrorO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(index: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int) -> AgentCore.LLMAgentError"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentError",
+                        "printedName": "AgentCore.LLMAgentError",
+                        "usr": "s:9AgentCore13LLMAgentErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "AgentCore.LLMAgentError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(AgentCore.LLMAgentError.Type) -> (Swift.Int) -> AgentCore.LLMAgentError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore13LLMAgentErrorO18incompleteToolCallyACSi_tcACmF",
+            "moduleName": "AgentCore",
+            "name": "incompleteToolCall",
+            "printedName": "incompleteToolCall",
+            "usr": "s:9AgentCore13LLMAgentErrorO18incompleteToolCallyACSi_tcACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentError",
+                        "printedName": "AgentCore.LLMAgentError",
+                        "usr": "s:9AgentCore13LLMAgentErrorO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(index: Swift.Int)"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Int) -> AgentCore.LLMAgentError"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentError",
+                        "printedName": "AgentCore.LLMAgentError",
+                        "usr": "s:9AgentCore13LLMAgentErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "AgentCore.LLMAgentError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(AgentCore.LLMAgentError.Type) -> (Swift.Int) -> AgentCore.LLMAgentError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore13LLMAgentErrorO26malformedToolCallArgumentsyACSi_tcACmF",
+            "moduleName": "AgentCore",
+            "name": "malformedToolCallArguments",
+            "printedName": "malformedToolCallArguments",
+            "usr": "s:9AgentCore13LLMAgentErrorO26malformedToolCallArgumentsyACSi_tcACmF"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore13LLMAgentErrorO16errorDescriptionSSSgvg",
+                "moduleName": "AgentCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:9AgentCore13LLMAgentErrorO16errorDescriptionSSSgvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore13LLMAgentErrorO16errorDescriptionSSSgvp",
+            "moduleName": "AgentCore",
+            "name": "errorDescription",
+            "printedName": "errorDescription",
+            "usr": "s:9AgentCore13LLMAgentErrorO16errorDescriptionSSSgvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMAgentError",
+                "printedName": "AgentCore.LLMAgentError",
+                "usr": "s:9AgentCore13LLMAgentErrorO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMAgentError",
+                "printedName": "AgentCore.LLMAgentError",
+                "usr": "s:9AgentCore13LLMAgentErrorO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s9AgentCore13LLMAgentErrorO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "AgentCore",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:9AgentCore13LLMAgentErrorO21__derived_enum_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$s10Foundation14LocalizedErrorP",
+            "name": "LocalizedError",
+            "printedName": "LocalizedError",
+            "usr": "s:10Foundation14LocalizedErrorP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss5ErrorP",
+            "name": "Error",
+            "printedName": "Error",
+            "usr": "s:s5ErrorP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s9AgentCore13LLMAgentErrorO",
+        "moduleName": "AgentCore",
+        "name": "LLMAgentError",
+        "printedName": "LLMAgentError",
+        "usr": "s:9AgentCore13LLMAgentErrorO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMAgentStreamError",
+                    "printedName": "AgentCore.LLMAgentStreamError",
+                    "usr": "s:9AgentCore19LLMAgentStreamErrorO"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentStreamError",
+                        "printedName": "AgentCore.LLMAgentStreamError",
+                        "usr": "s:9AgentCore19LLMAgentStreamErrorO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "AgentCore.LLMAgentStreamError.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(AgentCore.LLMAgentStreamError.Type) -> AgentCore.LLMAgentStreamError"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore19LLMAgentStreamErrorO37discardPartialMixedContentAndToolCallyA2CmF",
+            "moduleName": "AgentCore",
+            "name": "discardPartialMixedContentAndToolCall",
+            "printedName": "discardPartialMixedContentAndToolCall",
+            "usr": "s:9AgentCore19LLMAgentStreamErrorO37discardPartialMixedContentAndToolCallyA2CmF"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore19LLMAgentStreamErrorO16errorDescriptionSSSgvg",
+                "moduleName": "AgentCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:9AgentCore19LLMAgentStreamErrorO16errorDescriptionSSSgvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore19LLMAgentStreamErrorO16errorDescriptionSSSgvp",
+            "moduleName": "AgentCore",
+            "name": "errorDescription",
+            "printedName": "errorDescription",
+            "usr": "s:9AgentCore19LLMAgentStreamErrorO16errorDescriptionSSSgvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMAgentStreamError",
+                "printedName": "AgentCore.LLMAgentStreamError",
+                "usr": "s:9AgentCore19LLMAgentStreamErrorO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMAgentStreamError",
+                "printedName": "AgentCore.LLMAgentStreamError",
+                "usr": "s:9AgentCore19LLMAgentStreamErrorO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s9AgentCore19LLMAgentStreamErrorO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "AgentCore",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:9AgentCore19LLMAgentStreamErrorO21__derived_enum_equalsySbAC_ACtFZ"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Hasher",
+                "paramValueOwnership": "InOut",
+                "printedName": "Swift.Hasher",
+                "usr": "s:s6HasherV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s9AgentCore19LLMAgentStreamErrorO4hash4intoys6HasherVz_tF",
+            "moduleName": "AgentCore",
+            "name": "hash",
+            "printedName": "hash(into:)",
+            "usr": "s:9AgentCore19LLMAgentStreamErrorO4hash4intoys6HasherVz_tF"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore19LLMAgentStreamErrorO9hashValueSivg",
+                "moduleName": "AgentCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:9AgentCore19LLMAgentStreamErrorO9hashValueSivg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "kind": "Var",
+            "mangledName": "$s9AgentCore19LLMAgentStreamErrorO9hashValueSivp",
+            "moduleName": "AgentCore",
+            "name": "hashValue",
+            "printedName": "hashValue",
+            "usr": "s:9AgentCore19LLMAgentStreamErrorO9hashValueSivp"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$s10Foundation14LocalizedErrorP",
+            "name": "LocalizedError",
+            "printedName": "LocalizedError",
+            "usr": "s:10Foundation14LocalizedErrorP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss5ErrorP",
+            "name": "Error",
+            "printedName": "Error",
+            "usr": "s:s5ErrorP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSH",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s9AgentCore19LLMAgentStreamErrorO",
+        "moduleName": "AgentCore",
+        "name": "LLMAgentStreamError",
+        "printedName": "LLMAgentStreamError",
+        "usr": "s:9AgentCore19LLMAgentStreamErrorO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentEvent",
+                        "printedName": "AgentCore.LLMAgentEvent",
+                        "usr": "s:9AgentCore13LLMAgentEventO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.String) -> AgentCore.LLMAgentEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentEvent",
+                        "printedName": "AgentCore.LLMAgentEvent",
+                        "usr": "s:9AgentCore13LLMAgentEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "AgentCore.LLMAgentEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(AgentCore.LLMAgentEvent.Type) -> (Swift.String) -> AgentCore.LLMAgentEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore13LLMAgentEventO8toolCallyACSScACmF",
+            "moduleName": "AgentCore",
+            "name": "toolCall",
+            "printedName": "toolCall",
+            "usr": "s:9AgentCore13LLMAgentEventO8toolCallyACSScACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentEvent",
+                        "printedName": "AgentCore.LLMAgentEvent",
+                        "usr": "s:9AgentCore13LLMAgentEventO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.String) -> AgentCore.LLMAgentEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentEvent",
+                        "printedName": "AgentCore.LLMAgentEvent",
+                        "usr": "s:9AgentCore13LLMAgentEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "AgentCore.LLMAgentEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(AgentCore.LLMAgentEvent.Type) -> (Swift.String) -> AgentCore.LLMAgentEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore13LLMAgentEventO12contentDeltayACSScACmF",
+            "moduleName": "AgentCore",
+            "name": "contentDelta",
+            "printedName": "contentDelta",
+            "usr": "s:9AgentCore13LLMAgentEventO12contentDeltayACSScACmF"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentEvent",
+                        "printedName": "AgentCore.LLMAgentEvent",
+                        "usr": "s:9AgentCore13LLMAgentEventO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.String) -> AgentCore.LLMAgentEvent"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMAgentEvent",
+                        "printedName": "AgentCore.LLMAgentEvent",
+                        "usr": "s:9AgentCore13LLMAgentEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "AgentCore.LLMAgentEvent.Type"
+                  }
+                ],
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(AgentCore.LLMAgentEvent.Type) -> (Swift.String) -> AgentCore.LLMAgentEvent"
+              }
+            ],
+            "declKind": "EnumElement",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore13LLMAgentEventO9completedyACSScACmF",
+            "moduleName": "AgentCore",
+            "name": "completed",
+            "printedName": "completed",
+            "usr": "s:9AgentCore13LLMAgentEventO9completedyACSScACmF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMAgentEvent",
+                "printedName": "AgentCore.LLMAgentEvent",
+                "usr": "s:9AgentCore13LLMAgentEventO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMAgentEvent",
+                "printedName": "AgentCore.LLMAgentEvent",
+                "usr": "s:9AgentCore13LLMAgentEventO"
+              }
+            ],
+            "declAttributes": [
+              "Implements",
+              "Semantics"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s9AgentCore13LLMAgentEventO21__derived_enum_equalsySbAC_ACtFZ",
+            "moduleName": "AgentCore",
+            "name": "__derived_enum_equals",
+            "printedName": "__derived_enum_equals(_:_:)",
+            "static": true,
+            "usr": "s:9AgentCore13LLMAgentEventO21__derived_enum_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s9AgentCore13LLMAgentEventO",
+        "moduleName": "AgentCore",
+        "name": "LLMAgentEvent",
+        "printedName": "LLMAgentEvent",
+        "usr": "s:9AgentCore13LLMAgentEventO"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "NoopToolExecutor",
+                "printedName": "AgentCore.NoopToolExecutor",
+                "usr": "s:9AgentCore16NoopToolExecutorV"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s9AgentCore16NoopToolExecutorVACycfc",
+            "moduleName": "AgentCore",
+            "name": "init",
+            "printedName": "init()",
+            "usr": "s:9AgentCore16NoopToolExecutorVACycfc"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMTool",
+                        "printedName": "LLMCore.LLMTool",
+                        "usr": "s:7LLMCore7LLMToolV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[LLMCore.LLMTool]",
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore16NoopToolExecutorV15toolDefinitionsSay7LLMCore7LLMToolVGvg",
+                "moduleName": "AgentCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:9AgentCore16NoopToolExecutorV15toolDefinitionsSay7LLMCore7LLMToolVGvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMTool",
+                    "printedName": "LLMCore.LLMTool",
+                    "usr": "s:7LLMCore7LLMToolV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[LLMCore.LLMTool]",
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Var",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore16NoopToolExecutorV15toolDefinitionsSay7LLMCore7LLMToolVGvp",
+            "moduleName": "AgentCore",
+            "name": "toolDefinitions",
+            "printedName": "toolDefinitions",
+            "usr": "s:9AgentCore16NoopToolExecutorV15toolDefinitionsSay7LLMCore7LLMToolVGvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMToolCall",
+                "printedName": "LLMCore.LLMToolCall",
+                "usr": "s:7LLMCore11LLMToolCallV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s9AgentCore16NoopToolExecutorV7executeySS7LLMCore11LLMToolCallVYaKF",
+            "moduleName": "AgentCore",
+            "name": "execute",
+            "printedName": "execute(_:)",
+            "throwing": true,
+            "usr": "s:9AgentCore16NoopToolExecutorV7executeySS7LLMCore11LLMToolCallVYaKF"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$s7LLMCore15LLMToolExecutorP",
+            "name": "LLMToolExecutor",
+            "printedName": "LLMToolExecutor",
+            "usr": "s:7LLMCore15LLMToolExecutorP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s9AgentCore16NoopToolExecutorV",
+        "moduleName": "AgentCore",
+        "name": "NoopToolExecutor",
+        "printedName": "NoopToolExecutor",
+        "usr": "s:9AgentCore16NoopToolExecutorV"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore14LLMChatContextV12systemPromptSSSgvg",
+                "moduleName": "AgentCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:9AgentCore14LLMChatContextV12systemPromptSSSgvg"
+              },
+              {
+                "accessorKind": "set",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore14LLMChatContextV12systemPromptSSSgvs",
+                "moduleName": "AgentCore",
+                "name": "Set",
+                "printedName": "Set()",
+                "usr": "s:9AgentCore14LLMChatContextV12systemPromptSSSgvs"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "usr": "s:Sq"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "kind": "Var",
+            "mangledName": "$s9AgentCore14LLMChatContextV12systemPromptSSSgvp",
+            "moduleName": "AgentCore",
+            "name": "systemPrompt",
+            "printedName": "systemPrompt",
+            "usr": "s:9AgentCore14LLMChatContextV12systemPromptSSSgvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore14LLMChatContextV11maxMessagesSivg",
+                "moduleName": "AgentCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:9AgentCore14LLMChatContextV11maxMessagesSivg"
+              },
+              {
+                "accessorKind": "set",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore14LLMChatContextV11maxMessagesSivs",
+                "moduleName": "AgentCore",
+                "name": "Set",
+                "printedName": "Set()",
+                "usr": "s:9AgentCore14LLMChatContextV11maxMessagesSivs"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "kind": "Var",
+            "mangledName": "$s9AgentCore14LLMChatContextV11maxMessagesSivp",
+            "moduleName": "AgentCore",
+            "name": "maxMessages",
+            "printedName": "maxMessages",
+            "usr": "s:9AgentCore14LLMChatContextV11maxMessagesSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore14LLMChatContextV9maxTokensSivg",
+                "moduleName": "AgentCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:9AgentCore14LLMChatContextV9maxTokensSivg"
+              },
+              {
+                "accessorKind": "set",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore14LLMChatContextV9maxTokensSivs",
+                "moduleName": "AgentCore",
+                "name": "Set",
+                "printedName": "Set()",
+                "usr": "s:9AgentCore14LLMChatContextV9maxTokensSivs"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declAttributes": [
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "kind": "Var",
+            "mangledName": "$s9AgentCore14LLMChatContextV9maxTokensSivp",
+            "moduleName": "AgentCore",
+            "name": "maxTokens",
+            "printedName": "maxTokens",
+            "usr": "s:9AgentCore14LLMChatContextV9maxTokensSivp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMMessage",
+                        "printedName": "LLMCore.LLMMessage",
+                        "usr": "s:7LLMCore10LLMMessageV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[LLMCore.LLMMessage]",
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore14LLMChatContextV8messagesSay7LLMCore10LLMMessageVGvg",
+                "moduleName": "AgentCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:9AgentCore14LLMChatContextV8messagesSay7LLMCore10LLMMessageVGvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMMessage",
+                    "printedName": "LLMCore.LLMMessage",
+                    "usr": "s:7LLMCore10LLMMessageV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[LLMCore.LLMMessage]",
+                "usr": "s:Sa"
+              }
+            ],
+            "declAttributes": [
+              "SetterAccess",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "kind": "Var",
+            "mangledName": "$s9AgentCore14LLMChatContextV8messagesSay7LLMCore10LLMMessageVGvp",
+            "moduleName": "AgentCore",
+            "name": "messages",
+            "printedName": "messages",
+            "usr": "s:9AgentCore14LLMChatContextV8messagesSay7LLMCore10LLMMessageVGvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "LLMChatContext",
+                "printedName": "AgentCore.LLMChatContext",
+                "usr": "s:9AgentCore14LLMChatContextV"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "usr": "s:Sq"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s9AgentCore14LLMChatContextV12systemPrompt11maxMessages0G6TokensACSSSg_S2itcfc",
+            "moduleName": "AgentCore",
+            "name": "init",
+            "printedName": "init(systemPrompt:maxMessages:maxTokens:)",
+            "usr": "s:9AgentCore14LLMChatContextV12systemPrompt11maxMessages0G6TokensACSSSg_S2itcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s9AgentCore14LLMChatContextV10appendUseryySSF",
+            "moduleName": "AgentCore",
+            "name": "appendUser",
+            "printedName": "appendUser(_:)",
+            "usr": "s:9AgentCore14LLMChatContextV10appendUseryySSF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s9AgentCore14LLMChatContextV15appendAssistantyySSF",
+            "moduleName": "AgentCore",
+            "name": "appendAssistant",
+            "printedName": "appendAssistant(_:)",
+            "usr": "s:9AgentCore14LLMChatContextV15appendAssistantyySSF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Role",
+                "printedName": "LLMCore.LLMMessage.Role",
+                "usr": "s:7LLMCore10LLMMessageV4RoleO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s9AgentCore14LLMChatContextV6appendyy7LLMCore10LLMMessageV4RoleO_SStF",
+            "moduleName": "AgentCore",
+            "name": "append",
+            "printedName": "append(_:_:)",
+            "usr": "s:9AgentCore14LLMChatContextV6appendyy7LLMCore10LLMMessageV4RoleO_SStF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "Mutating",
+            "kind": "Function",
+            "mangledName": "$s9AgentCore14LLMChatContextV5clearyyF",
+            "moduleName": "AgentCore",
+            "name": "clear",
+            "printedName": "clear()",
+            "usr": "s:9AgentCore14LLMChatContextV5clearyyF"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMMessage",
+                        "printedName": "LLMCore.LLMMessage",
+                        "usr": "s:7LLMCore10LLMMessageV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[LLMCore.LLMMessage]",
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s9AgentCore14LLMChatContextV12chatMessagesSay7LLMCore10LLMMessageVGvg",
+                "moduleName": "AgentCore",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:9AgentCore14LLMChatContextV12chatMessagesSay7LLMCore10LLMMessageVGvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMMessage",
+                    "printedName": "LLMCore.LLMMessage",
+                    "usr": "s:7LLMCore10LLMMessageV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[LLMCore.LLMMessage]",
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Var",
+            "kind": "Var",
+            "mangledName": "$s9AgentCore14LLMChatContextV12chatMessagesSay7LLMCore10LLMMessageVGvp",
+            "moduleName": "AgentCore",
+            "name": "chatMessages",
+            "printedName": "chatMessages",
+            "usr": "s:9AgentCore14LLMChatContextV12chatMessagesSay7LLMCore10LLMMessageVGvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMChatContext",
+                "printedName": "AgentCore.LLMChatContext",
+                "usr": "s:9AgentCore14LLMChatContextV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMChatContext",
+                "printedName": "AgentCore.LLMChatContext",
+                "usr": "s:9AgentCore14LLMChatContextV"
+              }
+            ],
+            "declAttributes": [
+              "Implements"
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s9AgentCore14LLMChatContextV23__derived_struct_equalsySbAC_ACtFZ",
+            "moduleName": "AgentCore",
+            "name": "__derived_struct_equals",
+            "printedName": "__derived_struct_equals(_:_:)",
+            "static": true,
+            "usr": "s:9AgentCore14LLMChatContextV23__derived_struct_equalsySbAC_ACtFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSQ",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s9AgentCore14LLMChatContextV",
+        "moduleName": "AgentCore",
+        "name": "LLMChatContext",
+        "printedName": "LLMChatContext",
+        "usr": "s:9AgentCore14LLMChatContextV"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Double",
+                            "printedName": "Swift.Double",
+                            "usr": "s:Sd"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.Double?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ConfigV11temperatureSdSgvg",
+                    "moduleName": "AgentCore",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:9AgentCore20LLMStatelessToolLoopV6ConfigV11temperatureSdSgvg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Double",
+                            "printedName": "Swift.Double",
+                            "usr": "s:Sd"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.Double?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ConfigV11temperatureSdSgvs",
+                    "moduleName": "AgentCore",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:9AgentCore20LLMStatelessToolLoopV6ConfigV11temperatureSdSgvs"
+                  }
+                ],
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Double",
+                        "printedName": "Swift.Double",
+                        "usr": "s:Sd"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.Double?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "HasInitialValue",
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ConfigV11temperatureSdSgvp",
+                "moduleName": "AgentCore",
+                "name": "temperature",
+                "printedName": "temperature",
+                "usr": "s:9AgentCore20LLMStatelessToolLoopV6ConfigV11temperatureSdSgvp"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.Int?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ConfigV9maxTokensSiSgvg",
+                    "moduleName": "AgentCore",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:9AgentCore20LLMStatelessToolLoopV6ConfigV9maxTokensSiSgvg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Int",
+                            "printedName": "Swift.Int",
+                            "usr": "s:Si"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.Int?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ConfigV9maxTokensSiSgvs",
+                    "moduleName": "AgentCore",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:9AgentCore20LLMStatelessToolLoopV6ConfigV9maxTokensSiSgvs"
+                  }
+                ],
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.Int?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "HasInitialValue",
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ConfigV9maxTokensSiSgvp",
+                "moduleName": "AgentCore",
+                "name": "maxTokens",
+                "printedName": "maxTokens",
+                "usr": "s:9AgentCore20LLMStatelessToolLoopV6ConfigV9maxTokensSiSgvp"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ConfigV03maxD6RoundsSivg",
+                    "moduleName": "AgentCore",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:9AgentCore20LLMStatelessToolLoopV6ConfigV03maxD6RoundsSivg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ConfigV03maxD6RoundsSivs",
+                    "moduleName": "AgentCore",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:9AgentCore20LLMStatelessToolLoopV6ConfigV03maxD6RoundsSivs"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ConfigV03maxD6RoundsSivp",
+                "moduleName": "AgentCore",
+                "name": "maxToolRounds",
+                "printedName": "maxToolRounds",
+                "usr": "s:9AgentCore20LLMStatelessToolLoopV6ConfigV03maxD6RoundsSivp"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Config",
+                    "printedName": "AgentCore.LLMStatelessToolLoop.Config",
+                    "usr": "s:9AgentCore20LLMStatelessToolLoopV6ConfigV"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Double",
+                        "printedName": "Swift.Double",
+                        "usr": "s:Sd"
+                      }
+                    ],
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.Double?",
+                    "usr": "s:Sq"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.Int?",
+                    "usr": "s:Sq"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Constructor",
+                "init_kind": "Designated",
+                "kind": "Constructor",
+                "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ConfigV11temperature9maxTokens0hD6RoundsAESdSg_SiSgSitcfc",
+                "moduleName": "AgentCore",
+                "name": "init",
+                "printedName": "init(temperature:maxTokens:maxToolRounds:)",
+                "usr": "s:9AgentCore20LLMStatelessToolLoopV6ConfigV11temperature9maxTokens0hD6RoundsAESdSg_SiSgSitcfc"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Config",
+                    "printedName": "AgentCore.LLMStatelessToolLoop.Config",
+                    "usr": "s:9AgentCore20LLMStatelessToolLoopV6ConfigV"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Config",
+                    "printedName": "AgentCore.LLMStatelessToolLoop.Config",
+                    "usr": "s:9AgentCore20LLMStatelessToolLoopV6ConfigV"
+                  }
+                ],
+                "declAttributes": [
+                  "Implements"
+                ],
+                "declKind": "Func",
+                "funcSelfKind": "NonMutating",
+                "implicit": true,
+                "kind": "Function",
+                "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ConfigV23__derived_struct_equalsySbAE_AEtFZ",
+                "moduleName": "AgentCore",
+                "name": "__derived_struct_equals",
+                "printedName": "__derived_struct_equals(_:_:)",
+                "static": true,
+                "usr": "s:9AgentCore20LLMStatelessToolLoopV6ConfigV23__derived_struct_equalsySbAE_AEtFZ"
+              }
+            ],
+            "conformances": [
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8CopyableP",
+                "name": "Copyable",
+                "printedName": "Copyable",
+                "usr": "s:s8CopyableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$sSQ",
+                "name": "Equatable",
+                "printedName": "Equatable",
+                "usr": "s:SQ"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss9EscapableP",
+                "name": "Escapable",
+                "printedName": "Escapable",
+                "usr": "s:s9EscapableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8SendableP",
+                "name": "Sendable",
+                "printedName": "Sendable",
+                "usr": "s:s8SendableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss16SendableMetatypeP",
+                "name": "SendableMetatype",
+                "printedName": "SendableMetatype",
+                "usr": "s:s16SendableMetatypeP"
+              }
+            ],
+            "declKind": "Struct",
+            "kind": "TypeDecl",
+            "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ConfigV",
+            "moduleName": "AgentCore",
+            "name": "Config",
+            "printedName": "Config",
+            "usr": "s:9AgentCore20LLMStatelessToolLoopV6ConfigV"
+          },
+          {
+            "children": [
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMMessage",
+                        "printedName": "LLMCore.LLMMessage",
+                        "usr": "s:7LLMCore10LLMMessageV"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ResultV7message7LLMCore10LLMMessageVvg",
+                    "moduleName": "AgentCore",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:9AgentCore20LLMStatelessToolLoopV6ResultV7message7LLMCore10LLMMessageVvg"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMMessage",
+                    "printedName": "LLMCore.LLMMessage",
+                    "usr": "s:7LLMCore10LLMMessageV"
+                  }
+                ],
+                "declAttributes": [
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "isLet": true,
+                "kind": "Var",
+                "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ResultV7message7LLMCore10LLMMessageVvp",
+                "moduleName": "AgentCore",
+                "name": "message",
+                "printedName": "message",
+                "usr": "s:9AgentCore20LLMStatelessToolLoopV6ResultV7message7LLMCore10LLMMessageVvp"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Array",
+                        "printedName": "[Swift.String]",
+                        "usr": "s:Sa"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ResultV08executedD5NamesSaySSGvg",
+                    "moduleName": "AgentCore",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:9AgentCore20LLMStatelessToolLoopV6ResultV08executedD5NamesSaySSGvg"
+                  }
+                ],
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[Swift.String]",
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declAttributes": [
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "isLet": true,
+                "kind": "Var",
+                "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ResultV08executedD5NamesSaySSGvp",
+                "moduleName": "AgentCore",
+                "name": "executedToolNames",
+                "printedName": "executedToolNames",
+                "usr": "s:9AgentCore20LLMStatelessToolLoopV6ResultV08executedD5NamesSaySSGvp"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Result",
+                    "printedName": "AgentCore.LLMStatelessToolLoop.Result",
+                    "usr": "s:9AgentCore20LLMStatelessToolLoopV6ResultV"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMMessage",
+                    "printedName": "LLMCore.LLMMessage",
+                    "usr": "s:7LLMCore10LLMMessageV"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[Swift.String]",
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declKind": "Constructor",
+                "init_kind": "Designated",
+                "kind": "Constructor",
+                "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ResultV7message08executedD5NamesAE7LLMCore10LLMMessageV_SaySSGtcfc",
+                "moduleName": "AgentCore",
+                "name": "init",
+                "printedName": "init(message:executedToolNames:)",
+                "usr": "s:9AgentCore20LLMStatelessToolLoopV6ResultV7message08executedD5NamesAE7LLMCore10LLMMessageV_SaySSGtcfc"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Result",
+                    "printedName": "AgentCore.LLMStatelessToolLoop.Result",
+                    "usr": "s:9AgentCore20LLMStatelessToolLoopV6ResultV"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Result",
+                    "printedName": "AgentCore.LLMStatelessToolLoop.Result",
+                    "usr": "s:9AgentCore20LLMStatelessToolLoopV6ResultV"
+                  }
+                ],
+                "declAttributes": [
+                  "Implements"
+                ],
+                "declKind": "Func",
+                "funcSelfKind": "NonMutating",
+                "implicit": true,
+                "kind": "Function",
+                "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ResultV23__derived_struct_equalsySbAE_AEtFZ",
+                "moduleName": "AgentCore",
+                "name": "__derived_struct_equals",
+                "printedName": "__derived_struct_equals(_:_:)",
+                "static": true,
+                "usr": "s:9AgentCore20LLMStatelessToolLoopV6ResultV23__derived_struct_equalsySbAE_AEtFZ"
+              }
+            ],
+            "conformances": [
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8CopyableP",
+                "name": "Copyable",
+                "printedName": "Copyable",
+                "usr": "s:s8CopyableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$sSQ",
+                "name": "Equatable",
+                "printedName": "Equatable",
+                "usr": "s:SQ"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss9EscapableP",
+                "name": "Escapable",
+                "printedName": "Escapable",
+                "usr": "s:s9EscapableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8SendableP",
+                "name": "Sendable",
+                "printedName": "Sendable",
+                "usr": "s:s8SendableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss16SendableMetatypeP",
+                "name": "SendableMetatype",
+                "printedName": "SendableMetatype",
+                "usr": "s:s16SendableMetatypeP"
+              }
+            ],
+            "declKind": "Struct",
+            "kind": "TypeDecl",
+            "mangledName": "$s9AgentCore20LLMStatelessToolLoopV6ResultV",
+            "moduleName": "AgentCore",
+            "name": "Result",
+            "printedName": "Result",
+            "usr": "s:9AgentCore20LLMStatelessToolLoopV6ResultV"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "LLMStatelessToolLoop",
+                "printedName": "AgentCore.LLMStatelessToolLoop",
+                "usr": "s:9AgentCore20LLMStatelessToolLoopV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMChatTransport",
+                "printedName": "any LLMCore.LLMChatTransport",
+                "usr": "s:7LLMCore16LLMChatTransportP"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMToolExecutor",
+                "printedName": "any LLMCore.LLMToolExecutor",
+                "usr": "s:7LLMCore15LLMToolExecutorP"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "Config",
+                "printedName": "AgentCore.LLMStatelessToolLoop.Config",
+                "usr": "s:9AgentCore20LLMStatelessToolLoopV6ConfigV"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s9AgentCore20LLMStatelessToolLoopV9transport8executor6configAC7LLMCore16LLMChatTransport_p_AG15LLMToolExecutor_pAC6ConfigVtcfc",
+            "moduleName": "AgentCore",
+            "name": "init",
+            "printedName": "init(transport:executor:config:)",
+            "usr": "s:9AgentCore20LLMStatelessToolLoopV9transport8executor6configAC7LLMCore16LLMChatTransport_p_AG15LLMToolExecutor_pAC6ConfigVtcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Result",
+                "printedName": "AgentCore.LLMStatelessToolLoop.Result",
+                "usr": "s:9AgentCore20LLMStatelessToolLoopV6ResultV"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMMessage",
+                    "printedName": "LLMCore.LLMMessage",
+                    "usr": "s:7LLMCore10LLMMessageV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[LLMCore.LLMMessage]",
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s9AgentCore20LLMStatelessToolLoopV8complete8messagesAC6ResultVSay7LLMCore10LLMMessageVG_tYaKF",
+            "moduleName": "AgentCore",
+            "name": "complete",
+            "printedName": "complete(messages:)",
+            "throwing": true,
+            "usr": "s:9AgentCore20LLMStatelessToolLoopV8complete8messagesAC6ResultVSay7LLMCore10LLMMessageVG_tYaKF"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s9AgentCore20LLMStatelessToolLoopV",
+        "moduleName": "AgentCore",
+        "name": "LLMStatelessToolLoop",
+        "printedName": "LLMStatelessToolLoop",
+        "usr": "s:9AgentCore20LLMStatelessToolLoopV"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s9AgentCore17LLMTokenEstimatorO8estimateySiSSFZ",
+            "moduleName": "AgentCore",
+            "name": "estimate",
+            "printedName": "estimate(_:)",
+            "static": true,
+            "usr": "s:9AgentCore17LLMTokenEstimatorO8estimateySiSSFZ"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          }
+        ],
+        "declKind": "Enum",
+        "isEnumExhaustive": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s9AgentCore17LLMTokenEstimatorO",
+        "moduleName": "AgentCore",
+        "name": "LLMTokenEstimator",
+        "printedName": "LLMTokenEstimator",
+        "usr": "s:9AgentCore17LLMTokenEstimatorO"
+      }
+    ],
+    "json_format_version": 8,
+    "kind": "Root",
+    "name": "AgentCore",
+    "printedName": "AgentCore"
+  }
+}

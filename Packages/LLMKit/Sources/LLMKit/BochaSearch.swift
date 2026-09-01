@@ -1,4 +1,5 @@
 import Foundation
+import LLMCore
 
 /// 博查（Bocha AI）联网搜索执行器。
 /// 实现 `LLMToolExecutor`，供 LLMAgent 在模型请求 web_search 时执行真实搜索。

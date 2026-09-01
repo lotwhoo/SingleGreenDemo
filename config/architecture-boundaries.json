@@ -6,11 +6,17 @@
       "path": "Packages/LLMKit",
       "local_dependencies": [],
       "products": [
+        { "name": "AgentCore", "type": "library", "targets": ["AgentCore"] },
+        { "name": "LLMCore", "type": "library", "targets": ["LLMCore"] },
         { "name": "LLMKit", "type": "library", "targets": ["LLMKit"] }
       ],
       "targets": [
-        { "name": "LLMKit", "type": "regular", "dependencies": [] },
-        { "name": "LLMKitTests", "type": "test", "dependencies": ["LLMKit"] }
+        { "name": "AgentCore", "type": "regular", "dependencies": ["LLMCore"] },
+        { "name": "AgentCoreTests", "type": "test", "dependencies": ["AgentCore", "LLMCore"] },
+        { "name": "LLMCore", "type": "regular", "dependencies": [] },
+        { "name": "LLMCoreTests", "type": "test", "dependencies": ["LLMCore"] },
+        { "name": "LLMKit", "type": "regular", "dependencies": ["AgentCore", "LLMCore"] },
+        { "name": "LLMKitTests", "type": "test", "dependencies": ["AgentCore", "LLMCore", "LLMKit"] }
       ]
     },
     {
@@ -144,9 +150,23 @@
       "forbidden_prefixes": ["OpenAI", "DeepSeek", "Doubao", "Bocha", "Ark"]
     },
     {
-      "id": "llm-provider-neutral-ui-free",
+      "id": "llm-core-provider-neutral-leaf",
+      "roots": ["Packages/LLMKit/Sources/LLMCore"],
+      "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "Network", "OSLog", "Security", "AgentCore", "LLMKit", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceActivityDetectionKit", "VoiceChatCore", "VoiceChatDomain", "WebRTCVoiceActivityDetection"],
+      "forbidden_prefixes": ["OpenAI", "DeepSeek", "Doubao", "Bocha", "Ark"]
+    },
+    {
+      "id": "agent-core-provider-neutral",
+      "roots": ["Packages/LLMKit/Sources/AgentCore"],
+      "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "Network", "OSLog", "Security", "LLMKit", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceActivityDetectionKit", "VoiceChatCore", "VoiceChatDomain", "WebRTCVoiceActivityDetection"],
+      "forbidden_prefixes": ["OpenAI", "DeepSeek", "Doubao", "Bocha", "Ark"],
+      "allowed_project_modules": ["LLMCore"]
+    },
+    {
+      "id": "llmkit-compatibility-and-provider-ui-free",
       "roots": ["Packages/LLMKit/Sources/LLMKit"],
-      "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceActivityDetectionKit", "VoiceChatCore", "VoiceChatDomain", "WebRTCVoiceActivityDetection"]
+      "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceActivityDetectionKit", "VoiceChatCore", "VoiceChatDomain", "WebRTCVoiceActivityDetection"],
+      "allowed_project_modules": ["AgentCore", "LLMCore"]
     },
     {
       "id": "asr-domain-framework-neutral",
@@ -209,6 +229,8 @@
     ]
   },
   "public_api_modules": [
+    { "module": "AgentCore", "package": "LLMKit" },
+    { "module": "LLMCore", "package": "LLMKit" },
     { "module": "LLMKit", "package": "LLMKit" },
     { "module": "SingleGreenConversationAdapters", "package": "SingleGreenConversationAdapters" },
     { "module": "SingleGreenGlassesKit", "package": "SingleGreenGlassesKit" },
