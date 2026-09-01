@@ -1,5 +1,6 @@
 import XCTest
-@testable import LLMKit
+import LLMCore
+@testable import AgentCore
 
 final class LLMChatContextTests: XCTestCase {
 

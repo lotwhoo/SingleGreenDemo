@@ -127,7 +127,8 @@ AI 对话采用轻量的 Ports & Adapters 结构，不把具体服务或系统 A
 - `ConversationPorts.swift` 集中定义 `SpeechRecognitionSession` 与 `ConversationAgent` 端口，测试可注入内存 Fake。
 - `SingleGreenConversationAdapters` 集中存放 VoiceChatCore/LLMKit 到眼镜语义端口的可复用桥接；App 的 `ConversationLiveAdapters.swift` 只保留 provider transport、凭证刷新、工厂和展示策略，供应商细节不进入 Controller。
 - `StreamingTextKit` 独立封装打字节奏、字素缓冲、Unicode 增量对齐和自动尾随策略；通过 `TypewriterPolicy` 动态调节而不修改 Controller。
-- `LLMAgent` 依赖 `LLMChatTransport` 协议，新 LLM 供应商只需实现语义传输端口。
+- `LLMCore` 定义 Message、Tool、StreamingEvent、Transport 和类型化错误；`AgentCore` 只依赖 `LLMCore`，管理上下文事务、工具轮次和 commit/abort。现有调用方仍可 `import LLMKit`。
+- `LLMAgent` 依赖 `LLMChatTransport` 协议，新 LLM 供应商只需实现语义传输端口。当前 OpenAI-compatible HTTP/SSE 与 Bocha 仍在 `LLMKit` 兼容 Target，独立 Adapter 外移属于 M13-PR2。
 - `VoiceConversationDependencies` 统一注入配置、麦克风权限、日期和休眠时钟，VAD 与异常分支无需等待真实时间或访问真实硬件。
 - `SingleGreenDemoApp` 是模拟器 Composition Root，只在这里组装生产依赖；控制面板只读取 Runtime 发布的 `ExperienceControlState`，不再直接依赖 AI Controller。
 - `scripts/strict_concurrency_gate.sh` 对七个 Package 以 Swift 6 complete concurrency 和 warnings-as-errors 执行门禁；Xcode App/Test Debug 与 Release 也启用 Swift 6 complete/WAE。

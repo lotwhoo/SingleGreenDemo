@@ -105,7 +105,7 @@ M8 将核心 `VoiceConversationDependencies` 收敛为四个公开 immutable val
 
 App composition 现在由小型 `ConversationDependencies.swift` live entry 触发，职责拆到五个文件：`ConversationCredentialProvider.swift`（credential leases/providers）、`ConversationPreparationResolver.swift`（settings-derived input/ASR/Agent preparation）、`ConversationPresentationPolicy.swift`（reviewed copy）、`ConversationTelemetryStore.swift`（host telemetry）和 `ProductionVoiceActivatedSessionFactory.swift`（inactive production VAD/ASR factory）；`VoiceConversationComposition.swift` 负责把它们组装成一套依赖。Composition 接收同一个 resolver，resolver exclusively owns settings-derived input mode、ASR preparation 与 Agent behavior，避免 A/B misassembly。`AgentFactory` 仅是 internal test seam，不是公共扩展点。
 
-本轮明确不引入 Service Locator、global registry 或 runtime hot swap。LLMKit 是否拆分，延后到出现第二个 independently shipped transport/provider SDK/platform consumer 需求后再决定；Experience/Provider Registry 延后到有真实 runtime switching requirement、至少两个 production implementations，并明确 lifecycle/context semantics 后再设计。
+本轮明确不引入 Service Locator、global registry 或 runtime hot swap。M8 当时将 LLMKit 拆分延后；后续 M13-PR1 已根据升级路线拆出 `LLMCore` 与 `AgentCore`，但仍不引入 runtime hot swap。Experience/Provider Registry 继续延后到有真实 runtime switching requirement、至少两个 production implementations，并明确 lifecycle/context semantics 后再设计。
 
 M8 本地证据：`SingleGreenGlassesKit` **178/178**；App XCTest **58/58**；focused `ConversationPreparation` **17/17**；controller + dependency regression **99/99**。八个模块、macOS arm64 与 iOS Simulator arm64 共 **16 snapshots** 已人工审查：仅 `SingleGreenGlassesKit` 两份 snapshot 变化，各 **39 additions / 0 removals**。架构门禁覆盖七个 Package 与 **11** 个 negative fixtures；Debug 与 Release generic Simulator builds passed。首次全局 `SWIFT_TREAT_WARNINGS_AS_ERRORS` 与 package `-suppress-warnings` 的冲突记录为 tooling evidence，不是 source failure。该轮没有执行 physical-device build/install/launch 或 real-service validation。
 
@@ -204,7 +204,7 @@ flowchart TD
     Ports[SpeechRecognitionSession\nConversationAgent]
     Domain[VoiceChatDomain]
     ASR[VoiceChatCore]
-    Agent[LLMKit]
+    Agent[AgentCore via LLMKit compatibility]
     Streaming[StreamingTextKit]
     Services[豆包 ASR / DeepSeek / 博查]
 
@@ -297,7 +297,7 @@ Runtime tap
 → VoiceChatCore.ASRSession
 → 累计 transcript
 → VoiceChatDomain.ConversationState
-→ LLMKit.LLMAgent
+→ AgentCore.LLMAgent（现有调用方经 LLMKit 兼容导出）
 → 可选 web_search 工具
 → BochaSearchClient
 → 最终回答 SSE delta
@@ -346,7 +346,9 @@ AI 回答布局使用专用 `flowingText` 元素，高度为 safeRect 的 61%，
 | `AudioCaptureApple`（`VoiceChatCore` Package 内） | Apple 音频采集、AudioSession、PCM 转换/快照、系统事件和具体帧源适配 | `AudioCapture`；具体 frame source 保持 package/internal scope | UI、网络、供应商、会话状态和对 `VoiceChatCore` 的反向依赖 |
 | `VoiceChatCore` | ASR WebSocket/协议帧和 VAD 门控会话编排 | `ASRSession`、`VoiceActivatedASRSession`；兼容导出 `ASRDomain` 与 `AudioCaptureApple` | AVFoundation、LLM、HUD 和 provider-neutral 契约定义 |
 | `VoiceActivityDetectionKit` | 20ms PCM 帧契约、检测器 port、VAD 分段状态机 | `VADPCMFrame`、`VoiceActivityDetecting`、`VADSegmenter` | 录音、网络、UI、供应商 detector |
-| `LLMKit` | Chat Completions、SSE、上下文事务、工具循环、搜索 | `LLMChatTransport`、`LLMAgent` | 麦克风、HUD 和 App 生命周期 |
+| `LLMCore`（`LLMKit` Package 内） | provider-neutral Message、Tool、StreamingEvent、Transport 与类型化错误 | `LLMMessage`、`LLMTool`、`LLMChatTransport` | 网络、鉴权、具体供应商和 Agent 事务 |
+| `AgentCore`（`LLMKit` Package 内） | 上下文事务、Tool Round、预算裁剪、commit/abort 和终态规则 | `LLMAgent`、`LLMChatContext`、`LLMStatelessToolLoop` | 网络、鉴权、具体模型或搜索供应商 |
+| `LLMKit` | 兼容导出 Core，暂时承载 OpenAI-compatible HTTP/SSE 和 Bocha 实现 | `LLMChatClient`、`BochaSearchClient`；兼容 `import LLMKit` | 麦克风、HUD 和 App 生命周期；Adapter 独立外移待 M13-PR2 |
 
 ## 6. 配置与安全
 

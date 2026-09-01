@@ -5,7 +5,7 @@
 | 项目 | 内容 |
 | --- | --- |
 | 文档类型 | 详细实施计划 / 跨模块技术与产品路线 |
-| 当前状态 | In progress：M10-PR1 已完成；锁定工具链、当前 App Simulator/Release 和 API baseline 已补齐；M10-PR3 真机体验仍待执行；M11-PR1–PR5 与 M12-PR1–PR3 已完成当前主机可执行的实现与门禁 |
+| 当前状态 | In progress：M10-PR1 已完成；锁定工具链、当前 App Simulator/Release 和 API baseline 已补齐；M10-PR3 真机体验仍待执行；M11-PR1–PR5、M12-PR1–PR3 与 M13-PR1 已完成当前主机可执行的实现与门禁 |
 | 适用范围 | `SingleGreenDemo`、七个本地 Package、User/Internal 构建、未来真实眼镜 Host |
 | 起始基线 | 当前 M9 之后的工作树，包含尚未提交的提词器“向后 50 个规范化字符内唯一精确命中跃迁”改动 |
 | 目标读者 | 产品、架构、iOS、算法、QA、发布与设备验证参与者 |
@@ -279,7 +279,7 @@ M10 基线收口与当前跃迁交付
 范围：
 
 - 在仓库锁定的 Xcode 26.6 / Swift 6.3.3 环境执行 API baseline；
-- 复核八个模块、两架构的公开 API 快照；
+- 复核当前配置的全部公开模块、两架构 API 快照（M13-PR1 后为 10 个模块、20 份快照）；
 - 如果存在 API 变化，必须逐项审阅，不自动接受；
 - 运行七 Package 严格并发/WAE、App Simulator 和 Release Simulator build。
 
@@ -541,6 +541,8 @@ idle → preparing → active → finalizing → completed
 - `LLMCore`：Message、Tool、StreamingEvent、Transport 和类型化错误；
 - `AgentCore`：上下文事务、Tool Round、最大上下文、commit/abort 和终态规则；
 - 保留首个 choice、`finish_reason`/`[DONE]`、工具参数完整性和内容发布后不重试等现有不变量。
+
+实施状态（2026-09-01，当前主机实现完成）：`LLMKit` Package 已新增可独立依赖的 `LLMCore` 与 `AgentCore` library products/targets，`AgentCore` 只依赖 `LLMCore`；原 `LLMKit` 作为兼容入口继续导出两个 Core，现有 App、Adapter 与 ASRCLI 无需改 import。Core 负向依赖已加入架构门禁和负例。当前证据为七个 Package 的 Swift 6 严格并发/WAE 门禁通过，其中 LLMKit 85/85、SingleGreenConversationAdapters 28/28；User App 100/100，ASRCLI 构建、User/Internal Release universal Simulator、16 个架构负例和 10 个模块的 macOS/iOS Simulator 公开 API 快照均通过。LLMKit Package Sources 覆盖率为 94.23%（621/659，门槛 60%）。本 PR 未改变运行行为，未执行真机或真实 provider 验证；OpenAI-compatible 与 Bocha Adapter 外移仍属于 M13-PR2。
 
 #### M13-PR2：供应商 Adapter 外移
 

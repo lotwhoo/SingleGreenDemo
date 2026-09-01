@@ -1,4 +1,5 @@
 import Foundation
+import LLMCore
 
 /// Executes a bounded, non-streaming tool loop without retaining conversation context.
 /// Callers own every input message and receive one final validated assistant message.

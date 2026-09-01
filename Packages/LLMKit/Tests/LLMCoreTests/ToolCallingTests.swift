@@ -1,5 +1,5 @@
 import XCTest
-@testable import LLMKit
+@testable import LLMCore
 
 final class ToolCallingTests: XCTestCase {
 

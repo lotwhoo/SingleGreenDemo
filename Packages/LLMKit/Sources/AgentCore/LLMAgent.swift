@@ -1,4 +1,5 @@
 import Foundation
+import LLMCore
 
 /// 带工具的 LLM 智能体：自动执行「模型请求工具 → 执行 → 回传结果 → 再请求」循环，
 /// 直到模型给出最终回答。调用方只需 `send()` 一句。
@@ -59,17 +60,6 @@ public actor LLMAgent {
         config: Config
     ) {
         self.transport = transport
-        self.executor = executor
-        self.config = config
-        self.context = LLMChatContext(systemPrompt: config.systemPrompt,
-                                      maxMessages: config.maxMessages,
-                                      maxTokens: config.maxTokens)
-    }
-
-    /// 保留旧构造器的源码兼容；新代码应依赖 `LLMChatTransport`。
-    @available(*, deprecated, renamed: "init(transport:executor:config:)")
-    public init(client: LLMChatClient, executor: LLMToolExecutor, config: Config) {
-        self.transport = client
         self.executor = executor
         self.config = config
         self.context = LLMChatContext(systemPrompt: config.systemPrompt,

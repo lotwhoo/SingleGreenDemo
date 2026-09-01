@@ -1,4 +1,5 @@
 import Foundation
+import LLMCore
 
 /// 请求重试配置（指数退避）。
 /// 参考 open-agent-sdk-swift 的 RetryConfig 标准做法。

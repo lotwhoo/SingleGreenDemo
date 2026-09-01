@@ -257,8 +257,8 @@
               {
                 "kind": "TypeNominal",
                 "name": "LLMAgent",
-                "printedName": "LLMKit.LLMAgent",
-                "usr": "s:6LLMKit8LLMAgentC"
+                "printedName": "AgentCore.LLMAgent",
+                "usr": "s:9AgentCore8LLMAgentC"
               },
               {
                 "kind": "TypeNominal",
@@ -270,11 +270,11 @@
             "declKind": "Constructor",
             "init_kind": "Designated",
             "kind": "Constructor",
-            "mangledName": "$s31SingleGreenConversationAdapters06LLMKitC12AgentAdapterC5agent6policyAC0E08LLMAgentC_AA0ecfG6PolicyVtcfc",
+            "mangledName": "$s31SingleGreenConversationAdapters06LLMKitC12AgentAdapterC5agent6policyAC0F4Core8LLMAgentC_AA0ecfG6PolicyVtcfc",
             "moduleName": "SingleGreenConversationAdapters",
             "name": "init",
             "printedName": "init(agent:policy:)",
-            "usr": "s:31SingleGreenConversationAdapters06LLMKitC12AgentAdapterC5agent6policyAC0E08LLMAgentC_AA0ecfG6PolicyVtcfc"
+            "usr": "s:31SingleGreenConversationAdapters06LLMKitC12AgentAdapterC5agent6policyAC0F4Core8LLMAgentC_AA0ecfG6PolicyVtcfc"
           },
           {
             "children": [

@@ -8,11 +8,20 @@ let package = Package(
         .macOS(.v14)
     ],
     products: [
+        .library(name: "LLMCore", targets: ["LLMCore"]),
+        .library(name: "AgentCore", targets: ["AgentCore"]),
         .library(name: "LLMKit", targets: ["LLMKit"])
     ],
     targets: [
-        .target(name: "LLMKit"),
-        .testTarget(name: "LLMKitTests", dependencies: ["LLMKit"])
+        .target(name: "LLMCore"),
+        .target(name: "AgentCore", dependencies: ["LLMCore"]),
+        .target(name: "LLMKit", dependencies: ["LLMCore", "AgentCore"]),
+        .testTarget(name: "LLMCoreTests", dependencies: ["LLMCore"]),
+        .testTarget(name: "AgentCoreTests", dependencies: ["LLMCore", "AgentCore"]),
+        .testTarget(
+            name: "LLMKitTests",
+            dependencies: ["LLMCore", "AgentCore", "LLMKit"]
+        )
     ],
     swiftLanguageModes: [.v6]
 )
