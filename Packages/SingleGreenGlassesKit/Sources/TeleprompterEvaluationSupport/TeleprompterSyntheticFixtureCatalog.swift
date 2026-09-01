@@ -87,7 +87,12 @@ public enum TeleprompterSyntheticFixtureCatalog {
                         expectedDecision: .advance,
                         expectedTarget: .init(sentenceIndex: 0, utf16Offset: 2)
                     ),
-                    .init(transcriptFragment: "我们", semantics: .partial, expectedDecision: .stay),
+                    .init(
+                        transcriptFragment: "我们",
+                        semantics: .partial,
+                        expectedDecision: .advance,
+                        expectedTarget: .init(sentenceIndex: 0, utf16Offset: 4)
+                    ),
                     .init(
                         transcriptFragment: "发布新品",
                         semantics: .final,

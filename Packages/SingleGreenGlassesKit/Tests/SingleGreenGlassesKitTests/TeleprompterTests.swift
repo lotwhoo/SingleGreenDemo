@@ -188,6 +188,17 @@ final class TeleprompterTests: XCTestCase {
         ))
     }
 
+    func testForwardJumpDoesNotReduceInsertedWordsToMatchingSuffix() throws {
+        let script = try TeleprompterScript("欢迎来到产品发布会。今天介绍新品。")
+
+        XCTAssertNil(TeleprompterScriptAligner().forwardJumpMatch(
+            transcript: "欢迎大家来到产品发布会",
+            script: script,
+            anchor: 0,
+            minimumUTF16Offset: 0
+        ))
+    }
+
     func testAlignerBoundsFuzzyWorkForLongUnpunctuatedSentence() throws {
         let sentence = String(repeating: "长", count: 9_999) + "文。"
         let transcript = String(repeating: "长", count: 9_999) + "闻"
@@ -220,6 +231,24 @@ final class TeleprompterTests: XCTestCase {
         XCTAssertGreaterThan(first.fraction, 0.2)
         XCTAssertGreaterThan(second.utf16Offset, first.utf16Offset)
         XCTAssertGreaterThan(second.fraction, 0.9)
+    }
+
+    func testShortExactIncrementalFragmentAdvancesOnlyWhenContiguous() throws {
+        let aligner = TeleprompterScriptAligner()
+        let sentence = "今天我们发布新品。"
+
+        let contiguous = try XCTUnwrap(aligner.readingProgress(
+            transcript: "我们",
+            sentence: sentence,
+            minimumUTF16Offset: 2
+        ))
+        XCTAssertEqual(contiguous.utf16Offset, 4)
+
+        XCTAssertNil(aligner.readingProgress(
+            transcript: "新品",
+            sentence: sentence,
+            minimumUTF16Offset: 2
+        ))
     }
 
     func testLongCumulativeTranscriptWithTailErrorDoesNotJumpAhead() {

@@ -2,6 +2,53 @@ import XCTest
 @testable import SingleGreenGlassesKit
 
 final class ReadingPositionEngineTests: XCTestCase {
+    func testInsertedWordsUseOrdinaryAdvanceInsteadOfSuffixJump() throws {
+        let script = try TeleprompterScript("欢迎来到产品发布会。今天介绍新品。")
+        let evaluation = ReadingPositionEngine().evaluate(ReadingPositionInput(
+            script: script,
+            scriptVersion: script.version,
+            anchor: .init(sentenceIndex: 0, utf16Offset: 0),
+            transcriptFragment: "欢迎大家来到产品发布会",
+            eventSemantics: .final
+        ))
+
+        guard case .advance(let target, _, let evidence) = evaluation.decision else {
+            return XCTFail("Inserted words must not be treated as jump evidence")
+        }
+        XCTAssertEqual(target, .init(sentenceIndex: 1, utf16Offset: 0))
+        XCTAssertEqual(evidence, .finalEvent)
+    }
+
+    func testIncrementalShortContinuationPreventsLaterFragmentFromBecomingJump() throws {
+        let script = try TeleprompterScript("今天我们发布新品。随后进行功能演示。")
+        let engine = ReadingPositionEngine()
+        let first = engine.evaluate(ReadingPositionInput(
+            script: script,
+            scriptVersion: script.version,
+            anchor: .init(sentenceIndex: 0, utf16Offset: 2),
+            transcriptFragment: "我们",
+            eventSemantics: .partial
+        ))
+        guard case .advance(let continued, _, let firstEvidence) = first.decision else {
+            return XCTFail("Exact short continuation should advance locally")
+        }
+        XCTAssertEqual(continued, .init(sentenceIndex: 0, utf16Offset: 4))
+        XCTAssertEqual(firstEvidence, .sentenceProgress)
+
+        let final = engine.evaluate(ReadingPositionInput(
+            script: script,
+            scriptVersion: script.version,
+            anchor: continued,
+            transcriptFragment: "发布新品",
+            eventSemantics: .final
+        ))
+        guard case .advance(let target, _, let finalEvidence) = final.decision else {
+            return XCTFail("Contiguous final fragment should complete without jumping")
+        }
+        XCTAssertEqual(target, .init(sentenceIndex: 1, utf16Offset: 0))
+        XCTAssertEqual(finalEvidence, .finalEvent)
+    }
+
     func testScriptVersionIsStableForEqualContentAndChangesWithContent() throws {
         let first = try TeleprompterScript("第一句。第二句。")
         let same = try TeleprompterScript("第一句。第二句。")

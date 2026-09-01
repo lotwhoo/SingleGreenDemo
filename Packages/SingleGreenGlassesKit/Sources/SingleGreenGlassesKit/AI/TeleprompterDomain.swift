@@ -242,6 +242,8 @@ public struct TeleprompterScriptAligner: Sendable {
     private static let maximumProgressProbeCharacters = 128
     private static let maximumForwardJumpProbeCharacters = 32
     private static let minimumForwardJumpProbeCharacters = 4
+    private static let maximumIgnoredForwardJumpPrefixCharacters = 1
+    private static let minimumExactProgressCharacters = 2
 
     public init() {}
 
@@ -342,6 +344,16 @@ public struct TeleprompterScriptAligner: Sendable {
             normalizedTranscript.count,
             Self.maximumForwardJumpProbeCharacters
         )
+        // A jump must be supported by the complete recognition fragment, apart
+        // from one optional leading filler character. Otherwise an insertion
+        // such as “欢迎大家来到…” could be reduced to a matching suffix and be
+        // mistaken for a skip. Long cumulative fragments likewise fall through
+        // to ordinary monotonic progress instead of manufacturing jump evidence.
+        let minimumEvidenceLength = max(
+            Self.minimumForwardJumpProbeCharacters,
+            normalizedTranscript.count - Self.maximumIgnoredForwardJumpPrefixCharacters
+        )
+        guard minimumEvidenceLength <= probeLength else { return .noExactMatch }
         let positions = Self.forwardPositions(
             script: script,
             anchor: anchor,
@@ -356,7 +368,7 @@ public struct TeleprompterScriptAligner: Sendable {
 
         for length in stride(
             from: probeLength,
-            through: Self.minimumForwardJumpProbeCharacters,
+            through: minimumEvidenceLength,
             by: -1
         ) {
             let needle = normalizedTranscript.suffix(length)
@@ -417,7 +429,8 @@ public struct TeleprompterScriptAligner: Sendable {
         let transcriptCharacters = Array(
             normalizedTranscript.suffix(Self.maximumProgressProbeCharacters)
         )
-        guard normalizedTranscript.count >= 4, !source.characters.isEmpty else { return nil }
+        guard normalizedTranscript.count >= Self.minimumExactProgressCharacters,
+              !source.characters.isEmpty else { return nil }
 
         let minimumIndex = source.normalizedIndex(atOrBeforeUTF16Offset: minimumUTF16Offset)
         let cumulativePrefixLength = min(
@@ -432,15 +445,24 @@ public struct TeleprompterScriptAligner: Sendable {
             ? source.characters.count
             : minimumIndex + TeleprompterLimits.maximumAlignmentLookahead
         let searchStart = max(0, minimumIndex - transcriptCharacters.count)
+        let exactMaximumStart = normalizedTranscript.count < 4
+            ? minimumIndex
+            : maximumCandidateStart
         if let exactEnd = Self.firstExactEnd(
             needle: transcriptCharacters,
             haystack: source.characters,
             startingAt: searchStart,
             after: minimumIndex,
-            maximumStart: maximumCandidateStart
+            maximumStart: exactMaximumStart
         ) {
             return source.progressMatch(normalizedEndIndex: exactEnd, confidence: 1)
         }
+
+        // Two- and three-character fragments are accepted only as exact,
+        // contiguous continuation at the current anchor. They never enter the
+        // fuzzy or look-ahead paths, which keeps short common phrases from
+        // moving the reading position speculatively.
+        guard normalizedTranscript.count >= 4 else { return nil }
 
         let fuzzyNeedle = Array(transcriptCharacters.suffix(64))
         let cumulativeCenter = min(source.characters.count, normalizedTranscript.count)

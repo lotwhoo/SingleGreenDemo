@@ -287,7 +287,16 @@ public struct ReadingPositionEngine: Sendable {
                 )
             }
         case .final:
-            if completionFraction >= 0.82 {
+            // A final fragment may contain a small insertion or omission while
+            // still describing the complete current sentence. The aligner
+            // already bounds and scores that evidence; using its confidence
+            // here completes the sentence without reclassifying a matching
+            // suffix as an automatic jump.
+            let finalCompletionFraction = max(
+                completionFraction,
+                match?.confidence ?? 0
+            )
+            if finalCompletionFraction >= 0.82 {
                 return ReadingPositionEvaluation(
                     decision: .advance(
                         target: targetAfterSentence(anchor.sentenceIndex, script: input.script),

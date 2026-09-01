@@ -29,7 +29,7 @@
 
 成功标准不是“ASR 转写看起来准确”，而是演讲者抬眼时，当前要说的内容稳定地处于中间行，且系统绝不因识别猜测自动向后跳。向后恢复只允许由用户明确点击手机端的一次性撤销，或使用既有人工纠偏。
 
-当前证据边界：本次 checkout 的 SingleGreenGlassesKit 269/269、SingleGreenUser App Simulator 96/96、七 Package strict-concurrency/WAE 565/565、User Release Simulator build、架构边界和敏感信息扫描已通过。离线评测在 20 个合成/脱敏场景执行 5,424 次决策并记录信息性基线，不设置验收阈值。Xcode 26.6 public API baseline 与真机检查按用户决定延期至 2026-09-02，本轮未尝试。真实 DeepSeek/搜索/ASR 调用、位置恢复/导入/删除/完成的物理设备复验和长时可读性仍未验证。
+当前证据边界：本次跃迁规则修复后的 SingleGreenGlassesKit 273/273、七 Package strict-concurrency/WAE 569/569、架构边界和敏感信息扫描已通过。离线评测在 20 个合成/脱敏场景执行 5,424 次决策并记录信息性基线，不设置验收阈值。规则修复前同一 M11 工作树的 SingleGreenUser App Simulator 96/96 与 User Release Simulator build 已通过；本次受限执行环境无法连接 CoreSimulatorService，不能把该历史结果写成当前规则修复后的 App 复验。Xcode 26.6 public API baseline 与真机检查按用户决定延期至 2026-09-02，本轮未尝试。真实 DeepSeek/搜索/ASR 调用、位置恢复/导入/删除/完成的物理设备复验和长时可读性仍未验证。
 
 ## 2. 用户与待完成任务
 
@@ -188,12 +188,12 @@
 3. partial 只更新候选；满足稳定门槛才提交确认锚点。初始启发值为“至少 3 个有信息量 token 或 6 个中文字符”，最终阈值由离线语料评估决定。
 4. 多个重复短语同分时选择距离最近且单调向前的候选；仍歧义则进入 `UNCERTAIN`，不得猜测跳转。
 5. ASR 自动推进可以保持或向前，绝不自动向后；向后只能由用户操作。
-6. 识别到明显跳读时，若目标起点位于当前已读位置后 50 个规范化字符内，且 ASR 后缀在窗口内唯一精确命中，则单个事件立即跃迁；非精确候选仍须至少两个连续事件支持同一位置才允许推进。
+6. 识别到明显跳读时，若目标起点位于当前已读位置后 50 个规范化字符内，且规范化后的整个 ASR 片段（最多忽略 1 个开头口头语字符）在窗口内唯一精确命中，则单个事件立即跃迁；不得任意截取匹配后缀制造 jump。非精确候选仍须至少两个连续事件支持同一位置才允许推进。
 7. partial 被后续修订时，只撤销未确认候选，不回滚已确认页面。
 
 本次实现假设：“50 个字”按匹配用的规范化字符计数，只计算字母、数字和 CJK 字符；空格、标点、换行、段落标记、emoji 和其他符号不占额度。候选起点为第 50 个字符时仍属于窗口内。若后续需要按原稿可见字符计数，应作为独立规则调整。
 
-当前 MVP 实现是上述目标的受限子集：搜索窗口从当前已读位置起最多向前 50 个规范化字符；规范化忽略标点、空格和硬换行并保留字母数字与 CJK 字符。窗口内唯一精确的 ASR 后缀命中可由单个事件立即跃迁到句内或跨句位置；重复短语、窗口外命中和自动后退均保持不动。LCS、二元组相似度、覆盖率和长度平衡继续为普通跟随提供小错字、少量口头语容错；短文本使用更高置信门槛，未来句还要求明确分差。partial 会单调更新句内 UTF-16 原文位置并驱动完整行上移；一次话语结束后，新 Session 可从已保存位置继续。累计与增量 ASR 分别只在有界候选窗口内做模糊匹配，避免长稿件远跳。非精确候选仍需两个相同 partial 才提交整句，final utterance 达到句内完成阈值后可立即提交；候选永不小于当前锚点。完整 token 权重、拼音同音模型、跨段落索引和离线评测调参仍属延期项。
+当前 MVP 实现是上述目标的受限子集：搜索窗口从当前已读位置起最多向前 50 个规范化字符；规范化忽略标点、空格和硬换行并保留字母数字与 CJK 字符。窗口内唯一精确命中只有在证据覆盖整个规范化 ASR 片段（最多忽略 1 个开头口头语字符）时，才可由单个事件立即跃迁到句内或跨句位置；重复短语、窗口外命中、任意后缀截取和自动后退均保持不动。2–3 个规范化字符只允许在当前锚点精确连续命中时按普通 `advance` 推进，不参与模糊匹配或前向搜索。LCS、二元组相似度、覆盖率和长度平衡继续为普通跟随提供小错字、少量口头语容错；短文本使用更高置信门槛，未来句还要求明确分差。partial 会单调更新句内 UTF-16 原文位置并驱动完整行上移；一次话语结束后，新 Session 可从已保存位置继续。累计与增量 ASR 分别只在有界候选窗口内做模糊匹配，避免长稿件远跳。非精确候选仍需两个相同 partial 才提交整句；final utterance 的高置信同句对齐证据可按普通 `advance` 完成本句，不把匹配后缀升级成 jump。候选永不小于当前锚点。完整 token 权重、拼音同音模型、跨段落索引和真实语料调参仍属延期项。
 
 M11-PR1 已把上述定位规则收敛为纯值 `ReadingPositionEngine`：输入为脚本及其版本、当前位置、转写片段、partial/final 语义和只含数值的稳定证据；输出为 `stay / advance / jump`，reason/evidence 不包含稿件或转写文本。脚本版本不一致时 fail-closed 保持。`TeleprompterController` 继续拥有识别 generation、Session 生命周期和状态发布，但不再自行持有候选阈值、稳定计数或跃迁判定，只应用 Engine 的目标位置。保留的 `TeleprompterScriptAligner` 是兼容入口和底层确定性匹配原语。
 
@@ -442,7 +442,7 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 11. **Given** partial 后续被 final 修订，**When** 候选改变，**Then** 只替换未确认候选，不回滚已确认行。
 12. **Given** 用户重复刚说的一句，**When** ASR 再次命中，**Then** 页面不自动后退。
 13. **Given** 脚本中存在多个相同短语，**When** 评分仍歧义，**Then** 进入 Uncertain 并冻结，不随机选择。
-14. **Given** 用户突然朗读当前已读位置后 50 个规范化字符内的后文，**When** 一个 ASR 事件的后缀在窗口内唯一精确命中，**Then** 立即跃迁到命中结束位置；若目标起点超过 50 个字符、目标重复或命中不可靠，**Then** 保持当前位置。
+14. **Given** 用户突然朗读当前已读位置后 50 个规范化字符内的后文，**When** 一个 ASR 事件的完整规范化片段（最多忽略 1 个开头口头语字符）在窗口内唯一精确命中，**Then** 立即跃迁到命中结束位置；若只能截取任意后缀、目标起点超过 50 个字符、目标重复或命中不可靠，**Then** 保持当前位置。
 15. **Given** 用户即兴插话，**When** 局部窗口没有可靠匹配，**Then** 保持当前锚点；用户回到讲稿后恢复。
 16. **Given** 连续静默达到 2 秒，**When** 无新匹配，**Then** 进入 Holding，不移动、不结束。
 17. **Given** 静默超过 15 秒，**When** 会话仍有效，**Then** 继续保留位置，不把静默当作完成。
@@ -548,9 +548,9 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 
 建议按以下顺序验收，任何后层成功都不能替代前层证据：
 
-1. **已通过**：本次 SingleGreenGlassesKit 全量套件 269/269；
-2. **已通过**：本次 SingleGreenUser App Simulator 全量 96/96，0 failures，0 skips，运行于 iPhone 17 Pro / iOS 26.5；
-3. **已通过**：本次 Internal Debug iphoneos archive/export、Internal Debug Simulator build/能力扫描和 User Release Simulator build；历史 Release generic iphoneos build 仍只作为历史证据；
+1. **已通过**：本次跃迁规则修复后的 SingleGreenGlassesKit 全量套件 273/273；
+2. **历史已通过、本次未复验**：规则修复前同一 M11 工作树的 SingleGreenUser App Simulator 全量 96/96，0 failures，0 skips，运行于 iPhone 17 Pro / iOS 26.5；当前受限执行环境无法连接 CoreSimulatorService；
+3. **历史已通过、本次未复验**：规则修复前同一 M11 工作树的 Internal Debug iphoneos archive/export、Internal Debug Simulator build/能力扫描和 User Release Simulator build；本次 xcodebuild 同时受 CoreSimulatorService 与用户级 SwiftPM cache 写权限限制；
 4. **部分通过**：本次 credential isolation、repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates 和 public API updater 安全自检已通过；final public API baseline 因本机工具链低于仓库锁定版本而按设计未运行；
 5. **未运行**：live provider 的 DeepSeek、搜索和 ASR 调用，包括普通话、噪声、静默、插话、跳读与 rollover 连续性；
 6. **延期**：本轮按用户决定不执行设备 install/launch；2026-08-31 的历史安装记录不替代 2026-09-01 当前 checkout 的真机、物理眼镜显示、音频路由和人工可读性证据。
@@ -564,12 +564,12 @@ PromptSmart 对 VoiceTrack 使用专利表述。商业发布前应由合格人�
 | 证据类别 | 当前状态 | 备注 |
 |---|---|---|
 | 文档静态检查 | 已通过：逐文件 whitespace check 与敏感信息模式扫描 | 未发现 diff 空白错误或常见密钥模式；不验证业务 |
-| 最终 Core 自动化 | 本次全量已通过：SingleGreenGlassesKit 269/269 | 定位/撤销、checkpoint、显式完成、原子删除、迟到事件隔离及离线评测结构覆盖；不代表真实服务通过 |
-| 最终 App Simulator 全量 | 本次已通过：96/96，0 failures，0 skips；iPhone 17 Pro，iOS 26.5；`/private/tmp/SingleGreenDemo-M11-PR45-Final2.xcresult` | SingleGreenUser App test target 全量通过，含本地 envelope、ScriptRepository、迁移/删除、TXT/Markdown parser、手机完成/撤销策略与既有 HUD 回归；不等于真实文件提供器、live provider 或设备验证 |
-| 合成离线评测 | 本次已运行：20 场景、5,424 决策；误跃迁 2、漏跃迁 0、最大位置误差 10 UTF-16、P50 2,209 ns、P95 2,333 ns、进程峰值 8,126,464 bytes、状态更新 15 | 信息性回归基线，无验收阈值；多字和增量转写各出现非预期 jump，不外推为真实发生率 |
+| 最终 Core 自动化 | 本次全量已通过：SingleGreenGlassesKit 273/273 | 定位/撤销、checkpoint、显式完成、原子删除、迟到事件隔离、误跃迁回归及离线评测结构覆盖；不代表真实服务通过 |
+| 最终 App Simulator 全量 | 本次规则修复后未运行：受限执行环境无法连接 CoreSimulatorService；规则修复前同一 M11 工作树曾通过 96/96，证据：`/private/tmp/SingleGreenDemo-M11-PR45-Final2.xcresult` | 历史结果只说明此前 App 集成基线，不能证明当前规则修复后的 App 运行回归；真实文件提供器、live provider 和设备也仍未验证 |
+| 合成离线评测 | 本次已运行：20 场景、5,424 决策；预期/实际 jump 均为 3，误跃迁 0、漏跃迁 0、规则类型不一致 0、最大位置误差 2 UTF-16、P50 2,750 ns、P95 3,084 ns、进程峰值 8,847,360 bytes、状态更新 18 | 信息性回归基线，无验收阈值；修复了多字后缀截取和短增量片段导致的合成误跃迁，不外推为真实发生率 |
 | 本次内部版 App/HUD 聚焦复测 | 已通过：49/49，0 failures，0 skips；iPhone 17 Pro Max Simulator，iOS 26.5；`/private/tmp/SingleGreenDemo-ThreeLineFixTests/Logs/Test/Test-SingleGreenInternal-2026.08.31_14-27-37-+0800.xcresult` | 使用默认显示 Profile 与 440×956 容器计算实际投影，验证 14 pt 正文可完整容纳 3 行 |
 | iphoneos 构建与导出 | 本次 Internal Debug archive/export 成功；版本 0.1（9）的 `SingleGreenInternal-Build9-M10.ipa` 已核验签名、内部 Bundle ID、能力标记和 SHA-256；历史 Release generic iphoneos build 仍为历史证据 | 测试包路径：`/Users/chenkemin/Documents/ChatGPT/单绿眼镜 Demo/测试包/Build-9-M10/SingleGreenInternal-Build9-M10.ipa`；构建与签名通过不等于具体设备 install/launch |
-| 发布与隐私门禁 | 本次已通过：secret scan、repository hygiene、privacy logging、VAD privacy、architecture gates 与 12 个负向 fixture、七 Package strict-concurrency/WAE 565/565、User Release Simulator build、diff whitespace 和 public API updater 安全自检 | actual public API baseline 按用户决定未运行，延期至 2026-09-02 在 Xcode 26.6（17F113）/ Swift 6.3.3 执行；本轮未改写 baseline |
+| 发布与隐私门禁 | 本次已通过：secret scan、repository hygiene、privacy logging、VAD privacy、architecture gates 与 12 个负向 fixture、七 Package strict-concurrency/WAE 569/569、diff whitespace 和 public API updater 安全自检；当前 User Release build 因环境限制未复验 | actual public API baseline 按用户决定未运行，延期至 2026-09-02 在 Xcode 26.6（17F113）/ Swift 6.3.3 执行；本轮未改写 baseline |
 | Live provider | 未运行 | 未验证真实 DeepSeek、搜索、普通话 ASR、延迟、噪声或 one-shot auto-rotation 连续性 |
 | 物理设备 install/launch | 本轮未运行，按用户决定延期至 2026-09-02 | 2026-08-31 有旧 checkout 的历史安装记录；不能证明当前 checkpoint/导入/删除、撤销、眼镜可读性、按键、音频路由、热与电量 |
 
