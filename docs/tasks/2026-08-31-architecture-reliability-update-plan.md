@@ -53,14 +53,14 @@
 
 - 已有 `TeleprompterScript`、`TeleprompterScriptAligner`、纯值 `ReadingPositionEngine`、`TeleprompterController`、HUD Mapper 和 Experience。
 - `ReadingPositionEngine` 接收脚本版本、锚点、转写片段、partial/final 语义和数值稳定证据，输出不含文本的 `stay / advance / jump` 决策；Controller 只负责会话代际、生命周期和应用决策。
-- 当前工作树已实现：从当前已读位置向前最多 50 个规范化字符搜索，唯一精确的 ASR 后缀命中可单事件跃迁；重复目标、窗口外目标和低可信目标保持当前位置。
+- 当前工作树已实现：从当前已读位置向前最多 50 个规范化字符搜索；只有覆盖整个规范化 ASR 片段（最多忽略 1 个开头口头语字符）的唯一精确命中可单事件跃迁，重复目标、窗口外目标、任意后缀截取和低可信目标保持当前位置。
 - “50 个字符”当前只计算字母、数字和 CJK；标点、空格、换行和 emoji 不占窗口。
 - 当前已具备自动化覆盖，但真实普通话、真实网络、真机音频和物理眼镜体验仍待验证。
 - 位置 checkpoint、删除闭环、App 侧单稿件 `ScriptRepository`、TXT/Markdown 导入、手机显式完成和合成离线评测已实现；生产级长稿索引、DOCX/PDF/云盘导入仍未完成；最近一次自动跃迁的手机端一次性撤销已实现。
 
 ### 3.3 证据基线
 
-- 同一工作树最近一次 SingleGreenGlassesKit 为 269/269，SingleGreenUser App Simulator 为 96/96，七 Package strict-concurrency/WAE 合计 565/565。
+- 本次跃迁规则修复后的 SingleGreenGlassesKit 为 273/273，七 Package strict-concurrency/WAE 合计 569/569；规则修复前同一 M11 工作树的 SingleGreenUser App Simulator 为 96/96，本次受限环境无法连接 CoreSimulatorService，未冒充为当前复验。
 - 当前架构 inventory、import boundary 和 12 个负向 fixture 已通过。
 - 当前机器为 Xcode 26.5 / Swift 6.3.2，仓库锁定 Xcode 26.6 / Swift 6.3.3；公共 API 基线必须在锁定工具链重新执行。
 - 七个 Package 的覆盖率表属于此前测量基线；最新提词器变化后应重新测量受影响 Package，不能直接把历史数字作为当前结果。
@@ -102,7 +102,7 @@
 - 手机端删除需要二次确认；确认后以一个本地 envelope 替换同时清理稿件、checkpoint、预留索引缓存和本地评测缓存，并旋转 script identity。删除前先隔离 Session generation，迟到事件不能恢复稿件。
 - M11-PR4 第二阶段新增 App 侧类型化 `TeleprompterScriptRepository` 边界：文件 URL、安全作用域和 bytes 解码留在 App/Infrastructure，Core 只接收规范化稿件和稳定 identity。空文件、非法 UTF-8、超过 20,000 字、重复内容和不支持类型均返回明确结果，失败不覆盖当前稿件；文件名和路径不进入结果或遥测。
 - M11-PR5 新增 `TeleprompterEvaluationSupport` 与 `TeleprompterBenchmark`：20 个合成/脱敏场景、5,424 次决策，覆盖 10/30/50/51 字、重复、partial、累计/增量/跨 Session、静默/噪声、中英数字、20,000 字和 30/60 分钟模拟。基线只采集指标，不设置通过阈值，详见[提词器离线评测基线](../baselines/2026-09-01-teleprompter-offline-baseline.md)。
-- 当前最终门禁为 SingleGreenGlassesKit strict-concurrency/WAE 269/269、七 Package 565/565、SingleGreenUser App Simulator 96/96 与 User Release Simulator build；架构 inventory、12 个负向 fixture、隐私、secret、repository hygiene、diff whitespace 与 API updater 安全自检均通过。本轮未执行 actual public API baseline、真机 install/launch、真实 ASR 或物理眼镜验证；前两项已按用户决定延期到 2026-09-02。
+- 当前最终门禁为 SingleGreenGlassesKit strict-concurrency/WAE 273/273、七 Package 569/569；架构 inventory、12 个负向 fixture、隐私、secret、repository hygiene、diff whitespace 与 API updater 安全自检均通过。规则修复前同一 M11 工作树的 SingleGreenUser App Simulator 96/96 与 User Release Simulator build 已通过；本次受限环境无法连接 CoreSimulatorService 且不能写用户级 SwiftPM cache，故未复验 App 门。本轮未执行 actual public API baseline、真机 install/launch、真实 ASR 或物理眼镜验证；前两项已按用户决定延期到 2026-09-02。
 
 ## 4. 本计划的边界
 
@@ -219,7 +219,7 @@ M10 基线收口与当前跃迁交付
 
 验收：
 
-- Given 当前锚点和窗口内唯一目标，When 单个 ASR partial/final 后缀精确命中，Then 跃迁到对应原文位置；
+- Given 当前锚点和窗口内唯一目标，When 单个 ASR partial/final 的完整规范化片段（最多忽略 1 个开头口头语字符）精确命中，Then 跃迁到对应原文位置；
 - Given 第 51 个规范化字符后目标、重复目标或低可信候选，When 事件到达，Then 当前锚点不变；
 - 自动跃迁永不后退；
 - 手动纠偏后的旧识别事件不能覆盖新锚点；
@@ -386,7 +386,7 @@ jump(target, distance, confidence, evidence)
 
 指标先采集基线，不预设目标值：误跃迁率、漏跃迁率、位置误差、P50/P95 决策耗时、峰值内存和每分钟状态更新数。
 
-实施状态（2026-09-01）：已新增独立评测 support target 和命令行产品，20 个合成/脱敏场景共执行 5,424 次决策；JSON 只输出版本、场景 ID/分类和聚合指标，不含稿件、转写、音频、文件信息或供应商 payload。当前本机基线为误跃迁 2、漏跃迁 0、最大位置误差 10 UTF-16 code units、P50 2,209 ns、P95 2,333 ns、进程峰值常驻内存 8,126,464 bytes、状态更新 15；这些值不是验收阈值，也不代表真实分布。
+实施状态（2026-09-01）：已新增独立评测 support target 和命令行产品，20 个合成/脱敏场景共执行 5,424 次决策；JSON 只输出版本、场景 ID/分类和聚合指标，不含稿件、转写、音频、文件信息或供应商 payload。当前本机 Release 基线为预期/实际 jump 均为 3，误跃迁 0、漏跃迁 0、规则类型不一致 0、最大位置误差 2 UTF-16 code units、P50 2,750 ns、P95 3,084 ns、进程峰值常驻内存 8,847,360 bytes、状态更新 18；这些值不是验收阈值，也不代表真实分布。
 
 ### 8.4 M11 完成门
 
@@ -871,7 +871,7 @@ Core 只输出类型化、无内容事件：
 | 备选方案 | 常驻禁用按钮；短时提示条。 |
 | 影响范围 | 手机控制面板布局、可访问性标识与 UI 状态策略。 |
 | 回滚方式 | 改为常驻禁用或其他可逆呈现，不改变 Core/Controller 契约。 |
-| 证据状态 | App Simulator 策略测试及当前 App 全量 96/96 验证可见条件与集成回归；真机视觉层级与触达性待验证。 |
+| 证据状态 | 规则修复前同一 M11 工作树的 App Simulator 策略测试及 App 全量 96/96 验证可见条件与集成回归；本次受限环境未复验，真机视觉层级与触达性待验证。 |
 
 ### DEC-M11-004：稿件与派生数据使用单一版本化本地 envelope
 
@@ -951,6 +951,19 @@ Core 只输出类型化、无内容事件：
 | 回滚方式 | 删除 CLI 产品并保留纯值评测 support/test；不影响 App 产品路径。 |
 | 证据状态 | Release 本机基线与隐私结构测试通过；真实 ASR、真机内存/延迟、阈值和验收责任方均待确认（责任方未指定）。 |
 
+### DEC-M11-010：跃迁证据必须覆盖完整片段，短片段只做连续推进
+
+| 字段 | 内容 |
+| --- | --- |
+| 日期 / 里程碑 | 2026-09-01 / M11-PR5 基线修复 |
+| 问题 | 任意截取可匹配后缀会把“多字”误判为 jump；统一的 4 字最小进度门槛又会丢掉合法的 2 字增量，导致后续片段从更远位置被误判为 jump。 |
+| 所选方案 | jump 证据必须覆盖整个规范化 ASR 片段，最多只忽略 1 个开头口头语字符；2–3 字片段只能在当前锚点精确连续命中时按普通 `advance` 推进，不进入模糊或前向 jump 搜索；final 的高置信同句对齐可按普通推进完成当前句。 |
+| 理由 | 保留 10/30/50 字即时跃迁和 50/51 字边界，同时阻止插入词被截成命中后缀，并让常见短增量不会制造后续假跳。规则不依赖特定 ASR 供应商模式。 |
+| 备选方案 | 提高最小跃迁距离；禁用句内跃迁；为累计/增量供应商分别加模式；只修改 fixture 期望。 |
+| 影响范围 | `TeleprompterDomain`、`ReadingPositionEngine`、合成 fixture、Core 聚焦测试和离线基线。 |
+| 回滚方式 | 回退完整片段/短连续推进规则及配套 fixture 与测试；checkpoint、App repository 和 HUD 契约不受影响。 |
+| 证据状态 | 合成 Release 基线误跃迁 0、漏跃迁 0、规则类型不一致 0，聚焦测试已通过；真实 ASR partial 形态、真机与物理眼镜仍未验证。 |
+
 ### DEC-PLATFORM-001：低风险可逆判断采用推荐方案并连续留痕
 
 | 字段 | 内容 |
@@ -980,7 +993,7 @@ Core 只输出类型化、无内容事件：
 ## 22. 推荐立即启动的前三个任务
 
 1. 2026-09-02 在锁定 Xcode 26.6 / Swift 6.3.3 环境审阅 M11 新增 public API baseline；同日再补真机 checkpoint/导入/删除与 M11-PR2 撤销体验，不在本批次自动执行设备操作。
-2. 结合当前合成基线复核多字与增量转写的非预期 jump、漏字 10 UTF-16 位置误差，再决定是否修改规则；没有真实分布前不设发布阈值。
+2. 用真实普通话 ASR 复核已在合成基线修复的多字/短增量误跃迁，并采集 partial 形态；没有真实分布前不设发布阈值。
 3. 启动 M12 ASR 分层；多稿件、生产级长稿索引和导入拆分继续评审，DOCX/PDF/云盘保持待确认（责任方未指定）。
 
 M11-PR1–PR5 已完成当前主机可执行的实现、合成离线基线与最终门禁。锁定工具链、真机、真实 ASR 与物理眼镜继续作为 2026-09-02 之后的独立证据门，不阻塞当前本机提交。
