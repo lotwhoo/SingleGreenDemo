@@ -29,7 +29,7 @@ SingleGreenConversationAdapters → SingleGreenGlassesKit + VoiceChatCore + LLMK
 SingleGreenDemo   → SingleGreenConversationAdapters + SingleGreenGlassesKit + VoiceChatCore + LLMKit + StreamingTextKit
 ```
 
-`SingleGreenConversationAdapters` 的复用接口是四个 provider-neutral 类型：`VoiceChatSpeechRecognitionAdapter`、`VoiceChatVoiceActivatedSpeechRecognitionAdapter`、`LLMKitConversationAgentAdapter` 和 `LLMKitConversationAgentAdapterPolicy`。它们只桥接核心 ports 与已配置的 VoiceChat/LLM 实现；凭证、租约、模型/资源配置、WebRTC factory、raw tool name 和展示文案仍由 App composition root 提供。
+`SingleGreenConversationAdapters` 的复用接口包括 `VoiceChatSpeechRecognitionAdapter`、`VoiceChatSupervisedSpeechRecognitionAdapter`、`VoiceChatVoiceActivatedSpeechRecognitionAdapter`、`LLMKitConversationAgentAdapter` 和 `LLMKitConversationAgentAdapterPolicy`。它们只桥接核心 ports 与已配置的 VoiceChat/LLM 实现；凭证、租约、恢复预算与降级选择、模型/资源配置、WebRTC factory、raw tool name 和展示文案仍由 App composition root 提供。
 
 ## 升级流程
 

@@ -52,13 +52,19 @@ enum LiveSpeechInputComposition {
                         failureCode: .configurationMissing
                     )
                 }
-                let session = ASRSession(config: .init(
+                let config = ASRSession.Config(
                     apiKey: lease.apiKey.trimmed,
                     resourceID: configuration.resourceID.trimmed,
                     language: configuration.language,
                     hotwords: configuration.hotwords
-                ))
-                return VoiceChatSpeechRecognitionAdapter(session: session)
+                )
+                let supervisor = ASRSessionSupervisor(
+                    config: config,
+                    policy: .disabled(disposition: .manualControl)
+                )
+                return VoiceChatSupervisedSpeechRecognitionAdapter(
+                    supervisor: supervisor
+                )
             },
             requestMicrophonePermission: requestMicrophonePermission,
             cloudSpeechRecognitionAllowed: cloudSpeechRecognitionAllowed

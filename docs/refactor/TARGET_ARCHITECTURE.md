@@ -40,6 +40,7 @@ SingleGreenUser / SingleGreenInternal product schemes
             -> SingleGreenConversationAdapters
                 -> VoiceChatCore
                     -> ASRDomain -> VoiceActivityDetectionKit
+                    -> ASRSupervision -> ASRDomain
                     -> AudioCaptureApple -> ASRDomain + VoiceActivityDetectionKit
                 -> LLMKit -> LLMChatTransport
         -> App live adapters
@@ -60,8 +61,13 @@ The following existing ownership rules remain non-negotiable:
   snapshots, system-audio notifications, capture run identity, and the concrete
   PCM frame-source adapter. It must not import UI, networking, provider modules,
   or `VoiceChatCore`.
+- `ASRSupervision` owns cross-session generation, bounded recovery admission,
+  stale-session rejection and typed degradation. It depends only on
+  `ASRDomain`; it must not import Apple audio, networking, providers, UI or
+  `VoiceChatCore`. Concrete retry counts and delays remain App policy backed by
+  the real fault matrix.
 - `VoiceChatCore` re-exports the ASR domain for source compatibility while it
-  also re-exports Apple audio compatibility. It owns session actors, provider
+  also re-exports supervision and Apple audio compatibility. It owns session actors, provider
   transport mapping, cancellation, generation, and cleanup, and must not import
   AVFoundation directly.
 - `ConversationLiveAdapters` remains the production framework bridge.

@@ -82,11 +82,13 @@
       "targets": [
         { "name": "ASRDomain", "type": "regular", "dependencies": ["VoiceActivityDetectionKit"] },
         { "name": "ASRDomainTests", "type": "test", "dependencies": ["ASRDomain", "VoiceActivityDetectionKit"] },
+        { "name": "ASRSupervision", "type": "regular", "dependencies": ["ASRDomain"] },
+        { "name": "ASRSupervisionTests", "type": "test", "dependencies": ["ASRDomain", "ASRSupervision"] },
         { "name": "ASRCLI", "type": "executable", "dependencies": ["LLMKit", "VoiceChatCore"] },
         { "name": "AudioCaptureApple", "type": "regular", "dependencies": ["ASRDomain", "VoiceActivityDetectionKit"] },
         { "name": "AudioCaptureAppleTests", "type": "test", "dependencies": ["ASRDomain", "AudioCaptureApple", "VoiceActivityDetectionKit"] },
-        { "name": "VoiceChatCore", "type": "regular", "dependencies": ["ASRDomain", "AudioCaptureApple", "VoiceActivityDetectionKit"] },
-        { "name": "VoiceChatCoreTests", "type": "test", "dependencies": ["ASRDomain", "AudioCaptureApple", "VoiceActivityDetectionKit", "VoiceChatCore"] }
+        { "name": "VoiceChatCore", "type": "regular", "dependencies": ["ASRDomain", "ASRSupervision", "AudioCaptureApple", "VoiceActivityDetectionKit"] },
+        { "name": "VoiceChatCoreTests", "type": "test", "dependencies": ["ASRDomain", "ASRSupervision", "AudioCaptureApple", "VoiceActivityDetectionKit", "VoiceChatCore"] }
       ]
     },
     {
@@ -161,10 +163,17 @@
       "allowed_project_modules": ["ASRDomain", "VoiceActivityDetectionKit"]
     },
     {
+      "id": "asr-supervision-provider-neutral",
+      "roots": ["Packages/VoiceChatCore/Sources/ASRSupervision"],
+      "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "Network", "Security", "LLMKit", "AudioCaptureApple", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceChatCore", "VoiceChatDomain", "WebRTCVoiceActivityDetection", "CWebRTCVAD"],
+      "forbidden_prefixes": ["OpenAI", "DeepSeek", "Doubao", "Bocha", "Ark"],
+      "allowed_project_modules": ["ASRDomain"]
+    },
+    {
       "id": "voice-core-no-ui-or-reverse-edge",
       "roots": ["Packages/VoiceChatCore/Sources/VoiceChatCore"],
       "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "LLMKit", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceChatDomain", "WebRTCVoiceActivityDetection", "CWebRTCVAD"],
-      "allowed_project_modules": ["ASRDomain", "AudioCaptureApple", "VoiceActivityDetectionKit"]
+      "allowed_project_modules": ["ASRDomain", "ASRSupervision", "AudioCaptureApple", "VoiceActivityDetectionKit"]
     },
     {
       "id": "asr-cli-project-imports",
