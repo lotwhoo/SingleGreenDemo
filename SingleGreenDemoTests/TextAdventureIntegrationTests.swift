@@ -182,7 +182,7 @@ final class TextAdventureIntegrationTests: XCTestCase {
         let task = Task {
             try await provider.prepareTrendSeed(.init(sessionID: UUID(), seed: 3))
         }
-        for _ in 0..<100 where !transport.isStarted { await Task.yield() }
+        await transport.waitUntilStarted()
         task.cancel()
         do {
             _ = try await task.value
@@ -369,12 +369,29 @@ private final class CancellableTextAdventureTransport: LLMChatTransport, @unchec
     private let lock = NSLock()
     private var cancelled = false
     private var started = false
+    private var startWaiters: [CheckedContinuation<Void, Never>] = []
     var observedCancellation: Bool { lock.withLock { cancelled } }
-    var isStarted: Bool { lock.withLock { started } }
+
+    func waitUntilStarted() async {
+        await withCheckedContinuation { continuation in
+            let shouldResume = lock.withLock {
+                guard !started else { return true }
+                startWaiters.append(continuation)
+                return false
+            }
+            if shouldResume { continuation.resume() }
+        }
+    }
+
     func completeMessage(
         messages: [LLMMessage], temperature: Double?, maxTokens: Int?, tools: [LLMTool]?
     ) async throws -> LLMMessage {
-        lock.withLock { started = true }
+        let waiters = lock.withLock {
+            started = true
+            defer { startWaiters.removeAll(keepingCapacity: false) }
+            return startWaiters
+        }
+        waiters.forEach { $0.resume() }
         do {
             try await Task.sleep(for: .seconds(30))
             return LLMMessage(role: .assistant, content: "unused")
