@@ -4,7 +4,7 @@
 >
 > 数据边界：只使用仓库内合成/脱敏 fixture；报告不包含稿件正文、转写片段、音频、文件名、路径、凭证或供应商 payload
 >
-> 环境：macOS arm64，Xcode 26.5（17F42），Swift 6.3.2，Release 构建
+> 环境：macOS arm64，Xcode 26.6（17F113），Swift 6.3.3，SDK 26.5，Release 构建
 
 ## 1. 运行方式
 
@@ -28,9 +28,9 @@ swift run --package-path Packages/SingleGreenGlassesKit -c release TeleprompterB
 | 漏跃迁率 | 0% | 漏跃迁 / 预期 jump；样本很小，不外推真实发生率 |
 | 平均位置误差 | 0.000369 UTF-16 code unit | 被 5,400 次静默长会话稀释，只用于本次回归对比 |
 | 最大位置误差 | 2 UTF-16 code units | partial 修订场景；所有非保持期望均显式提供目标锚点 |
-| P50 决策耗时 | 2,750 ns | Release、本机单进程；不等于设备延迟 |
-| P95 决策耗时 | 3,084 ns | Release、本机单进程；不等于设备延迟 |
-| 进程峰值常驻内存 | 8,847,360 bytes | macOS `getrusage` 进程峰值，不是 Engine 独占增量 |
+| P50 决策耗时 | 2,209 ns | Release、本机单进程；不等于设备延迟 |
+| P95 决策耗时 | 5,542 ns | Release、本机单进程；不等于设备延迟 |
+| 进程峰值常驻内存 | 8,388,608 bytes | macOS `getrusage` 进程峰值，不是 Engine 独占增量 |
 | 状态更新数 | 18 | 非 stay 且位置发生变化的决策 |
 | 每模拟分钟状态更新数 | 0.2 | 18 / 90 分钟；长会话是静默保持，不代表真实朗读频率 |
 | 规则类型不一致 | 0 | fixture 期望与实际 `stay / advance / jump` 一致 |
@@ -48,6 +48,8 @@ swift run --package-path Packages/SingleGreenGlassesKit -c release TeleprompterB
 ## 4. 证据边界
 
 - 已证明：合成 fixture 可重复运行，指标结构可编码，报告不携带正文或转写，Release 本机可采集决策耗时与进程峰值内存。
-- 当前代码门禁：SingleGreenGlassesKit 273/273、七 Package strict-concurrency/WAE 569/569、架构边界与 12 个负向 fixture 通过；App Simulator/Release build 因当前受限环境无法连接 CoreSimulatorService 且不能写用户级 SwiftPM cache，本次规则修复后未复验。
+- 当前代码门禁：SingleGreenGlassesKit 273/273、七 Package strict-concurrency/WAE 589/589、架构 inventory 与 16 个负向 fixture 通过；当前 SingleGreenUser App Simulator 96/96（0 failures、0 skips）和 User Release generic Simulator build 通过。
+- 公开 API：在锁定 Xcode 26.6 / Swift 6.3.3 上完成差异审阅。提词器保留旧构造与单参数载稿入口；接受 M11 新增持久化 API 和 M12 内部 Target 导致的声明归属变化。更新后 8 个公开模块的 macOS arm64 / iOS Simulator arm64 双架构基线全部通过。
+- App 版本：当前源码为 `0.1 (10)`，作为历史内测包 `0.1 (9)` 之后的下一构建号；本记录不声称已生成、签名或安装 Build 10 IPA。
 - 未证明：真实普通话、真实 ASR partial 形态、噪声、网络、真机性能、眼镜体验、30/60 分钟真实音频连续性和生产分布。
-- public API baseline 与真机检查按既定决定延期至 2026-09-02，本次没有执行 install/launch。
+- 本次没有执行真机 build/install/launch、真实 ASR 或物理眼镜验证；Simulator、Package 与 API 快照不替代这些证据。

@@ -61,7 +61,7 @@ public final class TeleprompterController: ObservableObject {
         script: TeleprompterScript? = nil,
         dependencies: TeleprompterDependencies,
         aligner: TeleprompterScriptAligner = .init(),
-        checkpointStore: any TeleprompterCheckpointStore = NoopTeleprompterCheckpointStore()
+        checkpointStore: any TeleprompterCheckpointStore
     ) {
         self.dependencies = dependencies
         self.positionEngine = ReadingPositionEngine(aligner: aligner)
@@ -73,9 +73,24 @@ public final class TeleprompterController: ObservableObject {
         self.checkpointRestoreResult = restoration.result
     }
 
+    /// Preserves the pre-checkpoint source contract. Callers that do not opt in to
+    /// persistence keep the original in-memory behavior.
+    public convenience init(
+        script: TeleprompterScript? = nil,
+        dependencies: TeleprompterDependencies,
+        aligner: TeleprompterScriptAligner = .init()
+    ) {
+        self.init(
+            script: script,
+            dependencies: dependencies,
+            aligner: aligner,
+            checkpointStore: NoopTeleprompterCheckpointStore()
+        )
+    }
+
     public func loadScript(
         _ source: String,
-        identity: TeleprompterScriptIdentity? = nil
+        identity: TeleprompterScriptIdentity?
     ) async {
         guard !isShutdown else { return }
         beginIncompatibleAlignmentContext()
@@ -96,6 +111,12 @@ public final class TeleprompterController: ObservableObject {
             checkpointRestoreResult = .noCheckpoint
         }
         publish()
+    }
+
+    /// Preserves the original one-argument loading contract. A stable identity is
+    /// only required when the caller explicitly opts in to persisted checkpoints.
+    public func loadScript(_ source: String) async {
+        await loadScript(source, identity: nil)
     }
 
     public func toggleFollowing() async {

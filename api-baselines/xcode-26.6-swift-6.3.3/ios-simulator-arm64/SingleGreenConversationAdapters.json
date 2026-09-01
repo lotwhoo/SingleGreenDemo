@@ -749,6 +749,258 @@
                     "children": [
                       {
                         "kind": "TypeNominal",
+                        "name": "SpeechRecognitionEvent",
+                        "printedName": "SingleGreenGlassesKit.SpeechRecognitionEvent",
+                        "usr": "s:21SingleGreenGlassesKit22SpeechRecognitionEventO"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "AsyncStream",
+                    "printedName": "_Concurrency.AsyncStream<SingleGreenGlassesKit.SpeechRecognitionEvent>",
+                    "usr": "s:ScS"
+                  }
+                ],
+                "declAttributes": [
+                  "Final",
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC6eventsScSy0aB10GlassesKit0hI5EventOGvg",
+                "moduleName": "SingleGreenConversationAdapters",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC6eventsScSy0aB10GlassesKit0hI5EventOGvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "SpeechRecognitionEvent",
+                    "printedName": "SingleGreenGlassesKit.SpeechRecognitionEvent",
+                    "usr": "s:21SingleGreenGlassesKit22SpeechRecognitionEventO"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "AsyncStream",
+                "printedName": "_Concurrency.AsyncStream<SingleGreenGlassesKit.SpeechRecognitionEvent>",
+                "usr": "s:ScS"
+              }
+            ],
+            "declAttributes": [
+              "Final",
+              "Nonisolated",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "isLet": true,
+            "kind": "Var",
+            "mangledName": "$s31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC6eventsScSy0aB10GlassesKit0hI5EventOGvp",
+            "moduleName": "SingleGreenConversationAdapters",
+            "name": "events",
+            "printedName": "events",
+            "usr": "s:31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC6eventsScSy0aB10GlassesKit0hI5EventOGvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceChatSupervisedSpeechRecognitionAdapter",
+                "printedName": "SingleGreenConversationAdapters.VoiceChatSupervisedSpeechRecognitionAdapter",
+                "usr": "s:31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ASRSessionSupervisor",
+                "printedName": "ASRSupervision.ASRSessionSupervisor",
+                "usr": "s:14ASRSupervision20ASRSessionSupervisorC"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Convenience",
+            "kind": "Constructor",
+            "mangledName": "$s31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC10supervisorAC14ASRSupervision20ASRSessionSupervisorC_tcfc",
+            "moduleName": "SingleGreenConversationAdapters",
+            "name": "init",
+            "printedName": "init(supervisor:)",
+            "usr": "s:31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC10supervisorAC14ASRSupervision20ASRSessionSupervisorC_tcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC5startyyYaKF",
+            "moduleName": "SingleGreenConversationAdapters",
+            "name": "start",
+            "printedName": "start()",
+            "throwing": true,
+            "usr": "s:31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC5startyyYaKF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC6finishyyYaF",
+            "moduleName": "SingleGreenConversationAdapters",
+            "name": "finish",
+            "printedName": "finish()",
+            "usr": "s:31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC6finishyyYaF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC6cancelyyYaF",
+            "moduleName": "SingleGreenConversationAdapters",
+            "name": "cancel",
+            "printedName": "cancel()",
+            "usr": "s:31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC6cancelyyYaF"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UnownedSerialExecutor",
+                    "printedName": "_Concurrency.UnownedSerialExecutor",
+                    "usr": "s:Sce"
+                  }
+                ],
+                "declAttributes": [
+                  "Final"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC15unownedExecutorScevg",
+                "moduleName": "SingleGreenConversationAdapters",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC15unownedExecutorScevg"
+              }
+            ],
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UnownedSerialExecutor",
+                "printedName": "_Concurrency.UnownedSerialExecutor",
+                "usr": "s:Sce"
+              }
+            ],
+            "declAttributes": [
+              "Available",
+              "Available",
+              "Available",
+              "Available",
+              "Final",
+              "Nonisolated",
+              "Semantics"
+            ],
+            "declKind": "Var",
+            "implicit": true,
+            "intro_Macosx": "10.15",
+            "intro_iOS": "13.0",
+            "intro_tvOS": "13.0",
+            "intro_watchOS": "6.0",
+            "kind": "Var",
+            "mangledName": "$s31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC15unownedExecutorScevp",
+            "moduleName": "SingleGreenConversationAdapters",
+            "name": "unownedExecutor",
+            "printedName": "unownedExecutor",
+            "usr": "s:31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC15unownedExecutorScevp"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$s21SingleGreenGlassesKit24SpeechRecognitionSessionP",
+            "name": "SpeechRecognitionSession",
+            "printedName": "SpeechRecognitionSession",
+            "usr": "s:21SingleGreenGlassesKit24SpeechRecognitionSessionP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sScA",
+            "name": "Actor",
+            "printedName": "Actor",
+            "usr": "s:ScA"
+          }
+        ],
+        "declKind": "Class",
+        "hasMissingDesignatedInitializers": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC",
+        "moduleName": "SingleGreenConversationAdapters",
+        "name": "VoiceChatSupervisedSpeechRecognitionAdapter",
+        "printedName": "VoiceChatSupervisedSpeechRecognitionAdapter",
+        "usr": "s:31SingleGreenConversationAdapters43VoiceChatSupervisedSpeechRecognitionAdapterC"
+      },
+      {
+        "children": [
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
                         "name": "VoiceActivatedRecognitionEvent",
                         "printedName": "SingleGreenGlassesKit.VoiceActivatedRecognitionEvent",
                         "usr": "s:21SingleGreenGlassesKit30VoiceActivatedRecognitionEventO"
@@ -994,6 +1246,13 @@
         "conformances": [
           {
             "kind": "Conformance",
+            "mangledName": "$s14ASRSupervision20SupervisedASRSessionP",
+            "name": "SupervisedASRSession",
+            "printedName": "SupervisedASRSession",
+            "usr": "s:14ASRSupervision20SupervisedASRSessionP"
+          },
+          {
+            "kind": "Conformance",
             "mangledName": "$ss8CopyableP",
             "name": "Copyable",
             "printedName": "Copyable",
@@ -1033,6 +1292,53 @@
         "name": "ASRSession",
         "printedName": "ASRSession",
         "usr": "s:13VoiceChatCore10ASRSessionC"
+      },
+      {
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sScA",
+            "name": "Actor",
+            "printedName": "Actor",
+            "usr": "s:ScA"
+          }
+        ],
+        "declKind": "Class",
+        "isExternal": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s14ASRSupervision20ASRSessionSupervisorC",
+        "moduleName": "ASRSupervision",
+        "name": "ASRSessionSupervisor",
+        "printedName": "ASRSessionSupervisor",
+        "usr": "s:14ASRSupervision20ASRSessionSupervisorC"
       },
       {
         "conformances": [

@@ -2,11 +2,11 @@
 
 > 文档状态：当前实现基线
 >
-> 最后审查：2026-09-01（M12-PR1 本地工作树）
+> 最后审查：2026-09-01（M12-PR3 第一段与锁定工具链基线）
 >
 > 适用工程：`SingleGreenDemo.xcodeproj`
 >
-> 当前版本：0.1（Debug / MVP）
+> 当前版本：0.1 (10)（源码构建号；Debug / MVP）
 
 ## 1. 执行摘要
 
@@ -61,7 +61,7 @@ M12-PR2 在同一 Package 内新增内部 `AudioCaptureApple` Target，迁移 AV
 
 恢复耗尽输出 `ASRSessionDegradation`，由 composition 显式指定 `.manualControl` 或 `.retryableFailure`。提词器 PTT 已接入前者，对话 PTT 已接入后者；生产预算当前都使用 `.disabled`（0 次），因为真实网络/路由故障矩阵尚未确认次数、超时与退避，不能把单元测试能力扩大为已上线自动重连。Voice Activated Supervisor、进程级麦克风仲裁、App/真机和真实服务仍属后续范围。
 
-本地证据为 Supervisor 11/11、`VoiceChatCore` Package 137/137、监督 Adapter 4/4、Adapter Package 28/28、七 Package strict-concurrency/WAE 589/589、架构 inventory 与 16 个负向 fixture 通过。App 源码已完成 composition 迁移，但当前受限环境仍无法取得 App build/test 证据；锁定工具链 API baseline 也仍被 Xcode 26.5 / Swift 6.3.2 与仓库锁定版本不一致所阻断。
+本地证据为 Supervisor 11/11、`VoiceChatCore` Package 137/137、监督 Adapter 4/4、Adapter Package 28/28、七 Package strict-concurrency/WAE 589/589、架构 inventory 与 16 个负向 fixture 通过。随后在锁定 Xcode 26.6（17F113）/ Swift 6.3.3 / SDK 26.5 上补齐当前 App Simulator 96/96、User Release generic Simulator build 和 8 公开模块的 macOS arm64 / iOS Simulator arm64 API baseline。API 审阅保留旧提词器构造/载稿入口，并明确接受 M11 持久化新增 API 与 M12 内部 Target 引起的声明归属变化。当前源码版本推进为 `0.1 (10)`；历史 `0.1 (9)` IPA 仍是独立历史证据，Build 10 未执行真机构建/安装/启动。
 
 ### M7 PR1 quality baseline（本地完成，2026-08-28）
 
