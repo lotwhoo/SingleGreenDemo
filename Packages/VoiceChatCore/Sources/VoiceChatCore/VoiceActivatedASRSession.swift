@@ -1,4 +1,5 @@
 import Foundation
+import ASRDomain
 import VoiceActivityDetectionKit
 
 enum VoiceActivatedASRFinishWorkerWaitPhase: Equatable, Sendable {

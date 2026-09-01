@@ -1,10 +1,13 @@
 import AVFoundation
+import ASRDomain
 import os
 
 /// 麦克风采集：AVAudioEngine 输入 → AVAudioConverter → 16kHz / 16bit / 单声道 PCM
 /// Legacy callers receive 200 ms chunks by default. Local VAD callers can request exact 20 ms
 /// frames without changing the converter or duplicating capture code.
 public final class AudioCapture {
+
+    public typealias AudioSystemEvent = ASRAudioSystemEvent
 
     public enum CaptureError: Error, LocalizedError, Equatable, Sendable {
         case noInput
@@ -31,15 +34,6 @@ public final class AudioCapture {
     public enum Diagnostic: Sendable, Equatable {
         case conversionFailed(ConversionFailure)
         case audioSystemEvent(AudioSystemEvent)
-    }
-
-    /// Typed seam for AVAudioSession notifications. It carries no route names,
-    /// device identifiers, framework payloads, or captured audio.
-    public enum AudioSystemEvent: Sendable, Equatable {
-        case interruptionBegan
-        case interruptionEnded
-        case routeChanged
-        case mediaServicesReset
     }
 
     public static let sampleRate = 16000.0

@@ -16,12 +16,20 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "VoiceChatCore",
+            name: "ASRDomain",
             dependencies: ["VoiceActivityDetectionKit"]
+        ),
+        .target(
+            name: "VoiceChatCore",
+            dependencies: ["ASRDomain", "VoiceActivityDetectionKit"]
+        ),
+        .testTarget(
+            name: "ASRDomainTests",
+            dependencies: ["ASRDomain", "VoiceActivityDetectionKit"]
         ),
         .testTarget(
             name: "VoiceChatCoreTests",
-            dependencies: ["VoiceChatCore", "VoiceActivityDetectionKit"]
+            dependencies: ["ASRDomain", "VoiceChatCore", "VoiceActivityDetectionKit"]
         ),
         .executableTarget(
             name: "ASRCLI",

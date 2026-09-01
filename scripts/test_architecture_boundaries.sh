@@ -133,6 +133,25 @@ do
     fi
 done
 
+asr_domain="$temporary_root/asr-domain-framework-neutral"
+cp -R "$base" "$asr_domain"
+cat >"$asr_domain/Packages/VoiceChatCore/Sources/ASRDomain/FixtureViolation.swift" <<'SWIFT'
+import AVFoundation
+import Network
+import VoiceChatCore
+SWIFT
+expect_failure "$asr_domain" 'Packages/VoiceChatCore/Sources/ASRDomain/FixtureViolation.swift:1: import rule asr-domain-framework-neutral forbids module AVFoundation'
+for asr_domain_violation in \
+    'FixtureViolation.swift:2: import rule asr-domain-framework-neutral forbids module Network' \
+    'FixtureViolation.swift:3: import rule asr-domain-framework-neutral forbids module VoiceChatCore'
+do
+    if ! grep -Fq "$asr_domain_violation" "$asr_domain/check-output.txt"; then
+        echo "error: ASR domain boundary violation was not detected: $asr_domain_violation" >&2
+        cat "$asr_domain/check-output.txt" >&2
+        exit 1
+    fi
+done
+
 voice_llm="$temporary_root/voice-core-llm"
 cp -R "$base" "$voice_llm"
 python3 - "$voice_llm/Packages/VoiceChatCore/Package.swift" <<'PY'
@@ -140,8 +159,8 @@ from pathlib import Path
 import sys
 path = Path(sys.argv[1])
 text = path.read_text()
-old = 'name: "VoiceChatCore",\n            dependencies: ["VoiceActivityDetectionKit"]'
-new = 'name: "VoiceChatCore",\n            dependencies: ["VoiceActivityDetectionKit", "LLMKit"]'
+old = 'name: "VoiceChatCore",\n            dependencies: ["ASRDomain", "VoiceActivityDetectionKit"]'
+new = 'name: "VoiceChatCore",\n            dependencies: ["ASRDomain", "VoiceActivityDetectionKit", "LLMKit"]'
 if old not in text:
     raise SystemExit("fixture mutation anchor missing")
 path.write_text(text.replace(old, new, 1))
@@ -286,4 +305,4 @@ path.write_text(text.replace(old, new, 1))
 PY
 expect_failure "$ownership_drift" 'App product ownership rule: SingleGreenDemo product LLMKit expected local owner .*Packages/LLMKit.*got Packages/VoiceChatCore'
 
-echo "Architecture boundary self-tests passed (legal import syntax, valid graph, and 12 negative fixtures)."
+echo "Architecture boundary self-tests passed (legal import syntax, valid graph, and 13 negative fixtures)."

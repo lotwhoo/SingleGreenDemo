@@ -1,28 +1,7 @@
 import Foundation
 import os
+import ASRDomain
 import VoiceActivityDetectionKit
-
-enum PCMFrameSourceFailure: Error, Equatable, Sendable {
-    case bufferOverflow
-    case invalidFrame
-    case audioUnavailable
-    case audioSystemEvent(AudioCapture.AudioSystemEvent)
-}
-
-struct PCMFrameSourceStreams: Sendable {
-    let frames: AsyncThrowingStream<VADPCMFrame, any Error>
-    let levels: AsyncStream<Float>
-}
-
-struct PCMFrameSourceRun: Sendable {
-    let token: UInt64
-    let streams: PCMFrameSourceStreams
-}
-
-protocol PCMFrameSource: Actor {
-    func start() async throws -> PCMFrameSourceStreams
-    func stop() async
-}
 
 /// Bridges `AudioCapture` into exact, bounded 20 ms VAD frames. The relay is lock based because
 /// AVAudioEngine invokes capture callbacks on its real-time thread; it never logs or persists PCM.

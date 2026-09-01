@@ -2,7 +2,7 @@
 
 > 文档状态：当前实现基线
 >
-> 最后审查：2026-08-29（`8abce82323b58a80f4e6d9c3b79bef92e6150008`）
+> 最后审查：2026-09-01（M12-PR1 本地工作树）
 >
 > 适用工程：`SingleGreenDemo.xcodeproj`
 >
@@ -38,6 +38,14 @@
 | M7 Code Quality Baseline | 固化工具链、架构边界、公开 API、生命周期与复用契约 | PR1–PR5 已完成并保留历史证据 |
 | M8 Dependency & Composition Refinement | 分组核心依赖并收口 App composition root | 已完成并保留历史证据 |
 | M9 Runtime State Decomposition | 抽取 Controller、音频采集和 VAD/ASR 每轮运行态，同时保留原 owner | 当前代码检查点；受影响 Package 与静态契约已复核 |
+| M10–M11 Teleprompter Reliability | 建立 50 字跃迁、纯定位 Engine、撤销、checkpoint、导入/删除和离线基线 | 当前本机实现完成；真实 ASR、App 当前复验与物理眼镜仍待验证 |
+| M12 Audio / ASR Layering | 将 provider-neutral ASR 契约与 Apple 音频、供应商传输和恢复策略分层 | PR1 内部 `ASRDomain` Target 已完成；PR2–PR5 待继续 |
+
+### M12 PR1 ASRDomain Target（本地完成，2026-09-01）
+
+M12-PR1 在现有 `VoiceChatCore` Package 内新增内部 `ASRDomain` Target，不新增 Package、公开产品或生产依赖。纯 `ASRFailure`、PTT/Voice Activated 状态与事件、VAD 策略、音频系统事件、帧源和流式传输协议已迁移；`VoiceChatCore` 保留 AVFoundation、供应商映射、会话 actor 和异步 owner，并通过兼容导出及 `ASRSession` 嵌套 typealias 保留原调用方式。
+
+本地证据为 `ASRDomainTests` 3/3、`VoiceChatCore` Package 122/122、`SingleGreenConversationAdapters` 24/24、七 Package strict-concurrency/WAE 570/570，架构 inventory 和 13 个负向 fixture 通过。当前工具链低于仓库锁定版本，public API baseline 未更新；当前受限环境无法连接 CoreSimulatorService，因此 App test/build、真机、真实 ASR 和物理眼镜均未在本批次验证。
 
 ### M7 PR1 quality baseline（本地完成，2026-08-28）
 
@@ -316,7 +324,8 @@ AI 回答布局使用专用 `flowingText` 元素，高度为 safeRect 的 61%，
 | `SingleGreenConversationAdapters` | VoiceChatCore/LLMKit 到眼镜核心 ports 的可复用语义桥接 | 四个 public adapter/policy 类型 | 凭证、provider 配置、UI、raw provider tool mapping |
 | `StreamingTextKit` | 打字节奏、字素缓冲、Unicode 对齐、自动尾随策略 | `TypewriterPolicy`、`TypewriterTextBuffer`、`StreamingTextReconciler` | 会话状态、SwiftUI 样式、网络 |
 | `VoiceChatDomain` | 消息和回复生命周期 | `ConversationState` | 音频、网络、UI |
-| `VoiceChatCore` | 音频、ASR WebSocket、协议帧和 VAD 门控会话 | `ASRSession`、`VoiceActivatedASRSession`、`PCMFrameSource` | LLM 和 HUD |
+| `ASRDomain`（`VoiceChatCore` Package 内） | provider-neutral ASR 错误、状态/事件、策略、音频事件、帧源与流式传输契约 | `ASRFailure`、`ASRSessionState/Event`、`VoiceActivatedASRPolicy/State/Event`；低层帧源/传输协议保持 package scope | AVFoundation、Network、供应商实现、UI、会话 Task owner |
+| `VoiceChatCore` | Apple 音频、ASR WebSocket/协议帧和 VAD 门控会话编排 | `ASRSession`、`VoiceActivatedASRSession`；兼容导出 `ASRDomain` | LLM、HUD 和 provider-neutral 契约定义 |
 | `VoiceActivityDetectionKit` | 20ms PCM 帧契约、检测器 port、VAD 分段状态机 | `VADPCMFrame`、`VoiceActivityDetecting`、`VADSegmenter` | 录音、网络、UI、供应商 detector |
 | `LLMKit` | Chat Completions、SSE、上下文事务、工具循环、搜索 | `LLMChatTransport`、`LLMAgent` | 麦克风、HUD 和 App 生命周期 |
 

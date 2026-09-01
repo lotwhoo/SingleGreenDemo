@@ -1,5 +1,6 @@
 import Foundation
 import os
+import ASRDomain
 
 /// 豆包流式语音识别 2.0 高层模块。
 ///
@@ -70,34 +71,9 @@ public final class ASRSession: @unchecked Sendable {
 
     // MARK: - 状态与事件
 
-    public enum State: Sendable, Equatable {
-        case idle          // 空闲
-        case starting      // 建连中
-        case recording     // 录音/流式中
-        case finalizing    // 已停止，等待最终结果
-        case finished      // 完成（收到最终结果）
-        case failed(ASRFailure)
-    }
-
-    public enum Event: Sendable {
-        case state(State)
-        case transcript(String)   // 实时增量转写
-        case utterance(String)    // 定型句
-        case level(Float)         // 录音电平 0~1
-        case error(ASRFailure)
-    }
-
-    public enum SessionError: Error, LocalizedError, Equatable {
-        case busy                 // 会话进行中，不能重复 start
-        case notRunning           // 会话未启动
-
-        public var errorDescription: String? {
-            switch self {
-            case .busy: return "ASR 会话已在进行中"
-            case .notRunning: return "ASR 会话未启动"
-            }
-        }
-    }
+    public typealias State = ASRSessionState
+    public typealias Event = ASRSessionEvent
+    public typealias SessionError = ASRSessionError
 
     // MARK: - 内部状态
 

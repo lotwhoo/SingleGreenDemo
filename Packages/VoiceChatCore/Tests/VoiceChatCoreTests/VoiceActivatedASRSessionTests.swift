@@ -4,40 +4,6 @@ import XCTest
 @testable import VoiceChatCore
 
 final class VoiceActivatedASRSessionTests: XCTestCase {
-    func testStandardPolicyUsesTwentyMillisecondProductThresholds() {
-        let policy = VoiceActivatedASRPolicy.standard
-        XCTAssertEqual(policy.segmentation.preRollFrameCount, 15)
-        XCTAssertEqual(policy.segmentation.onsetWindowFrameCount, 5)
-        XCTAssertEqual(policy.segmentation.onsetRequiredSpeechFrameCount, 3)
-        XCTAssertEqual(policy.segmentation.endpointSilenceFrameCount, 40)
-        XCTAssertEqual(policy.segmentation.maximumSegmentFrameCount, 1_000)
-        XCTAssertEqual(policy.noSpeechFrameLimit, 750)
-        XCTAssertEqual(policy.maximumPendingUploadFrameCount, 250)
-        XCTAssertEqual(policy.uploadBatchFrameCount, 10)
-    }
-
-    func testPolicyRejectsUnboundedOrIncoherentQueueValues() throws {
-        let segmentation = try makeSegmentation()
-        XCTAssertThrowsError(try VoiceActivatedASRPolicy(
-            segmentation: segmentation,
-            noSpeechFrameLimit: 2,
-            maximumPendingUploadFrameCount: 8,
-            uploadBatchFrameCount: 2
-        ))
-        XCTAssertThrowsError(try VoiceActivatedASRPolicy(
-            segmentation: segmentation,
-            noSpeechFrameLimit: 10,
-            maximumPendingUploadFrameCount: 2,
-            uploadBatchFrameCount: 2
-        ))
-        XCTAssertThrowsError(try VoiceActivatedASRPolicy(
-            segmentation: segmentation,
-            noSpeechFrameLimit: 10,
-            maximumPendingUploadFrameCount: 8,
-            uploadBatchFrameCount: 9
-        ))
-    }
-
     func testStandardPolicyFrameLivenessIntervalIsFifteenSeconds() async throws {
         let source = FakePCMFrameSource()
         let detector = FakeVoiceActivityDetector(defaultSpeech: false)
