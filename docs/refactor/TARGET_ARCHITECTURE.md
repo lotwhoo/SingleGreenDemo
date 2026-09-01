@@ -40,6 +40,7 @@ SingleGreenUser / SingleGreenInternal product schemes
             -> SingleGreenConversationAdapters
                 -> VoiceChatCore
                     -> ASRDomain -> VoiceActivityDetectionKit
+                    -> AudioCaptureApple -> ASRDomain + VoiceActivityDetectionKit
                 -> LLMKit -> LLMChatTransport
         -> App live adapters
             -> provider transports, system frameworks, credentials
@@ -55,9 +56,14 @@ The following existing ownership rules remain non-negotiable:
 - `ASRDomain` owns provider-neutral ASR failures, session and voice-activated
   state/events, VAD policy, frame-source contracts, and streaming-transport
   contracts. It depends only on Foundation and `VoiceActivityDetectionKit`.
+- `AudioCaptureApple` owns AVAudioEngine/AVAudioSession, PCM conversion and
+  snapshots, system-audio notifications, capture run identity, and the concrete
+  PCM frame-source adapter. It must not import UI, networking, provider modules,
+  or `VoiceChatCore`.
 - `VoiceChatCore` re-exports the ASR domain for source compatibility while it
-  continues to own session actors, Apple audio implementation, provider
-  transport mapping, cancellation, generation, and cleanup.
+  also re-exports Apple audio compatibility. It owns session actors, provider
+  transport mapping, cancellation, generation, and cleanup, and must not import
+  AVFoundation directly.
 - `ConversationLiveAdapters` remains the production framework bridge.
 - `LLMKit` owns provider-neutral chat, stateless/stateful Agent semantics, tool
   rounds, and context transactions through `LLMChatTransport`.

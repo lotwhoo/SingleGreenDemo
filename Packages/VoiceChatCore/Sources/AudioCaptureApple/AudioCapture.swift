@@ -47,8 +47,15 @@ public final class AudioCapture {
     private let audioSessionLifecycle: AudioSessionActivationLifecycle
     private let audioSystemEventBridge: AudioCaptureAudioSystemEventBridge
     private let graphPreparation: any AudioCaptureGraphPreparing
+    /// Serializes start/stop graph mutation. Audio callbacks never take this lock; they use
+    /// `AudioCaptureRunState`, so the real-time callback cannot deadlock lifecycle teardown.
+    private let lifecycleOperations = NSLock()
 
     public var isRunning: Bool { runState.isRunning }
+
+    deinit {
+        stop(flushRemainder: false)
+    }
 
     public init(diagnosticHandler: (@Sendable (Diagnostic) -> Void)? = nil) {
         let runState = AudioCaptureRunState()
@@ -156,6 +163,22 @@ public final class AudioCapture {
         chunkHandler: @escaping @Sendable (UInt64, Data) -> Void,
         levelHandler: (@Sendable (UInt64, Float) -> Void)? = nil
     ) throws {
+        lifecycleOperations.lock()
+        defer { lifecycleOperations.unlock() }
+        try startRunLocked(
+            callbackToken: callbackToken,
+            chunkByteCount: chunkByteCount,
+            chunkHandler: chunkHandler,
+            levelHandler: levelHandler
+        )
+    }
+
+    private func startRunLocked(
+        callbackToken: UInt64?,
+        chunkByteCount: Int,
+        chunkHandler: @escaping @Sendable (UInt64, Data) -> Void,
+        levelHandler: (@Sendable (UInt64, Float) -> Void)?
+    ) throws {
         guard !isRunning else { return }
         guard chunkByteCount > 0, chunkByteCount.isMultiple(of: 2) else {
             throw CaptureError.converterFailed
@@ -213,11 +236,16 @@ public final class AudioCapture {
 
     /// 停止录音。flushRemainder 为 true 时把不足 200ms 的尾部数据也发出去。
     public func stop(flushRemainder: Bool = true) {
-        guard let stoppedRun = runState.stop(flushRemainder: flushRemainder) else { return }
+        lifecycleOperations.lock()
+        guard let stoppedRun = runState.stop(flushRemainder: flushRemainder) else {
+            lifecycleOperations.unlock()
+            return
+        }
         audioSystemEventBridge.stop()
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
         audioSessionLifecycle.deactivate()
+        lifecycleOperations.unlock()
         if let remainder = stoppedRun.remainder {
             stoppedRun.chunkHandler(stoppedRun.callbackToken, remainder)
         }
@@ -319,6 +347,10 @@ public final class AudioCapture {
     }
 }
 
+/// Immutable callback holder crossing AVAudioEngine's callback boundary. The closures are never
+/// mutated after initialization; run admission and stale-callback rejection live in the locked
+/// `AudioCaptureRunState` rather than in this holder. This preserves the legacy public contract
+/// that callbacks run on the audio thread, so callers remain responsible for synchronizing captures.
 private final class LegacyAudioCaptureCallbacks: @unchecked Sendable {
     let chunkHandler: (Data) -> Void
     let levelHandler: ((Float) -> Void)?

@@ -1,6 +1,8 @@
 import Foundation
 import os
 
+/// Mutable callback state shared by the caller and AVAudioEngine's real-time callback. Every access
+/// is guarded by `state`; user callbacks are copied out and invoked after the lock is released.
 final class AudioCaptureRunState: @unchecked Sendable {
     struct StoppedRun: Sendable {
         let callbackToken: UInt64

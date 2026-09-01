@@ -67,6 +67,10 @@ M8 本地证据：`SingleGreenGlassesKit` **178/178**；App XCTest **58/58**；�
 
 当前复核证据：`SingleGreenGlassesKit` **184/184**、`VoiceChatCore` **109/109**；七 Package 架构边界、Package inventory、repository hygiene、secret scan 与 `git diff --check` 通过；八个公开模块在 macOS arm64 与 iOS Simulator arm64 的 **16** 份 API baseline 通过。该复核没有执行 App-hosted XCTest、App Simulator build、签名构建、真机安装/启动或真实 ASR/LLM/Search 调用，不能替代历史 M8 或设备证据。完整范围见 [M9 任务记录](./docs/tasks/2026-08-29-runtime-state-decomposition.md)。
 
+### M12 Audio / ASR Layering（PR1–PR2 本地完成，2026-09-01）
+
+`VoiceChatCore` Package 内已新增内部 `ASRDomain` 与 `AudioCaptureApple` Target：前者只承载 provider-neutral 契约，后者独占 AVAudioEngine/AVAudioSession、PCM 转换、系统音频事件与具体帧源。`VoiceChatCore` 保留会话 actor、供应商传输映射与兼容导出，并禁止重新直接导入 AVFoundation。Apple 音频生命周期具有唯一 owner 和幂等 start/stop/deactivate 门禁；当前本地证据为七 Package 严格并发/WAE **574/574**、架构 **15** 个负向 fixture。锁定工具链 API baseline、App、真机、真实路由故障矩阵和真实 ASR 仍待独立验证，详见 [M10–M17 升级计划](./docs/tasks/2026-08-31-architecture-reliability-update-plan.md)。
+
 M1 的首次完整 QA 为五个 Package 150 项 + App-hosted 13 项，共 **163/0**；两项 P2 修复后的受影响复测为 SingleGreenGlassesKit 46 项 + App-hosted 13 项，共 **59/0**。两次均通过通用 Simulator build。详细验收清单和残余人工检查见[架构与升级报告](./docs/PROJECT_ARCHITECTURE_AND_UPGRADE_REPORT.md)及[M1 任务卡](./docs/tasks/2026-08-28-long-term-roadmap.md)。
 
 ### M1 refactor PR-02/PR-03（本地实现，2026-08-30）

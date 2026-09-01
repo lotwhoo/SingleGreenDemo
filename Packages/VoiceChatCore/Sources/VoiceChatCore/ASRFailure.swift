@@ -1,5 +1,6 @@
 import Foundation
 import ASRDomain
+import AudioCaptureApple
 
 public extension ASRFailure {
     /// Classifies transport failures structurally from their error domain and code.

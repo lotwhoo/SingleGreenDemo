@@ -48,7 +48,10 @@ actor AudioCapturePCMFrameSource: PCMFrameSource {
             return run.streams
         } catch {
             if activeRunToken == run.token { activeRunToken = nil }
-            relay.finish(runToken: run.token, throwing: ASRFailure.transport(error))
+            relay.finish(
+                runToken: run.token,
+                throwing: PCMFrameSourceFailure.audioUnavailable
+            )
             throw error
         }
     }
@@ -61,6 +64,8 @@ actor AudioCapturePCMFrameSource: PCMFrameSource {
     }
 }
 
+/// AVAudioEngine callbacks and async stream consumers can race. The complete stream identity,
+/// sequence and continuation state is guarded by `state`; continuations are never logged or stored.
 final class PCMFrameSourceRelay: @unchecked Sendable {
     private struct State {
         var nextRunToken: UInt64 = 0
@@ -141,7 +146,7 @@ final class PCMFrameSourceRelay: @unchecked Sendable {
         case .conversionFailed:
             finish(runToken: runToken, throwing: PCMFrameSourceFailure.invalidFrame)
         case .audioSystemEvent(let event):
-            if ASRFailure.audioSystemEvent(event) != nil {
+            if event != .interruptionEnded {
                 finish(
                     runToken: runToken,
                     throwing: PCMFrameSourceFailure.audioSystemEvent(event)
@@ -163,5 +168,15 @@ final class PCMFrameSourceRelay: @unchecked Sendable {
             state.frameContinuation = nil
             state.levelContinuation = nil
         }
+    }
+}
+
+package enum ApplePCMFrameSourceFactory {
+    package static func make(
+        maximumBufferedFrameCount: Int
+    ) -> any PCMFrameSource {
+        AudioCapturePCMFrameSource(
+            maximumBufferedFrameCount: maximumBufferedFrameCount
+        )
     }
 }

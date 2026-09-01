@@ -1,6 +1,7 @@
 import Foundation
 import os
 import ASRDomain
+import AudioCaptureApple
 
 /// 豆包流式语音识别 2.0 高层模块。
 ///
