@@ -150,7 +150,8 @@
 - 产物：`../../../测试包/Build-10-M12/SingleGreenUser-Build10-M12.ipa`，User Release 源码配置、development 导出，包内为 iphoneos arm64。
 - 身份：Bundle ID `com.local.SingleGreenDemo`，版本 `0.1 (10)`；嵌入的 provisioning profile Team 与 App 签名 Team 一致，且包含当前连接设备 UDID。
 - 核验：`codesign --verify --deep --strict` 、User artifact/release credential isolation 检查通过；SHA-256 为 `cc4b3edbe34006d0a7dba0b856c746c343a064c781b4390ed90ab49d82b8321c`。
-- 证据边界：Archive、导出、签名、包身份和可安装设备列表已核验；本次未执行 device install、launch、真实 ASR、麦克风路由或物理眼镜验收。
+- 部署结果：2026-09-01 已安装到 iPhone 17 Pro Max；设备应用清单确认 `com.local.SingleGreenDemo` 为 `0.1 (10)`。首次启动因设备锁定被拒绝，解锁后从本次安装路径启动成功，PID 49477。
+- 证据边界：Archive、导出、签名、包身份、安装和启动已分别核验；真实 ASR、麦克风路由、提词器功能和物理眼镜验收仍未执行。部署与启动结果不能替代这些功能证据。
 
 ## 4. 本计划的边界
 
@@ -511,9 +512,13 @@ idle → preparing → active → finalizing → completed
 
 每项分别记录 capture、VAD、transport、Feature 和 UI 最终状态。
 
+执行状态（2026-09-01，部分完成）：已建立[真实音频故障矩阵](./2026-09-01-m12-pr4-real-audio-fault-matrix.md)，音频 Core、Feature/生命周期、Adapter 和 App 麦克风租约聚焦自动化共 268/268；Build 10 User 真机 install/launch 已通过。User Release 按安全设计使用 fail-closed 的服务端/语音凭证入口，当前没有可用后端，不能建立真实 ASR Session。经独立授权，`0.1 (10)` Internal Debug 实验包已完成 Archive、导出、签名/能力核验和真机安装；用户随后反馈真机测试整体“比较 ok”。因未记录步骤、路由、网络条件与五层结果，该反馈只作为用户观察冒烟证据，不填写故障矩阵。内置麦克风、Bluetooth HFP、有线输入、系统抢占、route change、media-services reset、App 前后台、真实网络和真实 ASR 仍待逐项观察，因此生产自动恢复预算继续保持 0。
+
 #### M12-PR5：离线 ASR 可行性 Spike
 
 候选可以包含 whisper.cpp 或系统能力，但本 PR 只做可行性和设备测量：模型体积、首次加载、中文准确性、延迟、峰值内存、功耗、温升和最低设备。未通过评审前不进入生产依赖。
+
+实施状态（2026-09-01，部分完成）：已建立 [Apple 系统能力优先的可行性记录](./2026-09-01-m12-pr5-offline-asr-feasibility.md)，并在 `INTERNAL_DIAGNOSTICS` 下新增手动能力探针。探针只查询中文 locale、模型资产、兼容音频格式和已安装资产的准备耗时；不下载、不录音、不转写。聚焦测试 2/2、Internal App 135/135、User App 100/100，User/Internal Release Simulator 构建、Internal Debug 构建与产物隔离门禁已通过。`0.1 (11)` Internal Debug 真机包已完成归档、导出、签名/能力扫描和 iPhone 17 Pro Max 安装；本轮未启动 App 或运行探针。中文准确性、延迟、内存、功耗、温升、模型占用和最低设备仍全部未验证，因此不宣称已支持离线 ASR。
 
 ### 9.3 M12 完成门
 
@@ -1114,11 +1119,11 @@ Core 只输出类型化、无内容事件：
 
 ## 22. 推荐立即启动的前三个任务
 
-1. 使用已生成的 `0.1 (10)` 开发测试 IPA 补真机 install/launch，并复验 checkpoint/导入/删除、完成与 M11-PR2 撤销体验；本次已授权打包，但未要求安装或启动。
+1. Build 10 真机 install/launch 已通过；继续复验 checkpoint/导入/删除、完成与 M11-PR2 撤销体验，部署结果不能替代功能验收。
 2. 用真实普通话 ASR 复核已在合成基线修复的多字/短增量误跃迁，并采集 partial 形态；没有真实分布前不设发布阈值。
 3. 进入 M12-PR4 真实音频故障矩阵：验证内置/Bluetooth/有线麦克风、系统抢占、route change 和 media-services reset，再决定恢复次数、超时、退避与是否需要优先级抢占；真实矩阵前继续保持生产自动重连为 0。该步骤涉及真机操作，需独立授权。
 
-M11-PR1–PR5 已完成当前主机可执行的实现、合成离线基线与最终门禁；M12-PR1/PR2 已完成两个内部 Target 拆分，M12-PR3 已完成 PTT/Voice Activated Supervisor 和进程级麦克风租约。锁定工具链、当前 App Simulator/Release、公开 API 基线和 Build 10 真机开发测试 IPA 已补齐；真机 install/launch、真实 ASR 与物理眼镜继续作为独立证据门。
+M11-PR1–PR5 已完成当前主机可执行的实现、合成离线基线与最终门禁；M12-PR1/PR2 已完成两个内部 Target 拆分，M12-PR3 已完成 PTT/Voice Activated Supervisor 和进程级麦克风租约。锁定工具链、当前 App Simulator/Release、公开 API 基线以及 Build 10 打包、真机安装与启动已补齐；真实 ASR、M11 真机功能复验、M12-PR4 真实故障矩阵与物理眼镜继续作为独立证据门。
 
 ## 23. 参考来源
 

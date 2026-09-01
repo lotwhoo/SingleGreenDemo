@@ -58,6 +58,7 @@ write_internal_fixture() {
         echo 'vad-diagnostics-live-wiring-v2'
         echo 'InternalTeleprompterASRDiagnosticsSession'
         echo 'teleprompter-asr-diagnostics-live-wiring-v1'
+        echo 'offline_asr_capability_check_button'
         echo 'schema=v2'
         echo '[vad]'
         echo 'SingleGreenDemo diagnostics'
@@ -151,6 +152,11 @@ write_user_fixture "$user_teleprompter_wiring"
 printf '%s\n' 'teleprompter-asr-diagnostics-live-wiring-v1' >>"$user_teleprompter_wiring/SingleGreenDemo"
 expect_fail "User artifact with teleprompter ASR diagnostics live-wiring marker" "$user_check" "$user_teleprompter_wiring"
 
+user_offline_asr_probe="$temp_root/UserOfflineASRProbe.app"
+write_user_fixture "$user_offline_asr_probe"
+printf '%s\n' 'offline_asr_capability_check_button' >>"$user_offline_asr_probe/SingleGreenDemo"
+expect_fail "User artifact with offline ASR capability probe marker" "$user_check" "$user_offline_asr_probe"
+
 user_credentials="$temp_root/UserCredentials.app"
 write_user_fixture "$user_credentials"
 printf '%s\n' 'DemoCredentialStore' >>"$user_credentials/SingleGreenDemo"
@@ -222,6 +228,12 @@ write_internal_fixture "$internal_no_teleprompter_wiring"
 grep -v 'teleprompter-asr-diagnostics-live-wiring-v1' "$internal_no_teleprompter_wiring/SingleGreenDemo" >"$temp_root/internal-no-teleprompter-wiring"
 mv "$temp_root/internal-no-teleprompter-wiring" "$internal_no_teleprompter_wiring/SingleGreenDemo"
 expect_fail "Internal artifact without teleprompter ASR diagnostics live-wiring marker" "$internal_check" "$internal_no_teleprompter_wiring"
+
+internal_no_offline_asr_probe="$temp_root/InternalNoOfflineASRProbe.app"
+write_internal_fixture "$internal_no_offline_asr_probe"
+grep -v 'offline_asr_capability_check_button' "$internal_no_offline_asr_probe/SingleGreenDemo" >"$temp_root/internal-no-offline-asr-probe"
+mv "$temp_root/internal-no-offline-asr-probe" "$internal_no_offline_asr_probe/SingleGreenDemo"
+expect_fail "Internal artifact without offline ASR capability probe marker" "$internal_check" "$internal_no_offline_asr_probe"
 
 internal_no_export="$temp_root/InternalNoExport.app"
 write_internal_fixture "$internal_no_export"
