@@ -232,7 +232,7 @@ public protocol TeleprompterRecognitionSession: Sendable {
 2. **已完成（MVP 形态）**：在 App 组合层接入 speech-scoped credential 和一次话语 ASR Session；权限、凭据和云端同意不进入 Core。
 3. **已完成**：在 HUD 层用 TextKit 测量完整行，焦点居中最多取 3 行，高度不足时取 2 行。
 4. **已完成**：通过 Experience descriptor 注册提词器并接入四向短按；四向操作不读取具体 Controller，手机撤销按 M11-PR2 走提词器专用显式命令。
-5. **本次 checkout 的 Package 自动化与静态门禁已完成**：跃迁规则修复后的 SingleGreenGlassesKit 273/273、七 Package strict-concurrency/WAE 569/569及列出的架构/安全门禁均通过。规则修复前同一 M11 工作树的 App Simulator 96/96 与 User Release Simulator build 已通过；当前受限环境无法连接 CoreSimulatorService 且不能写用户级 SwiftPM cache，因此本次 App 运行/编译未复验。新增 public API 的最终 baseline 与物理设备检查按用户决定延期至 2026-09-02；live provider 调用和眼镜验证仍待执行。
+5. **当前 checkout 的可本机复验基线已完成**：在锁定 Xcode 26.6 / Swift 6.3.3 上，SingleGreenGlassesKit 273/273、七 Package strict-concurrency/WAE 589/589、架构 inventory 与 16 个负向 fixture、App Simulator 96/96、User Release generic Simulator build 和 8 公开模块双架构 API baseline 均通过。旧提词器调用入口已保留，M12 内部 Target 导致的模块归属变化已明确审阅并接受。当前 App 源码版本为 `0.1 (10)`，但尚未生成或安装 Build 10 真机包；live provider 和物理眼镜验证仍待执行。
 6. **已完成（M11-PR2 本机实现）**：手机控制面板按需显示一次性自动跃迁撤销；没有新增眼镜按键映射。
 7. **已完成（M11-PR3 本机实现）**：纯值 checkpoint、抽象 store、生命周期写入、类型化恢复、旧草稿迁移和单 envelope 删除闭环。
 8. **已完成（M11-PR4）**：App 侧类型化 ScriptRepository、UTF-8 TXT/Markdown 文件选择与 bytes 解析、手机显式完成；失败/重复不覆盖当前稿件，文件名与路径不进入 Feature/结果对象，眼镜长按映射未改变。
@@ -259,10 +259,10 @@ public protocol TeleprompterRecognitionSession: Sendable {
 |---|---|---|---|
 | 文档静态检查 | 已通过：逐文件 whitespace check 与敏感信息模式扫描 | 三份相关 Markdown 未发现 diff 空白错误或常见密钥模式 | 不验证产品逻辑或运行时行为 |
 | 最终 Core 自动化 | 已通过：SingleGreenGlassesKit 273/273 | 当前 checkout 的定位/撤销、checkpoint、显式完成、误跃迁回归、离线评测结构与迟到事件隔离通过 | 不代表真实 DeepSeek、搜索或 ASR 服务可用 |
-| 最终 App Simulator 全量 | 当前规则修复后未运行：受限环境无法连接 CoreSimulatorService；规则修复前同一 M11 工作树曾通过 96/96，证据：`/private/tmp/SingleGreenDemo-M11-PR45-Final2.xcresult` | 只保留此前 App 集成基线，不把它冒充当前规则修复后的运行证据 | 不等于当前 App 回归、真实文件提供器、live provider 或物理设备验证 |
-| 合成离线评测 | 已运行：20 场景、5,424 决策；预期/实际 jump 均为 3，误跃迁 0、漏跃迁 0、规则类型不一致 0、最大位置误差 2 UTF-16、P50 2,750 ns、P95 3,084 ns | 建立可重复回归起点，并证明当前合成集上的多字/短增量误跃迁已修复 | 不代表真实语料发生率、真机性能或验收阈值 |
+| 最终 App Simulator 全量 | 当前 checkout 已通过 96/96，0 failures，0 skips；`/private/tmp/SingleGreenDemo-final-app-tests.xcresult` | 证明当前 App 的 Simulator 集成回归 | 不等于真实文件提供器、live provider 或物理设备验证 |
+| 合成离线评测 | 已运行：20 场景、5,424 决策；预期/实际 jump 均为 3，误跃迁 0、漏跃迁 0、规则类型不一致 0、最大位置误差 2 UTF-16、P50 2,209 ns、P95 5,542 ns | 建立可重复回归起点，并证明当前合成集上的多字/短增量误跃迁已修复 | 不代表真实语料发生率、真机性能或验收阈值 |
 | Simulator 编译 | User Release generic iOS Simulator build 成功 | 当前 checkout 可完成已执行的 Release Simulator 编译 | Simulator build 不等于 iphoneos、安装或启动 |
-| 发布与隐私门禁 | 已通过：repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates、12 个负向 fixture、七 Package strict-concurrency/WAE 569/569、diff whitespace 和 public API updater 安全自检；当前 User Release build 与 actual public API baseline 本轮未运行 | 当前 checkout 满足已执行的仓库卫生、隐私、架构和并发静态门禁 | User Release build 受当前环境限制；锁定 Xcode 26.6（17F113）/ Swift 6.3.3 的 baseline 按用户决定延期至 2026-09-02，本轮不能确认或改写新增 public API baseline |
+| 发布与隐私门禁 | 已通过：repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates、16 个负向 fixture、七 Package strict-concurrency/WAE 589/589、User Release generic Simulator build、diff whitespace、API updater 安全自检和 actual public API baseline | 当前 checkout 满足已执行的仓库卫生、隐私、架构、并发、Simulator 发布构建与 API 快照门禁 | 不等于 Build 10 真机签名/安装、真实服务或物理眼镜验收 |
 | Live provider | 未运行 | 无 | 不能宣称真实 DeepSeek、搜索或 ASR 的准确率、延迟与轮换连续性 |
 | 物理设备 install/launch | 本批次未运行 | M11-PR1 未新增设备侧证据 | 不能宣称安装、启动、眼镜可读性、按键或音频路由通过 |
 

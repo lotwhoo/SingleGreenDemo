@@ -1,6 +1,6 @@
 # 单绿眼镜 ASR 智能提词器 PRD
 
-> 版本：MVP Implemented Baseline v1.9（含 M11-PR1–PR5 与延期/未验证项）
+> 版本：MVP Implemented Baseline v2.0（含 M11-PR1–PR5、M12-PR1–PR3 第一段与未验证项）
 >
 > 日期：2026-09-01
 >
@@ -29,7 +29,7 @@
 
 成功标准不是“ASR 转写看起来准确”，而是演讲者抬眼时，当前要说的内容稳定地处于中间行，且系统绝不因识别猜测自动向后跳。向后恢复只允许由用户明确点击手机端的一次性撤销，或使用既有人工纠偏。
 
-当前证据边界：本次跃迁规则修复后的 SingleGreenGlassesKit 273/273、七 Package strict-concurrency/WAE 569/569、架构边界和敏感信息扫描已通过。离线评测在 20 个合成/脱敏场景执行 5,424 次决策并记录信息性基线，不设置验收阈值。规则修复前同一 M11 工作树的 SingleGreenUser App Simulator 96/96 与 User Release Simulator build 已通过；本次受限执行环境无法连接 CoreSimulatorService，不能把该历史结果写成当前规则修复后的 App 复验。Xcode 26.6 public API baseline 与真机检查按用户决定延期至 2026-09-02，本轮未尝试。真实 DeepSeek/搜索/ASR 调用、位置恢复/导入/删除/完成的物理设备复验和长时可读性仍未验证。
+当前证据边界：在锁定 Xcode 26.6（17F113）/ Swift 6.3.3 / SDK 26.5 上，SingleGreenGlassesKit 273/273、七 Package strict-concurrency/WAE 589/589、架构 inventory 与 16 个负向 fixture、SingleGreenUser App Simulator 96/96 和 User Release generic Simulator build 已通过。8 个公开模块的 macOS arm64 / iOS Simulator arm64 API 差异已审阅并更新基线；旧提词器源码入口保留，M12 声明归属变化明确接受。当前 App 源码版本为 `0.1 (10)`，历史已导出内测包仍是 `0.1 (9)`。离线评测在 20 个合成/脱敏场景执行 5,424 次决策，不设验收阈值。真实 DeepSeek/搜索/ASR、当前 Build 10 真机构建/安装/启动、位置恢复/导入/删除/完成的物理设备复验和长时可读性仍未验证。
 
 ## 2. 用户与待完成任务
 
@@ -549,9 +549,9 @@ FOLLOWING / HOLDING / UNCERTAIN / MANUAL
 建议按以下顺序验收，任何后层成功都不能替代前层证据：
 
 1. **已通过**：本次跃迁规则修复后的 SingleGreenGlassesKit 全量套件 273/273；
-2. **历史已通过、本次未复验**：规则修复前同一 M11 工作树的 SingleGreenUser App Simulator 全量 96/96，0 failures，0 skips，运行于 iPhone 17 Pro / iOS 26.5；当前受限执行环境无法连接 CoreSimulatorService；
-3. **历史已通过、本次未复验**：规则修复前同一 M11 工作树的 Internal Debug iphoneos archive/export、Internal Debug Simulator build/能力扫描和 User Release Simulator build；本次 xcodebuild 同时受 CoreSimulatorService 与用户级 SwiftPM cache 写权限限制；
-4. **部分通过**：本次 credential isolation、repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates 和 public API updater 安全自检已通过；final public API baseline 因本机工具链低于仓库锁定版本而按设计未运行；
+2. **已通过**：当前 SingleGreenUser App Simulator 全量 96/96，0 failures，0 skips，证据为 `/private/tmp/SingleGreenDemo-final-app-tests.xcresult`；
+3. **已通过**：当前 User Release generic Simulator build；历史 Internal Debug iphoneos archive/export 仍只证明 `0.1 (9)`，不等于当前 `0.1 (10)` 已导出；
+4. **已通过**：锁定工具链、credential isolation、repository hygiene、privacy logging、VAD privacy、secret scan、architecture gates、API updater 安全自检，以及 8 公开模块双架构 actual public API baseline；
 5. **未运行**：live provider 的 DeepSeek、搜索和 ASR 调用，包括普通话、噪声、静默、插话、跳读与 rollover 连续性；
 6. **延期**：本轮按用户决定不执行设备 install/launch；2026-08-31 的历史安装记录不替代 2026-09-01 当前 checkout 的真机、物理眼镜显示、音频路由和人工可读性证据。
 
@@ -565,12 +565,12 @@ PromptSmart 对 VoiceTrack 使用专利表述。商业发布前应由合格人�
 |---|---|---|
 | 文档静态检查 | 已通过：逐文件 whitespace check 与敏感信息模式扫描 | 未发现 diff 空白错误或常见密钥模式；不验证业务 |
 | 最终 Core 自动化 | 本次全量已通过：SingleGreenGlassesKit 273/273 | 定位/撤销、checkpoint、显式完成、原子删除、迟到事件隔离、误跃迁回归及离线评测结构覆盖；不代表真实服务通过 |
-| 最终 App Simulator 全量 | 本次规则修复后未运行：受限执行环境无法连接 CoreSimulatorService；规则修复前同一 M11 工作树曾通过 96/96，证据：`/private/tmp/SingleGreenDemo-M11-PR45-Final2.xcresult` | 历史结果只说明此前 App 集成基线，不能证明当前规则修复后的 App 运行回归；真实文件提供器、live provider 和设备也仍未验证 |
-| 合成离线评测 | 本次已运行：20 场景、5,424 决策；预期/实际 jump 均为 3，误跃迁 0、漏跃迁 0、规则类型不一致 0、最大位置误差 2 UTF-16、P50 2,750 ns、P95 3,084 ns、进程峰值 8,847,360 bytes、状态更新 18 | 信息性回归基线，无验收阈值；修复了多字后缀截取和短增量片段导致的合成误跃迁，不外推为真实发生率 |
+| 最终 App Simulator 全量 | 当前 checkout 已通过 96/96，0 failures，0 skips；`/private/tmp/SingleGreenDemo-final-app-tests.xcresult` | 证明当前 App 在 Simulator 的集成回归；真实文件提供器、live provider 和物理设备仍未验证 |
+| 合成离线评测 | 本次已运行：20 场景、5,424 决策；预期/实际 jump 均为 3，误跃迁 0、漏跃迁 0、规则类型不一致 0、最大位置误差 2 UTF-16、P50 2,209 ns、P95 5,542 ns、进程峰值 8,388,608 bytes、状态更新 18 | 信息性回归基线，无验收阈值；修复了多字后缀截取和短增量片段导致的合成误跃迁，不外推为真实发生率 |
 | 本次内部版 App/HUD 聚焦复测 | 已通过：49/49，0 failures，0 skips；iPhone 17 Pro Max Simulator，iOS 26.5；`/private/tmp/SingleGreenDemo-ThreeLineFixTests/Logs/Test/Test-SingleGreenInternal-2026.08.31_14-27-37-+0800.xcresult` | 使用默认显示 Profile 与 440×956 容器计算实际投影，验证 14 pt 正文可完整容纳 3 行 |
 | iphoneos 构建与导出 | 本次 Internal Debug archive/export 成功；版本 0.1（9）的 `SingleGreenInternal-Build9-M10.ipa` 已核验签名、内部 Bundle ID、能力标记和 SHA-256；历史 Release generic iphoneos build 仍为历史证据 | 测试包路径：`/Users/chenkemin/Documents/ChatGPT/单绿眼镜 Demo/测试包/Build-9-M10/SingleGreenInternal-Build9-M10.ipa`；构建与签名通过不等于具体设备 install/launch |
-| 发布与隐私门禁 | 本次已通过：secret scan、repository hygiene、privacy logging、VAD privacy、architecture gates 与 12 个负向 fixture、七 Package strict-concurrency/WAE 569/569、diff whitespace 和 public API updater 安全自检；当前 User Release build 因环境限制未复验 | actual public API baseline 按用户决定未运行，延期至 2026-09-02 在 Xcode 26.6（17F113）/ Swift 6.3.3 执行；本轮未改写 baseline |
+| 发布与隐私门禁 | 已通过：secret scan、repository hygiene、privacy logging、VAD privacy、architecture gates 与 16 个负向 fixture、七 Package strict-concurrency/WAE 589/589、User Release generic Simulator build、diff whitespace 和 public API updater 安全自检 | 锁定 Xcode 26.6 / Swift 6.3.3 上的 8 公开模块双架构 baseline 已经过差异审阅、更新并复验通过；不等于真机发布或功能验收 |
 | Live provider | 未运行 | 未验证真实 DeepSeek、搜索、普通话 ASR、延迟、噪声或 one-shot auto-rotation 连续性 |
 | 物理设备 install/launch | 本轮未运行，按用户决定延期至 2026-09-02 | 2026-08-31 有旧 checkout 的历史安装记录；不能证明当前 checkpoint/导入/删除、撤销、眼镜可读性、按键、音频路由、热与电量 |
 
-本次 checkout 的 Core/App 自动化、合成离线基线、架构边界、严格并发和敏感信息扫描已刷新；公共 API 基线仍需在仓库锁定工具链上复验。真实普通话 ASR、50 字跃迁与撤销、手机完成入口、物理设备显示、音频路由和人工可读性体验继续作为独立证据门。
+本次 checkout 的 Core/App 自动化、User Release Simulator build、合成离线基线、架构边界、严格并发、敏感信息扫描和公开 API 基线已刷新。真实普通话 ASR、50 字跃迁与撤销、手机完成入口、当前 Build 10 真机构建/安装/启动、物理眼镜显示、音频路由和人工可读性体验继续作为独立证据门。
