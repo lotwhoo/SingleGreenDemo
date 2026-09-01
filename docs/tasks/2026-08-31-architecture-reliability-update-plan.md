@@ -61,7 +61,7 @@
 ### 3.3 证据基线
 
 - 本次跃迁规则修复后的 SingleGreenGlassesKit 为 273/273，七 Package strict-concurrency/WAE 合计 569/569；规则修复前同一 M11 工作树的 SingleGreenUser App Simulator 为 96/96，本次受限环境无法连接 CoreSimulatorService，未冒充为当前复验。
-- 当前架构 inventory、import boundary 和 15 个负向 fixture 已通过；`ASRDomain` 不得导入平台框架，`AudioCaptureApple` 不得导入 UI、网络、供应商或反向依赖 `VoiceChatCore`，`VoiceChatCore` 不得重新直接导入 AVFoundation。
+- 当前架构 inventory、import boundary 和 16 个负向 fixture 已通过；`ASRDomain` 不得导入平台框架，`AudioCaptureApple` 不得导入 UI、网络、供应商或反向依赖 `VoiceChatCore`，`ASRSupervision` 不得导入网络、Apple 音频、供应商或反向依赖 Core，`VoiceChatCore` 不得重新直接导入 AVFoundation。
 - 当前机器为 Xcode 26.5 / Swift 6.3.2，仓库锁定 Xcode 26.6 / Swift 6.3.3；公共 API 基线必须在锁定工具链重新执行。
 - 七个 Package 的覆盖率表属于此前测量基线；最新提词器变化后应重新测量受影响 Package，不能直接把历史数字作为当前结果。
 - 已生成并核验内部测试 IPA；生成、安装、启动、真实功能验收仍是不同门禁。
@@ -124,6 +124,16 @@
 - 发现并修复既有 `finishStreamReturned` 诊断竞态：成功返回现在必定先记录诊断再检查活跃 generation；状态、重试和终态行为不变。该聚焦竞态回归 10/10。
 - `AudioCaptureAppleTests` 28/28、`VoiceChatCore` Package 126/126、上层 Adapter 24/24、七 Package strict-concurrency/WAE 574/574；架构主检查与 15 个负向 fixture 通过。VAD 外部消费者夹具需在当前受限环境为其嵌套 `swift build` 显式传入 `--disable-sandbox`，随后 43/43 通过。
 - User-Release generic Simulator build 已尝试，但在源码编译前因 CoreSimulatorService connection invalid 和用户级 SwiftPM manifest cache 无写权限而失败；本批次仍未取得锁定工具链 public API baseline、App test/build、真机、蓝牙 HFP/电话抢占/route matrix、真实 ASR 或物理眼镜验证，这些证据不由 Package 自动化替代。
+
+### 3.10 M12-PR3 第一段当前执行快照（2026-09-01）
+
+- 新增内部 `ASRSupervision` Target 和独立测试 Target，只依赖 `ASRDomain`；`VoiceChatCore` 兼容导出 Supervisor，并让 `ASRSession` 实现 provider-neutral `SupervisedASRSession`。
+- Supervisor 分离 logical run generation 与 concrete session generation；旧 Session 迟到事件、取消后的事件和恢复前 Session 的事件均被拒绝。
+- 仅 `.networkUnavailable`、`.timeout`、`.connectionLost` 具备恢复资格；已发布非空 transcript/utterance 或进入 finalizing 后一律不自动重试，避免重复或丢失不可去重内容。
+- 旧 Session cancel 使用共享 retirement barrier；清理完成前不创建新 Session，取消正在恢复的运行也会等待相同 barrier，防止 provider Session/麦克风生命周期重叠。
+- 恢复耗尽返回含 failure、disposition 和已用恢复次数的 `ASRSessionDegradation`。提词器 PTT composition 选择 `.manualControl`，对话 PTT 选择 `.retryableFailure`；当前生产 policy 均为 0 次恢复，真实故障矩阵前不猜测次数、超时或退避。
+- Supervisor 11/11、`VoiceChatCore` 137/137、监督 Adapter 4/4、Adapter Package 28/28、七 Package strict-concurrency/WAE 589/589，架构主检查与 16 个负向 fixture 通过。
+- Voice Activated Supervisor、进程级多 Feature 麦克风仲裁、锁定工具链 API baseline、App build/test、真机、真实网络/路由和真实 ASR 尚未验证或实现，不由上述测试替代。
 
 ## 4. 本计划的边界
 
@@ -466,6 +476,8 @@ idle → preparing → active → finalizing → completed
 - 提词器降级到手动模式，对话降级到可重试失败状态。
 
 具体重试次数、超时和退避参数在故障基线后确认。
+
+实施状态（2026-09-01，第一段完成）：provider-neutral Supervisor Target、PTT Supervisor、旧 Session retirement barrier、类型化降级、上层 Adapter 和提词器/对话 PTT composition 已完成。生产恢复预算暂为 0；Voice Activated 监督、真实参数和进程级麦克风仲裁继续留在本 PR 后续与 M12-PR4。
 
 #### M12-PR4：真实音频故障矩阵
 
@@ -1016,6 +1028,20 @@ Core 只输出类型化、无内容事件：
 | 回滚方式 | 将 Apple 音频与帧源文件移回 `VoiceChatCore` Target，移除兼容导出、工厂和新门禁；不涉及数据迁移、凭证或供应商配置。 |
 | 证据状态 | Apple 音频/帧源 28/28、整包 126/126、上层 Adapter 24/24、诊断竞态 10/10、七 Package 574/574 与 15 个负向 fixture 通过；App、锁定工具链 API baseline、真机、真实路由和真实 ASR 未验证。 |
 
+### DEC-M12-003：Supervisor 先隔离恢复语义，生产自动重连保持关闭
+
+| 字段 | 内容 |
+| --- | --- |
+| 日期 / 里程碑 | 2026-09-01 / M12-PR3 第一段 |
+| 问题 | 尚无真实网络/音频故障矩阵时，是否直接为提词器和对话启用固定次数、超时与退避的自动重连？ |
+| 所选方案 | 新增只依赖 `ASRDomain` 的内部 `ASRSupervision` Target，完成 generation、旧 Session retirement、有限恢复资格和类型化降级；App 分别选择提词器 `.manualControl` 与对话 `.retryableFailure`，但生产 `maximumRecoveryAttempts` 暂设 0。 |
+| 理由 | 先证明不可重复内容门禁、旧事件拒绝和资源不重叠，再由真实故障数据确定参数；避免把合成单测中的即时重连误当作真机高可用。 |
+| 恢复资格 | 仅网络不可用、超时、连接中断；必须尚未发布非空 transcript/utterance、尚未 finalizing 且显式预算仍有剩余。 |
+| 备选方案 | 立即默认重试 1 次；把重试写入各 Feature；等待故障矩阵后再建立任何 Supervisor。 |
+| 影响范围 | `ASRSupervision`、`VoiceChatCore` 兼容层、监督 Adapter、提词器与对话 PTT composition、架构门禁和 API baseline 审阅。 |
+| 回滚方式 | composition 切回 `VoiceChatSpeechRecognitionAdapter`，移除监督 Adapter/Target/兼容导出；不涉及数据、凭证或持久化迁移。 |
+| 证据状态 | Supervisor 11/11、VoiceChatCore 137/137、Adapter 28/28、七 Package 589/589、16 个负向 fixture 通过；生产自动重连未开启，Voice Activated、App、真机、真实故障矩阵和真实 ASR 未验证。 |
+
 ### DEC-PLATFORM-001：低风险可逆判断采用推荐方案并连续留痕
 
 | 字段 | 内容 |
@@ -1046,9 +1072,9 @@ Core 只输出类型化、无内容事件：
 
 1. 2026-09-02 在锁定 Xcode 26.6 / Swift 6.3.3 环境审阅 M11 新增 public API baseline；同日再补真机 checkpoint/导入/删除与 M11-PR2 撤销体验，不在本批次自动执行设备操作。
 2. 用真实普通话 ASR 复核已在合成基线修复的多字/短增量误跃迁，并采集 partial 形态；没有真实分布前不设发布阈值。
-3. 启动 M12-PR3 `ASRSessionSupervisor`：先定义 provider-neutral 状态、重试资格和旧 Session 拒绝规则，不在未取得故障基线前拍定重试次数/超时/退避；多稿件、生产级长稿索引和导入拆分继续评审，DOCX/PDF/云盘保持待确认（责任方未指定）。
+3. 继续 M12-PR3 第二段：把同一恢复/旧事件规则扩展到 Voice Activated 会话，并设计进程级麦克风租约；真实故障矩阵前继续保持生产自动重连为 0。多稿件、生产级长稿索引和导入拆分继续评审，DOCX/PDF/云盘保持待确认（责任方未指定）。
 
-M11-PR1–PR5 已完成当前主机可执行的实现、合成离线基线与最终门禁；M12-PR1/PR2 已完成两个内部 Target 拆分，M12-PR3 尚未开始。锁定工具链、App/真机、真实 ASR 与物理眼镜继续作为独立证据门，不阻塞当前本机模块化提交。
+M11-PR1–PR5 已完成当前主机可执行的实现、合成离线基线与最终门禁；M12-PR1/PR2 已完成两个内部 Target 拆分，M12-PR3 第一段已完成 Supervisor/PTT 路径，第二段继续 Voice Activated 与麦克风仲裁。锁定工具链、App/真机、真实 ASR 与物理眼镜继续作为独立证据门，不阻塞当前本机模块化提交。
 
 ## 23. 参考来源
 

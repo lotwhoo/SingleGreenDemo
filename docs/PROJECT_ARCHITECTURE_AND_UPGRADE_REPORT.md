@@ -39,7 +39,7 @@
 | M8 Dependency & Composition Refinement | 分组核心依赖并收口 App composition root | 已完成并保留历史证据 |
 | M9 Runtime State Decomposition | 抽取 Controller、音频采集和 VAD/ASR 每轮运行态，同时保留原 owner | 当前代码检查点；受影响 Package 与静态契约已复核 |
 | M10–M11 Teleprompter Reliability | 建立 50 字跃迁、纯定位 Engine、撤销、checkpoint、导入/删除和离线基线 | 当前本机实现完成；真实 ASR、App 当前复验与物理眼镜仍待验证 |
-| M12 Audio / ASR Layering | 将 provider-neutral ASR 契约与 Apple 音频、供应商传输和恢复策略分层 | PR1 `ASRDomain`、PR2 `AudioCaptureApple` 已完成；PR3–PR5 待继续 |
+| M12 Audio / ASR Layering | 将 provider-neutral ASR 契约与 Apple 音频、供应商传输和恢复策略分层 | PR1 `ASRDomain`、PR2 `AudioCaptureApple` 已完成；PR3 第一段 Supervisor/PTT 接入完成，Voice Activated 与真实策略参数待继续 |
 
 ### M12 PR1 ASRDomain Target（本地完成，2026-09-01）
 
@@ -54,6 +54,14 @@ M12-PR2 在同一 Package 内新增内部 `AudioCaptureApple` Target，迁移 AV
 生命周期方面，`AudioCapture` 用单一锁串行 graph start/stop；每个实例由唯一 `AudioSessionActivationLifecycle` 持有 activation 状态，重复 start admission、stop、activate/deactivate 均为幂等，仓库内 `setCategory/setActive` 只有这一实现路径。所有 `@unchecked Sendable` 桥均记录锁或不可变性依据。同期修复成功 `finishStream()` 返回诊断偶发丢失的既有竞态，不改变状态、终态或重试行为。多个 Feature 同时请求麦克风时的进程级仲裁尚未实现，留给 Supervisor 与真实故障矩阵。
 
 本地证据为 Apple 音频/帧源 28/28、`VoiceChatCore` Package 126/126、上层 Adapter 24/24、诊断竞态 10/10、七 Package strict-concurrency/WAE 574/574、架构 inventory 与 15 个负向 fixture 通过。User-Release generic Simulator build 在源码编译前被 CoreSimulatorService connection invalid 和用户级 SwiftPM manifest cache 无写权限阻塞；锁定工具链 API baseline、App test/build、真机、蓝牙/电话/路由故障矩阵、真实 ASR 和物理眼镜均未在本批次验证。
+
+### M12 PR3 ASRSessionSupervisor 第一段（本地完成，2026-09-01）
+
+新增内部 `ASRSupervision` Target，只依赖 `ASRDomain`。`ASRSessionSupervisor` 用逻辑 run generation 与 concrete session generation 拒绝迟到事件；只有网络不可用、超时或连接中断，且尚未发布非空 transcript/utterance、尚未 finalizing、显式恢复预算仍有剩余时，才允许换用 factory 生成的新 Session。旧 Session 的 cancel 完成前不会创建恢复 Session；取消恢复可共用同一 retirement barrier，防止麦克风或 provider Session 重叠。
+
+恢复耗尽输出 `ASRSessionDegradation`，由 composition 显式指定 `.manualControl` 或 `.retryableFailure`。提词器 PTT 已接入前者，对话 PTT 已接入后者；生产预算当前都使用 `.disabled`（0 次），因为真实网络/路由故障矩阵尚未确认次数、超时与退避，不能把单元测试能力扩大为已上线自动重连。Voice Activated Supervisor、进程级麦克风仲裁、App/真机和真实服务仍属后续范围。
+
+本地证据为 Supervisor 11/11、`VoiceChatCore` Package 137/137、监督 Adapter 4/4、Adapter Package 28/28、七 Package strict-concurrency/WAE 589/589、架构 inventory 与 16 个负向 fixture 通过。App 源码已完成 composition 迁移，但当前受限环境仍无法取得 App build/test 证据；锁定工具链 API baseline 也仍被 Xcode 26.5 / Swift 6.3.2 与仓库锁定版本不一致所阻断。
 
 ### M7 PR1 quality baseline（本地完成，2026-08-28）
 

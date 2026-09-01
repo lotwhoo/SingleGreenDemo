@@ -97,14 +97,20 @@ final class ConversationPreparationResolver {
         )
         switch mode {
         case .pushToTalk:
-            let coreSession = ASRSession(config: .init(
+            let config = ASRSession.Config(
                 apiKey: configuration.apiKey,
                 resourceID: configuration.resourceID,
                 language: configuration.language,
                 hotwords: configuration.hotwords
-            ))
+            )
+            let supervisor = ASRSessionSupervisor(
+                config: config,
+                policy: .disabled(disposition: .retryableFailure)
+            )
             return .pushToTalk(
-                VoiceChatSpeechRecognitionAdapter(session: coreSession)
+                VoiceChatSupervisedSpeechRecognitionAdapter(
+                    supervisor: supervisor
+                )
             )
         case .voiceActivated:
             guard let makeVoiceActivatedSession else {

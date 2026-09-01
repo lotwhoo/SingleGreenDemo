@@ -171,6 +171,25 @@ do
     fi
 done
 
+asr_supervision="$temporary_root/asr-supervision-provider-neutral"
+cp -R "$base" "$asr_supervision"
+cat >"$asr_supervision/Packages/VoiceChatCore/Sources/ASRSupervision/FixtureViolation.swift" <<'SWIFT'
+import Network
+import AudioCaptureApple
+import VoiceChatCore
+SWIFT
+expect_failure "$asr_supervision" 'Packages/VoiceChatCore/Sources/ASRSupervision/FixtureViolation.swift:1: import rule asr-supervision-provider-neutral forbids module Network'
+for supervision_violation in \
+    'FixtureViolation.swift:2: import rule asr-supervision-provider-neutral forbids module AudioCaptureApple' \
+    'FixtureViolation.swift:3: import rule asr-supervision-provider-neutral forbids module VoiceChatCore'
+do
+    if ! grep -Fq "$supervision_violation" "$asr_supervision/check-output.txt"; then
+        echo "error: ASR supervision boundary violation was not detected: $supervision_violation" >&2
+        cat "$asr_supervision/check-output.txt" >&2
+        exit 1
+    fi
+done
+
 voice_core_audio_framework="$temporary_root/voice-core-audio-framework"
 cp -R "$base" "$voice_core_audio_framework"
 cat >"$voice_core_audio_framework/Packages/VoiceChatCore/Sources/VoiceChatCore/FixtureViolation.swift" <<'SWIFT'
@@ -185,8 +204,21 @@ from pathlib import Path
 import sys
 path = Path(sys.argv[1])
 text = path.read_text()
-old = 'name: "VoiceChatCore",\n            dependencies: ["ASRDomain", "AudioCaptureApple", "VoiceActivityDetectionKit"]'
-new = 'name: "VoiceChatCore",\n            dependencies: ["ASRDomain", "AudioCaptureApple", "VoiceActivityDetectionKit", "LLMKit"]'
+old = '''name: "VoiceChatCore",
+            dependencies: [
+                "ASRDomain",
+                "ASRSupervision",
+                "AudioCaptureApple",
+                "VoiceActivityDetectionKit"
+            ]'''
+new = '''name: "VoiceChatCore",
+            dependencies: [
+                "ASRDomain",
+                "ASRSupervision",
+                "AudioCaptureApple",
+                "VoiceActivityDetectionKit",
+                "LLMKit"
+            ]'''
 if old not in text:
     raise SystemExit("fixture mutation anchor missing")
 path.write_text(text.replace(old, new, 1))
@@ -331,4 +363,4 @@ path.write_text(text.replace(old, new, 1))
 PY
 expect_failure "$ownership_drift" 'App product ownership rule: SingleGreenDemo product LLMKit expected local owner .*Packages/LLMKit.*got Packages/VoiceChatCore'
 
-echo "Architecture boundary self-tests passed (legal import syntax, valid graph, and 15 negative fixtures)."
+echo "Architecture boundary self-tests passed (legal import syntax, valid graph, and 16 negative fixtures)."

@@ -4,6 +4,7 @@ import XCTest
 final class PublicSurfaceTests: XCTestCase {
     func testReusableAdapterTypesAreVisibleWithoutTestableImport() {
         XCTAssertNotNil(VoiceChatSpeechRecognitionAdapter.self)
+        XCTAssertNotNil(VoiceChatSupervisedSpeechRecognitionAdapter.self)
         XCTAssertNotNil(VoiceChatVoiceActivatedSpeechRecognitionAdapter.self)
         XCTAssertNotNil(LLMKitConversationAgentAdapter.self)
 
@@ -20,6 +21,11 @@ final class PublicSurfaceTests: XCTestCase {
                 session: typeCheckOnly()
             )
         } as () -> VoiceChatVoiceActivatedSpeechRecognitionAdapter
+        let makeSupervisedPTT = {
+            VoiceChatSupervisedSpeechRecognitionAdapter(
+                supervisor: typeCheckOnly()
+            )
+        } as () -> VoiceChatSupervisedSpeechRecognitionAdapter
         let makeAgent = {
             LLMKitConversationAgentAdapter(
                 agent: typeCheckOnly(),
@@ -27,6 +33,7 @@ final class PublicSurfaceTests: XCTestCase {
             )
         } as () -> LLMKitConversationAgentAdapter
         XCTAssertNotNil(makePTT as Any)
+        XCTAssertNotNil(makeSupervisedPTT as Any)
         XCTAssertNotNil(makeVAD as Any)
         XCTAssertNotNil(makeAgent as Any)
     }

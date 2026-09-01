@@ -20,12 +20,21 @@ let package = Package(
             dependencies: ["VoiceActivityDetectionKit"]
         ),
         .target(
+            name: "ASRSupervision",
+            dependencies: ["ASRDomain"]
+        ),
+        .target(
             name: "AudioCaptureApple",
             dependencies: ["ASRDomain", "VoiceActivityDetectionKit"]
         ),
         .target(
             name: "VoiceChatCore",
-            dependencies: ["ASRDomain", "AudioCaptureApple", "VoiceActivityDetectionKit"]
+            dependencies: [
+                "ASRDomain",
+                "ASRSupervision",
+                "AudioCaptureApple",
+                "VoiceActivityDetectionKit"
+            ]
         ),
         .testTarget(
             name: "AudioCaptureAppleTests",
@@ -36,9 +45,14 @@ let package = Package(
             dependencies: ["ASRDomain", "VoiceActivityDetectionKit"]
         ),
         .testTarget(
+            name: "ASRSupervisionTests",
+            dependencies: ["ASRDomain", "ASRSupervision"]
+        ),
+        .testTarget(
             name: "VoiceChatCoreTests",
             dependencies: [
                 "ASRDomain",
+                "ASRSupervision",
                 "AudioCaptureApple",
                 "VoiceChatCore",
                 "VoiceActivityDetectionKit"
