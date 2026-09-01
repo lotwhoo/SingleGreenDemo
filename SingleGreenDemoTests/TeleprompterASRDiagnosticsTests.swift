@@ -187,11 +187,13 @@ final class TeleprompterASRDiagnosticsTests: XCTestCase {
         XCTAssertTrue(microphonePermissionGranted)
         let session = try await wiring.dependencies.prepareSpeechSession()
         XCTAssertTrue(session is InternalTeleprompterASRDiagnosticsSession)
+        let collectedEvents = collect(session.events)
         try await session.start()
         baseSession.emit(.transcript(sensitiveResource))
         baseSession.emit(.finished)
         baseSession.close()
-        await settle()
+        let relayedEvents = await collectedEvents.value
+        XCTAssertEqual(relayedEvents, [.transcript(sensitiveResource), .finished])
 
         let url = try await store.makeExportURL()
         let export = try String(contentsOf: url, encoding: .utf8)
