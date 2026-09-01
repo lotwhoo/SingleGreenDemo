@@ -49,6 +49,7 @@ final class ConversationPreparationResolver {
     private let settings: AISettings
     private let credentialProvider: any ConversationCredentialProvider
     private let makeVoiceActivatedSession: VoiceActivatedFactory?
+    private let microphoneLeaseCoordinator: MicrophoneLeaseCoordinator?
     private let makeAgent: AgentFactory
     private var cachedAgent: CachedAgent?
 
@@ -65,11 +66,13 @@ final class ConversationPreparationResolver {
         settings: AISettings,
         credentialProvider: any ConversationCredentialProvider,
         makeVoiceActivatedSession: VoiceActivatedFactory?,
+        microphoneLeaseCoordinator: MicrophoneLeaseCoordinator? = nil,
         makeAgent: @escaping AgentFactory = ProductionConversationAgentFactory.make
     ) {
         self.settings = settings
         self.credentialProvider = credentialProvider
         self.makeVoiceActivatedSession = makeVoiceActivatedSession
+        self.microphoneLeaseCoordinator = microphoneLeaseCoordinator
         self.makeAgent = makeAgent
     }
 
@@ -107,11 +110,15 @@ final class ConversationPreparationResolver {
                 config: config,
                 policy: .disabled(disposition: .retryableFailure)
             )
-            return .pushToTalk(
-                VoiceChatSupervisedSpeechRecognitionAdapter(
-                    supervisor: supervisor
-                )
-            )
+            let session: any SpeechRecognitionSession =
+                VoiceChatSupervisedSpeechRecognitionAdapter(supervisor: supervisor)
+            if let microphoneLeaseCoordinator {
+                return .pushToTalk(MicrophoneLeasedSpeechRecognitionSession(
+                    base: session,
+                    coordinator: microphoneLeaseCoordinator
+                ))
+            }
+            return .pushToTalk(session)
         case .voiceActivated:
             guard let makeVoiceActivatedSession else {
                 throw ConversationPreparationFailure(
@@ -120,7 +127,16 @@ final class ConversationPreparationResolver {
                 )
             }
             do {
-                return .voiceActivated(try makeVoiceActivatedSession(configuration))
+                let session = try makeVoiceActivatedSession(configuration)
+                if let microphoneLeaseCoordinator {
+                    return .voiceActivated(
+                        MicrophoneLeasedVoiceActivatedSpeechRecognitionSession(
+                            base: session,
+                            coordinator: microphoneLeaseCoordinator
+                        )
+                    )
+                }
+                return .voiceActivated(session)
             } catch {
                 // Factory failures may contain detector or framework details.
                 // Collapse them to reviewed copy and coarse telemetry only.

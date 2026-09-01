@@ -17,11 +17,21 @@ enum ProductionVoiceActivatedSessionFactory {
         configuration: SpeechProviderConfiguration,
         diagnostics: VoiceActivatedASRDiagnosticsObserver? = nil
     ) throws -> any VoiceActivatedSpeechRecognitionSession {
-        let base = try makeCoreSession(
+        let initialSession = try makeCoreSession(
             configuration: configuration,
             diagnostics: diagnostics
         )
-        return VoiceChatVoiceActivatedSpeechRecognitionAdapter(session: base)
+        let supervisor = VoiceActivatedASRSessionSupervisor(
+            initialSession: initialSession,
+            policy: .disabled(disposition: .retryableFailure),
+            recoveryFactory: {
+                try makeCoreSession(
+                    configuration: configuration,
+                    diagnostics: diagnostics
+                )
+            }
+        )
+        return VoiceChatVoiceActivatedSpeechRecognitionAdapter(supervisor: supervisor)
     }
 
     static func makeCoreSession(

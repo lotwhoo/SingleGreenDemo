@@ -1085,6 +1085,30 @@
             "children": [
               {
                 "kind": "TypeNominal",
+                "name": "VoiceChatVoiceActivatedSpeechRecognitionAdapter",
+                "printedName": "SingleGreenConversationAdapters.VoiceChatVoiceActivatedSpeechRecognitionAdapter",
+                "usr": "s:31SingleGreenConversationAdapters09VoiceChatE33ActivatedSpeechRecognitionAdapterC"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "VoiceActivatedASRSessionSupervisor",
+                "printedName": "ASRSupervision.VoiceActivatedASRSessionSupervisor",
+                "usr": "s:14ASRSupervision34VoiceActivatedASRSessionSupervisorC"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Convenience",
+            "kind": "Constructor",
+            "mangledName": "$s31SingleGreenConversationAdapters09VoiceChatE33ActivatedSpeechRecognitionAdapterC10supervisorAC14ASRSupervision0eG20ASRSessionSupervisorC_tcfc",
+            "moduleName": "SingleGreenConversationAdapters",
+            "name": "init",
+            "printedName": "init(supervisor:)",
+            "usr": "s:31SingleGreenConversationAdapters09VoiceChatE33ActivatedSpeechRecognitionAdapterC10supervisorAC14ASRSupervision0eG20ASRSessionSupervisorC_tcfc"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
                 "name": "Void",
                 "printedName": "()"
               }
@@ -1344,6 +1368,13 @@
         "conformances": [
           {
             "kind": "Conformance",
+            "mangledName": "$s14ASRSupervision34SupervisedVoiceActivatedASRSessionP",
+            "name": "SupervisedVoiceActivatedASRSession",
+            "printedName": "SupervisedVoiceActivatedASRSession",
+            "usr": "s:14ASRSupervision34SupervisedVoiceActivatedASRSessionP"
+          },
+          {
+            "kind": "Conformance",
             "mangledName": "$ss8CopyableP",
             "name": "Copyable",
             "printedName": "Copyable",
@@ -1387,6 +1418,53 @@
         "name": "VoiceActivatedASRSession",
         "printedName": "VoiceActivatedASRSession",
         "usr": "s:13VoiceChatCore0A19ActivatedASRSessionC"
+      },
+      {
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sScA",
+            "name": "Actor",
+            "printedName": "Actor",
+            "usr": "s:ScA"
+          }
+        ],
+        "declKind": "Class",
+        "isExternal": true,
+        "kind": "TypeDecl",
+        "mangledName": "$s14ASRSupervision34VoiceActivatedASRSessionSupervisorC",
+        "moduleName": "ASRSupervision",
+        "name": "VoiceActivatedASRSessionSupervisor",
+        "printedName": "VoiceActivatedASRSessionSupervisor",
+        "usr": "s:14ASRSupervision34VoiceActivatedASRSessionSupervisorC"
       }
     ],
     "json_format_version": 8,

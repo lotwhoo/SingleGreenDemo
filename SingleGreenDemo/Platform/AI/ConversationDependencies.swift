@@ -7,6 +7,7 @@ extension VoiceConversationDependencies {
     static func live(
         settings: AISettings,
         credentialProvider: (any ConversationCredentialProvider)? = nil,
+        microphoneLeaseCoordinator: MicrophoneLeaseCoordinator? = nil,
         telemetry: (any ConversationTelemetrySink)? = nil
     ) -> Self {
         let telemetry = telemetry ?? NoopConversationTelemetry()
@@ -33,7 +34,8 @@ extension VoiceConversationDependencies {
         let resolver = ConversationPreparationResolver(
             settings: settings,
             credentialProvider: credentialProvider,
-            makeVoiceActivatedSession: makeVoiceActivatedSession
+            makeVoiceActivatedSession: makeVoiceActivatedSession,
+            microphoneLeaseCoordinator: microphoneLeaseCoordinator
         )
         return VoiceConversationComposition(
             resolver: resolver,

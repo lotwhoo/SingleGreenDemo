@@ -31,6 +31,8 @@ SingleGreenDemo   → SingleGreenConversationAdapters + SingleGreenGlassesKit + 
 
 `SingleGreenConversationAdapters` 的复用接口包括 `VoiceChatSpeechRecognitionAdapter`、`VoiceChatSupervisedSpeechRecognitionAdapter`、`VoiceChatVoiceActivatedSpeechRecognitionAdapter`、`LLMKitConversationAgentAdapter` 和 `LLMKitConversationAgentAdapterPolicy`。它们只桥接核心 ports 与已配置的 VoiceChat/LLM 实现；凭证、租约、恢复预算与降级选择、模型/资源配置、WebRTC factory、raw tool name 和展示文案仍由 App composition root 提供。
 
+M12 恢复契约位于 `VoiceChatCore` 内部 `ASRSupervision` Target：PTT 与 Voice Activated 均通过 generation 拒绝旧事件，并在旧 Session cancel 完成后才允许新 Session。Voice Activated 一旦接受本地 VAD 起音就不再换 Session，避免丢失当前话语 pre-roll。多 Feature 的麦克风租约位于 App，不属于 Package 契约；当前采用非抢占模式，生产自动恢复预算保持 0，等待真机故障矩阵后再定参数。
+
 ## 升级流程
 
 1. 记录目标 AiiOSStudy commit，并确认三个 Package 工作树没有未提交修改。

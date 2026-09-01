@@ -5,7 +5,7 @@
 | 项目 | 内容 |
 | --- | --- |
 | 文档类型 | 详细实施计划 / 跨模块技术与产品路线 |
-| 当前状态 | In progress：M10-PR1 已完成；锁定工具链、当前 App Simulator/Release 和 API baseline 已补齐；M10-PR3 真机体验仍待执行；M11-PR1–PR5 与 M12-PR1–PR3 第一段已完成当前主机可执行的实现与门禁 |
+| 当前状态 | In progress：M10-PR1 已完成；锁定工具链、当前 App Simulator/Release 和 API baseline 已补齐；M10-PR3 真机体验仍待执行；M11-PR1–PR5 与 M12-PR1–PR3 已完成当前主机可执行的实现与门禁 |
 | 适用范围 | `SingleGreenDemo`、七个本地 Package、User/Internal 构建、未来真实眼镜 Host |
 | 起始基线 | 当前 M9 之后的工作树，包含尚未提交的提词器“向后 50 个规范化字符内唯一精确命中跃迁”改动 |
 | 目标读者 | 产品、架构、iOS、算法、QA、发布与设备验证参与者 |
@@ -125,23 +125,32 @@
 - `AudioCaptureAppleTests` 28/28、`VoiceChatCore` Package 126/126、上层 Adapter 24/24、七 Package strict-concurrency/WAE 574/574；架构主检查与 15 个负向 fixture 通过。VAD 外部消费者夹具需在当前受限环境为其嵌套 `swift build` 显式传入 `--disable-sandbox`，随后 43/43 通过。
 - User-Release generic Simulator build 已尝试，但在源码编译前因 CoreSimulatorService connection invalid 和用户级 SwiftPM manifest cache 无写权限而失败；本批次仍未取得锁定工具链 public API baseline、App test/build、真机、蓝牙 HFP/电话抢占/route matrix、真实 ASR 或物理眼镜验证，这些证据不由 Package 自动化替代。
 
-### 3.10 M12-PR3 第一段当前执行快照（2026-09-01）
+### 3.10 M12-PR3 当前执行快照（2026-09-01）
 
 - 新增内部 `ASRSupervision` Target 和独立测试 Target，只依赖 `ASRDomain`；`VoiceChatCore` 兼容导出 Supervisor，并让 `ASRSession` 实现 provider-neutral `SupervisedASRSession`。
 - Supervisor 分离 logical run generation 与 concrete session generation；旧 Session 迟到事件、取消后的事件和恢复前 Session 的事件均被拒绝。
 - 仅 `.networkUnavailable`、`.timeout`、`.connectionLost` 具备恢复资格；已发布非空 transcript/utterance 或进入 finalizing 后一律不自动重试，避免重复或丢失不可去重内容。
 - 旧 Session cancel 使用共享 retirement barrier；清理完成前不创建新 Session，取消正在恢复的运行也会等待相同 barrier，防止 provider Session/麦克风生命周期重叠。
 - 恢复耗尽返回含 failure、disposition 和已用恢复次数的 `ASRSessionDegradation`。提词器 PTT composition 选择 `.manualControl`，对话 PTT 选择 `.retryableFailure`；当前生产 policy 均为 0 次恢复，真实故障矩阵前不猜测次数、超时或退避。
-- Supervisor 11/11、`VoiceChatCore` 137/137、监督 Adapter 4/4、Adapter Package 28/28、七 Package strict-concurrency/WAE 589/589，架构主检查与 16 个负向 fixture 通过。
-- Voice Activated Supervisor、进程级多 Feature 麦克风仲裁、锁定工具链 API baseline、App build/test、真机、真实网络/路由和真实 ASR 尚未验证或实现，不由上述测试替代。
+- Voice Activated 路径已接入同类 Supervisor。只有本地 VAD 尚未接受起音、尚未发布内容且尚未收尾时才可恢复；一旦接受起音就 fail-closed，避免更换 Session 丢失当前话语的 pre-roll。
+- App composition root 新增共享、非抢占的进程级麦克风租约，覆盖对话 PTT、对话 Voice Activated 和提词器 PTT。第二个请求在忙时返回 provider-neutral `audioUnavailable`；cancel/start 失败均等待底层清理后才释放租约。
+- Voice Activated Supervisor 5/5、`VoiceChatCore` 142/142、Adapter Package 28/28、麦克风租约 4/4、App Simulator 100/100、七 Package strict-concurrency/WAE 594/594，架构主检查与 16 个负向 fixture 通过。
+- 锁定工具链双架构 API baseline 与 User Release generic Simulator build 通过；生产自动恢复仍为 0 次。真机、Bluetooth/有线路由、系统抢占、真实网络和真实 ASR 尚未验证，不由上述本地证据替代。
 
 ### 3.11 锁定工具链、API 与版本收口（2026-09-01）
 
 - 当前主机已符合仓库锁定 Xcode 26.6（17F113）/ Swift 6.3.3 / SDK 26.5，工具链检查通过。
-- 当前 SingleGreenUser App Simulator 全量 96/96（0 failures、0 skips）和 User Release generic Simulator build 通过；这些是当前 checkout 证据，不再依赖之前受限环境的历史结果。
+- 当前 SingleGreenUser App Simulator 全量 100/100（0 failures、0 skips）和 User Release generic Simulator build 通过；这些是当前 checkout 证据，不再依赖之前受限环境的历史结果。
 - API 差异审阅识别出两类变化：M11 提词器持久化的新增入口，以及 M12 `ASRDomain` / `AudioCaptureApple` 内部 Target 导致的声明模块归属变化。旧 `TeleprompterController.init(script:dependencies:aligner:)` 和 `loadScript(_:)` 已作为转发入口恢复；上层 Adapter 仅 `import VoiceChatCore` 仍可编译使用 `ASRFailure`、`VoiceActivatedASR*` 和 `AudioCapture`。
 - 在明确接受新增 API 与声明归属变化后，更新并复验 8 个公开模块的 macOS arm64 / iOS Simulator arm64 基线，actual API 门禁通过。这保证当前快照一致，不承诺已分发 binary 的 ABI 兼容。
-- App `MARKETING_VERSION` 保持 0.1，四个构建配置的 `CURRENT_PROJECT_VERSION` 由 1 推进为 10，作为历史 `0.1 (9)` 内测包之后的下一源码构建号。本批次未生成、签名、安装或启动 Build 10 真机包。
+- App `MARKETING_VERSION` 保持 0.1，四个构建配置的 `CURRENT_PROJECT_VERSION` 由 1 推进为 10，作为历史 `0.1 (9)` 内测包之后的下一构建号。已在精确识别的 iPhone 17 Pro Max 目标上完成 User Release iphoneos arm64 Archive，并导出 Apple Development 签名的 Build 10 开发测试 IPA；安装与启动尚未执行。
+
+### 3.12 Build 10 真机开发测试包（2026-09-01）
+
+- 产物：`../../../测试包/Build-10-M12/SingleGreenUser-Build10-M12.ipa`，User Release 源码配置、development 导出，包内为 iphoneos arm64。
+- 身份：Bundle ID `com.local.SingleGreenDemo`，版本 `0.1 (10)`；嵌入的 provisioning profile Team 与 App 签名 Team 一致，且包含当前连接设备 UDID。
+- 核验：`codesign --verify --deep --strict` 、User artifact/release credential isolation 检查通过；SHA-256 为 `cc4b3edbe34006d0a7dba0b856c746c343a064c781b4390ed90ab49d82b8321c`。
+- 证据边界：Archive、导出、签名、包身份和可安装设备列表已核验；本次未执行 device install、launch、真实 ASR、麦克风路由或物理眼镜验收。
 
 ## 4. 本计划的边界
 
@@ -485,7 +494,7 @@ idle → preparing → active → finalizing → completed
 
 具体重试次数、超时和退避参数在故障基线后确认。
 
-实施状态（2026-09-01，第一段完成）：provider-neutral Supervisor Target、PTT Supervisor、旧 Session retirement barrier、类型化降级、上层 Adapter 和提词器/对话 PTT composition 已完成。生产恢复预算暂为 0；Voice Activated 监督、真实参数和进程级麦克风仲裁继续留在本 PR 后续与 M12-PR4。
+实施状态（2026-09-01，当前主机实现完成）：provider-neutral Supervisor Target、PTT 与 Voice Activated Supervisor、旧 Session retirement barrier、类型化降级、上层 Adapter、提词器/对话 composition 和进程级非抢占麦克风租约已完成。生产恢复预算仍为 0；真实次数、超时、退避与路由/系统抢占矩阵留给 M12-PR4。
 
 #### M12-PR4：真实音频故障矩阵
 
@@ -1063,6 +1072,20 @@ Core 只输出类型化、无内容事件：
 | 回滚方式 | 恢复上一版 API 快照并回退 M11/M12 相应 API 变化；不手工修改 JSON 隐藏差异。 |
 | 证据状态 | 锁定工具链检查通过；差异无剩余提词器 removed/renamed 声明；8 公开模块的 macOS arm64 / iOS Simulator arm64 baseline 更新后复验通过。未承诺已分发 binary ABI 兼容。 |
 
+### DEC-M12-005：Voice Activated 起音后不换 Session，麦克风采用非抢占租约
+
+| 字段 | 内容 |
+| --- | --- |
+| 日期 / 里程碑 | 2026-09-01 / M12-PR3 第二段 |
+| 问题 | Voice Activated 会话在哪个边界前可安全恢复，多个 Feature 同时请求麦克风时是否抢占当前 owner？ |
+| 所选方案 | 只在本地 VAD 尚未接受起音、尚未发布内容且未收尾时允许 Voice Activated 恢复；App composition root 共享一个非抢占进程级麦克风租约，忙时第二个请求 fail-closed 为 `audioUnavailable`。 |
+| 理由 | 起音后更换 Session 会丢失当前话语 pre-roll；无产品优先级和真机路由证据前，擅自抢占可能截断提词或对话。 |
+| 资源边界 | start/arm 前获取租约；终态、no-speech、source close 或启动失败后释放；cancel 必须等待底层 cancel 完成才让出麦克风。 |
+| 备选方案 | 高优先级 Feature 抢占当前会话；各 Feature 自行检查；把租约放入 provider Core 或 Apple 音频 Target。 |
+| 影响范围 | Voice Activated Supervisor/Adapter，对话 PTT/Voice Activated 与提词器 PTT composition，App 组合根和公开 API baseline。 |
+| 回滚方式 | composition 不注入共享 coordinator，Voice Activated factory 切回直接 Session Adapter；不涉及数据、凭证或持久化迁移。 |
+| 证据状态 | Voice Activated Supervisor 5/5、VoiceChatCore 142/142、麦克风租约 4/4、App 100/100、七 Package 594/594、Release Simulator 及双架构 API baseline 通过。未执行真机路由/系统抢占矩阵或真实 ASR。 |
+
 ### DEC-PLATFORM-001：低风险可逆判断采用推荐方案并连续留痕
 
 | 字段 | 内容 |
@@ -1091,11 +1114,11 @@ Core 只输出类型化、无内容事件：
 
 ## 22. 推荐立即启动的前三个任务
 
-1. 使用当前 `0.1 (10)` 源码补真机 build/install/launch，并复验 checkpoint/导入/删除、完成与 M11-PR2 撤销体验；设备操作仍需独立授权。
+1. 使用已生成的 `0.1 (10)` 开发测试 IPA 补真机 install/launch，并复验 checkpoint/导入/删除、完成与 M11-PR2 撤销体验；本次已授权打包，但未要求安装或启动。
 2. 用真实普通话 ASR 复核已在合成基线修复的多字/短增量误跃迁，并采集 partial 形态；没有真实分布前不设发布阈值。
-3. 继续 M12-PR3 第二段：把同一恢复/旧事件规则扩展到 Voice Activated 会话，并设计进程级麦克风租约；真实故障矩阵前继续保持生产自动重连为 0。多稿件、生产级长稿索引和导入拆分继续评审，DOCX/PDF/云盘保持待确认（责任方未指定）。
+3. 进入 M12-PR4 真实音频故障矩阵：验证内置/Bluetooth/有线麦克风、系统抢占、route change 和 media-services reset，再决定恢复次数、超时、退避与是否需要优先级抢占；真实矩阵前继续保持生产自动重连为 0。该步骤涉及真机操作，需独立授权。
 
-M11-PR1–PR5 已完成当前主机可执行的实现、合成离线基线与最终门禁；M12-PR1/PR2 已完成两个内部 Target 拆分，M12-PR3 第一段已完成 Supervisor/PTT 路径，第二段继续 Voice Activated 与麦克风仲裁。锁定工具链、当前 App Simulator/Release 和公开 API 基线已补齐；当前 Build 10 真机、真实 ASR 与物理眼镜继续作为独立证据门。
+M11-PR1–PR5 已完成当前主机可执行的实现、合成离线基线与最终门禁；M12-PR1/PR2 已完成两个内部 Target 拆分，M12-PR3 已完成 PTT/Voice Activated Supervisor 和进程级麦克风租约。锁定工具链、当前 App Simulator/Release、公开 API 基线和 Build 10 真机开发测试 IPA 已补齐；真机 install/launch、真实 ASR 与物理眼镜继续作为独立证据门。
 
 ## 23. 参考来源
 

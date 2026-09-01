@@ -21,6 +21,11 @@ final class PublicSurfaceTests: XCTestCase {
                 session: typeCheckOnly()
             )
         } as () -> VoiceChatVoiceActivatedSpeechRecognitionAdapter
+        let makeSupervisedVAD = {
+            VoiceChatVoiceActivatedSpeechRecognitionAdapter(
+                supervisor: typeCheckOnly()
+            )
+        } as () -> VoiceChatVoiceActivatedSpeechRecognitionAdapter
         let makeSupervisedPTT = {
             VoiceChatSupervisedSpeechRecognitionAdapter(
                 supervisor: typeCheckOnly()
@@ -35,6 +40,7 @@ final class PublicSurfaceTests: XCTestCase {
         XCTAssertNotNil(makePTT as Any)
         XCTAssertNotNil(makeSupervisedPTT as Any)
         XCTAssertNotNil(makeVAD as Any)
+        XCTAssertNotNil(makeSupervisedVAD as Any)
         XCTAssertNotNil(makeAgent as Any)
     }
 }

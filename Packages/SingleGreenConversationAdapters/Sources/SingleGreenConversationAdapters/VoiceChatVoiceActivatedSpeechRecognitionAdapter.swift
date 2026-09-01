@@ -10,6 +10,7 @@ protocol VoiceChatVoiceActivatedASRSessionBase: Sendable {
 }
 
 extension VoiceActivatedASRSession: VoiceChatVoiceActivatedASRSessionBase {}
+extension VoiceActivatedASRSessionSupervisor: VoiceChatVoiceActivatedASRSessionBase {}
 
 /// Adapts one configured VoiceChatCore local-VAD session to the glasses port.
 /// This boundary deduplicates lifecycle phases and emits at most one terminal.
@@ -24,6 +25,10 @@ public actor VoiceChatVoiceActivatedSpeechRecognitionAdapter:
 
     public init(session: VoiceActivatedASRSession) {
         self.init(base: session)
+    }
+
+    public init(supervisor: VoiceActivatedASRSessionSupervisor) {
+        self.init(base: supervisor)
     }
 
     init(base: any VoiceChatVoiceActivatedASRSessionBase) {

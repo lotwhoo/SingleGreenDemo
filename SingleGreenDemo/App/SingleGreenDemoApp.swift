@@ -25,6 +25,7 @@ struct SingleGreenDemoApp: App {
         let speechCredentialProvider = AIServiceComposition.makeSpeechCredentialProvider(
             settings: settings
         )
+        let microphoneLeaseCoordinator = MicrophoneLeaseCoordinator()
         let teleprompterSettings = TeleprompterSettings()
         #if INTERNAL_DIAGNOSTICS
         let diagnostics = ConversationTelemetryStore(capacity: 1_000)
@@ -36,6 +37,7 @@ struct SingleGreenDemoApp: App {
             dependencies: .live(
                 settings: settings,
                 credentialProvider: credentialProvider,
+                microphoneLeaseCoordinator: microphoneLeaseCoordinator,
                 telemetry: telemetry
             )
         )
@@ -59,6 +61,7 @@ struct SingleGreenDemoApp: App {
                 )
             },
             speechCredentialProvider: speechCredentialProvider,
+            microphoneLeaseCoordinator: microphoneLeaseCoordinator,
             cloudSpeechRecognitionAllowed: {
                 teleprompterSettings.allowsCloudSpeechRecognition
             }
