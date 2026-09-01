@@ -1,4 +1,3 @@
-import Foundation
 import VoiceActivityDetectionKit
 
 public struct VoiceActivatedASRPolicy: Equatable, Sendable {
@@ -81,7 +80,7 @@ public enum VoiceActivatedASRSessionError: Error, Equatable, Sendable {
     case busy
 }
 
-enum VoiceActivatedASRCleanupWaitPhase: Equatable, Sendable {
+package enum VoiceActivatedASRCleanupWaitPhase: Equatable, Sendable {
     case willAwait
     case didAwait
 }

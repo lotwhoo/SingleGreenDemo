@@ -39,6 +39,7 @@ SingleGreenUser / SingleGreenInternal product schemes
                 -> StreamingTextKit
             -> SingleGreenConversationAdapters
                 -> VoiceChatCore
+                    -> ASRDomain -> VoiceActivityDetectionKit
                 -> LLMKit -> LLMChatTransport
         -> App live adapters
             -> provider transports, system frameworks, credentials
@@ -51,6 +52,12 @@ The following existing ownership rules remain non-negotiable:
 - `VoiceConversationController` is the sole conversation orchestration and
   cancellation owner; it does not gain provider networking or UI algorithms.
 - `ConversationPorts` remains the stable App-facing ASR and Agent contract.
+- `ASRDomain` owns provider-neutral ASR failures, session and voice-activated
+  state/events, VAD policy, frame-source contracts, and streaming-transport
+  contracts. It depends only on Foundation and `VoiceActivityDetectionKit`.
+- `VoiceChatCore` re-exports the ASR domain for source compatibility while it
+  continues to own session actors, Apple audio implementation, provider
+  transport mapping, cancellation, generation, and cleanup.
 - `ConversationLiveAdapters` remains the production framework bridge.
 - `LLMKit` owns provider-neutral chat, stateless/stateful Agent semantics, tool
   rounds, and context transactions through `LLMChatTransport`.

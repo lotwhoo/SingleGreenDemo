@@ -80,9 +80,11 @@
         { "name": "VoiceChatCore", "type": "library", "targets": ["VoiceChatCore"] }
       ],
       "targets": [
+        { "name": "ASRDomain", "type": "regular", "dependencies": ["VoiceActivityDetectionKit"] },
+        { "name": "ASRDomainTests", "type": "test", "dependencies": ["ASRDomain", "VoiceActivityDetectionKit"] },
         { "name": "ASRCLI", "type": "executable", "dependencies": ["LLMKit", "VoiceChatCore"] },
-        { "name": "VoiceChatCore", "type": "regular", "dependencies": ["VoiceActivityDetectionKit"] },
-        { "name": "VoiceChatCoreTests", "type": "test", "dependencies": ["VoiceActivityDetectionKit", "VoiceChatCore"] }
+        { "name": "VoiceChatCore", "type": "regular", "dependencies": ["ASRDomain", "VoiceActivityDetectionKit"] },
+        { "name": "VoiceChatCoreTests", "type": "test", "dependencies": ["ASRDomain", "VoiceActivityDetectionKit", "VoiceChatCore"] }
       ]
     },
     {
@@ -141,6 +143,13 @@
       "id": "llm-provider-neutral-ui-free",
       "roots": ["Packages/LLMKit/Sources/LLMKit"],
       "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceActivityDetectionKit", "VoiceChatCore", "VoiceChatDomain", "WebRTCVoiceActivityDetection"]
+    },
+    {
+      "id": "asr-domain-framework-neutral",
+      "roots": ["Packages/VoiceChatCore/Sources/ASRDomain"],
+      "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "Network", "OSLog", "Security", "LLMKit", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceChatCore", "VoiceChatDomain", "WebRTCVoiceActivityDetection", "CWebRTCVAD"],
+      "forbidden_prefixes": ["OpenAI", "DeepSeek", "Doubao", "Bocha", "Ark"],
+      "allowed_project_modules": ["VoiceActivityDetectionKit"]
     },
     {
       "id": "voice-core-no-ui-or-reverse-edge",

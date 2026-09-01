@@ -45,7 +45,7 @@
 - 主链路为 `DemoEvent / 外部事件 → Experience 状态 → HUDScene → Renderer + DisplayProfile → VST 预览`。
 - 当前有七个本地 Swift Package：`SingleGreenGlassesKit`、`VoiceChatDomain`、`VoiceChatCore`、`LLMKit`、`StreamingTextKit`、`VoiceActivityDetectionKit` 和 `SingleGreenConversationAdapters`。
 - `SingleGreenGlassesKit` 仍同时承载 HUD 领域、Experience Runtime、内置 Experience、AI 对话编排、文字冒险和提词器。
-- `VoiceChatCore` 同时承载 ASR 状态机、Voice Activated ASR、AVFoundation 音频采集和部分平台生命周期适配。
+- `VoiceChatCore` 仍承载 ASR 会话编排、Voice Activated ASR、AVFoundation 音频采集和部分平台生命周期适配；provider-neutral 的错误、会话状态/事件、VAD 策略、帧源与流式传输契约已拆入同 Package 的 `ASRDomain` Target。
 - `LLMKit` 同时承载通用 LLM/Agent 契约和博查搜索具体实现。
 - User/Internal 构建通过不同 Bundle ID 和 capability flags 隔离内部诊断与本地演示凭证入口。
 
@@ -61,7 +61,7 @@
 ### 3.3 证据基线
 
 - 本次跃迁规则修复后的 SingleGreenGlassesKit 为 273/273，七 Package strict-concurrency/WAE 合计 569/569；规则修复前同一 M11 工作树的 SingleGreenUser App Simulator 为 96/96，本次受限环境无法连接 CoreSimulatorService，未冒充为当前复验。
-- 当前架构 inventory、import boundary 和 12 个负向 fixture 已通过。
+- 当前架构 inventory、import boundary 和 13 个负向 fixture 已通过；新增负向 fixture 固定 `ASRDomain` 不得导入 AVFoundation、Network 或反向依赖 `VoiceChatCore`。
 - 当前机器为 Xcode 26.5 / Swift 6.3.2，仓库锁定 Xcode 26.6 / Swift 6.3.3；公共 API 基线必须在锁定工具链重新执行。
 - 七个 Package 的覆盖率表属于此前测量基线；最新提词器变化后应重新测量受影响 Package，不能直接把历史数字作为当前结果。
 - 已生成并核验内部测试 IPA；生成、安装、启动、真实功能验收仍是不同门禁。
@@ -102,7 +102,17 @@
 - 手机端删除需要二次确认；确认后以一个本地 envelope 替换同时清理稿件、checkpoint、预留索引缓存和本地评测缓存，并旋转 script identity。删除前先隔离 Session generation，迟到事件不能恢复稿件。
 - M11-PR4 第二阶段新增 App 侧类型化 `TeleprompterScriptRepository` 边界：文件 URL、安全作用域和 bytes 解码留在 App/Infrastructure，Core 只接收规范化稿件和稳定 identity。空文件、非法 UTF-8、超过 20,000 字、重复内容和不支持类型均返回明确结果，失败不覆盖当前稿件；文件名和路径不进入结果或遥测。
 - M11-PR5 新增 `TeleprompterEvaluationSupport` 与 `TeleprompterBenchmark`：20 个合成/脱敏场景、5,424 次决策，覆盖 10/30/50/51 字、重复、partial、累计/增量/跨 Session、静默/噪声、中英数字、20,000 字和 30/60 分钟模拟。基线只采集指标，不设置通过阈值，详见[提词器离线评测基线](../baselines/2026-09-01-teleprompter-offline-baseline.md)。
-- 当前最终门禁为 SingleGreenGlassesKit strict-concurrency/WAE 273/273、七 Package 569/569；架构 inventory、12 个负向 fixture、隐私、secret、repository hygiene、diff whitespace 与 API updater 安全自检均通过。规则修复前同一 M11 工作树的 SingleGreenUser App Simulator 96/96 与 User Release Simulator build 已通过；本次受限环境无法连接 CoreSimulatorService 且不能写用户级 SwiftPM cache，故未复验 App 门。本轮未执行 actual public API baseline、真机 install/launch、真实 ASR 或物理眼镜验证；前两项已按用户决定延期到 2026-09-02。
+- 该 M11 批次当时的最终门禁为 SingleGreenGlassesKit strict-concurrency/WAE 273/273、七 Package 569/569；架构 inventory、12 个负向 fixture、隐私、secret、repository hygiene、diff whitespace 与 API updater 安全自检均通过。规则修复前同一 M11 工作树的 SingleGreenUser App Simulator 96/96 与 User Release Simulator build 已通过；本次受限环境无法连接 CoreSimulatorService 且不能写用户级 SwiftPM cache，故未复验 App 门。本轮未执行 actual public API baseline、真机 install/launch、真实 ASR 或物理眼镜验证；前两项已按用户决定延期到 2026-09-02。
+
+### 3.8 M12-PR1 当前执行快照（2026-09-01）
+
+- 在现有 `VoiceChatCore` Package 内新增内部 `ASRDomain` Target 和独立测试 Target，没有新增 Package 或生产依赖。
+- `ASRFailure`、PTT 会话状态/事件、Voice Activated ASR 状态/事件/策略、provider-neutral 音频系统事件、帧源契约和流式传输契约已机械迁移；`ASRSession.State / Event / SessionError` 通过 typealias 保持原调用方式。
+- `VoiceChatCore` 只保留 AVFoundation 音频实现、火山传输映射和会话 actor，并用兼容导出保证现有 `import VoiceChatCore` 调用方无需修改。`SingleGreenConversationAdapters` 24/24 原样通过。
+- `ASRDomain` 只依赖 Foundation 与 `VoiceActivityDetectionKit` 的纯帧/VAD 契约；架构门禁禁止 SwiftUI/UIKit/AppKit、AVFoundation/AudioToolbox、Network/OSLog/Security、供应商模块和对 `VoiceChatCore` 的反向依赖。
+- 七 Package strict-concurrency/WAE 共 570/570，`VoiceChatCore` Package 122/122（含 `ASRDomainTests` 3/3）；Package inventory、架构主检查和 13 个负向 fixture 通过。
+- 本次没有改变重试、超时、rollover、音频采集或 UI 行为；M12-PR2 才迁移 Apple 音频实现，M12-PR3 才新增 Supervisor 恢复策略。
+- 当前 Xcode 26.5 / Swift 6.3.2 与仓库锁定 Xcode 26.6 / Swift 6.3.3 不一致，API baseline 未更新；当前受限环境也不能连接 CoreSimulatorService，本次 App build/test、真机、真实 ASR 和物理眼镜均未验证。
 
 ## 4. 本计划的边界
 
@@ -409,6 +419,8 @@ jump(target, distance, confidence, evidence)
 机械迁移 provider-neutral 的事件、错误、Session、帧和策略契约；保留兼容导出，禁止同时改变业务行为。
 
 依赖：Foundation、VAD 纯契约；禁止 AVFoundation、具体供应商和 UI。
+
+实施状态（2026-09-01）：已在 `VoiceChatCore` Package 内完成内部 Target 拆分及兼容导出；旧调用方继续只需 `import VoiceChatCore`。独立 Domain 测试、上层 Adapter 回归、七 Package 严格并发和 13 个架构负向 fixture 已通过。锁定工具链 API baseline、App Simulator、真机和真实服务仍是独立证据门。
 
 #### M12-PR2：AudioCaptureApple Target
 
@@ -964,6 +976,19 @@ Core 只输出类型化、无内容事件：
 | 回滚方式 | 回退完整片段/短连续推进规则及配套 fixture 与测试；checkpoint、App repository 和 HUD 契约不受影响。 |
 | 证据状态 | 合成 Release 基线误跃迁 0、漏跃迁 0、规则类型不一致 0，聚焦测试已通过；真实 ASR partial 形态、真机与物理眼镜仍未验证。 |
 
+### DEC-M12-001：ASRDomain 先作为现有 Package 的内部 Target
+
+| 字段 | 内容 |
+| --- | --- |
+| 日期 / 里程碑 | 2026-09-01 / M12-PR1 |
+| 问题 | provider-neutral ASR 契约应立即拆成第八个 Package/公开产品，还是先在现有 Package 内形成独立 Target？ |
+| 所选方案 | 在 `VoiceChatCore` Package 内新增 `ASRDomain` Target；只迁移纯错误、状态/事件、策略、音频事件、帧源与传输协议，通过 `VoiceChatCore` 兼容导出及嵌套 typealias 保留现有调用入口。 |
+| 理由 | 已形成独立编译/测试和依赖门禁，同时避免在尚无第二个独立发布消费者时扩大 Package、Xcode 产品和分发面；符合“Target 先于 Package”的既定路线。 |
+| 备选方案 | 立即新增独立 Package/公开产品；继续只按文件夹分层；同步迁移 Apple 音频和恢复策略。 |
+| 影响范围 | `VoiceChatCore` manifest、ASR 契约源码、Adapter 编译、架构 inventory/负向 fixture 和后续 public API 审阅。 |
+| 回滚方式 | 将契约文件移回 `VoiceChatCore` Target 并移除兼容导出；不涉及数据迁移、供应商配置或运行时状态。 |
+| 证据状态 | Domain 3/3、VoiceChatCore Package 122/122、上层 Adapter 24/24、七 Package 570/570 与 13 个负向 fixture 通过；锁定工具链 API baseline、App、真机和真实 ASR 未验证。 |
+
 ### DEC-PLATFORM-001：低风险可逆判断采用推荐方案并连续留痕
 
 | 字段 | 内容 |
@@ -994,9 +1019,9 @@ Core 只输出类型化、无内容事件：
 
 1. 2026-09-02 在锁定 Xcode 26.6 / Swift 6.3.3 环境审阅 M11 新增 public API baseline；同日再补真机 checkpoint/导入/删除与 M11-PR2 撤销体验，不在本批次自动执行设备操作。
 2. 用真实普通话 ASR 复核已在合成基线修复的多字/短增量误跃迁，并采集 partial 形态；没有真实分布前不设发布阈值。
-3. 启动 M12 ASR 分层；多稿件、生产级长稿索引和导入拆分继续评审，DOCX/PDF/云盘保持待确认（责任方未指定）。
+3. 继续 M12-PR2 `AudioCaptureApple`：先识别唯一 AudioSession owner 与幂等 start/stop/deactivate 契约，再机械迁移 AVFoundation 实现；多稿件、生产级长稿索引和导入拆分继续评审，DOCX/PDF/云盘保持待确认（责任方未指定）。
 
-M11-PR1–PR5 已完成当前主机可执行的实现、合成离线基线与最终门禁。锁定工具链、真机、真实 ASR 与物理眼镜继续作为 2026-09-02 之后的独立证据门，不阻塞当前本机提交。
+M11-PR1–PR5 已完成当前主机可执行的实现、合成离线基线与最终门禁；M12-PR1 已完成内部 Target 拆分，M12-PR2 尚未开始。锁定工具链、App/真机、真实 ASR 与物理眼镜继续作为独立证据门，不阻塞当前本机模块化提交。
 
 ## 23. 参考来源
 
