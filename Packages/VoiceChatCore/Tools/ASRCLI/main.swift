@@ -1,7 +1,10 @@
 import Foundation
 import Darwin
+import AgentCore
+import BochaSearchAdapter
+import LLMCore
+import OpenAICompatibleTransport
 import VoiceChatCore
-import LLMKit
 
 /// ASRCLI：用与 iOS App 完全相同的 Swift ASRClient 直连火山豆包流式语音识别 2.0，
 /// 验证端到端链路（URLSessionWebSocketTask 握手/鉴权头、SAUC 帧、gzip、流式推送）。

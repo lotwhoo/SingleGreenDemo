@@ -1,5 +1,6 @@
 import XCTest
-@testable import LLMKit
+import LLMCore
+@testable import OpenAICompatibleTransport
 
 final class LLMChatClientTests: XCTestCase {
 
@@ -75,6 +76,20 @@ final class LLMChatClientTests: XCTestCase {
         let data = try JSONEncoder().encode(req)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
         XCTAssertEqual(json["stream"] as? Bool, true)
+    }
+
+    func testRequestWithTools() throws {
+        let request = LLMChatRequest(
+            model: "deepseek-v4-flash",
+            messages: [.init(role: .user, content: "hi")],
+            tools: [
+                .init(function: .init(name: "web_search", description: "s", parameters: [:]))
+            ]
+        )
+        let data = try JSONEncoder().encode(request)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let tools = try XCTUnwrap(json["tools"] as? [[String: Any]])
+        XCTAssertEqual(tools.count, 1)
     }
 
     func testThinkingRequestEncodesDeepSeekFieldsExactly() throws {

@@ -1,5 +1,6 @@
 import Foundation
-import LLMKit
+import AgentCore
+import LLMCore
 import SingleGreenGlassesKit
 import XCTest
 @testable import SingleGreenConversationAdapters

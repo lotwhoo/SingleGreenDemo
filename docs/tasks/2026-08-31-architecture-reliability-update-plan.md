@@ -5,7 +5,7 @@
 | 项目 | 内容 |
 | --- | --- |
 | 文档类型 | 详细实施计划 / 跨模块技术与产品路线 |
-| 当前状态 | In progress：M10-PR1 已完成；锁定工具链、当前 App Simulator/Release 和 API baseline 已补齐；M10-PR3 真机体验仍待执行；M11-PR1–PR5、M12-PR1–PR3 与 M13-PR1 已完成当前主机可执行的实现与门禁 |
+| 当前状态 | In progress：M10-PR1 已完成；锁定工具链、当前 App Simulator/Release 和 API baseline 已补齐；M10-PR3 真机体验仍待执行；M11-PR1–PR5、M12-PR1–PR3 与 M13-PR1/PR2 已完成当前主机可执行的实现与门禁 |
 | 适用范围 | `SingleGreenDemo`、七个本地 Package、User/Internal 构建、未来真实眼镜 Host |
 | 起始基线 | 当前 M9 之后的工作树，包含尚未提交的提词器“向后 50 个规范化字符内唯一精确命中跃迁”改动 |
 | 目标读者 | 产品、架构、iOS、算法、QA、发布与设备验证参与者 |
@@ -550,6 +550,8 @@ idle → preparing → active → finalizing → completed
 - `BochaSearchClient` 与响应模型移到 Bocha Adapter；
 - App Composition Root 选择具体 Transport 和 Tool Executor；
 - Core 不包含具体 API 地址、鉴权 Header、供应商品牌错误或模型名。
+
+实施状态（2026-09-01，当前主机实现完成）：已新增只依赖 `LLMCore` 的 `OpenAICompatibleTransport` 和 `BochaSearchAdapter` library products/targets，并将 OpenAI-compatible HTTP/SSE wire model、重试配置与客户端、Bocha client/响应模型分别迁入对应 Adapter；`LLMKit` 仅作兼容导出入口。App composition、`SingleGreenConversationAdapters` 与 ASRCLI 均改为直接依赖所需 Core/Adapter，Core 负向依赖、Adapter 只依赖 Core 和兼容层不承载实现已纳入架构门禁。当前证据为七个 Package 的 Swift 6 严格并发/WAE 门禁 594/594（其中 LLMKit 85/85）、User App 100/100、Internal App 135/135、User/Internal Release universal Simulator 构建、18 个架构负例与 12 个模块的 macOS/iOS Simulator 公开 API 快照均通过。覆盖率门禁已按五个 LLMKit 生产 library targets 聚合，结果为 90.42%（1171/1295，门槛 60%）。本 PR 不改变 provider 可靠性策略，未执行真机或真实 provider 验证；timeout/retry/circuit/concurrency/fallback 仍属于 M13-PR3。
 
 #### M13-PR3：Provider Reliability Policy
 

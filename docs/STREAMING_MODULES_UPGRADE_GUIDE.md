@@ -87,7 +87,7 @@ public protocol LLMChatTransport: Sendable {
 }
 ```
 
-`LLMAgent` 只依赖该协议。默认 `LLMChatClient` 继续实现 OpenAI 兼容 HTTP + SSE；本地模型、WebSocket 供应商、网关或测试 Stub 可以直接实现 Transport。
+`LLMAgent` 只依赖该协议。默认 `LLMChatClient` 位于独立 `OpenAICompatibleTransport` 模块并实现 OpenAI 兼容 HTTP + SSE；本地模型、WebSocket 供应商、网关或测试 Stub 可以直接实现 Transport。博查工具执行器位于独立 `BochaSearchAdapter`；新代码直接依赖窄产品，`LLMKit` 仅用于旧调用方兼容。
 
 旧 `LLMAgent(client:executor:config:)` 构造器保留为 deprecated 兼容层；新代码使用：
 

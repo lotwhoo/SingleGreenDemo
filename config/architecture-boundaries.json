@@ -7,16 +7,22 @@
       "local_dependencies": [],
       "products": [
         { "name": "AgentCore", "type": "library", "targets": ["AgentCore"] },
+        { "name": "BochaSearchAdapter", "type": "library", "targets": ["BochaSearchAdapter"] },
         { "name": "LLMCore", "type": "library", "targets": ["LLMCore"] },
-        { "name": "LLMKit", "type": "library", "targets": ["LLMKit"] }
+        { "name": "LLMKit", "type": "library", "targets": ["LLMKit"] },
+        { "name": "OpenAICompatibleTransport", "type": "library", "targets": ["OpenAICompatibleTransport"] }
       ],
       "targets": [
         { "name": "AgentCore", "type": "regular", "dependencies": ["LLMCore"] },
         { "name": "AgentCoreTests", "type": "test", "dependencies": ["AgentCore", "LLMCore"] },
+        { "name": "BochaSearchAdapter", "type": "regular", "dependencies": ["LLMCore"] },
+        { "name": "BochaSearchAdapterTests", "type": "test", "dependencies": ["BochaSearchAdapter", "LLMCore"] },
         { "name": "LLMCore", "type": "regular", "dependencies": [] },
         { "name": "LLMCoreTests", "type": "test", "dependencies": ["LLMCore"] },
-        { "name": "LLMKit", "type": "regular", "dependencies": ["AgentCore", "LLMCore"] },
-        { "name": "LLMKitTests", "type": "test", "dependencies": ["AgentCore", "LLMCore", "LLMKit"] }
+        { "name": "LLMKit", "type": "regular", "dependencies": ["AgentCore", "BochaSearchAdapter", "LLMCore", "OpenAICompatibleTransport"] },
+        { "name": "LLMKitTests", "type": "test", "dependencies": ["AgentCore", "BochaSearchAdapter", "LLMCore", "LLMKit", "OpenAICompatibleTransport"] },
+        { "name": "OpenAICompatibleTransport", "type": "regular", "dependencies": ["LLMCore"] },
+        { "name": "OpenAICompatibleTransportTests", "type": "test", "dependencies": ["LLMCore", "OpenAICompatibleTransport"] }
       ]
     },
     {
@@ -27,8 +33,8 @@
         { "name": "SingleGreenConversationAdapters", "type": "library", "targets": ["SingleGreenConversationAdapters"] }
       ],
       "targets": [
-        { "name": "SingleGreenConversationAdapters", "type": "regular", "dependencies": ["LLMKit", "SingleGreenGlassesKit", "VoiceChatCore"] },
-        { "name": "SingleGreenConversationAdaptersTests", "type": "test", "dependencies": ["LLMKit", "SingleGreenConversationAdapters", "SingleGreenGlassesKit", "VoiceChatCore"] }
+        { "name": "SingleGreenConversationAdapters", "type": "regular", "dependencies": ["AgentCore", "LLMCore", "SingleGreenGlassesKit", "VoiceChatCore"] },
+        { "name": "SingleGreenConversationAdaptersTests", "type": "test", "dependencies": ["AgentCore", "LLMCore", "SingleGreenConversationAdapters", "SingleGreenGlassesKit", "VoiceChatCore"] }
       ]
     },
     {
@@ -90,7 +96,7 @@
         { "name": "ASRDomainTests", "type": "test", "dependencies": ["ASRDomain", "VoiceActivityDetectionKit"] },
         { "name": "ASRSupervision", "type": "regular", "dependencies": ["ASRDomain"] },
         { "name": "ASRSupervisionTests", "type": "test", "dependencies": ["ASRDomain", "ASRSupervision"] },
-        { "name": "ASRCLI", "type": "executable", "dependencies": ["LLMKit", "VoiceChatCore"] },
+        { "name": "ASRCLI", "type": "executable", "dependencies": ["AgentCore", "BochaSearchAdapter", "LLMCore", "OpenAICompatibleTransport", "VoiceChatCore"] },
         { "name": "AudioCaptureApple", "type": "regular", "dependencies": ["ASRDomain", "VoiceActivityDetectionKit"] },
         { "name": "AudioCaptureAppleTests", "type": "test", "dependencies": ["ASRDomain", "AudioCaptureApple", "VoiceActivityDetectionKit"] },
         { "name": "VoiceChatCore", "type": "regular", "dependencies": ["ASRDomain", "ASRSupervision", "AudioCaptureApple", "VoiceActivityDetectionKit"] },
@@ -116,7 +122,7 @@
       "roots": ["Packages/SingleGreenConversationAdapters/Sources/SingleGreenConversationAdapters"],
       "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "OSLog", "Security", "Network", "WebRTCVoiceActivityDetection", "CWebRTCVAD", "CWebRTCVADTestSupport"],
       "forbidden_prefixes": ["WebRTC", "CWebRTC"],
-      "allowed_project_modules": ["LLMKit", "SingleGreenGlassesKit", "VoiceChatCore"]
+      "allowed_project_modules": ["AgentCore", "LLMCore", "SingleGreenGlassesKit", "VoiceChatCore"]
     },
     {
       "id": "single-green-core-framework-neutral",
@@ -163,10 +169,22 @@
       "allowed_project_modules": ["LLMCore"]
     },
     {
-      "id": "llmkit-compatibility-and-provider-ui-free",
+      "id": "openai-compatible-transport-adapter-only",
+      "roots": ["Packages/LLMKit/Sources/OpenAICompatibleTransport"],
+      "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "Security", "AgentCore", "BochaSearchAdapter", "LLMKit", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceActivityDetectionKit", "VoiceChatCore", "VoiceChatDomain", "WebRTCVoiceActivityDetection"],
+      "allowed_project_modules": ["LLMCore"]
+    },
+    {
+      "id": "bocha-search-adapter-only",
+      "roots": ["Packages/LLMKit/Sources/BochaSearchAdapter"],
+      "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "Security", "AgentCore", "LLMKit", "OpenAICompatibleTransport", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceActivityDetectionKit", "VoiceChatCore", "VoiceChatDomain", "WebRTCVoiceActivityDetection"],
+      "allowed_project_modules": ["LLMCore"]
+    },
+    {
+      "id": "llmkit-compatibility-ui-free",
       "roots": ["Packages/LLMKit/Sources/LLMKit"],
       "forbidden": ["SwiftUI", "UIKit", "AppKit", "AVFoundation", "AudioToolbox", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceActivityDetectionKit", "VoiceChatCore", "VoiceChatDomain", "WebRTCVoiceActivityDetection"],
-      "allowed_project_modules": ["AgentCore", "LLMCore"]
+      "allowed_project_modules": ["AgentCore", "BochaSearchAdapter", "LLMCore", "OpenAICompatibleTransport"]
     },
     {
       "id": "asr-domain-framework-neutral",
@@ -198,7 +216,7 @@
     {
       "id": "asr-cli-project-imports",
       "roots": ["Packages/VoiceChatCore/Tools/ASRCLI"],
-      "allowed_project_modules": ["LLMKit", "VoiceChatCore"]
+      "allowed_project_modules": ["AgentCore", "BochaSearchAdapter", "LLMCore", "OpenAICompatibleTransport", "VoiceChatCore"]
     },
     {
       "id": "app-rendering-does-not-own-adapters",
@@ -220,7 +238,7 @@
     "targets": [
       {
         "name": "SingleGreenDemo",
-        "package_products": ["LLMKit", "SingleGreenConversationAdapters", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceChatCore", "WebRTCVoiceActivityDetection"]
+        "package_products": ["AgentCore", "BochaSearchAdapter", "LLMCore", "OpenAICompatibleTransport", "SingleGreenConversationAdapters", "SingleGreenGlassesKit", "StreamingTextKit", "VoiceChatCore", "WebRTCVoiceActivityDetection"]
       },
       {
         "name": "SingleGreenDemoTests",
@@ -230,8 +248,10 @@
   },
   "public_api_modules": [
     { "module": "AgentCore", "package": "LLMKit" },
+    { "module": "BochaSearchAdapter", "package": "LLMKit" },
     { "module": "LLMCore", "package": "LLMKit" },
     { "module": "LLMKit", "package": "LLMKit" },
+    { "module": "OpenAICompatibleTransport", "package": "LLMKit" },
     { "module": "SingleGreenConversationAdapters", "package": "SingleGreenConversationAdapters" },
     { "module": "SingleGreenGlassesKit", "package": "SingleGreenGlassesKit" },
     { "module": "StreamingTextKit", "package": "StreamingTextKit" },

@@ -1,5 +1,6 @@
 import XCTest
-@testable import LLMKit
+import LLMCore
+@testable import OpenAICompatibleTransport
 
 final class RetryConfigTests: XCTestCase {
 

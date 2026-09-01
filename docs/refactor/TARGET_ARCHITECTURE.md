@@ -42,9 +42,10 @@ SingleGreenUser / SingleGreenInternal product schemes
                     -> ASRDomain -> VoiceActivityDetectionKit
                     -> ASRSupervision -> ASRDomain
                     -> AudioCaptureApple -> ASRDomain + VoiceActivityDetectionKit
-                -> LLMKit -> LLMChatTransport
+                -> AgentCore -> LLMCore
         -> App live adapters
-            -> provider transports, system frameworks, credentials
+            -> OpenAICompatibleTransport + BochaSearchAdapter
+            -> system frameworks, credentials, factories
             -> diagnostics implementation selected by build variant
         -> SwiftUI/UIKit measurement and rendering
 ```
@@ -70,9 +71,12 @@ The following existing ownership rules remain non-negotiable:
   also re-exports supervision and Apple audio compatibility. It owns session actors, provider
   transport mapping, cancellation, generation, and cleanup, and must not import
   AVFoundation directly.
-- `ConversationLiveAdapters` remains the production framework bridge.
-- `LLMKit` owns provider-neutral chat, stateless/stateful Agent semantics, tool
-  rounds, and context transactions through `LLMChatTransport`.
+- `ConversationLiveAdapters` remains the production composition bridge and
+  selects concrete provider adapters without moving credentials into packages.
+- `LLMCore` owns provider-neutral chat and tool contracts;
+  `AgentCore` owns stateless/stateful Agent semantics, tool rounds, and context
+  transactions. `OpenAICompatibleTransport` and `BochaSearchAdapter` depend on
+  `LLMCore`; `LLMKit` is compatibility-only.
 - `StreamingTextKit` owns typewriter cadence, grapheme-safe buffering, Unicode
   reconciliation, and auto-follow policy.
 - SwiftUI views measure and render; they do not recreate streaming or feature

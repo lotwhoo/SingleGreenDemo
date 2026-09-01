@@ -1,5 +1,7 @@
 import Foundation
-import LLMKit
+import AgentCore
+import LLMCore
+import OpenAICompatibleTransport
 import SingleGreenGlassesKit
 
 enum TextAdventureProviderError: Error, Equatable {

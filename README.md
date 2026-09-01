@@ -12,7 +12,7 @@
 - 眼镜核心能力下沉到 `SingleGreenGlassesKit`；App 只作为相机模拟、调试控件和真实服务组装宿主。
 - `simulator.default.v2` DisplayProfile。
 - 基础状态、导航、通知、字幕/提词四个本地 Experience。
-- AI 对话 Experience：完整接入 `VoiceChatDomain`、`VoiceChatCore`、`LLMKit` 与可复用 `StreamingTextKit`，形成豆包流式 ASR → DeepSeek Agent → 按需博查联网搜索 → 字素安全显示链路。
+- AI 对话 Experience：完整接入 `VoiceChatDomain`、`VoiceChatCore`、`AgentCore`、独立 Provider Adapter 与可复用 `StreamingTextKit`，形成豆包流式 ASR → DeepSeek Agent → 按需博查联网搜索 → 字素安全显示链路。
 - M6 Stage 2A 已将独立的 `VoiceActivityDetectionKit` 接入录音帧、VAD 门控 ASR、眼镜核心 port 和 App adapter；获用户批准的最小 WebRTC C 闭包已在 `SingleGreenDemo` composition root 接入，factory 仅在生产 root 非空且 arm 后工作，未提供能量检测回退。
 - WebRTC 依赖的固定来源、11 upstream C + 1 project compatibility C + 12 upstream headers、隐藏可见性 wrapper、五符号 facade 和许可证边界见 [WebRTC VAD ADR](./docs/tasks/2026-08-28-webrtc-vad-approval-adr.md)；真机已完成用户观察验收，仍待完整脚本化 VAD/ASR/provider 路由与中断矩阵。
 - 首页采用全屏相机内容层，状态、调试与控制面板作为悬浮功能层。
@@ -92,7 +92,7 @@ M3 已将 Experience 元数据和动作目录化。宿主控制面板只消费 R
 
 ## AI 对话本机配置
 
-AI 对话采用 provider-neutral Ports & Adapters：`SingleGreenGlassesKit` 只负责编排，宿主 resolver/adapters 准备已配置的 PTT/VAD session 和 Agent。API keys、provider model/resource 配置、credential lease、validation copy 与 raw `web_search` mapping 仅在 `SingleGreenDemo`；核心只消费 opaque Agent context identity 与 semantic external-information activity，并在取消或新一代操作时丢弃 stale preparation。`VoiceChatDomain.ConversationState` 管理消息与请求生命周期，`VoiceChatCore` 负责录音/ASR，`LLMKit` 管理 Agent、SSE 和工具循环。旧的 `SpeechEngineToB`、CocoaPods 和项目内 Ark 客户端路径已移除。先准备：
+AI 对话采用 provider-neutral Ports & Adapters：`SingleGreenGlassesKit` 只负责编排，宿主 resolver/adapters 准备已配置的 PTT/VAD session 和 Agent。API keys、provider model/resource 配置、credential lease、validation copy 与 raw `web_search` mapping 仅在 `SingleGreenDemo`；核心只消费 opaque Agent context identity 与 semantic external-information activity，并在取消或新一代操作时丢弃 stale preparation。`VoiceChatDomain.ConversationState` 管理消息与请求生命周期，`VoiceChatCore` 负责录音/ASR，`AgentCore` 管理工具循环与上下文事务，`OpenAICompatibleTransport` 和 `BochaSearchAdapter` 分别处理模型 SSE 与搜索协议。旧的 `SpeechEngineToB`、CocoaPods 和项目内 Ark 客户端路径已移除。先准备：
 
 - 语音技术应用生成的 API Key（WebSocket 请求头使用的 `X-Api-Key` 值）。
 - 豆包流式语音识别模型 2.0 小时版资源；Resource ID 为 `volc.seedasr.sauc.duration`。
@@ -125,10 +125,10 @@ AI 对话采用轻量的 Ports & Adapters 结构，不把具体服务或系统 A
 - `VoiceConversationController` 是用例编排层，处理状态转换、任务取消、ASR → Agent 流程以及网络累计文本/可见打字文本的分离。
 - `VoiceConversationController` 保持公开的 `@MainActor` 状态/快照 façade；输入协调、回复流水线、显示调度和生命周期投影由内部组件承担。LLMAgent 上下文使用显式 staged transaction，只有显示追平且领域接受后才 commit。
 - `ConversationPorts.swift` 集中定义 `SpeechRecognitionSession` 与 `ConversationAgent` 端口，测试可注入内存 Fake。
-- `SingleGreenConversationAdapters` 集中存放 VoiceChatCore/LLMKit 到眼镜语义端口的可复用桥接；App 的 `ConversationLiveAdapters.swift` 只保留 provider transport、凭证刷新、工厂和展示策略，供应商细节不进入 Controller。
+- `SingleGreenConversationAdapters` 集中存放 VoiceChatCore/AgentCore 到眼镜语义端口的可复用桥接；App 的 `ConversationLiveAdapters.swift` 显式选择具体 Provider Adapter，并保留凭证刷新、工厂和展示策略，供应商细节不进入 Controller。
 - `StreamingTextKit` 独立封装打字节奏、字素缓冲、Unicode 增量对齐和自动尾随策略；通过 `TypewriterPolicy` 动态调节而不修改 Controller。
 - `LLMCore` 定义 Message、Tool、StreamingEvent、Transport 和类型化错误；`AgentCore` 只依赖 `LLMCore`，管理上下文事务、工具轮次和 commit/abort。现有调用方仍可 `import LLMKit`。
-- `LLMAgent` 依赖 `LLMChatTransport` 协议，新 LLM 供应商只需实现语义传输端口。当前 OpenAI-compatible HTTP/SSE 与 Bocha 仍在 `LLMKit` 兼容 Target，独立 Adapter 外移属于 M13-PR2。
+- `LLMAgent` 依赖 `LLMChatTransport` 协议，新 LLM 供应商只需实现语义传输端口。OpenAI-compatible HTTP/SSE 已位于 `OpenAICompatibleTransport`，博查搜索已位于 `BochaSearchAdapter`；`LLMKit` 只保留兼容导出。
 - `VoiceConversationDependencies` 统一注入配置、麦克风权限、日期和休眠时钟，VAD 与异常分支无需等待真实时间或访问真实硬件。
 - `SingleGreenDemoApp` 是模拟器 Composition Root，只在这里组装生产依赖；控制面板只读取 Runtime 发布的 `ExperienceControlState`，不再直接依赖 AI Controller。
 - `scripts/strict_concurrency_gate.sh` 对七个 Package 以 Swift 6 complete concurrency 和 warnings-as-errors 执行门禁；Xcode App/Test Debug 与 Release 也启用 Swift 6 complete/WAE。
@@ -139,7 +139,7 @@ AI 对话采用轻量的 Ports & Adapters 结构，不把具体服务或系统 A
 
 这套拆分参考了 TCA 的可测试状态/副作用思想、Clean Architecture SwiftUI 的 Interactor/Repository 边界，以及可控依赖和测试时钟的实践，但没有为当前规模额外引入第三方架构框架。
 
-仓库当前包含七个本地 Swift Package：`SingleGreenGlassesKit`、`VoiceChatDomain`、`VoiceChatCore`、`LLMKit`、`StreamingTextKit`、`VoiceActivityDetectionKit` 和 `SingleGreenConversationAdapters`。`VoiceActivityDetectionKit` 是独立的框架无关检测/分段包；`SingleGreenConversationAdapters` 提供 VoiceChatCore/LLMKit 到眼镜核心 ports 的可复用语义桥接。生产 WebRTC detector 仅由 `SingleGreenDemo` composition root 注入，设置页仍对独立 AISettings fail-closed，不会把能量检测器作为回退。Experience catalog 允许宿主注册自定义 Experience，控制面板继续只消费通用 descriptor/action。工程已经自包含，不依赖开发者机器上的 AiiOSStudy 目录布局。来源和升级规则见 `Packages/README.md`。
+仓库当前包含七个本地 Swift Package：`SingleGreenGlassesKit`、`VoiceChatDomain`、`VoiceChatCore`、`LLMKit`、`StreamingTextKit`、`VoiceActivityDetectionKit` 和 `SingleGreenConversationAdapters`。`VoiceActivityDetectionKit` 是独立的框架无关检测/分段包；`SingleGreenConversationAdapters` 提供 VoiceChatCore/AgentCore 到眼镜核心 ports 的可复用语义桥接。生产 WebRTC detector 仅由 `SingleGreenDemo` composition root 注入，设置页仍对独立 AISettings fail-closed，不会把能量检测器作为回退。Experience catalog 允许宿主注册自定义 Experience，控制面板继续只消费通用 descriptor/action。工程已经自包含，不依赖开发者机器上的 AiiOSStudy 目录布局。来源和升级规则见 `Packages/README.md`。
 
 ## 本地构建
 

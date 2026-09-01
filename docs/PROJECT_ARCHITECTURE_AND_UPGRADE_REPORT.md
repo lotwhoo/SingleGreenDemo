@@ -339,7 +339,7 @@ AI 回答布局使用专用 `flowingText` 元素，高度为 safeRect 的 61%，
 | `Platform/Environment/` | 相机权限和 Session 生命周期 | `CameraSessionController` | HUD 或 AI 业务 |
 | `Packages/SingleGreenGlassesKit/AI/` | AI 用例、端口、对话编排与四组 immutable dependencies | ASR/Agent ports、`VoiceConversationController`、按组 initializer；flat initializer/11 accessors 为 source-package compatibility | 生产 SDK、Keychain、App 页面布局；不承诺 struct binary layout/ABI |
 | `SingleGreenDemo/Platform/AI/` | 小型 live entry 加五个职责文件：credentials、preparation resolver、presentation policy、telemetry、production VAD/ASR factory，以及共享 composition | `VoiceConversationDependencies.live`、`ConversationLiveAdapters` | 眼镜核心状态机与可复用 semantic bridge；不使用 Service Locator/global registry/hot swap |
-| `SingleGreenConversationAdapters` | VoiceChatCore/LLMKit 到眼镜核心 ports 的可复用语义桥接 | 四个 public adapter/policy 类型 | 凭证、provider 配置、UI、raw provider tool mapping |
+| `SingleGreenConversationAdapters` | VoiceChatCore/AgentCore 到眼镜核心 ports 的可复用语义桥接 | 四个 public adapter/policy 类型 | 凭证、provider 配置、UI、raw provider tool mapping |
 | `StreamingTextKit` | 打字节奏、字素缓冲、Unicode 对齐、自动尾随策略 | `TypewriterPolicy`、`TypewriterTextBuffer`、`StreamingTextReconciler` | 会话状态、SwiftUI 样式、网络 |
 | `VoiceChatDomain` | 消息和回复生命周期 | `ConversationState` | 音频、网络、UI |
 | `ASRDomain`（`VoiceChatCore` Package 内） | provider-neutral ASR 错误、状态/事件、策略、音频事件、帧源与流式传输契约 | `ASRFailure`、`ASRSessionState/Event`、`VoiceActivatedASRPolicy/State/Event`；低层帧源/传输协议保持 package scope | AVFoundation、Network、供应商实现、UI、会话 Task owner |
@@ -348,7 +348,9 @@ AI 回答布局使用专用 `flowingText` 元素，高度为 safeRect 的 61%，
 | `VoiceActivityDetectionKit` | 20ms PCM 帧契约、检测器 port、VAD 分段状态机 | `VADPCMFrame`、`VoiceActivityDetecting`、`VADSegmenter` | 录音、网络、UI、供应商 detector |
 | `LLMCore`（`LLMKit` Package 内） | provider-neutral Message、Tool、StreamingEvent、Transport 与类型化错误 | `LLMMessage`、`LLMTool`、`LLMChatTransport` | 网络、鉴权、具体供应商和 Agent 事务 |
 | `AgentCore`（`LLMKit` Package 内） | 上下文事务、Tool Round、预算裁剪、commit/abort 和终态规则 | `LLMAgent`、`LLMChatContext`、`LLMStatelessToolLoop` | 网络、鉴权、具体模型或搜索供应商 |
-| `LLMKit` | 兼容导出 Core，暂时承载 OpenAI-compatible HTTP/SSE 和 Bocha 实现 | `LLMChatClient`、`BochaSearchClient`；兼容 `import LLMKit` | 麦克风、HUD 和 App 生命周期；Adapter 独立外移待 M13-PR2 |
+| `OpenAICompatibleTransport`（`LLMKit` Package 内） | OpenAI-compatible HTTP/SSE、协议线模型、鉴权 Header 与请求级重试 | `LLMChatClient`、`LLMRetryConfig`、Chat/SSE payload | Agent 事务、搜索、UI 与凭证持久化 |
+| `BochaSearchAdapter`（`LLMKit` Package 内） | 博查搜索 endpoint、响应模型、Tool Executor 与供应商错误 | `BochaSearchClient`、`BochaResponse` | Agent 事务、LLM transport、UI 与凭证持久化 |
+| `LLMKit` | 兼容导出 Core 与两个 Provider Adapter | 兼容 `import LLMKit` 和旧 concrete-client initializer | 新内部调用方的依赖入口；新代码使用窄产品 |
 
 ## 6. 配置与安全
 

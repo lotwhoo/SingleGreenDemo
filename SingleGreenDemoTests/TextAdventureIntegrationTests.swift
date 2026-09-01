@@ -1,4 +1,4 @@
-import LLMKit
+import LLMCore
 import SingleGreenGlassesKit
 import XCTest
 @testable import SingleGreenDemo

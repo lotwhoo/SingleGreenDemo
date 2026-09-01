@@ -1,5 +1,8 @@
 import Foundation
-import LLMKit
+import AgentCore
+import BochaSearchAdapter
+import LLMCore
+import OpenAICompatibleTransport
 import SingleGreenGlassesKit
 import XCTest
 @testable import SingleGreenDemo

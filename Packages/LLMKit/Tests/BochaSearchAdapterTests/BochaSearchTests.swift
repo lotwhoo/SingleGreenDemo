@@ -1,5 +1,6 @@
 import XCTest
-@testable import LLMKit
+@testable import BochaSearchAdapter
+import LLMCore
 
 final class BochaSearchTests: XCTestCase {
 

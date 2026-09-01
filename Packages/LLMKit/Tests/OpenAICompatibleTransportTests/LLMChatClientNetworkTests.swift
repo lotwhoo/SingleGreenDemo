@@ -1,5 +1,6 @@
 import XCTest
-@testable import LLMKit
+import LLMCore
+@testable import OpenAICompatibleTransport
 
 /// URLProtocol 桩：拦截 URLSession 请求并返回预设响应。
 final class MockURLProtocol: URLProtocol {
