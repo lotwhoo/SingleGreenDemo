@@ -11,6 +11,7 @@ report_path="$fixture_root/report.txt"
 
 mkdir -p \
     "$package_path/Sources/CurrentPackage" \
+    "$package_path/Sources/ProviderAdapter" \
     "$package_path/Sources/BenchmarkSupport" \
     "$dependency_path/Sources/Dependency"
 python3 - "$package_path" "$dependency_path" "$export_path" <<'PY'
@@ -25,6 +26,10 @@ document = {
             {
                 "filename": os.path.join(package, "Sources/CurrentPackage/Feature.swift"),
                 "summary": {"lines": {"covered": 5, "count": 10}},
+            },
+            {
+                "filename": os.path.join(package, "Sources/ProviderAdapter/Client.swift"),
+                "summary": {"lines": {"covered": 15, "count": 20}},
             },
             {
                 "filename": os.path.join(package, "Sources/BenchmarkSupport/Energy.swift"),
@@ -46,12 +51,13 @@ with open(destination, "w", encoding="utf-8") as handle:
 PY
 
 result=$(python3 "$script_directory/summarize_package_coverage.py" \
-    "$export_path" "$package_path" "$report_path")
-[ "$result" = "50.00" ] || {
-    echo "error: expected canonical package coverage 50.00, got $result" >&2
+    "$export_path" "$package_path" "$report_path" \
+    CurrentPackage ProviderAdapter)
+[ "$result" = "66.67" ] || {
+    echo "error: expected selected production-target coverage 66.67, got $result" >&2
     exit 1
 }
-grep -q '^production_source_lines=10$' "$report_path"
-grep -q '^covered_lines=5$' "$report_path"
+grep -q '^production_source_lines=30$' "$report_path"
+grep -q '^covered_lines=20$' "$report_path"
 
 echo "Coverage scope regression passed."

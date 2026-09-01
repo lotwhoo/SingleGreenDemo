@@ -1,5 +1,6 @@
 import Foundation
-import LLMKit
+import AgentCore
+import LLMCore
 import SingleGreenGlassesKit
 
 /// Host-owned semantic mapping applied at the LLMKit-to-glasses boundary.

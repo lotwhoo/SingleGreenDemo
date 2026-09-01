@@ -402,7 +402,11 @@ class ImpactPlannerTests(unittest.TestCase):
         self.assertTrue(all(plan["run"].values()))
         self.assertEqual(len(plan["selected"]["package_tests"]), 7)
         self.assertEqual(len(plan["selected"]["coverage_packages"]), 7)
-        self.assertEqual(len(plan["selected"]["public_api_modules"]), 10)
+        architecture = planner_module.load_architecture(CONFIG_PATH)
+        self.assertEqual(
+            len(plan["selected"]["public_api_modules"]),
+            len(architecture.public_api_modules),
+        )
         self.assertEqual(outputs["run_release_build"], "true")
 
         event_output = self.fixture.root / "event-plan.json"

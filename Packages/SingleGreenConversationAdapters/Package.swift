@@ -22,7 +22,12 @@ let package = Package(
     targets: [
         .target(
             name: "SingleGreenConversationAdapters",
-            dependencies: ["SingleGreenGlassesKit", "VoiceChatCore", "LLMKit"]
+            dependencies: [
+                "SingleGreenGlassesKit",
+                "VoiceChatCore",
+                .product(name: "AgentCore", package: "LLMKit"),
+                .product(name: "LLMCore", package: "LLMKit")
+            ]
         ),
         .testTarget(
             name: "SingleGreenConversationAdaptersTests",
@@ -30,7 +35,8 @@ let package = Package(
                 "SingleGreenConversationAdapters",
                 "SingleGreenGlassesKit",
                 "VoiceChatCore",
-                "LLMKit"
+                .product(name: "AgentCore", package: "LLMKit"),
+                .product(name: "LLMCore", package: "LLMKit")
             ]
         )
     ],

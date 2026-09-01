@@ -4,7 +4,7 @@ import LLMCore
 /// OpenAI 兼容 Chat Completions 客户端。
 /// 默认指向 DeepSeek（https://api.deepseek.com/v1，模型 deepseek-v4-flash），
 /// baseURL / model 可配置以对接任意兼容服务。
-public actor LLMChatClient {
+public actor LLMChatClient: LLMChatTransport {
 
     public struct Config: Sendable, Equatable {
         public var baseURL: URL

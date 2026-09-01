@@ -1,9 +1,9 @@
-// M13-PR1 compatibility bridge: existing consumers can continue importing
-// LLMKit while provider-neutral contracts and agent semantics live separately.
+// M13-PR2 compatibility bridge: existing consumers can continue importing
+// LLMKit while Core, Agent, model transport, and search adapter live separately.
 @_exported import AgentCore
+@_exported import BochaSearchAdapter
 @_exported import LLMCore
-
-extension LLMChatClient: LLMChatTransport {}
+@_exported import OpenAICompatibleTransport
 
 public extension LLMAgent {
     /// Retains source compatibility for callers that still construct the concrete client here.

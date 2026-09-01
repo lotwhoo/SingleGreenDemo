@@ -20,20 +20,20 @@
 
 ```text
 VoiceChatDomain   独立
-LLMKit Package    LLMCore ← AgentCore；LLMKit 兼容入口 → LLMCore + AgentCore
-VoiceChatCore     → ../LLMKit（仅 ASRCLI 工具使用）
+LLMKit Package    LLMCore ← AgentCore / OpenAICompatibleTransport / BochaSearchAdapter；LLMKit 兼容导出四者
+VoiceChatCore     → ../LLMKit 的四个窄产品（仅 ASRCLI 工具使用）
 StreamingTextKit  独立
 VoiceActivityDetectionKit 独立（M6 Stage 1/2A；WebRTC 实现只在 App composition root 注入）
 SingleGreenGlassesKit → VoiceChatDomain + StreamingTextKit
-SingleGreenConversationAdapters → SingleGreenGlassesKit + VoiceChatCore + LLMKit
-SingleGreenDemo   → SingleGreenConversationAdapters + SingleGreenGlassesKit + VoiceChatCore + LLMKit + StreamingTextKit
+SingleGreenConversationAdapters → SingleGreenGlassesKit + VoiceChatCore + AgentCore + LLMCore
+SingleGreenDemo   → SingleGreenConversationAdapters + SingleGreenGlassesKit + VoiceChatCore + AgentCore + LLMCore + OpenAICompatibleTransport + BochaSearchAdapter + StreamingTextKit
 ```
 
 `SingleGreenConversationAdapters` 的复用接口包括 `VoiceChatSpeechRecognitionAdapter`、`VoiceChatSupervisedSpeechRecognitionAdapter`、`VoiceChatVoiceActivatedSpeechRecognitionAdapter`、`LLMKitConversationAgentAdapter` 和 `LLMKitConversationAgentAdapterPolicy`。它们只桥接核心 ports 与已配置的 VoiceChat/LLM 实现；凭证、租约、恢复预算与降级选择、模型/资源配置、WebRTC factory、raw tool name 和展示文案仍由 App composition root 提供。
 
 M12 恢复契约位于 `VoiceChatCore` 内部 `ASRSupervision` Target：PTT 与 Voice Activated 均通过 generation 拒绝旧事件，并在旧 Session cancel 完成后才允许新 Session。Voice Activated 一旦接受本地 VAD 起音就不再换 Session，避免丢失当前话语 pre-roll。多 Feature 的麦克风租约位于 App，不属于 Package 契约；当前采用非抢占模式，生产自动恢复预算保持 0，等待真机故障矩阵后再定参数。
 
-M13-PR1 将 `LLMKit` Package 内部拆为两个可独立引用的 Core Target：`LLMCore` 保有 Message、Tool、StreamingEvent、Transport 和类型化错误；`AgentCore` 只依赖 `LLMCore`，保有上下文事务、Tool Round、commit/abort 和终态规则。`LLMKit` 继续兼容导出两个 Core，并暂时承载 OpenAI-compatible HTTP/SSE 与 Bocha 实现；它们外移到独立 Adapter 属于 M13-PR2。
+M13-PR1 将 `LLMKit` Package 内部拆为两个可独立引用的 Core Target：`LLMCore` 保有 Message、Tool、StreamingEvent、Transport 和类型化错误；`AgentCore` 只依赖 `LLMCore`，保有上下文事务、Tool Round、commit/abort 和终态规则。M13-PR2 再将 OpenAI-compatible HTTP/SSE 与协议线模型移入 `OpenAICompatibleTransport`，将 `BochaSearchClient` 与响应模型移入 `BochaSearchAdapter`。App Composition Root、ASRCLI 和语义桥接改用窄产品，`LLMKit` 只保留兼容导出。
 
 ## 升级流程
 

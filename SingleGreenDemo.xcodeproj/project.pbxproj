@@ -8,13 +8,16 @@
 
 /* Begin PBXBuildFile section */
 		A00000000000000000000060 /* VoiceChatCore in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000062 /* VoiceChatCore */; };
-		A00000000000000000000067 /* LLMKit in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000069 /* LLMKit */; };
 		A00000000000000000000070 /* StreamingTextKit in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000072 /* StreamingTextKit */; };
 		A00000000000000000000073 /* SingleGreenGlassesKit in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000075 /* SingleGreenGlassesKit */; };
 		A00000000000000000000076 /* SingleGreenGlassesKit in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000075 /* SingleGreenGlassesKit */; };
 		A00000000000000000000077 /* VoiceChatDomain in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000066 /* VoiceChatDomain */; };
 		A00000000000000000000078 /* WebRTCVoiceActivityDetection in Frameworks */ = {isa = PBXBuildFile; productRef = A0000000000000000000007A /* WebRTCVoiceActivityDetection */; };
 		A00000000000000000000080 /* SingleGreenConversationAdapters in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000082 /* SingleGreenConversationAdapters */; };
+		A00000000000000000000083 /* AgentCore in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000087 /* AgentCore */; };
+		A00000000000000000000084 /* LLMCore in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000088 /* LLMCore */; };
+		A00000000000000000000085 /* OpenAICompatibleTransport in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000089 /* OpenAICompatibleTransport */; };
+		A00000000000000000000086 /* BochaSearchAdapter in Frameworks */ = {isa = PBXBuildFile; productRef = A0000000000000000000008A /* BochaSearchAdapter */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,7 +59,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				A00000000000000000000060 /* VoiceChatCore in Frameworks */,
-				A00000000000000000000067 /* LLMKit in Frameworks */,
+				A00000000000000000000083 /* AgentCore in Frameworks */,
+				A00000000000000000000084 /* LLMCore in Frameworks */,
+				A00000000000000000000085 /* OpenAICompatibleTransport in Frameworks */,
+				A00000000000000000000086 /* BochaSearchAdapter in Frameworks */,
 				A00000000000000000000070 /* StreamingTextKit in Frameworks */,
 				A00000000000000000000073 /* SingleGreenGlassesKit in Frameworks */,
 				A00000000000000000000078 /* WebRTCVoiceActivityDetection in Frameworks */,
@@ -128,7 +134,10 @@
 			name = SingleGreenDemo;
 			packageProductDependencies = (
 				A00000000000000000000062 /* VoiceChatCore */,
-				A00000000000000000000069 /* LLMKit */,
+				A00000000000000000000087 /* AgentCore */,
+				A00000000000000000000088 /* LLMCore */,
+				A00000000000000000000089 /* OpenAICompatibleTransport */,
+				A0000000000000000000008A /* BochaSearchAdapter */,
 				A00000000000000000000072 /* StreamingTextKit */,
 				A00000000000000000000075 /* SingleGreenGlassesKit */,
 				A0000000000000000000007A /* WebRTCVoiceActivityDetection */,
@@ -583,11 +592,6 @@
 			package = A00000000000000000000065 /* XCLocalSwiftPackageReference "Packages/VoiceChatDomain" */;
 			productName = VoiceChatDomain;
 		};
-		A00000000000000000000069 /* LLMKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A00000000000000000000068 /* XCLocalSwiftPackageReference "Packages/LLMKit" */;
-			productName = LLMKit;
-		};
 		A00000000000000000000072 /* StreamingTextKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A00000000000000000000071 /* XCLocalSwiftPackageReference "Packages/StreamingTextKit" */;
@@ -607,6 +611,26 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A00000000000000000000081 /* XCLocalSwiftPackageReference "Packages/SingleGreenConversationAdapters" */;
 			productName = SingleGreenConversationAdapters;
+		};
+		A00000000000000000000087 /* AgentCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000068 /* XCLocalSwiftPackageReference "Packages/LLMKit" */;
+			productName = AgentCore;
+		};
+		A00000000000000000000088 /* LLMCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000068 /* XCLocalSwiftPackageReference "Packages/LLMKit" */;
+			productName = LLMCore;
+		};
+		A00000000000000000000089 /* OpenAICompatibleTransport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000068 /* XCLocalSwiftPackageReference "Packages/LLMKit" */;
+			productName = OpenAICompatibleTransport;
+		};
+		A0000000000000000000008A /* BochaSearchAdapter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A00000000000000000000068 /* XCLocalSwiftPackageReference "Packages/LLMKit" */;
+			productName = BochaSearchAdapter;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

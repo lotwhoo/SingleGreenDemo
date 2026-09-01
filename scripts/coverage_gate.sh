@@ -17,6 +17,20 @@ fi
 package_thresholds='StreamingTextKit:70 VoiceChatDomain:75 VoiceActivityDetectionKit:80 SingleGreenGlassesKit:65 SingleGreenConversationAdapters:70 LLMKit:60 VoiceChatCore:55'
 packages=$package_thresholds
 
+coverage_source_targets() {
+    case "$1" in
+        LLMKit)
+            # M13 splits provider-neutral cores and provider adapters into
+            # separate library targets while retaining LLMKit as a compatibility
+            # product. Measure the complete reviewed library surface.
+            printf '%s\n' 'LLMCore AgentCore OpenAICompatibleTransport BochaSearchAdapter LLMKit'
+            ;;
+        *)
+            printf '%s\n' "$1"
+            ;;
+    esac
+}
+
 # Optional package arguments let pull-request CI measure only directly affected
 # packages. With no package arguments the historical full-gate behavior is
 # preserved. Validate the complete selection before starting expensive builds.
@@ -68,8 +82,9 @@ for entry in $packages; do
     fi
 
     report="$output_directory/$package.txt"
+    source_targets=$(coverage_source_targets "$package")
     percent=$(python3 "$script_directory/summarize_package_coverage.py" \
-        "$export_path" "$package_path" "$report")
+        "$export_path" "$package_path" "$report" $source_targets)
     if [ -z "$percent" ]; then
         echo "error: unable to parse line coverage for $package" >&2
         exit 1

@@ -1,7 +1,7 @@
 import Foundation
 import LLMCore
 
-/// 请求重试配置（指数退避）。
+/// OpenAI-compatible 请求重试配置（指数退避）。
 /// 参考 open-agent-sdk-swift 的 RetryConfig 标准做法。
 public struct LLMRetryConfig: Sendable, Equatable {
     /// 最大重试次数（不含首次调用）。

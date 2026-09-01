@@ -1,0 +1,2275 @@
+{
+  "ABIRoot": {
+    "children": [
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "BochaSearchAdapter",
+        "name": "Foundation",
+        "printedName": "Foundation"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "BochaSearchAdapter",
+        "name": "LLMCore",
+        "printedName": "LLMCore"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "BochaSearchAdapter",
+        "name": "SwiftOnoneSupport",
+        "printedName": "SwiftOnoneSupport"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "BochaSearchAdapter",
+        "name": "_Concurrency",
+        "printedName": "_Concurrency"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "BochaSearchAdapter",
+        "name": "_StringProcessing",
+        "printedName": "_StringProcessing"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "BochaSearchAdapter",
+        "name": "_SwiftConcurrencyShims",
+        "printedName": "_SwiftConcurrencyShims"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s18BochaSearchAdapter0aB6ClientV6ConfigV6apiKeySSvg",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV6apiKeySSvg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s18BochaSearchAdapter0aB6ClientV6ConfigV6apiKeySSvs",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV6apiKeySSvs"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declAttributes": [
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s18BochaSearchAdapter0aB6ClientV6ConfigV6apiKeySSvp",
+                "moduleName": "BochaSearchAdapter",
+                "name": "apiKey",
+                "printedName": "apiKey",
+                "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV6apiKeySSvp"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s18BochaSearchAdapter0aB6ClientV6ConfigV5countSivg",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV5countSivg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s18BochaSearchAdapter0aB6ClientV6ConfigV5countSivs",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV5countSivs"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declAttributes": [
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s18BochaSearchAdapter0aB6ClientV6ConfigV5countSivp",
+                "moduleName": "BochaSearchAdapter",
+                "name": "count",
+                "printedName": "count",
+                "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV5countSivp"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.String?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s18BochaSearchAdapter0aB6ClientV6ConfigV9freshnessSSSgvg",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV9freshnessSSSgvg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.String?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s18BochaSearchAdapter0aB6ClientV6ConfigV9freshnessSSSgvs",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV9freshnessSSSgvs"
+                  }
+                ],
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "HasInitialValue",
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s18BochaSearchAdapter0aB6ClientV6ConfigV9freshnessSSSgvp",
+                "moduleName": "BochaSearchAdapter",
+                "name": "freshness",
+                "printedName": "freshness",
+                "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV9freshnessSSSgvp"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "URL",
+                        "printedName": "Foundation.URL",
+                        "usr": "s:10Foundation3URLV"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s18BochaSearchAdapter0aB6ClientV6ConfigV7baseURL10Foundation0G0Vvg",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV7baseURL10Foundation0G0Vvg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "URL",
+                        "printedName": "Foundation.URL",
+                        "usr": "s:10Foundation3URLV"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s18BochaSearchAdapter0aB6ClientV6ConfigV7baseURL10Foundation0G0Vvs",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV7baseURL10Foundation0G0Vvs"
+                  }
+                ],
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "URL",
+                    "printedName": "Foundation.URL",
+                    "usr": "s:10Foundation3URLV"
+                  }
+                ],
+                "declAttributes": [
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s18BochaSearchAdapter0aB6ClientV6ConfigV7baseURL10Foundation0G0Vvp",
+                "moduleName": "BochaSearchAdapter",
+                "name": "baseURL",
+                "printedName": "baseURL",
+                "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV7baseURL10Foundation0G0Vvp"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Config",
+                    "printedName": "BochaSearchAdapter.BochaSearchClient.Config",
+                    "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "usr": "s:Sq"
+                  },
+                  {
+                    "hasDefaultArg": true,
+                    "kind": "TypeNominal",
+                    "name": "URL",
+                    "printedName": "Foundation.URL",
+                    "usr": "s:10Foundation3URLV"
+                  }
+                ],
+                "declKind": "Constructor",
+                "init_kind": "Designated",
+                "kind": "Constructor",
+                "mangledName": "$s18BochaSearchAdapter0aB6ClientV6ConfigV6apiKey5count9freshness7baseURLAESS_SiSSSg10Foundation0K0Vtcfc",
+                "moduleName": "BochaSearchAdapter",
+                "name": "init",
+                "printedName": "init(apiKey:count:freshness:baseURL:)",
+                "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV6apiKey5count9freshness7baseURLAESS_SiSSSg10Foundation0K0Vtcfc"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Config",
+                    "printedName": "BochaSearchAdapter.BochaSearchClient.Config",
+                    "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Config",
+                    "printedName": "BochaSearchAdapter.BochaSearchClient.Config",
+                    "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV"
+                  }
+                ],
+                "declAttributes": [
+                  "Implements"
+                ],
+                "declKind": "Func",
+                "funcSelfKind": "NonMutating",
+                "implicit": true,
+                "kind": "Function",
+                "mangledName": "$s18BochaSearchAdapter0aB6ClientV6ConfigV23__derived_struct_equalsySbAE_AEtFZ",
+                "moduleName": "BochaSearchAdapter",
+                "name": "__derived_struct_equals",
+                "printedName": "__derived_struct_equals(_:_:)",
+                "static": true,
+                "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV23__derived_struct_equalsySbAE_AEtFZ"
+              }
+            ],
+            "conformances": [
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8CopyableP",
+                "name": "Copyable",
+                "printedName": "Copyable",
+                "usr": "s:s8CopyableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$sSQ",
+                "name": "Equatable",
+                "printedName": "Equatable",
+                "usr": "s:SQ"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss9EscapableP",
+                "name": "Escapable",
+                "printedName": "Escapable",
+                "usr": "s:s9EscapableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8SendableP",
+                "name": "Sendable",
+                "printedName": "Sendable",
+                "usr": "s:s8SendableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss16SendableMetatypeP",
+                "name": "SendableMetatype",
+                "printedName": "SendableMetatype",
+                "usr": "s:s16SendableMetatypeP"
+              }
+            ],
+            "declKind": "Struct",
+            "kind": "TypeDecl",
+            "mangledName": "$s18BochaSearchAdapter0aB6ClientV6ConfigV",
+            "moduleName": "BochaSearchAdapter",
+            "name": "Config",
+            "printedName": "Config",
+            "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "BochaError",
+                            "printedName": "BochaSearchAdapter.BochaSearchClient.BochaError",
+                            "usr": "s:18BochaSearchAdapter0aB6ClientV0A5ErrorO"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ],
+                        "kind": "TypeFunc",
+                        "name": "Function",
+                        "printedName": "(Swift.String) -> BochaSearchAdapter.BochaSearchClient.BochaError"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "BochaError",
+                            "printedName": "BochaSearchAdapter.BochaSearchClient.BochaError",
+                            "usr": "s:18BochaSearchAdapter0aB6ClientV0A5ErrorO"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Metatype",
+                        "printedName": "BochaSearchAdapter.BochaSearchClient.BochaError.Type"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(BochaSearchAdapter.BochaSearchClient.BochaError.Type) -> (Swift.String) -> BochaSearchAdapter.BochaSearchClient.BochaError"
+                  }
+                ],
+                "declKind": "EnumElement",
+                "kind": "Var",
+                "mangledName": "$s18BochaSearchAdapter0aB6ClientV0A5ErrorO15unsupportedToolyAESScAEmF",
+                "moduleName": "BochaSearchAdapter",
+                "name": "unsupportedTool",
+                "printedName": "unsupportedTool",
+                "usr": "s:18BochaSearchAdapter0aB6ClientV0A5ErrorO15unsupportedToolyAESScAEmF"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BochaError",
+                        "printedName": "BochaSearchAdapter.BochaSearchClient.BochaError",
+                        "usr": "s:18BochaSearchAdapter0aB6ClientV0A5ErrorO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "BochaError",
+                            "printedName": "BochaSearchAdapter.BochaSearchClient.BochaError",
+                            "usr": "s:18BochaSearchAdapter0aB6ClientV0A5ErrorO"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Metatype",
+                        "printedName": "BochaSearchAdapter.BochaSearchClient.BochaError.Type"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(BochaSearchAdapter.BochaSearchClient.BochaError.Type) -> BochaSearchAdapter.BochaSearchClient.BochaError"
+                  }
+                ],
+                "declKind": "EnumElement",
+                "kind": "Var",
+                "mangledName": "$s18BochaSearchAdapter0aB6ClientV0A5ErrorO12missingQueryyA2EmF",
+                "moduleName": "BochaSearchAdapter",
+                "name": "missingQuery",
+                "printedName": "missingQuery",
+                "usr": "s:18BochaSearchAdapter0aB6ClientV0A5ErrorO12missingQueryyA2EmF"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BochaError",
+                        "printedName": "BochaSearchAdapter.BochaSearchClient.BochaError",
+                        "usr": "s:18BochaSearchAdapter0aB6ClientV0A5ErrorO"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "BochaError",
+                            "printedName": "BochaSearchAdapter.BochaSearchClient.BochaError",
+                            "usr": "s:18BochaSearchAdapter0aB6ClientV0A5ErrorO"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Metatype",
+                        "printedName": "BochaSearchAdapter.BochaSearchClient.BochaError.Type"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(BochaSearchAdapter.BochaSearchClient.BochaError.Type) -> BochaSearchAdapter.BochaSearchClient.BochaError"
+                  }
+                ],
+                "declKind": "EnumElement",
+                "kind": "Var",
+                "mangledName": "$s18BochaSearchAdapter0aB6ClientV0A5ErrorO15invalidResponseyA2EmF",
+                "moduleName": "BochaSearchAdapter",
+                "name": "invalidResponse",
+                "printedName": "invalidResponse",
+                "usr": "s:18BochaSearchAdapter0aB6ClientV0A5ErrorO15invalidResponseyA2EmF"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "BochaError",
+                            "printedName": "BochaSearchAdapter.BochaSearchClient.BochaError",
+                            "usr": "s:18BochaSearchAdapter0aB6ClientV0A5ErrorO"
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "Int",
+                                "printedName": "Swift.Int",
+                                "usr": "s:Si"
+                              },
+                              {
+                                "kind": "TypeNominal",
+                                "name": "String",
+                                "printedName": "Swift.String",
+                                "usr": "s:SS"
+                              }
+                            ],
+                            "kind": "TypeNominal",
+                            "name": "Tuple",
+                            "printedName": "(statusCode: Swift.Int, message: Swift.String)"
+                          }
+                        ],
+                        "kind": "TypeFunc",
+                        "name": "Function",
+                        "printedName": "(Swift.Int, Swift.String) -> BochaSearchAdapter.BochaSearchClient.BochaError"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "BochaError",
+                            "printedName": "BochaSearchAdapter.BochaSearchClient.BochaError",
+                            "usr": "s:18BochaSearchAdapter0aB6ClientV0A5ErrorO"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Metatype",
+                        "printedName": "BochaSearchAdapter.BochaSearchClient.BochaError.Type"
+                      }
+                    ],
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(BochaSearchAdapter.BochaSearchClient.BochaError.Type) -> (Swift.Int, Swift.String) -> BochaSearchAdapter.BochaSearchClient.BochaError"
+                  }
+                ],
+                "declKind": "EnumElement",
+                "kind": "Var",
+                "mangledName": "$s18BochaSearchAdapter0aB6ClientV0A5ErrorO03apiE0yAESi_SStcAEmF",
+                "moduleName": "BochaSearchAdapter",
+                "name": "apiError",
+                "printedName": "apiError",
+                "usr": "s:18BochaSearchAdapter0aB6ClientV0A5ErrorO03apiE0yAESi_SStcAEmF"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.String?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declKind": "Accessor",
+                    "kind": "Accessor",
+                    "mangledName": "$s18BochaSearchAdapter0aB6ClientV0A5ErrorO16errorDescriptionSSSgvg",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:18BochaSearchAdapter0aB6ClientV0A5ErrorO16errorDescriptionSSSgvg"
+                  }
+                ],
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Var",
+                "kind": "Var",
+                "mangledName": "$s18BochaSearchAdapter0aB6ClientV0A5ErrorO16errorDescriptionSSSgvp",
+                "moduleName": "BochaSearchAdapter",
+                "name": "errorDescription",
+                "printedName": "errorDescription",
+                "usr": "s:18BochaSearchAdapter0aB6ClientV0A5ErrorO16errorDescriptionSSSgvp"
+              }
+            ],
+            "conformances": [
+              {
+                "kind": "Conformance",
+                "mangledName": "$s10Foundation14LocalizedErrorP",
+                "name": "LocalizedError",
+                "printedName": "LocalizedError",
+                "usr": "s:10Foundation14LocalizedErrorP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8CopyableP",
+                "name": "Copyable",
+                "printedName": "Copyable",
+                "usr": "s:s8CopyableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss5ErrorP",
+                "name": "Error",
+                "printedName": "Error",
+                "usr": "s:s5ErrorP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss9EscapableP",
+                "name": "Escapable",
+                "printedName": "Escapable",
+                "usr": "s:s9EscapableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8SendableP",
+                "name": "Sendable",
+                "printedName": "Sendable",
+                "usr": "s:s8SendableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss16SendableMetatypeP",
+                "name": "SendableMetatype",
+                "printedName": "SendableMetatype",
+                "usr": "s:s16SendableMetatypeP"
+              }
+            ],
+            "declKind": "Enum",
+            "isEnumExhaustive": true,
+            "kind": "TypeDecl",
+            "mangledName": "$s18BochaSearchAdapter0aB6ClientV0A5ErrorO",
+            "moduleName": "BochaSearchAdapter",
+            "name": "BochaError",
+            "printedName": "BochaError",
+            "usr": "s:18BochaSearchAdapter0aB6ClientV0A5ErrorO"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "BochaSearchClient",
+                "printedName": "BochaSearchAdapter.BochaSearchClient",
+                "usr": "s:18BochaSearchAdapter0aB6ClientV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Config",
+                "printedName": "BochaSearchAdapter.BochaSearchClient.Config",
+                "usr": "s:18BochaSearchAdapter0aB6ClientV6ConfigV"
+              },
+              {
+                "hasDefaultArg": true,
+                "kind": "TypeNominal",
+                "name": "URLSession",
+                "printedName": "Foundation.URLSession",
+                "usr": "c:objc(cs)NSURLSession"
+              }
+            ],
+            "declKind": "Constructor",
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s18BochaSearchAdapter0aB6ClientV6config7sessionA2C6ConfigV_So12NSURLSessionCtcfc",
+            "moduleName": "BochaSearchAdapter",
+            "name": "init",
+            "printedName": "init(config:session:)",
+            "usr": "s:18BochaSearchAdapter0aB6ClientV6config7sessionA2C6ConfigV_So12NSURLSessionCtcfc"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "LLMTool",
+                        "printedName": "LLMCore.LLMTool",
+                        "usr": "s:7LLMCore7LLMToolV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[LLMCore.LLMTool]",
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declKind": "Accessor",
+                "kind": "Accessor",
+                "mangledName": "$s18BochaSearchAdapter0aB6ClientV15toolDefinitionsSay7LLMCore7LLMToolVGvg",
+                "moduleName": "BochaSearchAdapter",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:18BochaSearchAdapter0aB6ClientV15toolDefinitionsSay7LLMCore7LLMToolVGvg"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "LLMTool",
+                    "printedName": "LLMCore.LLMTool",
+                    "usr": "s:7LLMCore7LLMToolV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[LLMCore.LLMTool]",
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Var",
+            "kind": "Var",
+            "mangledName": "$s18BochaSearchAdapter0aB6ClientV15toolDefinitionsSay7LLMCore7LLMToolVGvp",
+            "moduleName": "BochaSearchAdapter",
+            "name": "toolDefinitions",
+            "printedName": "toolDefinitions",
+            "usr": "s:18BochaSearchAdapter0aB6ClientV15toolDefinitionsSay7LLMCore7LLMToolVGvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "LLMToolCall",
+                "printedName": "LLMCore.LLMToolCall",
+                "usr": "s:7LLMCore11LLMToolCallV"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "kind": "Function",
+            "mangledName": "$s18BochaSearchAdapter0aB6ClientV7executeySS7LLMCore11LLMToolCallVYaKF",
+            "moduleName": "BochaSearchAdapter",
+            "name": "execute",
+            "printedName": "execute(_:)",
+            "throwing": true,
+            "usr": "s:18BochaSearchAdapter0aB6ClientV7executeySS7LLMCore11LLMToolCallVYaKF"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$s7LLMCore15LLMToolExecutorP",
+            "name": "LLMToolExecutor",
+            "printedName": "LLMToolExecutor",
+            "usr": "s:7LLMCore15LLMToolExecutorP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s18BochaSearchAdapter0aB6ClientV",
+        "moduleName": "BochaSearchAdapter",
+        "name": "BochaSearchClient",
+        "printedName": "BochaSearchClient",
+        "usr": "s:18BochaSearchAdapter0aB6ClientV"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "accessors": [
+                      {
+                        "accessorKind": "get",
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "TypeNominal",
+                                    "name": "WebPage",
+                                    "printedName": "BochaSearchAdapter.BochaResponse.Data.WebPage",
+                                    "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV"
+                                  }
+                                ],
+                                "kind": "TypeNominal",
+                                "name": "Array",
+                                "printedName": "[BochaSearchAdapter.BochaResponse.Data.WebPage]",
+                                "usr": "s:Sa"
+                              }
+                            ],
+                            "kind": "TypeNominal",
+                            "name": "Optional",
+                            "printedName": "[BochaSearchAdapter.BochaResponse.Data.WebPage]?",
+                            "usr": "s:Sq"
+                          }
+                        ],
+                        "declAttributes": [
+                          "Transparent"
+                        ],
+                        "declKind": "Accessor",
+                        "implicit": true,
+                        "kind": "Accessor",
+                        "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV8WebPagesV5valueSayAE0F4PageVGSgvg",
+                        "moduleName": "BochaSearchAdapter",
+                        "name": "Get",
+                        "printedName": "Get()",
+                        "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV8WebPagesV5valueSayAE0F4PageVGSgvg"
+                      },
+                      {
+                        "accessorKind": "set",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Void",
+                            "printedName": "()"
+                          },
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "kind": "TypeNominal",
+                                    "name": "WebPage",
+                                    "printedName": "BochaSearchAdapter.BochaResponse.Data.WebPage",
+                                    "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV"
+                                  }
+                                ],
+                                "kind": "TypeNominal",
+                                "name": "Array",
+                                "printedName": "[BochaSearchAdapter.BochaResponse.Data.WebPage]",
+                                "usr": "s:Sa"
+                              }
+                            ],
+                            "kind": "TypeNominal",
+                            "name": "Optional",
+                            "printedName": "[BochaSearchAdapter.BochaResponse.Data.WebPage]?",
+                            "usr": "s:Sq"
+                          }
+                        ],
+                        "declAttributes": [
+                          "Transparent"
+                        ],
+                        "declKind": "Accessor",
+                        "implicit": true,
+                        "kind": "Accessor",
+                        "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV8WebPagesV5valueSayAE0F4PageVGSgvs",
+                        "moduleName": "BochaSearchAdapter",
+                        "name": "Set",
+                        "printedName": "Set()",
+                        "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV8WebPagesV5valueSayAE0F4PageVGSgvs"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "WebPage",
+                                "printedName": "BochaSearchAdapter.BochaResponse.Data.WebPage",
+                                "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV"
+                              }
+                            ],
+                            "kind": "TypeNominal",
+                            "name": "Array",
+                            "printedName": "[BochaSearchAdapter.BochaResponse.Data.WebPage]",
+                            "usr": "s:Sa"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "[BochaSearchAdapter.BochaResponse.Data.WebPage]?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "HasInitialValue",
+                      "HasStorage"
+                    ],
+                    "declKind": "Var",
+                    "hasStorage": true,
+                    "kind": "Var",
+                    "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV8WebPagesV5valueSayAE0F4PageVGSgvp",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "value",
+                    "printedName": "value",
+                    "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV8WebPagesV5valueSayAE0F4PageVGSgvp"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Encoder",
+                        "printedName": "any Swift.Encoder",
+                        "usr": "s:s7EncoderP"
+                      }
+                    ],
+                    "declKind": "Func",
+                    "funcSelfKind": "NonMutating",
+                    "implicit": true,
+                    "kind": "Function",
+                    "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV8WebPagesV6encode2toys7Encoder_p_tKF",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "encode",
+                    "printedName": "encode(to:)",
+                    "throwing": true,
+                    "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV8WebPagesV6encode2toys7Encoder_p_tKF"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebPages",
+                        "printedName": "BochaSearchAdapter.BochaResponse.Data.WebPages",
+                        "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV8WebPagesV"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Decoder",
+                        "printedName": "any Swift.Decoder",
+                        "usr": "s:s7DecoderP"
+                      }
+                    ],
+                    "declKind": "Constructor",
+                    "implicit": true,
+                    "init_kind": "Designated",
+                    "kind": "Constructor",
+                    "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV8WebPagesV4fromAGs7Decoder_p_tKcfc",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "init",
+                    "printedName": "init(from:)",
+                    "throwing": true,
+                    "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV8WebPagesV4fromAGs7Decoder_p_tKcfc"
+                  }
+                ],
+                "conformances": [
+                  {
+                    "kind": "Conformance",
+                    "mangledName": "$ss8CopyableP",
+                    "name": "Copyable",
+                    "printedName": "Copyable",
+                    "usr": "s:s8CopyableP"
+                  },
+                  {
+                    "kind": "Conformance",
+                    "mangledName": "$sSe",
+                    "name": "Decodable",
+                    "printedName": "Decodable",
+                    "usr": "s:Se"
+                  },
+                  {
+                    "kind": "Conformance",
+                    "mangledName": "$sSE",
+                    "name": "Encodable",
+                    "printedName": "Encodable",
+                    "usr": "s:SE"
+                  },
+                  {
+                    "kind": "Conformance",
+                    "mangledName": "$ss9EscapableP",
+                    "name": "Escapable",
+                    "printedName": "Escapable",
+                    "usr": "s:s9EscapableP"
+                  },
+                  {
+                    "kind": "Conformance",
+                    "mangledName": "$ss8SendableP",
+                    "name": "Sendable",
+                    "printedName": "Sendable",
+                    "usr": "s:s8SendableP"
+                  },
+                  {
+                    "kind": "Conformance",
+                    "mangledName": "$ss16SendableMetatypeP",
+                    "name": "SendableMetatype",
+                    "printedName": "SendableMetatype",
+                    "usr": "s:s16SendableMetatypeP"
+                  }
+                ],
+                "declKind": "Struct",
+                "kind": "TypeDecl",
+                "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV8WebPagesV",
+                "moduleName": "BochaSearchAdapter",
+                "name": "WebPages",
+                "printedName": "WebPages",
+                "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV8WebPagesV"
+              },
+              {
+                "children": [
+                  {
+                    "accessors": [
+                      {
+                        "accessorKind": "get",
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "String",
+                                "printedName": "Swift.String",
+                                "usr": "s:SS"
+                              }
+                            ],
+                            "kind": "TypeNominal",
+                            "name": "Optional",
+                            "printedName": "Swift.String?",
+                            "usr": "s:Sq"
+                          }
+                        ],
+                        "declAttributes": [
+                          "Transparent"
+                        ],
+                        "declKind": "Accessor",
+                        "implicit": true,
+                        "kind": "Accessor",
+                        "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV7WebPageV4nameSSSgvg",
+                        "moduleName": "BochaSearchAdapter",
+                        "name": "Get",
+                        "printedName": "Get()",
+                        "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV4nameSSSgvg"
+                      },
+                      {
+                        "accessorKind": "set",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Void",
+                            "printedName": "()"
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "String",
+                                "printedName": "Swift.String",
+                                "usr": "s:SS"
+                              }
+                            ],
+                            "kind": "TypeNominal",
+                            "name": "Optional",
+                            "printedName": "Swift.String?",
+                            "usr": "s:Sq"
+                          }
+                        ],
+                        "declAttributes": [
+                          "Transparent"
+                        ],
+                        "declKind": "Accessor",
+                        "implicit": true,
+                        "kind": "Accessor",
+                        "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV7WebPageV4nameSSSgvs",
+                        "moduleName": "BochaSearchAdapter",
+                        "name": "Set",
+                        "printedName": "Set()",
+                        "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV4nameSSSgvs"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.String?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "HasInitialValue",
+                      "HasStorage"
+                    ],
+                    "declKind": "Var",
+                    "hasStorage": true,
+                    "kind": "Var",
+                    "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV7WebPageV4nameSSSgvp",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "name",
+                    "printedName": "name",
+                    "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV4nameSSSgvp"
+                  },
+                  {
+                    "accessors": [
+                      {
+                        "accessorKind": "get",
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "String",
+                                "printedName": "Swift.String",
+                                "usr": "s:SS"
+                              }
+                            ],
+                            "kind": "TypeNominal",
+                            "name": "Optional",
+                            "printedName": "Swift.String?",
+                            "usr": "s:Sq"
+                          }
+                        ],
+                        "declAttributes": [
+                          "Transparent"
+                        ],
+                        "declKind": "Accessor",
+                        "implicit": true,
+                        "kind": "Accessor",
+                        "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV7WebPageV3urlSSSgvg",
+                        "moduleName": "BochaSearchAdapter",
+                        "name": "Get",
+                        "printedName": "Get()",
+                        "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV3urlSSSgvg"
+                      },
+                      {
+                        "accessorKind": "set",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Void",
+                            "printedName": "()"
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "String",
+                                "printedName": "Swift.String",
+                                "usr": "s:SS"
+                              }
+                            ],
+                            "kind": "TypeNominal",
+                            "name": "Optional",
+                            "printedName": "Swift.String?",
+                            "usr": "s:Sq"
+                          }
+                        ],
+                        "declAttributes": [
+                          "Transparent"
+                        ],
+                        "declKind": "Accessor",
+                        "implicit": true,
+                        "kind": "Accessor",
+                        "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV7WebPageV3urlSSSgvs",
+                        "moduleName": "BochaSearchAdapter",
+                        "name": "Set",
+                        "printedName": "Set()",
+                        "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV3urlSSSgvs"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.String?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "HasInitialValue",
+                      "HasStorage"
+                    ],
+                    "declKind": "Var",
+                    "hasStorage": true,
+                    "kind": "Var",
+                    "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV7WebPageV3urlSSSgvp",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "url",
+                    "printedName": "url",
+                    "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV3urlSSSgvp"
+                  },
+                  {
+                    "accessors": [
+                      {
+                        "accessorKind": "get",
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "String",
+                                "printedName": "Swift.String",
+                                "usr": "s:SS"
+                              }
+                            ],
+                            "kind": "TypeNominal",
+                            "name": "Optional",
+                            "printedName": "Swift.String?",
+                            "usr": "s:Sq"
+                          }
+                        ],
+                        "declAttributes": [
+                          "Transparent"
+                        ],
+                        "declKind": "Accessor",
+                        "implicit": true,
+                        "kind": "Accessor",
+                        "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV7WebPageV7summarySSSgvg",
+                        "moduleName": "BochaSearchAdapter",
+                        "name": "Get",
+                        "printedName": "Get()",
+                        "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV7summarySSSgvg"
+                      },
+                      {
+                        "accessorKind": "set",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Void",
+                            "printedName": "()"
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "String",
+                                "printedName": "Swift.String",
+                                "usr": "s:SS"
+                              }
+                            ],
+                            "kind": "TypeNominal",
+                            "name": "Optional",
+                            "printedName": "Swift.String?",
+                            "usr": "s:Sq"
+                          }
+                        ],
+                        "declAttributes": [
+                          "Transparent"
+                        ],
+                        "declKind": "Accessor",
+                        "implicit": true,
+                        "kind": "Accessor",
+                        "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV7WebPageV7summarySSSgvs",
+                        "moduleName": "BochaSearchAdapter",
+                        "name": "Set",
+                        "printedName": "Set()",
+                        "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV7summarySSSgvs"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.String?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "HasInitialValue",
+                      "HasStorage"
+                    ],
+                    "declKind": "Var",
+                    "hasStorage": true,
+                    "kind": "Var",
+                    "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV7WebPageV7summarySSSgvp",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "summary",
+                    "printedName": "summary",
+                    "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV7summarySSSgvp"
+                  },
+                  {
+                    "accessors": [
+                      {
+                        "accessorKind": "get",
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "String",
+                                "printedName": "Swift.String",
+                                "usr": "s:SS"
+                              }
+                            ],
+                            "kind": "TypeNominal",
+                            "name": "Optional",
+                            "printedName": "Swift.String?",
+                            "usr": "s:Sq"
+                          }
+                        ],
+                        "declAttributes": [
+                          "Transparent"
+                        ],
+                        "declKind": "Accessor",
+                        "implicit": true,
+                        "kind": "Accessor",
+                        "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV7WebPageV8siteNameSSSgvg",
+                        "moduleName": "BochaSearchAdapter",
+                        "name": "Get",
+                        "printedName": "Get()",
+                        "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV8siteNameSSSgvg"
+                      },
+                      {
+                        "accessorKind": "set",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Void",
+                            "printedName": "()"
+                          },
+                          {
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "String",
+                                "printedName": "Swift.String",
+                                "usr": "s:SS"
+                              }
+                            ],
+                            "kind": "TypeNominal",
+                            "name": "Optional",
+                            "printedName": "Swift.String?",
+                            "usr": "s:Sq"
+                          }
+                        ],
+                        "declAttributes": [
+                          "Transparent"
+                        ],
+                        "declKind": "Accessor",
+                        "implicit": true,
+                        "kind": "Accessor",
+                        "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV7WebPageV8siteNameSSSgvs",
+                        "moduleName": "BochaSearchAdapter",
+                        "name": "Set",
+                        "printedName": "Set()",
+                        "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV8siteNameSSSgvs"
+                      }
+                    ],
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "Swift.String?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "HasInitialValue",
+                      "HasStorage"
+                    ],
+                    "declKind": "Var",
+                    "hasStorage": true,
+                    "kind": "Var",
+                    "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV7WebPageV8siteNameSSSgvp",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "siteName",
+                    "printedName": "siteName",
+                    "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV8siteNameSSSgvp"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Encoder",
+                        "printedName": "any Swift.Encoder",
+                        "usr": "s:s7EncoderP"
+                      }
+                    ],
+                    "declKind": "Func",
+                    "funcSelfKind": "NonMutating",
+                    "implicit": true,
+                    "kind": "Function",
+                    "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV7WebPageV6encode2toys7Encoder_p_tKF",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "encode",
+                    "printedName": "encode(to:)",
+                    "throwing": true,
+                    "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV6encode2toys7Encoder_p_tKF"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebPage",
+                        "printedName": "BochaSearchAdapter.BochaResponse.Data.WebPage",
+                        "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Decoder",
+                        "printedName": "any Swift.Decoder",
+                        "usr": "s:s7DecoderP"
+                      }
+                    ],
+                    "declKind": "Constructor",
+                    "implicit": true,
+                    "init_kind": "Designated",
+                    "kind": "Constructor",
+                    "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV7WebPageV4fromAGs7Decoder_p_tKcfc",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "init",
+                    "printedName": "init(from:)",
+                    "throwing": true,
+                    "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV4fromAGs7Decoder_p_tKcfc"
+                  }
+                ],
+                "conformances": [
+                  {
+                    "kind": "Conformance",
+                    "mangledName": "$ss8CopyableP",
+                    "name": "Copyable",
+                    "printedName": "Copyable",
+                    "usr": "s:s8CopyableP"
+                  },
+                  {
+                    "kind": "Conformance",
+                    "mangledName": "$sSe",
+                    "name": "Decodable",
+                    "printedName": "Decodable",
+                    "usr": "s:Se"
+                  },
+                  {
+                    "kind": "Conformance",
+                    "mangledName": "$sSE",
+                    "name": "Encodable",
+                    "printedName": "Encodable",
+                    "usr": "s:SE"
+                  },
+                  {
+                    "kind": "Conformance",
+                    "mangledName": "$ss9EscapableP",
+                    "name": "Escapable",
+                    "printedName": "Escapable",
+                    "usr": "s:s9EscapableP"
+                  },
+                  {
+                    "kind": "Conformance",
+                    "mangledName": "$ss8SendableP",
+                    "name": "Sendable",
+                    "printedName": "Sendable",
+                    "usr": "s:s8SendableP"
+                  },
+                  {
+                    "kind": "Conformance",
+                    "mangledName": "$ss16SendableMetatypeP",
+                    "name": "SendableMetatype",
+                    "printedName": "SendableMetatype",
+                    "usr": "s:s16SendableMetatypeP"
+                  }
+                ],
+                "declKind": "Struct",
+                "kind": "TypeDecl",
+                "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV7WebPageV",
+                "moduleName": "BochaSearchAdapter",
+                "name": "WebPage",
+                "printedName": "WebPage",
+                "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV7WebPageV"
+              },
+              {
+                "accessors": [
+                  {
+                    "accessorKind": "get",
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "WebPages",
+                            "printedName": "BochaSearchAdapter.BochaResponse.Data.WebPages",
+                            "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV8WebPagesV"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "BochaSearchAdapter.BochaResponse.Data.WebPages?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV8webPagesAE03WebG0VSgvg",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "Get",
+                    "printedName": "Get()",
+                    "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV8webPagesAE03WebG0VSgvg"
+                  },
+                  {
+                    "accessorKind": "set",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "WebPages",
+                            "printedName": "BochaSearchAdapter.BochaResponse.Data.WebPages",
+                            "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV8WebPagesV"
+                          }
+                        ],
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "BochaSearchAdapter.BochaResponse.Data.WebPages?",
+                        "usr": "s:Sq"
+                      }
+                    ],
+                    "declAttributes": [
+                      "Transparent"
+                    ],
+                    "declKind": "Accessor",
+                    "implicit": true,
+                    "kind": "Accessor",
+                    "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV8webPagesAE03WebG0VSgvs",
+                    "moduleName": "BochaSearchAdapter",
+                    "name": "Set",
+                    "printedName": "Set()",
+                    "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV8webPagesAE03WebG0VSgvs"
+                  }
+                ],
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "WebPages",
+                        "printedName": "BochaSearchAdapter.BochaResponse.Data.WebPages",
+                        "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV8WebPagesV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "BochaSearchAdapter.BochaResponse.Data.WebPages?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "HasInitialValue",
+                  "HasStorage"
+                ],
+                "declKind": "Var",
+                "hasStorage": true,
+                "kind": "Var",
+                "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV8webPagesAE03WebG0VSgvp",
+                "moduleName": "BochaSearchAdapter",
+                "name": "webPages",
+                "printedName": "webPages",
+                "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV8webPagesAE03WebG0VSgvp"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Encoder",
+                    "printedName": "any Swift.Encoder",
+                    "usr": "s:s7EncoderP"
+                  }
+                ],
+                "declKind": "Func",
+                "funcSelfKind": "NonMutating",
+                "implicit": true,
+                "kind": "Function",
+                "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV6encode2toys7Encoder_p_tKF",
+                "moduleName": "BochaSearchAdapter",
+                "name": "encode",
+                "printedName": "encode(to:)",
+                "throwing": true,
+                "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV6encode2toys7Encoder_p_tKF"
+              },
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Data",
+                    "printedName": "BochaSearchAdapter.BochaResponse.Data",
+                    "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Decoder",
+                    "printedName": "any Swift.Decoder",
+                    "usr": "s:s7DecoderP"
+                  }
+                ],
+                "declKind": "Constructor",
+                "implicit": true,
+                "init_kind": "Designated",
+                "kind": "Constructor",
+                "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV4fromAEs7Decoder_p_tKcfc",
+                "moduleName": "BochaSearchAdapter",
+                "name": "init",
+                "printedName": "init(from:)",
+                "throwing": true,
+                "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV4fromAEs7Decoder_p_tKcfc"
+              }
+            ],
+            "conformances": [
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8CopyableP",
+                "name": "Copyable",
+                "printedName": "Copyable",
+                "usr": "s:s8CopyableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$sSe",
+                "name": "Decodable",
+                "printedName": "Decodable",
+                "usr": "s:Se"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$sSE",
+                "name": "Encodable",
+                "printedName": "Encodable",
+                "usr": "s:SE"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss9EscapableP",
+                "name": "Escapable",
+                "printedName": "Escapable",
+                "usr": "s:s9EscapableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss8SendableP",
+                "name": "Sendable",
+                "printedName": "Sendable",
+                "usr": "s:s8SendableP"
+              },
+              {
+                "kind": "Conformance",
+                "mangledName": "$ss16SendableMetatypeP",
+                "name": "SendableMetatype",
+                "printedName": "SendableMetatype",
+                "usr": "s:s16SendableMetatypeP"
+              }
+            ],
+            "declKind": "Struct",
+            "kind": "TypeDecl",
+            "mangledName": "$s18BochaSearchAdapter0A8ResponseV4DataV",
+            "moduleName": "BochaSearchAdapter",
+            "name": "Data",
+            "printedName": "Data",
+            "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.Int?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s18BochaSearchAdapter0A8ResponseV4codeSiSgvg",
+                "moduleName": "BochaSearchAdapter",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:18BochaSearchAdapter0A8ResponseV4codeSiSgvg"
+              },
+              {
+                "accessorKind": "set",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.Int?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s18BochaSearchAdapter0A8ResponseV4codeSiSgvs",
+                "moduleName": "BochaSearchAdapter",
+                "name": "Set",
+                "printedName": "Set()",
+                "usr": "s:18BochaSearchAdapter0A8ResponseV4codeSiSgvs"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.Int?",
+                "usr": "s:Sq"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "kind": "Var",
+            "mangledName": "$s18BochaSearchAdapter0A8ResponseV4codeSiSgvp",
+            "moduleName": "BochaSearchAdapter",
+            "name": "code",
+            "printedName": "code",
+            "usr": "s:18BochaSearchAdapter0A8ResponseV4codeSiSgvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s18BochaSearchAdapter0A8ResponseV7messageSSSgvg",
+                "moduleName": "BochaSearchAdapter",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:18BochaSearchAdapter0A8ResponseV7messageSSSgvg"
+              },
+              {
+                "accessorKind": "set",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s18BochaSearchAdapter0A8ResponseV7messageSSSgvs",
+                "moduleName": "BochaSearchAdapter",
+                "name": "Set",
+                "printedName": "Set()",
+                "usr": "s:18BochaSearchAdapter0A8ResponseV7messageSSSgvs"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "usr": "s:Sq"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "kind": "Var",
+            "mangledName": "$s18BochaSearchAdapter0A8ResponseV7messageSSSgvp",
+            "moduleName": "BochaSearchAdapter",
+            "name": "message",
+            "printedName": "message",
+            "usr": "s:18BochaSearchAdapter0A8ResponseV7messageSSSgvp"
+          },
+          {
+            "accessors": [
+              {
+                "accessorKind": "get",
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Data",
+                        "printedName": "BochaSearchAdapter.BochaResponse.Data",
+                        "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "BochaSearchAdapter.BochaResponse.Data?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s18BochaSearchAdapter0A8ResponseV4dataAC4DataVSgvg",
+                "moduleName": "BochaSearchAdapter",
+                "name": "Get",
+                "printedName": "Get()",
+                "usr": "s:18BochaSearchAdapter0A8ResponseV4dataAC4DataVSgvg"
+              },
+              {
+                "accessorKind": "set",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Data",
+                        "printedName": "BochaSearchAdapter.BochaResponse.Data",
+                        "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV"
+                      }
+                    ],
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "BochaSearchAdapter.BochaResponse.Data?",
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declAttributes": [
+                  "Transparent"
+                ],
+                "declKind": "Accessor",
+                "implicit": true,
+                "kind": "Accessor",
+                "mangledName": "$s18BochaSearchAdapter0A8ResponseV4dataAC4DataVSgvs",
+                "moduleName": "BochaSearchAdapter",
+                "name": "Set",
+                "printedName": "Set()",
+                "usr": "s:18BochaSearchAdapter0A8ResponseV4dataAC4DataVSgvs"
+              }
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Data",
+                    "printedName": "BochaSearchAdapter.BochaResponse.Data",
+                    "usr": "s:18BochaSearchAdapter0A8ResponseV4DataV"
+                  }
+                ],
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "BochaSearchAdapter.BochaResponse.Data?",
+                "usr": "s:Sq"
+              }
+            ],
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage"
+            ],
+            "declKind": "Var",
+            "hasStorage": true,
+            "kind": "Var",
+            "mangledName": "$s18BochaSearchAdapter0A8ResponseV4dataAC4DataVSgvp",
+            "moduleName": "BochaSearchAdapter",
+            "name": "data",
+            "printedName": "data",
+            "usr": "s:18BochaSearchAdapter0A8ResponseV4dataAC4DataVSgvp"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Encoder",
+                "printedName": "any Swift.Encoder",
+                "usr": "s:s7EncoderP"
+              }
+            ],
+            "declKind": "Func",
+            "funcSelfKind": "NonMutating",
+            "implicit": true,
+            "kind": "Function",
+            "mangledName": "$s18BochaSearchAdapter0A8ResponseV6encode2toys7Encoder_p_tKF",
+            "moduleName": "BochaSearchAdapter",
+            "name": "encode",
+            "printedName": "encode(to:)",
+            "throwing": true,
+            "usr": "s:18BochaSearchAdapter0A8ResponseV6encode2toys7Encoder_p_tKF"
+          },
+          {
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "BochaResponse",
+                "printedName": "BochaSearchAdapter.BochaResponse",
+                "usr": "s:18BochaSearchAdapter0A8ResponseV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Decoder",
+                "printedName": "any Swift.Decoder",
+                "usr": "s:s7DecoderP"
+              }
+            ],
+            "declKind": "Constructor",
+            "implicit": true,
+            "init_kind": "Designated",
+            "kind": "Constructor",
+            "mangledName": "$s18BochaSearchAdapter0A8ResponseV4fromACs7Decoder_p_tKcfc",
+            "moduleName": "BochaSearchAdapter",
+            "name": "init",
+            "printedName": "init(from:)",
+            "throwing": true,
+            "usr": "s:18BochaSearchAdapter0A8ResponseV4fromACs7Decoder_p_tKcfc"
+          }
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8CopyableP",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSe",
+            "name": "Decodable",
+            "printedName": "Decodable",
+            "usr": "s:Se"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$sSE",
+            "name": "Encodable",
+            "printedName": "Encodable",
+            "usr": "s:SE"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss9EscapableP",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss8SendableP",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "mangledName": "$ss16SendableMetatypeP",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP"
+          }
+        ],
+        "declKind": "Struct",
+        "kind": "TypeDecl",
+        "mangledName": "$s18BochaSearchAdapter0A8ResponseV",
+        "moduleName": "BochaSearchAdapter",
+        "name": "BochaResponse",
+        "printedName": "BochaResponse",
+        "usr": "s:18BochaSearchAdapter0A8ResponseV"
+      }
+    ],
+    "json_format_version": 8,
+    "kind": "Root",
+    "name": "BochaSearchAdapter",
+    "printedName": "BochaSearchAdapter"
+  }
+}

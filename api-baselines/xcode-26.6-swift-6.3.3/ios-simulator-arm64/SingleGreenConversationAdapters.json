@@ -5,6 +5,13 @@
         "declKind": "Import",
         "kind": "Import",
         "moduleName": "SingleGreenConversationAdapters",
+        "name": "AgentCore",
+        "printedName": "AgentCore"
+      },
+      {
+        "declKind": "Import",
+        "kind": "Import",
+        "moduleName": "SingleGreenConversationAdapters",
         "name": "Foundation",
         "printedName": "Foundation"
       },
@@ -12,8 +19,8 @@
         "declKind": "Import",
         "kind": "Import",
         "moduleName": "SingleGreenConversationAdapters",
-        "name": "LLMKit",
-        "printedName": "LLMKit"
+        "name": "LLMCore",
+        "printedName": "LLMCore"
       },
       {
         "declKind": "Import",

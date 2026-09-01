@@ -171,6 +171,44 @@ do
     fi
 done
 
+openai_adapter="$temporary_root/openai-compatible-transport-adapter-only"
+cp -R "$base" "$openai_adapter"
+cat >"$openai_adapter/Packages/LLMKit/Sources/OpenAICompatibleTransport/FixtureViolation.swift" <<'SWIFT'
+import SwiftUI
+import AgentCore
+import BochaSearchAdapter
+SWIFT
+expect_failure "$openai_adapter" 'Packages/LLMKit/Sources/OpenAICompatibleTransport/FixtureViolation.swift:1: import rule openai-compatible-transport-adapter-only forbids module SwiftUI'
+for openai_adapter_violation in \
+    'FixtureViolation.swift:2: import rule openai-compatible-transport-adapter-only forbids module AgentCore' \
+    'FixtureViolation.swift:3: import rule openai-compatible-transport-adapter-only forbids module BochaSearchAdapter'
+do
+    if ! grep -Fq "$openai_adapter_violation" "$openai_adapter/check-output.txt"; then
+        echo "error: OpenAI-compatible adapter boundary violation was not detected: $openai_adapter_violation" >&2
+        cat "$openai_adapter/check-output.txt" >&2
+        exit 1
+    fi
+done
+
+bocha_adapter="$temporary_root/bocha-search-adapter-only"
+cp -R "$base" "$bocha_adapter"
+cat >"$bocha_adapter/Packages/LLMKit/Sources/BochaSearchAdapter/FixtureViolation.swift" <<'SWIFT'
+import Security
+import AgentCore
+import OpenAICompatibleTransport
+SWIFT
+expect_failure "$bocha_adapter" 'Packages/LLMKit/Sources/BochaSearchAdapter/FixtureViolation.swift:1: import rule bocha-search-adapter-only forbids module Security'
+for bocha_adapter_violation in \
+    'FixtureViolation.swift:2: import rule bocha-search-adapter-only forbids module AgentCore' \
+    'FixtureViolation.swift:3: import rule bocha-search-adapter-only forbids module OpenAICompatibleTransport'
+do
+    if ! grep -Fq "$bocha_adapter_violation" "$bocha_adapter/check-output.txt"; then
+        echo "error: Bocha adapter boundary violation was not detected: $bocha_adapter_violation" >&2
+        cat "$bocha_adapter/check-output.txt" >&2
+        exit 1
+    fi
+done
+
 asr_domain="$temporary_root/asr-domain-framework-neutral"
 cp -R "$base" "$asr_domain"
 cat >"$asr_domain/Packages/VoiceChatCore/Sources/ASRDomain/FixtureViolation.swift" <<'SWIFT'
@@ -263,7 +301,7 @@ path.write_text(text.replace(old, new, 1))
 PY
 expect_failure "$voice_llm" 'target dependency rule: VoiceChatCore.*LLMKit'
 if grep -Fq 'ASRCLI' "$voice_llm/check-output.txt" && ! grep -Fq 'VoiceChatCore' "$voice_llm/check-output.txt"; then
-    echo "error: ASRCLI's reviewed LLMKit edge was incorrectly rejected" >&2
+    echo "error: ASRCLI's reviewed provider edges were incorrectly rejected" >&2
     exit 1
 fi
 
@@ -289,7 +327,7 @@ from pathlib import Path
 import sys
 path = Path(sys.argv[1])
 text = path.read_text()
-old = 'products: [\n        .library(name: "LLMCore", targets: ["LLMCore"]),\n        .library(name: "AgentCore", targets: ["AgentCore"]),\n        .library(name: "LLMKit", targets: ["LLMKit"])\n    ],'
+old = 'products: [\n        .library(name: "LLMCore", targets: ["LLMCore"]),\n        .library(name: "AgentCore", targets: ["AgentCore"]),\n        .library(name: "OpenAICompatibleTransport", targets: ["OpenAICompatibleTransport"]),\n        .library(name: "BochaSearchAdapter", targets: ["BochaSearchAdapter"]),\n        .library(name: "LLMKit", targets: ["LLMKit"])\n    ],'
 new = old + '\n    dependencies: [.package(url: "https://example.invalid/Remote.git", exact: "1.0.0")],'
 if old not in text:
     raise SystemExit("fixture mutation anchor missing")
@@ -399,6 +437,6 @@ if old not in text:
     raise SystemExit("fixture mutation anchor missing")
 path.write_text(text.replace(old, new, 1))
 PY
-expect_failure "$ownership_drift" 'App product ownership rule: SingleGreenDemo product LLMKit expected local owner .*Packages/LLMKit.*got Packages/VoiceChatCore'
+expect_failure "$ownership_drift" 'App product ownership rule: SingleGreenDemo product AgentCore expected local owner .*Packages/LLMKit.*got Packages/VoiceChatCore'
 
-echo "Architecture boundary self-tests passed (legal import syntax, valid graph, and 16 negative fixtures)."
+echo "Architecture boundary self-tests passed (legal import syntax, valid graph, and 18 negative fixtures)."

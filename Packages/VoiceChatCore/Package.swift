@@ -60,7 +60,13 @@ let package = Package(
         ),
         .executableTarget(
             name: "ASRCLI",
-            dependencies: ["VoiceChatCore", "LLMKit"],
+            dependencies: [
+                "VoiceChatCore",
+                .product(name: "AgentCore", package: "LLMKit"),
+                .product(name: "BochaSearchAdapter", package: "LLMKit"),
+                .product(name: "LLMCore", package: "LLMKit"),
+                .product(name: "OpenAICompatibleTransport", package: "LLMKit")
+            ],
             path: "Tools/ASRCLI"
         )
     ],

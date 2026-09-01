@@ -40,9 +40,11 @@ SingleGreenDemo simulator composition root
         -> StreamingTextKit
     -> SingleGreenConversationAdapters
         -> VoiceChatCore
-        -> LLMKit compatibility -> AgentCore -> LLMCore
+        -> AgentCore -> LLMCore
     -> ConversationLiveAdapters.swift
-        -> provider transports, credentials, factories, and presentation policy
+        -> OpenAICompatibleTransport -> LLMCore
+        -> BochaSearchAdapter -> LLMCore
+        -> credentials, factories, and presentation policy
     -> SwiftUI HUD rendering
 ```
 
@@ -51,12 +53,14 @@ SingleGreenDemo simulator composition root
 - Simulator controls consume generic `ExperienceControlState`; they must not read a concrete experience controller directly.
 - `VoiceConversationController` owns orchestration, state transitions, cancellation, generation checks, and display scheduling.
 - `ConversationPorts.swift` owns stable glasses-core ASR and Agent contracts.
-- `SingleGreenConversationAdapters` owns reusable semantic bridges from VoiceChatCore/LLMKit into the glasses-core conversation ports.
-- `ConversationLiveAdapters.swift` owns App-specific provider transports, credentials, factories, and presentation policy; it composes the reusable adapters and must not move those concerns into the core package.
+- `SingleGreenConversationAdapters` owns reusable semantic bridges from VoiceChatCore/AgentCore into the glasses-core conversation ports.
+- `ConversationLiveAdapters.swift` selects the concrete provider adapters and owns App-specific credentials, factories, and presentation policy; it must not move those concerns into the core package.
 - `VoiceChatDomain` owns conversation and reply lifecycle semantics.
 - `LLMCore` owns provider-neutral chat values, tool contracts, streaming events, the transport port, and typed errors.
 - `AgentCore` depends only on `LLMCore` and owns tool rounds, context limits, transactions, commit/abort, and terminal rules.
-- `LLMKit` remains the compatibility import and temporarily owns the OpenAI-compatible HTTP/SSE and Bocha implementations until M13-PR2 moves them into adapter targets.
+- `OpenAICompatibleTransport` owns OpenAI-compatible HTTP/SSE wire models, request construction, authorization headers, parsing, and retry configuration.
+- `BochaSearchAdapter` owns `BochaSearchClient`, its response models, endpoint mapping, and provider-specific errors.
+- `LLMKit` remains a source-compatibility import that re-exports `LLMCore`, `AgentCore`, and both provider adapters; new internal code depends on the narrow products directly.
 - `StreamingTextKit` owns typewriter cadence, grapheme-safe buffering, Unicode reconciliation, and auto-follow policy.
 - SwiftUI views own measurement and rendering, not network or conversation business logic.
 
@@ -110,7 +114,7 @@ scripts/test_public_api_baseline_update.sh
 scripts/check_public_api_baselines.sh
 ```
 
-Public API snapshots are reviewed artifacts for ten library modules (20 snapshots total) on macOS arm64 and iOS Simulator arm64. Additions and removals both require explicit review. Update only with `scripts/update_public_api_baselines.sh --accept-current-api` after inspecting the diff; the updater is never run automatically in CI.
+Public API snapshots are reviewed artifacts for twelve library modules (24 snapshots total) on macOS arm64 and iOS Simulator arm64. Additions and removals both require explicit review. Update only with `scripts/update_public_api_baselines.sh --accept-current-api` after inspecting the diff; the updater is never run automatically in CI.
 
 M7 PR2 lifecycle invariants: `VoiceActivatedASRSession` owns one ContinuousClock-backed, injectable monotonic frame-liveness watchdog. It starts after source start; accepted raw frames refresh the compatibility-derived `noSpeechFrameLimit × 20 ms` interval (standard 15 s). At or after the deadline, pre/post-onset starvation fails closed as typed `audioUnavailable`; valid silent frames remain the `.noSpeech` path. Levels, VAD observations, transport activity, stale frames, and rejected frames are not heartbeats. Manual pre-onset finish emits Core `.noSpeech` then `.finished`; post-onset finish drains buffered tail frames FIFO before completion. Keep actor/generation/epoch checks and one-terminal semantics intact.
 

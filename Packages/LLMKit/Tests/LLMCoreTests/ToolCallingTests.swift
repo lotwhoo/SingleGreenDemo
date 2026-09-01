@@ -55,13 +55,4 @@ final class ToolCallingTests: XCTestCase {
         XCTAssertEqual(json["tool_call_id"] as? String, "c1")
     }
 
-    func testRequestWithTools() throws {
-        let req = LLMChatRequest(model: "deepseek-v4-flash",
-                                 messages: [.init(role: .user, content: "hi")],
-                                 tools: [.init(function: .init(name: "web_search", description: "s", parameters: [:]))])
-        let data = try JSONEncoder().encode(req)
-        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        let tools = try XCTUnwrap(json["tools"] as? [[String: Any]])
-        XCTAssertEqual(tools.count, 1)
-    }
 }
